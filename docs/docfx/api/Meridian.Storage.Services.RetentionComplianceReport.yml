@@ -1,0 +1,953 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.RetentionComplianceReport
+  commentId: T:Meridian.Storage.Services.RetentionComplianceReport
+  id: RetentionComplianceReport
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.RetentionComplianceReport.#ctor(System.DateTimeOffset,System.String,System.Nullable{System.Int32},System.Boolean,System.Int64,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation},System.String)
+  - Meridian.Storage.Services.RetentionComplianceReport.Entries
+  - Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt
+  - Meridian.Storage.Services.RetentionComplianceReport.IsCompliant
+  - Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays
+  - Meridian.Storage.Services.RetentionComplianceReport.RootPath
+  - Meridian.Storage.Services.RetentionComplianceReport.Summary
+  - Meridian.Storage.Services.RetentionComplianceReport.TotalFiles
+  - Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes
+  - Meridian.Storage.Services.RetentionComplianceReport.Violations
+  langs:
+  - csharp
+  - vb
+  name: RetentionComplianceReport
+  nameWithType: RetentionComplianceReport
+  fullName: Meridian.Storage.Services.RetentionComplianceReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetentionComplianceReport
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Retention compliance report.
+  example: []
+  syntax:
+    content: 'public sealed record RetentionComplianceReport : IEquatable<RetentionComplianceReport>'
+    content.vb: Public NotInheritable Class RetentionComplianceReport Implements IEquatable(Of RetentionComplianceReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.RetentionComplianceReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.RetentionComplianceReport.#ctor(System.DateTimeOffset,System.String,System.Nullable{System.Int32},System.Boolean,System.Int64,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation},System.String)
+  commentId: M:Meridian.Storage.Services.RetentionComplianceReport.#ctor(System.DateTimeOffset,System.String,System.Nullable{System.Int32},System.Boolean,System.Int64,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation},System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,System.Nullable{System.Int32},System.Boolean,System.Int64,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation},System.String)'
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: RetentionComplianceReport(DateTimeOffset, string, int?, bool, long, long, IReadOnlyList<RetentionEntry>, IReadOnlyList<RetentionViolation>, string)
+  nameWithType: RetentionComplianceReport.RetentionComplianceReport(DateTimeOffset, string, int?, bool, long, long, IReadOnlyList<RetentionEntry>, IReadOnlyList<RetentionViolation>, string)
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.RetentionComplianceReport(System.DateTimeOffset, string, int?, bool, long, long, System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.RetentionEntry>, System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.RetentionViolation>, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Retention compliance report.
+  example: []
+  syntax:
+    content: public RetentionComplianceReport(DateTimeOffset GeneratedAt, string RootPath, int? RetentionPolicyDays, bool IsCompliant, long TotalFiles, long TotalSizeBytes, IReadOnlyList<RetentionEntry> Entries, IReadOnlyList<RetentionViolation> Violations, string Summary)
+    parameters:
+    - id: GeneratedAt
+      type: System.DateTimeOffset
+    - id: RootPath
+      type: System.String
+    - id: RetentionPolicyDays
+      type: System.Nullable{System.Int32}
+    - id: IsCompliant
+      type: System.Boolean
+    - id: TotalFiles
+      type: System.Int64
+    - id: TotalSizeBytes
+      type: System.Int64
+    - id: Entries
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry}
+    - id: Violations
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation}
+    - id: Summary
+      type: System.String
+    content.vb: Public Sub New(GeneratedAt As DateTimeOffset, RootPath As String, RetentionPolicyDays As Integer?, IsCompliant As Boolean, TotalFiles As Long, TotalSizeBytes As Long, Entries As IReadOnlyList(Of RetentionEntry), Violations As IReadOnlyList(Of RetentionViolation), Summary As String)
+  overload: Meridian.Storage.Services.RetentionComplianceReport.#ctor*
+  nameWithType.vb: RetentionComplianceReport.New(DateTimeOffset, String, Integer?, Boolean, Long, Long, IReadOnlyList(Of RetentionEntry), IReadOnlyList(Of RetentionViolation), String)
+  fullName.vb: Meridian.Storage.Services.RetentionComplianceReport.New(System.DateTimeOffset, String, Integer?, Boolean, Long, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.RetentionEntry), System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.RetentionViolation), String)
+  name.vb: New(DateTimeOffset, String, Integer?, Boolean, Long, Long, IReadOnlyList(Of RetentionEntry), IReadOnlyList(Of RetentionViolation), String)
+- uid: Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt
+  id: GeneratedAt
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: GeneratedAt
+  nameWithType: RetentionComplianceReport.GeneratedAt
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratedAt
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset GeneratedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GeneratedAt As DateTimeOffset
+  overload: Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.RootPath
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.RootPath
+  id: RootPath
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: RootPath
+  nameWithType: RetentionComplianceReport.RootPath
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.RootPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RootPath
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string RootPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RootPath As String
+  overload: Meridian.Storage.Services.RetentionComplianceReport.RootPath*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays
+  id: RetentionPolicyDays
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: RetentionPolicyDays
+  nameWithType: RetentionComplianceReport.RetentionPolicyDays
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetentionPolicyDays
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int? RetentionPolicyDays { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property RetentionPolicyDays As Integer?
+  overload: Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.IsCompliant
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.IsCompliant
+  id: IsCompliant
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: IsCompliant
+  nameWithType: RetentionComplianceReport.IsCompliant
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.IsCompliant
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsCompliant
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public bool IsCompliant { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsCompliant As Boolean
+  overload: Meridian.Storage.Services.RetentionComplianceReport.IsCompliant*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.TotalFiles
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: RetentionComplianceReport.TotalFiles
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalFiles As Long
+  overload: Meridian.Storage.Services.RetentionComplianceReport.TotalFiles*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes
+  id: TotalSizeBytes
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: TotalSizeBytes
+  nameWithType: RetentionComplianceReport.TotalSizeBytes
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSizeBytes
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalSizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSizeBytes As Long
+  overload: Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.Entries
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.Entries
+  id: Entries
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: Entries
+  nameWithType: RetentionComplianceReport.Entries
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.Entries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Entries
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<RetentionEntry> Entries { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry}
+    content.vb: Public Property Entries As IReadOnlyList(Of RetentionEntry)
+  overload: Meridian.Storage.Services.RetentionComplianceReport.Entries*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.Violations
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.Violations
+  id: Violations
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: Violations
+  nameWithType: RetentionComplianceReport.Violations
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.Violations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Violations
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<RetentionViolation> Violations { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation}
+    content.vb: Public Property Violations As IReadOnlyList(Of RetentionViolation)
+  overload: Meridian.Storage.Services.RetentionComplianceReport.Violations*
+- uid: Meridian.Storage.Services.RetentionComplianceReport.Summary
+  commentId: P:Meridian.Storage.Services.RetentionComplianceReport.Summary
+  id: Summary
+  parent: Meridian.Storage.Services.RetentionComplianceReport
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: RetentionComplianceReport.Summary
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Summary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Storage.Services.RetentionComplianceReport.Summary*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.RetentionComplianceReport}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.RetentionComplianceReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RetentionComplianceReport>
+  nameWithType: IEquatable<RetentionComplianceReport>
+  fullName: System.IEquatable<Meridian.Storage.Services.RetentionComplianceReport>
+  nameWithType.vb: IEquatable(Of RetentionComplianceReport)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.RetentionComplianceReport)
+  name.vb: IEquatable(Of RetentionComplianceReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.RetentionComplianceReport
+    name: RetentionComplianceReport
+    href: Meridian.Storage.Services.RetentionComplianceReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.RetentionComplianceReport
+    name: RetentionComplianceReport
+    href: Meridian.Storage.Services.RetentionComplianceReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.RetentionComplianceReport.#ctor*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.#ctor
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport__ctor_System_DateTimeOffset_System_String_System_Nullable_System_Int32__System_Boolean_System_Int64_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Storage_Services_RetentionEntry__System_Collections_Generic_IReadOnlyList_Meridian_Storage_Services_RetentionViolation__System_String_
+  name: RetentionComplianceReport
+  nameWithType: RetentionComplianceReport.RetentionComplianceReport
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.RetentionComplianceReport
+  nameWithType.vb: RetentionComplianceReport.New
+  fullName.vb: Meridian.Storage.Services.RetentionComplianceReport.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<RetentionEntry>
+  nameWithType: IReadOnlyList<RetentionEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.RetentionEntry>
+  nameWithType.vb: IReadOnlyList(Of RetentionEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.RetentionEntry)
+  name.vb: IReadOnlyList(Of RetentionEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.RetentionEntry
+    name: RetentionEntry
+    href: Meridian.Storage.Services.RetentionEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.RetentionEntry
+    name: RetentionEntry
+    href: Meridian.Storage.Services.RetentionEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.RetentionViolation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<RetentionViolation>
+  nameWithType: IReadOnlyList<RetentionViolation>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.RetentionViolation>
+  nameWithType.vb: IReadOnlyList(Of RetentionViolation)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.RetentionViolation)
+  name.vb: IReadOnlyList(Of RetentionViolation)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.RetentionViolation
+    name: RetentionViolation
+    href: Meridian.Storage.Services.RetentionViolation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.RetentionViolation
+    name: RetentionViolation
+    href: Meridian.Storage.Services.RetentionViolation.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_GeneratedAt
+  name: GeneratedAt
+  nameWithType: RetentionComplianceReport.GeneratedAt
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.GeneratedAt
+- uid: Meridian.Storage.Services.RetentionComplianceReport.RootPath*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.RootPath
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_RootPath
+  name: RootPath
+  nameWithType: RetentionComplianceReport.RootPath
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.RootPath
+- uid: Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_RetentionPolicyDays
+  name: RetentionPolicyDays
+  nameWithType: RetentionComplianceReport.RetentionPolicyDays
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.RetentionPolicyDays
+- uid: Meridian.Storage.Services.RetentionComplianceReport.IsCompliant*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.IsCompliant
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_IsCompliant
+  name: IsCompliant
+  nameWithType: RetentionComplianceReport.IsCompliant
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.IsCompliant
+- uid: Meridian.Storage.Services.RetentionComplianceReport.TotalFiles*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.TotalFiles
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_TotalFiles
+  name: TotalFiles
+  nameWithType: RetentionComplianceReport.TotalFiles
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.TotalFiles
+- uid: Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_TotalSizeBytes
+  name: TotalSizeBytes
+  nameWithType: RetentionComplianceReport.TotalSizeBytes
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.TotalSizeBytes
+- uid: Meridian.Storage.Services.RetentionComplianceReport.Entries*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.Entries
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_Entries
+  name: Entries
+  nameWithType: RetentionComplianceReport.Entries
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.Entries
+- uid: Meridian.Storage.Services.RetentionComplianceReport.Violations*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.Violations
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_Violations
+  name: Violations
+  nameWithType: RetentionComplianceReport.Violations
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.Violations
+- uid: Meridian.Storage.Services.RetentionComplianceReport.Summary*
+  commentId: Overload:Meridian.Storage.Services.RetentionComplianceReport.Summary
+  href: Meridian.Storage.Services.RetentionComplianceReport.html#Meridian_Storage_Services_RetentionComplianceReport_Summary
+  name: Summary
+  nameWithType: RetentionComplianceReport.Summary
+  fullName: Meridian.Storage.Services.RetentionComplianceReport.Summary

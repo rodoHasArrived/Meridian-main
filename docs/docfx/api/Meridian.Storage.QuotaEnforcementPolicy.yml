@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.QuotaEnforcementPolicy
+  commentId: T:Meridian.Storage.QuotaEnforcementPolicy
+  id: QuotaEnforcementPolicy
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.QuotaEnforcementPolicy.DropOldest
+  - Meridian.Storage.QuotaEnforcementPolicy.HardLimit
+  - Meridian.Storage.QuotaEnforcementPolicy.SoftLimit
+  - Meridian.Storage.QuotaEnforcementPolicy.Warn
+  langs:
+  - csharp
+  - vb
+  name: QuotaEnforcementPolicy
+  nameWithType: QuotaEnforcementPolicy
+  fullName: Meridian.Storage.QuotaEnforcementPolicy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotaEnforcementPolicy
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Quota enforcement policy.
+  example: []
+  syntax:
+    content: 'public enum QuotaEnforcementPolicy : byte'
+    content.vb: Public Enum QuotaEnforcementPolicy As Byte
+- uid: Meridian.Storage.QuotaEnforcementPolicy.Warn
+  commentId: F:Meridian.Storage.QuotaEnforcementPolicy.Warn
+  id: Warn
+  parent: Meridian.Storage.QuotaEnforcementPolicy
+  langs:
+  - csharp
+  - vb
+  name: Warn
+  nameWithType: QuotaEnforcementPolicy.Warn
+  fullName: Meridian.Storage.QuotaEnforcementPolicy.Warn
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warn
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Log warning, continue writing.
+  example: []
+  syntax:
+    content: Warn = 0
+    return:
+      type: Meridian.Storage.QuotaEnforcementPolicy
+- uid: Meridian.Storage.QuotaEnforcementPolicy.SoftLimit
+  commentId: F:Meridian.Storage.QuotaEnforcementPolicy.SoftLimit
+  id: SoftLimit
+  parent: Meridian.Storage.QuotaEnforcementPolicy
+  langs:
+  - csharp
+  - vb
+  name: SoftLimit
+  nameWithType: QuotaEnforcementPolicy.SoftLimit
+  fullName: Meridian.Storage.QuotaEnforcementPolicy.SoftLimit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SoftLimit
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Start cleanup, continue writing.
+  example: []
+  syntax:
+    content: SoftLimit = 1
+    return:
+      type: Meridian.Storage.QuotaEnforcementPolicy
+- uid: Meridian.Storage.QuotaEnforcementPolicy.HardLimit
+  commentId: F:Meridian.Storage.QuotaEnforcementPolicy.HardLimit
+  id: HardLimit
+  parent: Meridian.Storage.QuotaEnforcementPolicy
+  langs:
+  - csharp
+  - vb
+  name: HardLimit
+  nameWithType: QuotaEnforcementPolicy.HardLimit
+  fullName: Meridian.Storage.QuotaEnforcementPolicy.HardLimit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HardLimit
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 264
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Stop writing until cleanup completes.
+  example: []
+  syntax:
+    content: HardLimit = 2
+    return:
+      type: Meridian.Storage.QuotaEnforcementPolicy
+- uid: Meridian.Storage.QuotaEnforcementPolicy.DropOldest
+  commentId: F:Meridian.Storage.QuotaEnforcementPolicy.DropOldest
+  id: DropOldest
+  parent: Meridian.Storage.QuotaEnforcementPolicy
+  langs:
+  - csharp
+  - vb
+  name: DropOldest
+  nameWithType: QuotaEnforcementPolicy.DropOldest
+  fullName: Meridian.Storage.QuotaEnforcementPolicy.DropOldest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DropOldest
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Delete oldest to make room.
+  example: []
+  syntax:
+    content: DropOldest = 3
+    return:
+      type: Meridian.Storage.QuotaEnforcementPolicy
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.QuotaEnforcementPolicy
+  commentId: T:Meridian.Storage.QuotaEnforcementPolicy
+  parent: Meridian.Storage
+  href: Meridian.Storage.QuotaEnforcementPolicy.html
+  name: QuotaEnforcementPolicy
+  nameWithType: QuotaEnforcementPolicy
+  fullName: Meridian.Storage.QuotaEnforcementPolicy

@@ -1,0 +1,825 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderBindingService
+  id: ProviderBindingService
+  parent: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.ProviderBindingService.#ctor(Meridian.Application.UI.ConfigStore)
+  - Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync(System.Threading.CancellationToken)
+  - Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ProviderBindingService
+  nameWithType: ProviderBindingService
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderBindingService
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  summary: CRUD service for provider bindings and policy previews.
+  example: []
+  syntax:
+    content: public sealed class ProviderBindingService
+    content.vb: Public NotInheritable Class ProviderBindingService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.#ctor(Meridian.Application.UI.ConfigStore)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderBindingService.#ctor(Meridian.Application.UI.ConfigStore)
+  id: '#ctor(Meridian.Application.UI.ConfigStore)'
+  parent: Meridian.Application.ProviderRouting.ProviderBindingService
+  langs:
+  - csharp
+  - vb
+  name: ProviderBindingService(ConfigStore)
+  nameWithType: ProviderBindingService.ProviderBindingService(ConfigStore)
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.ProviderBindingService(Meridian.Application.UI.ConfigStore)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public ProviderBindingService(ConfigStore store)
+    parameters:
+    - id: store
+      type: Meridian.Application.UI.ConfigStore
+    content.vb: Public Sub New(store As ConfigStore)
+  overload: Meridian.Application.ProviderRouting.ProviderBindingService.#ctor*
+  nameWithType.vb: ProviderBindingService.New(ConfigStore)
+  fullName.vb: Meridian.Application.ProviderRouting.ProviderBindingService.New(Meridian.Application.UI.ConfigStore)
+  name.vb: New(ConfigStore)
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync(System.Threading.CancellationToken)
+  id: GetBindingsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.ProviderRouting.ProviderBindingService
+  langs:
+  - csharp
+  - vb
+  name: GetBindingsAsync(CancellationToken)
+  nameWithType: ProviderBindingService.GetBindingsAsync(CancellationToken)
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBindingsAsync
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public Task<IReadOnlyList<ProviderBindingDto>> GetBindingsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderBindingDto}}
+    content.vb: Public Function GetBindingsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ProviderBindingDto))
+  overload: Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync*
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
+  id: UpsertAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.ProviderRouting.ProviderBindingService
+  langs:
+  - csharp
+  - vb
+  name: UpsertAsync(UpdateProviderBindingRequest, CancellationToken)
+  nameWithType: ProviderBindingService.UpsertAsync(UpdateProviderBindingRequest, CancellationToken)
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpsertAsync
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public Task<ProviderBindingDto> UpsertAsync(UpdateProviderBindingRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Api.UpdateProviderBindingRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.ProviderBindingDto}
+    content.vb: Public Function UpsertAsync(request As UpdateProviderBindingRequest, ct As CancellationToken = Nothing) As Task(Of ProviderBindingDto)
+  overload: Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync*
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.ProviderRouting.ProviderBindingService
+  langs:
+  - csharp
+  - vb
+  name: DeleteAsync(string, CancellationToken)
+  nameWithType: ProviderBindingService.DeleteAsync(string, CancellationToken)
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteAsync
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public Task<bool> DeleteAsync(string bindingId, CancellationToken ct = default)
+    parameters:
+    - id: bindingId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteAsync(bindingId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync*
+  nameWithType.vb: ProviderBindingService.DeleteAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteAsync(String, CancellationToken)
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync(System.Threading.CancellationToken)
+  id: GetPoliciesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.ProviderRouting.ProviderBindingService
+  langs:
+  - csharp
+  - vb
+  name: GetPoliciesAsync(CancellationToken)
+  nameWithType: ProviderBindingService.GetPoliciesAsync(CancellationToken)
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPoliciesAsync
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public Task<IReadOnlyList<ProviderPolicyDto>> GetPoliciesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderPolicyDto}}
+    content.vb: Public Function GetPoliciesAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ProviderPolicyDto))
+  overload: Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync*
+references:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.#ctor*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderBindingService.#ctor
+  href: Meridian.Application.ProviderRouting.ProviderBindingService.html#Meridian_Application_ProviderRouting_ProviderBindingService__ctor_Meridian_Application_UI_ConfigStore_
+  name: ProviderBindingService
+  nameWithType: ProviderBindingService.ProviderBindingService
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.ProviderBindingService
+  nameWithType.vb: ProviderBindingService.New
+  fullName.vb: Meridian.Application.ProviderRouting.ProviderBindingService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync
+  href: Meridian.Application.ProviderRouting.ProviderBindingService.html#Meridian_Application_ProviderRouting_ProviderBindingService_GetBindingsAsync_System_Threading_CancellationToken_
+  name: GetBindingsAsync
+  nameWithType: ProviderBindingService.GetBindingsAsync
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.GetBindingsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderBindingDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderBindingDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ProviderBindingDto>>
+  nameWithType: Task<IReadOnlyList<ProviderBindingDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Api.ProviderBindingDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ProviderBindingDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Api.ProviderBindingDto))
+  name.vb: Task(Of IReadOnlyList(Of ProviderBindingDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderBindingDto
+    name: ProviderBindingDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderBindingDto
+    name: ProviderBindingDto
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync
+  href: Meridian.Application.ProviderRouting.ProviderBindingService.html#Meridian_Application_ProviderRouting_ProviderBindingService_UpsertAsync_Meridian_Contracts_Api_UpdateProviderBindingRequest_System_Threading_CancellationToken_
+  name: UpsertAsync
+  nameWithType: ProviderBindingService.UpsertAsync
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.UpsertAsync
+- uid: Meridian.Contracts.Api.UpdateProviderBindingRequest
+  commentId: T:Meridian.Contracts.Api.UpdateProviderBindingRequest
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.UpdateProviderBindingRequest.html
+  name: UpdateProviderBindingRequest
+  nameWithType: UpdateProviderBindingRequest
+  fullName: Meridian.Contracts.Api.UpdateProviderBindingRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.ProviderBindingDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.ProviderBindingDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderBindingDto>
+  nameWithType: Task<ProviderBindingDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.ProviderBindingDto>
+  nameWithType.vb: Task(Of ProviderBindingDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.ProviderBindingDto)
+  name.vb: Task(Of ProviderBindingDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderBindingDto
+    name: ProviderBindingDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderBindingDto
+    name: ProviderBindingDto
+  - name: )
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync
+  href: Meridian.Application.ProviderRouting.ProviderBindingService.html#Meridian_Application_ProviderRouting_ProviderBindingService_DeleteAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteAsync
+  nameWithType: ProviderBindingService.DeleteAsync
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.DeleteAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync
+  href: Meridian.Application.ProviderRouting.ProviderBindingService.html#Meridian_Application_ProviderRouting_ProviderBindingService_GetPoliciesAsync_System_Threading_CancellationToken_
+  name: GetPoliciesAsync
+  nameWithType: ProviderBindingService.GetPoliciesAsync
+  fullName: Meridian.Application.ProviderRouting.ProviderBindingService.GetPoliciesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderPolicyDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderPolicyDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ProviderPolicyDto>>
+  nameWithType: Task<IReadOnlyList<ProviderPolicyDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Api.ProviderPolicyDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ProviderPolicyDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Api.ProviderPolicyDto))
+  name.vb: Task(Of IReadOnlyList(Of ProviderPolicyDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderPolicyDto
+    name: ProviderPolicyDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderPolicyDto
+    name: ProviderPolicyDto
+  - name: )
+  - name: )

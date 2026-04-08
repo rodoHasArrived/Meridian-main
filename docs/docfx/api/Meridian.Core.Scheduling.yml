@@ -1,0 +1,61 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Scheduling
+  commentId: N:Meridian.Core.Scheduling
+  id: Meridian.Core.Scheduling
+  children:
+  - Meridian.Core.Scheduling.CronExpressionParser
+  - Meridian.Core.Scheduling.CronSchedule
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Core.Scheduling
+  nameWithType: Meridian.Core.Scheduling
+  fullName: Meridian.Core.Scheduling
+  type: Namespace
+  assemblies:
+  - Meridian.Core
+references:
+- uid: Meridian.Core.Scheduling.CronExpressionParser
+  commentId: T:Meridian.Core.Scheduling.CronExpressionParser
+  href: Meridian.Core.Scheduling.CronExpressionParser.html
+  name: CronExpressionParser
+  nameWithType: CronExpressionParser
+  fullName: Meridian.Core.Scheduling.CronExpressionParser
+- uid: Meridian.Core.Scheduling.CronSchedule
+  commentId: T:Meridian.Core.Scheduling.CronSchedule
+  parent: Meridian.Core.Scheduling
+  href: Meridian.Core.Scheduling.CronSchedule.html
+  name: CronSchedule
+  nameWithType: CronSchedule
+  fullName: Meridian.Core.Scheduling.CronSchedule
+- uid: Meridian.Core.Scheduling
+  commentId: N:Meridian.Core.Scheduling
+  href: Meridian.html
+  name: Meridian.Core.Scheduling
+  nameWithType: Meridian.Core.Scheduling
+  fullName: Meridian.Core.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Scheduling
+    name: Scheduling
+    href: Meridian.Core.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Scheduling
+    name: Scheduling
+    href: Meridian.Core.Scheduling.html

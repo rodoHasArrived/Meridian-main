@@ -1,0 +1,573 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  commentId: T:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  id: ApplyMixedPaymentRequest
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.#ctor(System.Decimal,System.DateOnly,Meridian.Contracts.DirectLending.PaymentBreakdownDto,System.String)
+  - Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount
+  - Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown
+  - Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate
+  - Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef
+  langs:
+  - csharp
+  - vb
+  name: ApplyMixedPaymentRequest
+  nameWithType: ApplyMixedPaymentRequest
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyMixedPaymentRequest
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ApplyMixedPaymentRequest : IEquatable<ApplyMixedPaymentRequest>'
+    content.vb: Public NotInheritable Class ApplyMixedPaymentRequest Implements IEquatable(Of ApplyMixedPaymentRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.#ctor(System.Decimal,System.DateOnly,Meridian.Contracts.DirectLending.PaymentBreakdownDto,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.#ctor(System.Decimal,System.DateOnly,Meridian.Contracts.DirectLending.PaymentBreakdownDto,System.String)
+  id: '#ctor(System.Decimal,System.DateOnly,Meridian.Contracts.DirectLending.PaymentBreakdownDto,System.String)'
+  parent: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  langs:
+  - csharp
+  - vb
+  name: ApplyMixedPaymentRequest(decimal, DateOnly, PaymentBreakdownDto?, string?)
+  nameWithType: ApplyMixedPaymentRequest.ApplyMixedPaymentRequest(decimal, DateOnly, PaymentBreakdownDto?, string?)
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ApplyMixedPaymentRequest(decimal, System.DateOnly, Meridian.Contracts.DirectLending.PaymentBreakdownDto?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ApplyMixedPaymentRequest(decimal Amount, DateOnly EffectiveDate, PaymentBreakdownDto? Breakdown, string? ExternalRef)
+    parameters:
+    - id: Amount
+      type: System.Decimal
+    - id: EffectiveDate
+      type: System.DateOnly
+    - id: Breakdown
+      type: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+    - id: ExternalRef
+      type: System.String
+    content.vb: Public Sub New(Amount As Decimal, EffectiveDate As DateOnly, Breakdown As PaymentBreakdownDto, ExternalRef As String)
+  overload: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.#ctor*
+  nameWithType.vb: ApplyMixedPaymentRequest.New(Decimal, DateOnly, PaymentBreakdownDto, String)
+  fullName.vb: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.New(Decimal, System.DateOnly, Meridian.Contracts.DirectLending.PaymentBreakdownDto, String)
+  name.vb: New(Decimal, DateOnly, PaymentBreakdownDto, String)
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount
+  commentId: P:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount
+  id: Amount
+  parent: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  langs:
+  - csharp
+  - vb
+  name: Amount
+  nameWithType: ApplyMixedPaymentRequest.Amount
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Amount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal Amount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Amount As Decimal
+  overload: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount*
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate
+  commentId: P:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: ApplyMixedPaymentRequest.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly EffectiveDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate*
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown
+  commentId: P:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown
+  id: Breakdown
+  parent: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  langs:
+  - csharp
+  - vb
+  name: Breakdown
+  nameWithType: ApplyMixedPaymentRequest.Breakdown
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Breakdown
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public PaymentBreakdownDto? Breakdown { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+    content.vb: Public Property Breakdown As PaymentBreakdownDto
+  overload: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown*
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef
+  commentId: P:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef
+  id: ExternalRef
+  parent: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+  langs:
+  - csharp
+  - vb
+  name: ExternalRef
+  nameWithType: ApplyMixedPaymentRequest.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalRef
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ExternalRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalRef As String
+  overload: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ApplyMixedPaymentRequest>
+  nameWithType: IEquatable<ApplyMixedPaymentRequest>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest>
+  nameWithType.vb: IEquatable(Of ApplyMixedPaymentRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest)
+  name.vb: IEquatable(Of ApplyMixedPaymentRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+    name: ApplyMixedPaymentRequest
+    href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest
+    name: ApplyMixedPaymentRequest
+    href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.#ctor
+  href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html#Meridian_Contracts_DirectLending_ApplyMixedPaymentRequest__ctor_System_Decimal_System_DateOnly_Meridian_Contracts_DirectLending_PaymentBreakdownDto_System_String_
+  name: ApplyMixedPaymentRequest
+  nameWithType: ApplyMixedPaymentRequest.ApplyMixedPaymentRequest
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ApplyMixedPaymentRequest
+  nameWithType.vb: ApplyMixedPaymentRequest.New
+  fullName.vb: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  commentId: T:Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html
+  name: PaymentBreakdownDto
+  nameWithType: PaymentBreakdownDto
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount
+  href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html#Meridian_Contracts_DirectLending_ApplyMixedPaymentRequest_Amount
+  name: Amount
+  nameWithType: ApplyMixedPaymentRequest.Amount
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Amount
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate
+  href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html#Meridian_Contracts_DirectLending_ApplyMixedPaymentRequest_EffectiveDate
+  name: EffectiveDate
+  nameWithType: ApplyMixedPaymentRequest.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.EffectiveDate
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown*
+  commentId: Overload:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown
+  href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html#Meridian_Contracts_DirectLending_ApplyMixedPaymentRequest_Breakdown
+  name: Breakdown
+  nameWithType: ApplyMixedPaymentRequest.Breakdown
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.Breakdown
+- uid: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef*
+  commentId: Overload:Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef
+  href: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.html#Meridian_Contracts_DirectLending_ApplyMixedPaymentRequest_ExternalRef
+  name: ExternalRef
+  nameWithType: ApplyMixedPaymentRequest.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest.ExternalRef

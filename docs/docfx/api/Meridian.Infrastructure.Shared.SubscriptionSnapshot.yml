@@ -1,0 +1,706 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  commentId: T:Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  id: SubscriptionSnapshot
+  parent: Meridian.Infrastructure.Shared
+  children:
+  - Meridian.Infrastructure.Shared.SubscriptionSnapshot.#ctor(System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}},System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription})
+  - Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions
+  - Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind
+  - Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionSnapshot
+  nameWithType: SubscriptionSnapshot
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionSnapshot
+    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Snapshot of subscription state for serialization or logging.
+  example: []
+  syntax:
+    content: 'public sealed record SubscriptionSnapshot : IEquatable<SubscriptionSnapshot>'
+    content.vb: Public NotInheritable Class SubscriptionSnapshot Implements IEquatable(Of SubscriptionSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Shared.SubscriptionSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.#ctor(System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}},System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription})
+  commentId: M:Meridian.Infrastructure.Shared.SubscriptionSnapshot.#ctor(System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}},System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription})
+  id: '#ctor(System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}},System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription})'
+  parent: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionSnapshot(int, IReadOnlyDictionary<string, IReadOnlyList<string>>, IReadOnlyList<Subscription>)
+  nameWithType: SubscriptionSnapshot.SubscriptionSnapshot(int, IReadOnlyDictionary<string, IReadOnlyList<string>>, IReadOnlyList<Subscription>)
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SubscriptionSnapshot(int, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>>, System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Shared.Subscription>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Snapshot of subscription state for serialization or logging.
+  example: []
+  syntax:
+    content: public SubscriptionSnapshot(int TotalSubscriptions, IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind, IReadOnlyList<Subscription> Subscriptions)
+    parameters:
+    - id: TotalSubscriptions
+      type: System.Int32
+    - id: SymbolsByKind
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}}
+    - id: Subscriptions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription}
+    content.vb: Public Sub New(TotalSubscriptions As Integer, SymbolsByKind As IReadOnlyDictionary(Of String, IReadOnlyList(Of String)), Subscriptions As IReadOnlyList(Of Subscription))
+  overload: Meridian.Infrastructure.Shared.SubscriptionSnapshot.#ctor*
+  nameWithType.vb: SubscriptionSnapshot.New(Integer, IReadOnlyDictionary(Of String, IReadOnlyList(Of String)), IReadOnlyList(Of Subscription))
+  fullName.vb: Meridian.Infrastructure.Shared.SubscriptionSnapshot.New(Integer, System.Collections.Generic.IReadOnlyDictionary(Of String, System.Collections.Generic.IReadOnlyList(Of String)), System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Shared.Subscription))
+  name.vb: New(Integer, IReadOnlyDictionary(Of String, IReadOnlyList(Of String)), IReadOnlyList(Of Subscription))
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions
+  commentId: P:Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions
+  id: TotalSubscriptions
+  parent: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalSubscriptions
+  nameWithType: SubscriptionSnapshot.TotalSubscriptions
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSubscriptions
+    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  syntax:
+    content: public int TotalSubscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalSubscriptions As Integer
+  overload: Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions*
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind
+  commentId: P:Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind
+  id: SymbolsByKind
+  parent: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SymbolsByKind
+  nameWithType: SubscriptionSnapshot.SymbolsByKind
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsByKind
+    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  syntax:
+    content: public IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}}
+    content.vb: Public Property SymbolsByKind As IReadOnlyDictionary(Of String, IReadOnlyList(Of String))
+  overload: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind*
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions
+  commentId: P:Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions
+  id: Subscriptions
+  parent: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Subscriptions
+  nameWithType: SubscriptionSnapshot.Subscriptions
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subscriptions
+    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  syntax:
+    content: public IReadOnlyList<Subscription> Subscriptions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription}
+    content.vb: Public Property Subscriptions As IReadOnlyList(Of Subscription)
+  overload: Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions*
+references:
+- uid: Meridian.Infrastructure.Shared
+  commentId: N:Meridian.Infrastructure.Shared
+  href: Meridian.html
+  name: Meridian.Infrastructure.Shared
+  nameWithType: Meridian.Infrastructure.Shared
+  fullName: Meridian.Infrastructure.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Shared.SubscriptionSnapshot}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Shared.SubscriptionSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SubscriptionSnapshot>
+  nameWithType: IEquatable<SubscriptionSnapshot>
+  fullName: System.IEquatable<Meridian.Infrastructure.Shared.SubscriptionSnapshot>
+  nameWithType.vb: IEquatable(Of SubscriptionSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Shared.SubscriptionSnapshot)
+  name.vb: IEquatable(Of SubscriptionSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+    name: SubscriptionSnapshot
+    href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+    name: SubscriptionSnapshot
+    href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Shared.SubscriptionSnapshot.#ctor
+  href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html#Meridian_Infrastructure_Shared_SubscriptionSnapshot__ctor_System_Int32_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Collections_Generic_IReadOnlyList_System_String___System_Collections_Generic_IReadOnlyList_Meridian_Infrastructure_Shared_Subscription__
+  name: SubscriptionSnapshot
+  nameWithType: SubscriptionSnapshot.SubscriptionSnapshot
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SubscriptionSnapshot
+  nameWithType.vb: SubscriptionSnapshot.New
+  fullName.vb: Meridian.Infrastructure.Shared.SubscriptionSnapshot.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, IReadOnlyList<string>>
+  nameWithType: IReadOnlyDictionary<string, IReadOnlyList<string>>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<string>>
+  nameWithType.vb: IReadOnlyDictionary(Of String, IReadOnlyList(Of String))
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: IReadOnlyDictionary(Of String, IReadOnlyList(Of String))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Shared.Subscription}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<Subscription>
+  nameWithType: IReadOnlyList<Subscription>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Shared.Subscription>
+  nameWithType.vb: IReadOnlyList(Of Subscription)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Shared.Subscription)
+  name.vb: IReadOnlyList(Of Subscription)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Shared.Subscription
+    name: Subscription
+    href: Meridian.Infrastructure.Shared.Subscription.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Shared.Subscription
+    name: Subscription
+    href: Meridian.Infrastructure.Shared.Subscription.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions*
+  commentId: Overload:Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions
+  href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html#Meridian_Infrastructure_Shared_SubscriptionSnapshot_TotalSubscriptions
+  name: TotalSubscriptions
+  nameWithType: SubscriptionSnapshot.TotalSubscriptions
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.TotalSubscriptions
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind*
+  commentId: Overload:Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind
+  href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html#Meridian_Infrastructure_Shared_SubscriptionSnapshot_SymbolsByKind
+  name: SymbolsByKind
+  nameWithType: SubscriptionSnapshot.SymbolsByKind
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.SymbolsByKind
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions*
+  commentId: Overload:Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions
+  href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html#Meridian_Infrastructure_Shared_SubscriptionSnapshot_Subscriptions
+  name: Subscriptions
+  nameWithType: SubscriptionSnapshot.Subscriptions
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot.Subscriptions

@@ -1,0 +1,762 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  commentId: T:Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  id: SymbolSubscriptionTracker
+  parent: Meridian.Domain.Collectors
+  children:
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.#ctor(System.Boolean)
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed(System.String)
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription(System.String)
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate(System.String)
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe(System.String)
+  - Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription(System.String)
+  langs:
+  - csharp
+  - vb
+  name: SymbolSubscriptionTracker
+  nameWithType: SymbolSubscriptionTracker
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSubscriptionTracker
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: >-
+    Provides common subscription management functionality for market data collectors.
+
+    Thread-safe implementation using ConcurrentDictionary.
+  example: []
+  syntax:
+    content: public abstract class SymbolSubscriptionTracker
+    content.vb: Public MustInherit Class SymbolSubscriptionTracker
+  inheritance:
+  - System.Object
+  derivedClasses:
+  - Meridian.Domain.Collectors.L3OrderBookCollector
+  - Meridian.Domain.Collectors.MarketDepthCollector
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.#ctor(System.Boolean)
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.#ctor(System.Boolean)
+  id: '#ctor(System.Boolean)'
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: SymbolSubscriptionTracker(bool)
+  nameWithType: SymbolSubscriptionTracker.SymbolSubscriptionTracker(bool)
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.SymbolSubscriptionTracker(bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  syntax:
+    content: protected SymbolSubscriptionTracker(bool requireExplicitSubscription = true)
+    parameters:
+    - id: requireExplicitSubscription
+      type: System.Boolean
+    content.vb: Protected Sub New(requireExplicitSubscription As Boolean = True)
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.#ctor*
+  nameWithType.vb: SymbolSubscriptionTracker.New(Boolean)
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.New(Boolean)
+  name.vb: New(Boolean)
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription
+  commentId: P:Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription
+  id: RequireExplicitSubscription
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: RequireExplicitSubscription
+  nameWithType: SymbolSubscriptionTracker.RequireExplicitSubscription
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequireExplicitSubscription
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Whether explicit subscription is required before processing updates.
+  example: []
+  syntax:
+    content: protected bool RequireExplicitSubscription { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Protected ReadOnly Property RequireExplicitSubscription As Boolean
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription*
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription(System.String)
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription(System.String)
+  id: RegisterSubscription(System.String)
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: RegisterSubscription(string)
+  nameWithType: SymbolSubscriptionTracker.RegisterSubscription(string)
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSubscription
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Registers a symbol for subscription.
+  example: []
+  syntax:
+    content: public void RegisterSubscription(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    content.vb: Public Sub RegisterSubscription(symbol As String)
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription*
+  nameWithType.vb: SymbolSubscriptionTracker.RegisterSubscription(String)
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription(String)
+  name.vb: RegisterSubscription(String)
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription(System.String)
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription(System.String)
+  id: UnregisterSubscription(System.String)
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: UnregisterSubscription(string)
+  nameWithType: SymbolSubscriptionTracker.UnregisterSubscription(string)
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnregisterSubscription
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Unregisters a symbol from subscription.
+  example: []
+  syntax:
+    content: public void UnregisterSubscription(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    content.vb: Public Sub UnregisterSubscription(symbol As String)
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription*
+  nameWithType.vb: SymbolSubscriptionTracker.UnregisterSubscription(String)
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription(String)
+  name.vb: UnregisterSubscription(String)
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed(System.String)
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed(System.String)
+  id: IsSubscribed(System.String)
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: IsSubscribed(string)
+  nameWithType: SymbolSubscriptionTracker.IsSubscribed(string)
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSubscribed
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Checks if a symbol is currently subscribed.
+  example: []
+  syntax:
+    content: public bool IsSubscribed(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsSubscribed(symbol As String) As Boolean
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed*
+  nameWithType.vb: SymbolSubscriptionTracker.IsSubscribed(String)
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed(String)
+  name.vb: IsSubscribed(String)
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe(System.String)
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe(System.String)
+  id: TryAutoSubscribe(System.String)
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: TryAutoSubscribe(string)
+  nameWithType: SymbolSubscriptionTracker.TryAutoSubscribe(string)
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAutoSubscribe
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Attempts to auto-subscribe a symbol if explicit subscription is not required.
+  example: []
+  syntax:
+    content: protected void TryAutoSubscribe(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    content.vb: Protected Sub TryAutoSubscribe(symbol As String)
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe*
+  nameWithType.vb: SymbolSubscriptionTracker.TryAutoSubscribe(String)
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe(String)
+  name.vb: TryAutoSubscribe(String)
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate(System.String)
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate(System.String)
+  id: ShouldProcessUpdate(System.String)
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: ShouldProcessUpdate(string)
+  nameWithType: SymbolSubscriptionTracker.ShouldProcessUpdate(string)
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShouldProcessUpdate
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Checks if an update should be processed based on subscription state.
+  example: []
+  syntax:
+    content: protected bool ShouldProcessUpdate(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Protected Function ShouldProcessUpdate(symbol As String) As Boolean
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate*
+  nameWithType.vb: SymbolSubscriptionTracker.ShouldProcessUpdate(String)
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate(String)
+  name.vb: ShouldProcessUpdate(String)
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols
+  commentId: M:Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols
+  id: GetSubscribedSymbols
+  parent: Meridian.Domain.Collectors.SymbolSubscriptionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetSubscribedSymbols()
+  nameWithType: SymbolSubscriptionTracker.GetSubscribedSymbols()
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSubscribedSymbols
+    path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Gets all currently subscribed symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyCollection<string> GetSubscribedSymbols()
+    return:
+      type: System.Collections.Generic.IReadOnlyCollection{System.String}
+    content.vb: Public Function GetSubscribedSymbols() As IReadOnlyCollection(Of String)
+  overload: Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols*
+references:
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.#ctor*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.#ctor
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker__ctor_System_Boolean_
+  name: SymbolSubscriptionTracker
+  nameWithType: SymbolSubscriptionTracker.SymbolSubscriptionTracker
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.SymbolSubscriptionTracker
+  nameWithType.vb: SymbolSubscriptionTracker.New
+  fullName.vb: Meridian.Domain.Collectors.SymbolSubscriptionTracker.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_RequireExplicitSubscription
+  name: RequireExplicitSubscription
+  nameWithType: SymbolSubscriptionTracker.RequireExplicitSubscription
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RequireExplicitSubscription
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_RegisterSubscription_System_String_
+  name: RegisterSubscription
+  nameWithType: SymbolSubscriptionTracker.RegisterSubscription
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.RegisterSubscription
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_UnregisterSubscription_System_String_
+  name: UnregisterSubscription
+  nameWithType: SymbolSubscriptionTracker.UnregisterSubscription
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.UnregisterSubscription
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_IsSubscribed_System_String_
+  name: IsSubscribed
+  nameWithType: SymbolSubscriptionTracker.IsSubscribed
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.IsSubscribed
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_TryAutoSubscribe_System_String_
+  name: TryAutoSubscribe
+  nameWithType: SymbolSubscriptionTracker.TryAutoSubscribe
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.TryAutoSubscribe
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_ShouldProcessUpdate_System_String_
+  name: ShouldProcessUpdate
+  nameWithType: SymbolSubscriptionTracker.ShouldProcessUpdate
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.ShouldProcessUpdate
+- uid: Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols*
+  commentId: Overload:Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols
+  href: Meridian.Domain.Collectors.SymbolSubscriptionTracker.html#Meridian_Domain_Collectors_SymbolSubscriptionTracker_GetSubscribedSymbols
+  name: GetSubscribedSymbols
+  nameWithType: SymbolSubscriptionTracker.GetSubscribedSymbols
+  fullName: Meridian.Domain.Collectors.SymbolSubscriptionTracker.GetSubscribedSymbols
+- uid: System.Collections.Generic.IReadOnlyCollection{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<string>
+  nameWithType: IReadOnlyCollection<string>
+  fullName: System.Collections.Generic.IReadOnlyCollection<string>
+  nameWithType.vb: IReadOnlyCollection(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of String)
+  name.vb: IReadOnlyCollection(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

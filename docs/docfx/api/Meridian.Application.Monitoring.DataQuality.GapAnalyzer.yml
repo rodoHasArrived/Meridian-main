@@ -1,0 +1,1422 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  id: GapAnalyzer
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.#ctor(Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps(System.String,System.DateOnly,System.String)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap})
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate(System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate(System.String,System.DateOnly,System.String)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps(System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics(System.Nullable{System.DateOnly})
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity(System.String)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps(System.DateOnly,System.TimeSpan)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.OnGapDetected
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent(System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64})
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol(System.String,System.String)
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed
+  - Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected
+  langs:
+  - csharp
+  - vb
+  name: GapAnalyzer
+  nameWithType: GapAnalyzer
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapAnalyzer
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Analyzes data gaps and generates visual timelines for data availability.
+
+    Tracks gaps in real-time and provides historical gap analysis.
+  example: []
+  syntax:
+    content: 'public sealed class GapAnalyzer : IDisposable'
+    content.vb: Public NotInheritable Class GapAnalyzer Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.OnGapDetected
+  commentId: E:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.OnGapDetected
+  id: OnGapDetected
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: OnGapDetected
+  nameWithType: GapAnalyzer.OnGapDetected
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.OnGapDetected
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnGapDetected
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when a significant gap is detected.
+  example: []
+  syntax:
+    content: public event Action<DataGap>? OnGapDetected
+    return:
+      type: System.Action{Meridian.Application.Monitoring.DataQuality.DataGap}
+    content.vb: Public Event OnGapDetected As Action(Of DataGap)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.#ctor(Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.#ctor(Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig)'
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GapAnalyzer(GapAnalyzerConfig?)
+  nameWithType: GapAnalyzer.GapAnalyzer(GapAnalyzerConfig?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GapAnalyzer(Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public GapAnalyzer(GapAnalyzerConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+    content.vb: Public Sub New(config As GapAnalyzerConfig = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.#ctor*
+  nameWithType.vb: GapAnalyzer.New(GapAnalyzerConfig)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.New(Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig)
+  name.vb: New(GapAnalyzerConfig)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  id: RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolLiquidity(string, LiquidityProfile)
+  nameWithType: GapAnalyzer.RegisterSymbolLiquidity(string, LiquidityProfile)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity(string, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolLiquidity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Registers a liquidity profile for a symbol, adjusting gap detection thresholds.
+  example: []
+  syntax:
+    content: public void RegisterSymbolLiquidity(string symbol, LiquidityProfile profile)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: profile
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    content.vb: Public Sub RegisterSymbolLiquidity(symbol As String, profile As LiquidityProfile)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity*
+  nameWithType.vb: GapAnalyzer.RegisterSymbolLiquidity(String, LiquidityProfile)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity(String, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  name.vb: RegisterSymbolLiquidity(String, LiquidityProfile)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity(System.String)
+  id: GetSymbolLiquidity(System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolLiquidity(string)
+  nameWithType: GapAnalyzer.GetSymbolLiquidity(string)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolLiquidity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the liquidity profile for a symbol, defaulting to <xref href="Meridian.Contracts.Domain.Enums.LiquidityProfile.High" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public LiquidityProfile GetSymbolLiquidity(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    content.vb: Public Function GetSymbolLiquidity(symbol As String) As LiquidityProfile
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity*
+  nameWithType.vb: GapAnalyzer.GetSymbolLiquidity(String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity(String)
+  name.vb: GetSymbolLiquidity(String)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent(System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent(System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64})
+  id: RecordEvent(System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64})
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: RecordEvent(string, string, DateTimeOffset, long?)
+  nameWithType: GapAnalyzer.RecordEvent(string, string, DateTimeOffset, long?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent(string, string, System.DateTimeOffset, long?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordEvent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Records an event timestamp for gap detection.
+
+    Uses per-symbol liquidity thresholds when registered, falling back to global config.
+  example: []
+  syntax:
+    content: public void RecordEvent(string symbol, string eventType, DateTimeOffset timestamp, long? sequenceNumber = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: eventType
+      type: System.String
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: sequenceNumber
+      type: System.Nullable{System.Int64}
+    content.vb: Public Sub RecordEvent(symbol As String, eventType As String, timestamp As DateTimeOffset, sequenceNumber As Long? = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent*
+  nameWithType.vb: GapAnalyzer.RecordEvent(String, String, DateTimeOffset, Long?)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent(String, String, System.DateTimeOffset, Long?)
+  name.vb: RecordEvent(String, String, DateTimeOffset, Long?)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps(System.String,System.DateOnly,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps(System.String,System.DateOnly,System.String)
+  id: AnalyzeGaps(System.String,System.DateOnly,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: AnalyzeGaps(string, DateOnly, string?)
+  nameWithType: GapAnalyzer.AnalyzeGaps(string, DateOnly, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps(string, System.DateOnly, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnalyzeGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Analyzes gaps for a specific symbol and date, generating a timeline.
+  example: []
+  syntax:
+    content: public GapAnalysisResult AnalyzeGaps(string symbol, DateOnly date, string? eventType = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateOnly
+    - id: eventType
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapAnalysisResult
+    content.vb: Public Function AnalyzeGaps(symbol As String, [date] As DateOnly, eventType As String = Nothing) As GapAnalysisResult
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps*
+  nameWithType.vb: GapAnalyzer.AnalyzeGaps(String, DateOnly, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps(String, System.DateOnly, String)
+  name.vb: AnalyzeGaps(String, DateOnly, String)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate(System.String,System.DateOnly,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate(System.String,System.DateOnly,System.String)
+  id: GetGapsForSymbolDate(System.String,System.DateOnly,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GetGapsForSymbolDate(string, DateOnly, string?)
+  nameWithType: GapAnalyzer.GetGapsForSymbolDate(string, DateOnly, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate(string, System.DateOnly, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGapsForSymbolDate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets all gaps for a specific symbol and date.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataGap> GetGapsForSymbolDate(string symbol, DateOnly date, string? eventType = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateOnly
+    - id: eventType
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+    content.vb: Public Function GetGapsForSymbolDate(symbol As String, [date] As DateOnly, eventType As String = Nothing) As IReadOnlyList(Of DataGap)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate*
+  nameWithType.vb: GapAnalyzer.GetGapsForSymbolDate(String, DateOnly, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate(String, System.DateOnly, String)
+  name.vb: GetGapsForSymbolDate(String, DateOnly, String)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate(System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate(System.DateOnly)
+  id: GetGapsForDate(System.DateOnly)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GetGapsForDate(DateOnly)
+  nameWithType: GapAnalyzer.GetGapsForDate(DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGapsForDate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets all gaps for a specific date across all symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataGap> GetGapsForDate(DateOnly date)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+    content.vb: Public Function GetGapsForDate([date] As DateOnly) As IReadOnlyList(Of DataGap)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate*
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps(System.Int32)
+  id: GetRecentGaps(System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GetRecentGaps(int)
+  nameWithType: GapAnalyzer.GetRecentGaps(int)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets recent gaps across all symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataGap> GetRecentGaps(int count = 100)
+    parameters:
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+    content.vb: Public Function GetRecentGaps(count As Integer = 100) As IReadOnlyList(Of DataGap)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps*
+  nameWithType.vb: GapAnalyzer.GetRecentGaps(Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps(Integer)
+  name.vb: GetRecentGaps(Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics(System.Nullable{System.DateOnly})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics(System.Nullable{System.DateOnly})
+  id: GetStatistics(System.Nullable{System.DateOnly})
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics(DateOnly?)
+  nameWithType: GapAnalyzer.GetStatistics(DateOnly?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics(System.DateOnly?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets gap statistics for a date.
+  example: []
+  syntax:
+    content: public GapStatistics GetStatistics(DateOnly? date = null)
+    parameters:
+    - id: date
+      type: System.Nullable{System.DateOnly}
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapStatistics
+    content.vb: Public Function GetStatistics([date] As DateOnly? = Nothing) As GapStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics*
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps(System.DateOnly,System.TimeSpan)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps(System.DateOnly,System.TimeSpan)
+  id: GetSymbolsWithSignificantGaps(System.DateOnly,System.TimeSpan)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolsWithSignificantGaps(DateOnly, TimeSpan)
+  nameWithType: GapAnalyzer.GetSymbolsWithSignificantGaps(DateOnly, TimeSpan)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps(System.DateOnly, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolsWithSignificantGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets symbols with gaps exceeding a threshold.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetSymbolsWithSignificantGaps(DateOnly date, TimeSpan threshold)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    - id: threshold
+      type: System.TimeSpan
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetSymbolsWithSignificantGaps([date] As DateOnly, threshold As TimeSpan) As IReadOnlyList(Of String)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps*
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap})
+  id: GenerateTimeline(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap})
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: GenerateTimeline(string, DateOnly, IReadOnlyList<DataGap>?)
+  nameWithType: GapAnalyzer.GenerateTimeline(string, DateOnly, IReadOnlyList<DataGap>?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline(string, System.DateOnly, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataGap>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateTimeline
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Generates a visual timeline for a symbol/date.
+  example: []
+  syntax:
+    content: public IReadOnlyList<TimelineEntry> GenerateTimeline(string symbol, DateOnly date, IReadOnlyList<DataGap>? gaps = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateOnly
+    - id: gaps
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.TimelineEntry}
+    content.vb: Public Function GenerateTimeline(symbol As String, [date] As DateOnly, gaps As IReadOnlyList(Of DataGap) = Nothing) As IReadOnlyList(Of TimelineEntry)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline*
+  nameWithType.vb: GapAnalyzer.GenerateTimeline(String, DateOnly, IReadOnlyList(Of DataGap))
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline(String, System.DateOnly, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataGap))
+  name.vb: GenerateTimeline(String, DateOnly, IReadOnlyList(Of DataGap))
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol(System.String,System.String)
+  id: ResetSymbol(System.String,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: ResetSymbol(string, string?)
+  nameWithType: GapAnalyzer.ResetSymbol(string, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetSymbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets gap tracking for a symbol.
+  example: []
+  syntax:
+    content: public void ResetSymbol(string symbol, string? eventType = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: eventType
+      type: System.String
+    content.vb: Public Sub ResetSymbol(symbol As String, eventType As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol*
+  nameWithType.vb: GapAnalyzer.ResetSymbol(String, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol(String, String)
+  name.vb: ResetSymbol(String, String)
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected
+  id: TotalGapsDetected
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: TotalGapsDetected
+  nameWithType: GapAnalyzer.TotalGapsDetected
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGapsDetected
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets total gaps detected count.
+  example: []
+  syntax:
+    content: public long TotalGapsDetected { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalGapsDetected As Long
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected*
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed
+  id: TotalEventsProcessed
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: TotalEventsProcessed
+  nameWithType: GapAnalyzer.TotalEventsProcessed
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEventsProcessed
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 325
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets total events processed count.
+  example: []
+  syntax:
+    content: public long TotalEventsProcessed { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalEventsProcessed As Long
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed*
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: GapAnalyzer.Dispose()
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.DataQuality.DataGap}
+  commentId: T:System.Action{Meridian.Application.Monitoring.DataQuality.DataGap}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<DataGap>
+  nameWithType: Action<DataGap>
+  fullName: System.Action<Meridian.Application.Monitoring.DataQuality.DataGap>
+  nameWithType.vb: Action(Of DataGap)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.DataQuality.DataGap)
+  name.vb: Action(Of DataGap)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataGap
+    name: DataGap
+    href: Meridian.Application.Monitoring.DataQuality.DataGap.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataGap
+    name: DataGap
+    href: Meridian.Application.Monitoring.DataQuality.DataGap.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer__ctor_Meridian_Application_Monitoring_DataQuality_GapAnalyzerConfig_
+  name: GapAnalyzer
+  nameWithType: GapAnalyzer.GapAnalyzer
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GapAnalyzer
+  nameWithType.vb: GapAnalyzer.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig.html
+  name: GapAnalyzerConfig
+  nameWithType: GapAnalyzerConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzerConfig
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_RegisterSymbolLiquidity_System_String_Meridian_Contracts_Domain_Enums_LiquidityProfile_
+  name: RegisterSymbolLiquidity
+  nameWithType: GapAnalyzer.RegisterSymbolLiquidity
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RegisterSymbolLiquidity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+  commentId: F:Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+  name: High
+  nameWithType: LiquidityProfile.High
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile.High
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GetSymbolLiquidity_System_String_
+  name: GetSymbolLiquidity
+  nameWithType: GapAnalyzer.GetSymbolLiquidity
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolLiquidity
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_RecordEvent_System_String_System_String_System_DateTimeOffset_System_Nullable_System_Int64__
+  name: RecordEvent
+  nameWithType: GapAnalyzer.RecordEvent
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.RecordEvent
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_AnalyzeGaps_System_String_System_DateOnly_System_String_
+  name: AnalyzeGaps
+  nameWithType: GapAnalyzer.AnalyzeGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.AnalyzeGaps
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalysisResult
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapAnalysisResult
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalysisResult.html
+  name: GapAnalysisResult
+  nameWithType: GapAnalysisResult
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalysisResult
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GetGapsForSymbolDate_System_String_System_DateOnly_System_String_
+  name: GetGapsForSymbolDate
+  nameWithType: GapAnalyzer.GetGapsForSymbolDate
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForSymbolDate
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataGap>
+  nameWithType: IReadOnlyList<DataGap>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataGap>
+  nameWithType.vb: IReadOnlyList(Of DataGap)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataGap)
+  name.vb: IReadOnlyList(Of DataGap)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataGap
+    name: DataGap
+    href: Meridian.Application.Monitoring.DataQuality.DataGap.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataGap
+    name: DataGap
+    href: Meridian.Application.Monitoring.DataQuality.DataGap.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GetGapsForDate_System_DateOnly_
+  name: GetGapsForDate
+  nameWithType: GapAnalyzer.GetGapsForDate
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetGapsForDate
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GetRecentGaps_System_Int32_
+  name: GetRecentGaps
+  nameWithType: GapAnalyzer.GetRecentGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetRecentGaps
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GetStatistics_System_Nullable_System_DateOnly__
+  name: GetStatistics
+  nameWithType: GapAnalyzer.GetStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetStatistics
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html
+  name: GapStatistics
+  nameWithType: GapStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GetSymbolsWithSignificantGaps_System_DateOnly_System_TimeSpan_
+  name: GetSymbolsWithSignificantGaps
+  nameWithType: GapAnalyzer.GetSymbolsWithSignificantGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GetSymbolsWithSignificantGaps
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_GenerateTimeline_System_String_System_DateOnly_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_DataGap__
+  name: GenerateTimeline
+  nameWithType: GapAnalyzer.GenerateTimeline
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.GenerateTimeline
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.TimelineEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.TimelineEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TimelineEntry>
+  nameWithType: IReadOnlyList<TimelineEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.TimelineEntry>
+  nameWithType.vb: IReadOnlyList(Of TimelineEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.TimelineEntry)
+  name.vb: IReadOnlyList(Of TimelineEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+    name: TimelineEntry
+    href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+    name: TimelineEntry
+    href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_ResetSymbol_System_String_System_String_
+  name: ResetSymbol
+  nameWithType: GapAnalyzer.ResetSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.ResetSymbol
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_TotalGapsDetected
+  name: TotalGapsDetected
+  nameWithType: GapAnalyzer.TotalGapsDetected
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalGapsDetected
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_TotalEventsProcessed
+  name: TotalEventsProcessed
+  nameWithType: GapAnalyzer.TotalEventsProcessed
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.TotalEventsProcessed
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html#Meridian_Application_Monitoring_DataQuality_GapAnalyzer_Dispose
+  name: Dispose
+  nameWithType: GapAnalyzer.Dispose
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

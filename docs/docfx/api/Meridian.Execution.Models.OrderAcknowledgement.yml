@@ -1,0 +1,617 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.OrderAcknowledgement
+  commentId: T:Meridian.Execution.Models.OrderAcknowledgement
+  id: OrderAcknowledgement
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.OrderAcknowledgement.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.DateTimeOffset)
+  - Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt
+  - Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId
+  - Meridian.Execution.Models.OrderAcknowledgement.OrderId
+  - Meridian.Execution.Models.OrderAcknowledgement.Status
+  - Meridian.Execution.Models.OrderAcknowledgement.Symbol
+  langs:
+  - csharp
+  - vb
+  name: OrderAcknowledgement
+  nameWithType: OrderAcknowledgement
+  fullName: Meridian.Execution.Models.OrderAcknowledgement
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderAcknowledgement
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Confirmation returned immediately after an order is accepted by the gateway.
+
+    This does not indicate a fill — fills are delivered via <xref href="Meridian.Execution.Models.OrderStatusUpdate" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed record OrderAcknowledgement : IEquatable<OrderAcknowledgement>'
+    content.vb: Public NotInheritable Class OrderAcknowledgement Implements IEquatable(Of OrderAcknowledgement)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Models.OrderAcknowledgement}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Models.OrderAcknowledgement.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.DateTimeOffset)
+  commentId: M:Meridian.Execution.Models.OrderAcknowledgement.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.DateTimeOffset)'
+  parent: Meridian.Execution.Models.OrderAcknowledgement
+  langs:
+  - csharp
+  - vb
+  name: OrderAcknowledgement(string, string, string, OrderStatus, DateTimeOffset)
+  nameWithType: OrderAcknowledgement.OrderAcknowledgement(string, string, string, OrderStatus, DateTimeOffset)
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.OrderAcknowledgement(string, string, string, Meridian.Execution.Models.OrderStatus, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Confirmation returned immediately after an order is accepted by the gateway.
+
+    This does not indicate a fill — fills are delivered via <xref href="Meridian.Execution.Models.OrderStatusUpdate" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public OrderAcknowledgement(string OrderId, string ClientOrderId, string Symbol, OrderStatus Status, DateTimeOffset AcknowledgedAt)
+    parameters:
+    - id: OrderId
+      type: System.String
+    - id: ClientOrderId
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: Status
+      type: Meridian.Execution.Models.OrderStatus
+    - id: AcknowledgedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(OrderId As String, ClientOrderId As String, Symbol As String, Status As OrderStatus, AcknowledgedAt As DateTimeOffset)
+  overload: Meridian.Execution.Models.OrderAcknowledgement.#ctor*
+  nameWithType.vb: OrderAcknowledgement.New(String, String, String, OrderStatus, DateTimeOffset)
+  fullName.vb: Meridian.Execution.Models.OrderAcknowledgement.New(String, String, String, Meridian.Execution.Models.OrderStatus, System.DateTimeOffset)
+  name.vb: New(String, String, String, OrderStatus, DateTimeOffset)
+- uid: Meridian.Execution.Models.OrderAcknowledgement.OrderId
+  commentId: P:Meridian.Execution.Models.OrderAcknowledgement.OrderId
+  id: OrderId
+  parent: Meridian.Execution.Models.OrderAcknowledgement
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: OrderAcknowledgement.OrderId
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public string OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrderId As String
+  overload: Meridian.Execution.Models.OrderAcknowledgement.OrderId*
+- uid: Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId
+  commentId: P:Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId
+  id: ClientOrderId
+  parent: Meridian.Execution.Models.OrderAcknowledgement
+  langs:
+  - csharp
+  - vb
+  name: ClientOrderId
+  nameWithType: OrderAcknowledgement.ClientOrderId
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientOrderId
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public string ClientOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ClientOrderId As String
+  overload: Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId*
+- uid: Meridian.Execution.Models.OrderAcknowledgement.Symbol
+  commentId: P:Meridian.Execution.Models.OrderAcknowledgement.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Models.OrderAcknowledgement
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OrderAcknowledgement.Symbol
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Models.OrderAcknowledgement.Symbol*
+- uid: Meridian.Execution.Models.OrderAcknowledgement.Status
+  commentId: P:Meridian.Execution.Models.OrderAcknowledgement.Status
+  id: Status
+  parent: Meridian.Execution.Models.OrderAcknowledgement
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: OrderAcknowledgement.Status
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public OrderStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+    content.vb: Public Property Status As OrderStatus
+  overload: Meridian.Execution.Models.OrderAcknowledgement.Status*
+- uid: Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt
+  commentId: P:Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt
+  id: AcknowledgedAt
+  parent: Meridian.Execution.Models.OrderAcknowledgement
+  langs:
+  - csharp
+  - vb
+  name: AcknowledgedAt
+  nameWithType: OrderAcknowledgement.AcknowledgedAt
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AcknowledgedAt
+    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public DateTimeOffset AcknowledgedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AcknowledgedAt As DateTimeOffset
+  overload: Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt*
+references:
+- uid: Meridian.Execution.Models.OrderStatusUpdate
+  commentId: T:Meridian.Execution.Models.OrderStatusUpdate
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderStatusUpdate.html
+  name: OrderStatusUpdate
+  nameWithType: OrderStatusUpdate
+  fullName: Meridian.Execution.Models.OrderStatusUpdate
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Models.OrderAcknowledgement}
+  commentId: T:System.IEquatable{Meridian.Execution.Models.OrderAcknowledgement}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrderAcknowledgement>
+  nameWithType: IEquatable<OrderAcknowledgement>
+  fullName: System.IEquatable<Meridian.Execution.Models.OrderAcknowledgement>
+  nameWithType.vb: IEquatable(Of OrderAcknowledgement)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Models.OrderAcknowledgement)
+  name.vb: IEquatable(Of OrderAcknowledgement)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderAcknowledgement
+    name: OrderAcknowledgement
+    href: Meridian.Execution.Models.OrderAcknowledgement.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderAcknowledgement
+    name: OrderAcknowledgement
+    href: Meridian.Execution.Models.OrderAcknowledgement.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Models.OrderAcknowledgement.#ctor*
+  commentId: Overload:Meridian.Execution.Models.OrderAcknowledgement.#ctor
+  href: Meridian.Execution.Models.OrderAcknowledgement.html#Meridian_Execution_Models_OrderAcknowledgement__ctor_System_String_System_String_System_String_Meridian_Execution_Models_OrderStatus_System_DateTimeOffset_
+  name: OrderAcknowledgement
+  nameWithType: OrderAcknowledgement.OrderAcknowledgement
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.OrderAcknowledgement
+  nameWithType.vb: OrderAcknowledgement.New
+  fullName.vb: Meridian.Execution.Models.OrderAcknowledgement.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Models.OrderStatus
+  commentId: T:Meridian.Execution.Models.OrderStatus
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Models.OrderStatus
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.Models.OrderAcknowledgement.OrderId*
+  commentId: Overload:Meridian.Execution.Models.OrderAcknowledgement.OrderId
+  href: Meridian.Execution.Models.OrderAcknowledgement.html#Meridian_Execution_Models_OrderAcknowledgement_OrderId
+  name: OrderId
+  nameWithType: OrderAcknowledgement.OrderId
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.OrderId
+- uid: Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId*
+  commentId: Overload:Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId
+  href: Meridian.Execution.Models.OrderAcknowledgement.html#Meridian_Execution_Models_OrderAcknowledgement_ClientOrderId
+  name: ClientOrderId
+  nameWithType: OrderAcknowledgement.ClientOrderId
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.ClientOrderId
+- uid: Meridian.Execution.Models.OrderAcknowledgement.Symbol*
+  commentId: Overload:Meridian.Execution.Models.OrderAcknowledgement.Symbol
+  href: Meridian.Execution.Models.OrderAcknowledgement.html#Meridian_Execution_Models_OrderAcknowledgement_Symbol
+  name: Symbol
+  nameWithType: OrderAcknowledgement.Symbol
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.Symbol
+- uid: Meridian.Execution.Models.OrderAcknowledgement.Status*
+  commentId: Overload:Meridian.Execution.Models.OrderAcknowledgement.Status
+  href: Meridian.Execution.Models.OrderAcknowledgement.html#Meridian_Execution_Models_OrderAcknowledgement_Status
+  name: Status
+  nameWithType: OrderAcknowledgement.Status
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.Status
+- uid: Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt*
+  commentId: Overload:Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt
+  href: Meridian.Execution.Models.OrderAcknowledgement.html#Meridian_Execution_Models_OrderAcknowledgement_AcknowledgedAt
+  name: AcknowledgedAt
+  nameWithType: OrderAcknowledgement.AcknowledgedAt
+  fullName: Meridian.Execution.Models.OrderAcknowledgement.AcknowledgedAt

@@ -1,0 +1,721 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  commentId: T:Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  id: SubscriptionSchedule
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.#ctor(System.String,System.String,System.String[],Meridian.Application.Subscriptions.Models.ScheduleAction,Meridian.Application.Subscriptions.Models.ScheduleTiming,System.Boolean,System.String)
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols
+  - Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionSchedule
+  nameWithType: SubscriptionSchedule
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionSchedule
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Schedule for enabling/disabling symbol subscriptions by time/date.
+  example: []
+  syntax:
+    content: 'public sealed record SubscriptionSchedule : IEquatable<SubscriptionSchedule>'
+    content.vb: Public NotInheritable Class SubscriptionSchedule Implements IEquatable(Of SubscriptionSchedule)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.#ctor(System.String,System.String,System.String[],Meridian.Application.Subscriptions.Models.ScheduleAction,Meridian.Application.Subscriptions.Models.ScheduleTiming,System.Boolean,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.#ctor(System.String,System.String,System.String[],Meridian.Application.Subscriptions.Models.ScheduleAction,Meridian.Application.Subscriptions.Models.ScheduleTiming,System.Boolean,System.String)
+  id: '#ctor(System.String,System.String,System.String[],Meridian.Application.Subscriptions.Models.ScheduleAction,Meridian.Application.Subscriptions.Models.ScheduleTiming,System.Boolean,System.String)'
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionSchedule(string, string, string[], ScheduleAction, ScheduleTiming, bool, string?)
+  nameWithType: SubscriptionSchedule.SubscriptionSchedule(string, string, string[], ScheduleAction, ScheduleTiming, bool, string?)
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.SubscriptionSchedule(string, string, string[], Meridian.Application.Subscriptions.Models.ScheduleAction, Meridian.Application.Subscriptions.Models.ScheduleTiming, bool, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Schedule for enabling/disabling symbol subscriptions by time/date.
+  example: []
+  syntax:
+    content: public SubscriptionSchedule(string Id, string Name, string[] Symbols, ScheduleAction Action, ScheduleTiming Timing, bool IsEnabled = true, string? Description = null)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Symbols
+      type: System.String[]
+    - id: Action
+      type: Meridian.Application.Subscriptions.Models.ScheduleAction
+    - id: Timing
+      type: Meridian.Application.Subscriptions.Models.ScheduleTiming
+    - id: IsEnabled
+      type: System.Boolean
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(Id As String, Name As String, Symbols As String(), Action As ScheduleAction, Timing As ScheduleTiming, IsEnabled As Boolean = True, Description As String = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.#ctor*
+  nameWithType.vb: SubscriptionSchedule.New(String, String, String(), ScheduleAction, ScheduleTiming, Boolean, String)
+  fullName.vb: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.New(String, String, String(), Meridian.Application.Subscriptions.Models.ScheduleAction, Meridian.Application.Subscriptions.Models.ScheduleTiming, Boolean, String)
+  name.vb: New(String, String, String(), ScheduleAction, ScheduleTiming, Boolean, String)
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id
+  id: Id
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: SubscriptionSchedule.Id
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id*
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name
+  id: Name
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SubscriptionSchedule.Name
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name*
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols
+  id: Symbols
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: SubscriptionSchedule.Symbols
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string[] Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols*
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action
+  id: Action
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: Action
+  nameWithType: SubscriptionSchedule.Action
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Action
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public ScheduleAction Action { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleAction
+    content.vb: Public Property Action As ScheduleAction
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action*
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing
+  id: Timing
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: Timing
+  nameWithType: SubscriptionSchedule.Timing
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timing
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public ScheduleTiming Timing { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleTiming
+    content.vb: Public Property Timing As ScheduleTiming
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing*
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: SubscriptionSchedule.IsEnabled
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public bool IsEnabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsEnabled As Boolean
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled*
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description
+  commentId: P:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description
+  id: Description
+  parent: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: SubscriptionSchedule.Description
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SubscriptionSchedule>
+  nameWithType: IEquatable<SubscriptionSchedule>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.SubscriptionSchedule>
+  nameWithType.vb: IEquatable(Of SubscriptionSchedule)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.SubscriptionSchedule)
+  name.vb: IEquatable(Of SubscriptionSchedule)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    name: SubscriptionSchedule
+    href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    name: SubscriptionSchedule
+    href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.#ctor
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule__ctor_System_String_System_String_System_String___Meridian_Application_Subscriptions_Models_ScheduleAction_Meridian_Application_Subscriptions_Models_ScheduleTiming_System_Boolean_System_String_
+  name: SubscriptionSchedule
+  nameWithType: SubscriptionSchedule.SubscriptionSchedule
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.SubscriptionSchedule
+  nameWithType.vb: SubscriptionSchedule.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.ScheduleAction
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleAction
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ScheduleAction.html
+  name: ScheduleAction
+  nameWithType: ScheduleAction
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleAction
+- uid: Meridian.Application.Subscriptions.Models.ScheduleTiming
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleTiming
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ScheduleTiming.html
+  name: ScheduleTiming
+  nameWithType: ScheduleTiming
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleTiming
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_Id
+  name: Id
+  nameWithType: SubscriptionSchedule.Id
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Id
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_Name
+  name: Name
+  nameWithType: SubscriptionSchedule.Name
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Name
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_Symbols
+  name: Symbols
+  nameWithType: SubscriptionSchedule.Symbols
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Symbols
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_Action
+  name: Action
+  nameWithType: SubscriptionSchedule.Action
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Action
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_Timing
+  name: Timing
+  nameWithType: SubscriptionSchedule.Timing
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Timing
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_IsEnabled
+  name: IsEnabled
+  nameWithType: SubscriptionSchedule.IsEnabled
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.IsEnabled
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html#Meridian_Application_Subscriptions_Models_SubscriptionSchedule_Description
+  name: Description
+  nameWithType: SubscriptionSchedule.Description
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.Description

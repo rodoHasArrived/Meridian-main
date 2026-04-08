@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel
+  commentId: T:Meridian.Storage.Packaging.PackageCompressionLevel
+  id: PackageCompressionLevel
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageCompressionLevel.Balanced
+  - Meridian.Storage.Packaging.PackageCompressionLevel.Fast
+  - Meridian.Storage.Packaging.PackageCompressionLevel.Maximum
+  - Meridian.Storage.Packaging.PackageCompressionLevel.None
+  langs:
+  - csharp
+  - vb
+  name: PackageCompressionLevel
+  nameWithType: PackageCompressionLevel
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageCompressionLevel
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Compression level for package archives.
+  example: []
+  syntax:
+    content: 'public enum PackageCompressionLevel : byte'
+    content.vb: Public Enum PackageCompressionLevel As Byte
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel.None
+  commentId: F:Meridian.Storage.Packaging.PackageCompressionLevel.None
+  id: None
+  parent: Meridian.Storage.Packaging.PackageCompressionLevel
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: PackageCompressionLevel.None
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: No compression - fastest, largest files.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Storage.Packaging.PackageCompressionLevel
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel.Fast
+  commentId: F:Meridian.Storage.Packaging.PackageCompressionLevel.Fast
+  id: Fast
+  parent: Meridian.Storage.Packaging.PackageCompressionLevel
+  langs:
+  - csharp
+  - vb
+  name: Fast
+  nameWithType: PackageCompressionLevel.Fast
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel.Fast
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fast
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Fast compression - good speed, moderate size.
+  example: []
+  syntax:
+    content: Fast = 1
+    return:
+      type: Meridian.Storage.Packaging.PackageCompressionLevel
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel.Balanced
+  commentId: F:Meridian.Storage.Packaging.PackageCompressionLevel.Balanced
+  id: Balanced
+  parent: Meridian.Storage.Packaging.PackageCompressionLevel
+  langs:
+  - csharp
+  - vb
+  name: Balanced
+  nameWithType: PackageCompressionLevel.Balanced
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel.Balanced
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balanced
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Balanced compression - good balance of speed and size.
+  example: []
+  syntax:
+    content: Balanced = 2
+    return:
+      type: Meridian.Storage.Packaging.PackageCompressionLevel
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel.Maximum
+  commentId: F:Meridian.Storage.Packaging.PackageCompressionLevel.Maximum
+  id: Maximum
+  parent: Meridian.Storage.Packaging.PackageCompressionLevel
+  langs:
+  - csharp
+  - vb
+  name: Maximum
+  nameWithType: PackageCompressionLevel.Maximum
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel.Maximum
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Maximum
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Maximum compression - slowest, smallest files.
+  example: []
+  syntax:
+    content: Maximum = 3
+    return:
+      type: Meridian.Storage.Packaging.PackageCompressionLevel
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel
+  commentId: T:Meridian.Storage.Packaging.PackageCompressionLevel
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageCompressionLevel.html
+  name: PackageCompressionLevel
+  nameWithType: PackageCompressionLevel
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel

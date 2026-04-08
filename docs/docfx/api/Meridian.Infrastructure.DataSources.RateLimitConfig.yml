@@ -1,0 +1,553 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitConfig
+  id: RateLimitConfig
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests
+  - Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow
+  - Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs
+  - Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions
+  - Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds
+  langs:
+  - csharp
+  - vb
+  name: RateLimitConfig
+  nameWithType: RateLimitConfig
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitConfig
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Rate limit configuration.
+  example: []
+  syntax:
+    content: 'public sealed record RateLimitConfig : IEquatable<RateLimitConfig>'
+    content.vb: Public NotInheritable Class RateLimitConfig Implements IEquatable(Of RateLimitConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.RateLimitConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests
+  id: MaxConcurrentRequests
+  parent: Meridian.Infrastructure.DataSources.RateLimitConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxConcurrentRequests
+  nameWithType: RateLimitConfig.MaxConcurrentRequests
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxConcurrentRequests
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Maximum concurrent requests to this source.
+  example: []
+  syntax:
+    content: public int MaxConcurrentRequests { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxConcurrentRequests As Integer
+  overload: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests*
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.DataSources.RateLimitConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: RateLimitConfig.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Maximum requests per time window.
+  example: []
+  syntax:
+    content: public int MaxRequestsPerWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRequestsPerWindow As Integer
+  overload: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds
+  id: WindowSeconds
+  parent: Meridian.Infrastructure.DataSources.RateLimitConfig
+  langs:
+  - csharp
+  - vb
+  name: WindowSeconds
+  nameWithType: RateLimitConfig.WindowSeconds
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowSeconds
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Time window in seconds for rate limiting.
+  example: []
+  syntax:
+    content: public int WindowSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property WindowSeconds As Integer
+  overload: Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds*
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs
+  commentId: P:Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs
+  id: MinDelayBetweenRequestsMs
+  parent: Meridian.Infrastructure.DataSources.RateLimitConfig
+  langs:
+  - csharp
+  - vb
+  name: MinDelayBetweenRequestsMs
+  nameWithType: RateLimitConfig.MinDelayBetweenRequestsMs
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinDelayBetweenRequestsMs
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Minimum delay between requests in milliseconds.
+  example: []
+  syntax:
+    content: public int MinDelayBetweenRequestsMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MinDelayBetweenRequestsMs As Integer
+  overload: Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs*
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions
+  commentId: M:Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions
+  id: ToOptions
+  parent: Meridian.Infrastructure.DataSources.RateLimitConfig
+  langs:
+  - csharp
+  - vb
+  name: ToOptions()
+  nameWithType: RateLimitConfig.ToOptions()
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToOptions
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Converts to internal options format.
+  example: []
+  syntax:
+    content: public RateLimitOptions ToOptions()
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitOptions
+    content.vb: Public Function ToOptions() As RateLimitOptions
+  overload: Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.RateLimitConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.RateLimitConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RateLimitConfig>
+  nameWithType: IEquatable<RateLimitConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.RateLimitConfig>
+  nameWithType.vb: IEquatable(Of RateLimitConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.RateLimitConfig)
+  name.vb: IEquatable(Of RateLimitConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RateLimitConfig
+    name: RateLimitConfig
+    href: Meridian.Infrastructure.DataSources.RateLimitConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RateLimitConfig
+    name: RateLimitConfig
+    href: Meridian.Infrastructure.DataSources.RateLimitConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests
+  href: Meridian.Infrastructure.DataSources.RateLimitConfig.html#Meridian_Infrastructure_DataSources_RateLimitConfig_MaxConcurrentRequests
+  name: MaxConcurrentRequests
+  nameWithType: RateLimitConfig.MaxConcurrentRequests
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxConcurrentRequests
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.DataSources.RateLimitConfig.html#Meridian_Infrastructure_DataSources_RateLimitConfig_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: RateLimitConfig.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds
+  href: Meridian.Infrastructure.DataSources.RateLimitConfig.html#Meridian_Infrastructure_DataSources_RateLimitConfig_WindowSeconds
+  name: WindowSeconds
+  nameWithType: RateLimitConfig.WindowSeconds
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.WindowSeconds
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs
+  href: Meridian.Infrastructure.DataSources.RateLimitConfig.html#Meridian_Infrastructure_DataSources_RateLimitConfig_MinDelayBetweenRequestsMs
+  name: MinDelayBetweenRequestsMs
+  nameWithType: RateLimitConfig.MinDelayBetweenRequestsMs
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.MinDelayBetweenRequestsMs
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions
+  href: Meridian.Infrastructure.DataSources.RateLimitConfig.html#Meridian_Infrastructure_DataSources_RateLimitConfig_ToOptions
+  name: ToOptions
+  nameWithType: RateLimitConfig.ToOptions
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig.ToOptions
+- uid: Meridian.Infrastructure.DataSources.RateLimitOptions
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RateLimitOptions.html
+  name: RateLimitOptions
+  nameWithType: RateLimitOptions
+  fullName: Meridian.Infrastructure.DataSources.RateLimitOptions

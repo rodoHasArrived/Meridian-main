@@ -1,0 +1,1011 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  commentId: T:Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  id: ScheduleExecutionSummary
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.#ctor(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Double,System.TimeSpan,System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus},System.Nullable{System.DateTimeOffset},System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution})
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions
+  langs:
+  - csharp
+  - vb
+  name: ScheduleExecutionSummary
+  nameWithType: ScheduleExecutionSummary
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleExecutionSummary
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 551
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Summary of a specific schedule's execution history.
+  example: []
+  syntax:
+    content: 'public sealed record ScheduleExecutionSummary : IEquatable<ScheduleExecutionSummary>'
+    content.vb: Public NotInheritable Class ScheduleExecutionSummary Implements IEquatable(Of ScheduleExecutionSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Maintenance.ScheduleExecutionSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.#ctor(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Double,System.TimeSpan,System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus},System.Nullable{System.DateTimeOffset},System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution})
+  commentId: M:Meridian.Storage.Maintenance.ScheduleExecutionSummary.#ctor(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Double,System.TimeSpan,System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus},System.Nullable{System.DateTimeOffset},System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution})
+  id: '#ctor(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Double,System.TimeSpan,System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus},System.Nullable{System.DateTimeOffset},System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution})'
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: ScheduleExecutionSummary(string, string, int, int, int, double, TimeSpan, DateTimeOffset?, MaintenanceExecutionStatus?, DateTimeOffset?, List<MaintenanceExecution>)
+  nameWithType: ScheduleExecutionSummary.ScheduleExecutionSummary(string, string, int, int, int, double, TimeSpan, DateTimeOffset?, MaintenanceExecutionStatus?, DateTimeOffset?, List<MaintenanceExecution>)
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleExecutionSummary(string, string, int, int, int, double, System.TimeSpan, System.DateTimeOffset?, Meridian.Storage.Maintenance.MaintenanceExecutionStatus?, System.DateTimeOffset?, System.Collections.Generic.List<Meridian.Storage.Maintenance.MaintenanceExecution>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 551
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Summary of a specific schedule's execution history.
+  example: []
+  syntax:
+    content: public ScheduleExecutionSummary(string ScheduleId, string ScheduleName, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, double SuccessRate, TimeSpan AverageDuration, DateTimeOffset? LastExecutionAt, MaintenanceExecutionStatus? LastStatus, DateTimeOffset? NextScheduledAt, List<MaintenanceExecution> RecentExecutions)
+    parameters:
+    - id: ScheduleId
+      type: System.String
+    - id: ScheduleName
+      type: System.String
+    - id: TotalExecutions
+      type: System.Int32
+    - id: SuccessfulExecutions
+      type: System.Int32
+    - id: FailedExecutions
+      type: System.Int32
+    - id: SuccessRate
+      type: System.Double
+    - id: AverageDuration
+      type: System.TimeSpan
+    - id: LastExecutionAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastStatus
+      type: System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+    - id: NextScheduledAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: RecentExecutions
+      type: System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Public Sub New(ScheduleId As String, ScheduleName As String, TotalExecutions As Integer, SuccessfulExecutions As Integer, FailedExecutions As Integer, SuccessRate As Double, AverageDuration As TimeSpan, LastExecutionAt As DateTimeOffset?, LastStatus As MaintenanceExecutionStatus?, NextScheduledAt As DateTimeOffset?, RecentExecutions As List(Of MaintenanceExecution))
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.#ctor*
+  nameWithType.vb: ScheduleExecutionSummary.New(String, String, Integer, Integer, Integer, Double, TimeSpan, DateTimeOffset?, MaintenanceExecutionStatus?, DateTimeOffset?, List(Of MaintenanceExecution))
+  fullName.vb: Meridian.Storage.Maintenance.ScheduleExecutionSummary.New(String, String, Integer, Integer, Integer, Double, System.TimeSpan, System.DateTimeOffset?, Meridian.Storage.Maintenance.MaintenanceExecutionStatus?, System.DateTimeOffset?, System.Collections.Generic.List(Of Meridian.Storage.Maintenance.MaintenanceExecution))
+  name.vb: New(String, String, Integer, Integer, Integer, Double, TimeSpan, DateTimeOffset?, MaintenanceExecutionStatus?, DateTimeOffset?, List(Of MaintenanceExecution))
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId
+  id: ScheduleId
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: ScheduleId
+  nameWithType: ScheduleExecutionSummary.ScheduleId
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleId
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 552
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public string ScheduleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScheduleId As String
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName
+  id: ScheduleName
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: ScheduleName
+  nameWithType: ScheduleExecutionSummary.ScheduleName
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleName
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public string ScheduleName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScheduleName As String
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions
+  id: TotalExecutions
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalExecutions
+  nameWithType: ScheduleExecutionSummary.TotalExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 554
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int TotalExecutions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalExecutions As Integer
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions
+  id: SuccessfulExecutions
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: SuccessfulExecutions
+  nameWithType: ScheduleExecutionSummary.SuccessfulExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessfulExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 555
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int SuccessfulExecutions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SuccessfulExecutions As Integer
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions
+  id: FailedExecutions
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: FailedExecutions
+  nameWithType: ScheduleExecutionSummary.FailedExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 556
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int FailedExecutions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedExecutions As Integer
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate
+  id: SuccessRate
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: SuccessRate
+  nameWithType: ScheduleExecutionSummary.SuccessRate
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessRate
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 557
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public double SuccessRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SuccessRate As Double
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration
+  id: AverageDuration
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: AverageDuration
+  nameWithType: ScheduleExecutionSummary.AverageDuration
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageDuration
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public TimeSpan AverageDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property AverageDuration As TimeSpan
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt
+  id: LastExecutionAt
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: LastExecutionAt
+  nameWithType: ScheduleExecutionSummary.LastExecutionAt
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastExecutionAt
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 559
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public DateTimeOffset? LastExecutionAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastExecutionAt As DateTimeOffset?
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus
+  id: LastStatus
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: LastStatus
+  nameWithType: ScheduleExecutionSummary.LastStatus
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastStatus
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 560
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public MaintenanceExecutionStatus? LastStatus { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+    content.vb: Public Property LastStatus As MaintenanceExecutionStatus?
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt
+  id: NextScheduledAt
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: NextScheduledAt
+  nameWithType: ScheduleExecutionSummary.NextScheduledAt
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextScheduledAt
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 561
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public DateTimeOffset? NextScheduledAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property NextScheduledAt As DateTimeOffset?
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt*
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions
+  commentId: P:Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions
+  id: RecentExecutions
+  parent: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  langs:
+  - csharp
+  - vb
+  name: RecentExecutions
+  nameWithType: ScheduleExecutionSummary.RecentExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 562
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public List<MaintenanceExecution> RecentExecutions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Public Property RecentExecutions As List(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions*
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Maintenance.ScheduleExecutionSummary}
+  commentId: T:System.IEquatable{Meridian.Storage.Maintenance.ScheduleExecutionSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ScheduleExecutionSummary>
+  nameWithType: IEquatable<ScheduleExecutionSummary>
+  fullName: System.IEquatable<Meridian.Storage.Maintenance.ScheduleExecutionSummary>
+  nameWithType.vb: IEquatable(Of ScheduleExecutionSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Maintenance.ScheduleExecutionSummary)
+  name.vb: IEquatable(Of ScheduleExecutionSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+    name: ScheduleExecutionSummary
+    href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+    name: ScheduleExecutionSummary
+    href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.#ctor*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.#ctor
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary__ctor_System_String_System_String_System_Int32_System_Int32_System_Int32_System_Double_System_TimeSpan_System_Nullable_System_DateTimeOffset__System_Nullable_Meridian_Storage_Maintenance_MaintenanceExecutionStatus__System_Nullable_System_DateTimeOffset__System_Collections_Generic_List_Meridian_Storage_Maintenance_MaintenanceExecution__
+  name: ScheduleExecutionSummary
+  nameWithType: ScheduleExecutionSummary.ScheduleExecutionSummary
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleExecutionSummary
+  nameWithType.vb: ScheduleExecutionSummary.New
+  fullName.vb: Meridian.Storage.Maintenance.ScheduleExecutionSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+  commentId: T:System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  name: MaintenanceExecutionStatus?
+  nameWithType: MaintenanceExecutionStatus?
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus?
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+    name: MaintenanceExecutionStatus
+    href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+    name: MaintenanceExecutionStatus
+    href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  - name: '?'
+- uid: System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution}
+  commentId: T:System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceExecution}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<MaintenanceExecution>
+  nameWithType: List<MaintenanceExecution>
+  fullName: System.Collections.Generic.List<Meridian.Storage.Maintenance.MaintenanceExecution>
+  nameWithType.vb: List(Of MaintenanceExecution)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Storage.Maintenance.MaintenanceExecution)
+  name.vb: List(Of MaintenanceExecution)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_ScheduleId
+  name: ScheduleId
+  nameWithType: ScheduleExecutionSummary.ScheduleId
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleId
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_ScheduleName
+  name: ScheduleName
+  nameWithType: ScheduleExecutionSummary.ScheduleName
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.ScheduleName
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_TotalExecutions
+  name: TotalExecutions
+  nameWithType: ScheduleExecutionSummary.TotalExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.TotalExecutions
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_SuccessfulExecutions
+  name: SuccessfulExecutions
+  nameWithType: ScheduleExecutionSummary.SuccessfulExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessfulExecutions
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_FailedExecutions
+  name: FailedExecutions
+  nameWithType: ScheduleExecutionSummary.FailedExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.FailedExecutions
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_SuccessRate
+  name: SuccessRate
+  nameWithType: ScheduleExecutionSummary.SuccessRate
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.SuccessRate
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_AverageDuration
+  name: AverageDuration
+  nameWithType: ScheduleExecutionSummary.AverageDuration
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.AverageDuration
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_LastExecutionAt
+  name: LastExecutionAt
+  nameWithType: ScheduleExecutionSummary.LastExecutionAt
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastExecutionAt
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_LastStatus
+  name: LastStatus
+  nameWithType: ScheduleExecutionSummary.LastStatus
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.LastStatus
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_NextScheduledAt
+  name: NextScheduledAt
+  nameWithType: ScheduleExecutionSummary.NextScheduledAt
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.NextScheduledAt
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html#Meridian_Storage_Maintenance_ScheduleExecutionSummary_RecentExecutions
+  name: RecentExecutions
+  nameWithType: ScheduleExecutionSummary.RecentExecutions
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary.RecentExecutions

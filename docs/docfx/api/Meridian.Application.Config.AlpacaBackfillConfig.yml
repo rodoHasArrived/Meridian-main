@@ -1,0 +1,708 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.AlpacaBackfillConfig
+  commentId: T:Meridian.Application.Config.AlpacaBackfillConfig
+  id: AlpacaBackfillConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.AlpacaBackfillConfig.#ctor(System.Boolean,System.String,System.String,System.String,System.String,System.Int32,System.Int32)
+  - Meridian.Application.Config.AlpacaBackfillConfig.Adjustment
+  - Meridian.Application.Config.AlpacaBackfillConfig.Enabled
+  - Meridian.Application.Config.AlpacaBackfillConfig.Feed
+  - Meridian.Application.Config.AlpacaBackfillConfig.KeyId
+  - Meridian.Application.Config.AlpacaBackfillConfig.Priority
+  - Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute
+  - Meridian.Application.Config.AlpacaBackfillConfig.SecretKey
+  langs:
+  - csharp
+  - vb
+  name: AlpacaBackfillConfig
+  nameWithType: AlpacaBackfillConfig
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaBackfillConfig
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Alpaca Markets historical data provider configuration.
+  example: []
+  syntax:
+    content: 'public sealed record AlpacaBackfillConfig : IEquatable<AlpacaBackfillConfig>'
+    content.vb: Public NotInheritable Class AlpacaBackfillConfig Implements IEquatable(Of AlpacaBackfillConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.AlpacaBackfillConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.#ctor(System.Boolean,System.String,System.String,System.String,System.String,System.Int32,System.Int32)
+  commentId: M:Meridian.Application.Config.AlpacaBackfillConfig.#ctor(System.Boolean,System.String,System.String,System.String,System.String,System.Int32,System.Int32)
+  id: '#ctor(System.Boolean,System.String,System.String,System.String,System.String,System.Int32,System.Int32)'
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: AlpacaBackfillConfig(bool, string?, string?, string, string, int, int)
+  nameWithType: AlpacaBackfillConfig.AlpacaBackfillConfig(bool, string?, string?, string, string, int, int)
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.AlpacaBackfillConfig(bool, string?, string?, string, string, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Alpaca Markets historical data provider configuration.
+  example: []
+  syntax:
+    content: public AlpacaBackfillConfig(bool Enabled = true, string? KeyId = null, string? SecretKey = null, string Feed = "iex", string Adjustment = "all", int Priority = 5, int RateLimitPerMinute = 200)
+    parameters:
+    - id: Enabled
+      type: System.Boolean
+      description: Enable this provider.
+    - id: KeyId
+      type: System.String
+      description: API Key ID (falls back to ALPACA_KEY_ID env var).
+    - id: SecretKey
+      type: System.String
+      description: API Secret Key (falls back to ALPACA_SECRET_KEY env var).
+    - id: Feed
+      type: System.String
+      description: 'Data feed: "iex" (free), "sip" (paid), or "delayed_sip" (free, 15-min delay).'
+    - id: Adjustment
+      type: System.String
+      description: 'Price adjustment: "raw", "split", "dividend", or "all".'
+    - id: Priority
+      type: System.Int32
+      description: Priority in fallback chain (lower = tried first).
+    - id: RateLimitPerMinute
+      type: System.Int32
+      description: Maximum requests per minute.
+    content.vb: Public Sub New(Enabled As Boolean = True, KeyId As String = Nothing, SecretKey As String = Nothing, Feed As String = "iex", Adjustment As String = "all", Priority As Integer = 5, RateLimitPerMinute As Integer = 200)
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.#ctor*
+  nameWithType.vb: AlpacaBackfillConfig.New(Boolean, String, String, String, String, Integer, Integer)
+  fullName.vb: Meridian.Application.Config.AlpacaBackfillConfig.New(Boolean, String, String, String, String, Integer, Integer)
+  name.vb: New(Boolean, String, String, String, String, Integer, Integer)
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Enabled
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.Enabled
+  id: Enabled
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: AlpacaBackfillConfig.Enabled
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Enable this provider.
+  example: []
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.Enabled*
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.KeyId
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.KeyId
+  id: KeyId
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: KeyId
+  nameWithType: AlpacaBackfillConfig.KeyId
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.KeyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KeyId
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: API Key ID (falls back to ALPACA_KEY_ID env var).
+  example: []
+  syntax:
+    content: public string? KeyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property KeyId As String
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.KeyId*
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.SecretKey
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.SecretKey
+  id: SecretKey
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: SecretKey
+  nameWithType: AlpacaBackfillConfig.SecretKey
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.SecretKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecretKey
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: API Secret Key (falls back to ALPACA_SECRET_KEY env var).
+  example: []
+  syntax:
+    content: public string? SecretKey { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecretKey As String
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.SecretKey*
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Feed
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.Feed
+  id: Feed
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: Feed
+  nameWithType: AlpacaBackfillConfig.Feed
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Feed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Feed
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: 'Data feed: "iex" (free), "sip" (paid), or "delayed_sip" (free, 15-min delay).'
+  example: []
+  syntax:
+    content: public string Feed { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Feed As String
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.Feed*
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Adjustment
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.Adjustment
+  id: Adjustment
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: Adjustment
+  nameWithType: AlpacaBackfillConfig.Adjustment
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Adjustment
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Adjustment
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: 'Price adjustment: "raw", "split", "dividend", or "all".'
+  example: []
+  syntax:
+    content: public string Adjustment { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Adjustment As String
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.Adjustment*
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Priority
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.Priority
+  id: Priority
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: AlpacaBackfillConfig.Priority
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Priority in fallback chain (lower = tried first).
+  example: []
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.Priority*
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute
+  commentId: P:Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute
+  id: RateLimitPerMinute
+  parent: Meridian.Application.Config.AlpacaBackfillConfig
+  langs:
+  - csharp
+  - vb
+  name: RateLimitPerMinute
+  nameWithType: AlpacaBackfillConfig.RateLimitPerMinute
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitPerMinute
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Maximum requests per minute.
+  example: []
+  syntax:
+    content: public int RateLimitPerMinute { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RateLimitPerMinute As Integer
+  overload: Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.AlpacaBackfillConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.AlpacaBackfillConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AlpacaBackfillConfig>
+  nameWithType: IEquatable<AlpacaBackfillConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.AlpacaBackfillConfig>
+  nameWithType.vb: IEquatable(Of AlpacaBackfillConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.AlpacaBackfillConfig)
+  name.vb: IEquatable(Of AlpacaBackfillConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.AlpacaBackfillConfig
+    name: AlpacaBackfillConfig
+    href: Meridian.Application.Config.AlpacaBackfillConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.AlpacaBackfillConfig
+    name: AlpacaBackfillConfig
+    href: Meridian.Application.Config.AlpacaBackfillConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.#ctor
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig__ctor_System_Boolean_System_String_System_String_System_String_System_String_System_Int32_System_Int32_
+  name: AlpacaBackfillConfig
+  nameWithType: AlpacaBackfillConfig.AlpacaBackfillConfig
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.AlpacaBackfillConfig
+  nameWithType.vb: AlpacaBackfillConfig.New
+  fullName.vb: Meridian.Application.Config.AlpacaBackfillConfig.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Enabled*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.Enabled
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_Enabled
+  name: Enabled
+  nameWithType: AlpacaBackfillConfig.Enabled
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Enabled
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.KeyId*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.KeyId
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_KeyId
+  name: KeyId
+  nameWithType: AlpacaBackfillConfig.KeyId
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.KeyId
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.SecretKey*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.SecretKey
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_SecretKey
+  name: SecretKey
+  nameWithType: AlpacaBackfillConfig.SecretKey
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.SecretKey
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Feed*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.Feed
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_Feed
+  name: Feed
+  nameWithType: AlpacaBackfillConfig.Feed
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Feed
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Adjustment*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.Adjustment
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_Adjustment
+  name: Adjustment
+  nameWithType: AlpacaBackfillConfig.Adjustment
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Adjustment
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.Priority*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.Priority
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_Priority
+  name: Priority
+  nameWithType: AlpacaBackfillConfig.Priority
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.Priority
+- uid: Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute*
+  commentId: Overload:Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html#Meridian_Application_Config_AlpacaBackfillConfig_RateLimitPerMinute
+  name: RateLimitPerMinute
+  nameWithType: AlpacaBackfillConfig.RateLimitPerMinute
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig.RateLimitPerMinute

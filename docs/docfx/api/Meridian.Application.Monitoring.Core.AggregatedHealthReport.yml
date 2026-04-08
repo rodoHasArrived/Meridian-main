@@ -1,0 +1,905 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  commentId: T:Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  id: AggregatedHealthReport
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.#ctor(Meridian.Application.Monitoring.Core.HealthSeverity,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult})
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents
+  langs:
+  - csharp
+  - vb
+  name: AggregatedHealthReport
+  nameWithType: AggregatedHealthReport
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregatedHealthReport
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Aggregated health report from multiple providers.
+  example: []
+  syntax:
+    content: 'public sealed record AggregatedHealthReport : IEquatable<AggregatedHealthReport>'
+    content.vb: Public NotInheritable Class AggregatedHealthReport Implements IEquatable(Of AggregatedHealthReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.Core.AggregatedHealthReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.#ctor(Meridian.Application.Monitoring.Core.HealthSeverity,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult})
+  commentId: M:Meridian.Application.Monitoring.Core.AggregatedHealthReport.#ctor(Meridian.Application.Monitoring.Core.HealthSeverity,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult})
+  id: '#ctor(Meridian.Application.Monitoring.Core.HealthSeverity,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult})'
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: AggregatedHealthReport(HealthSeverity, DateTimeOffset, TimeSpan, IReadOnlyList<HealthCheckResult>)
+  nameWithType: AggregatedHealthReport.AggregatedHealthReport(HealthSeverity, DateTimeOffset, TimeSpan, IReadOnlyList<HealthCheckResult>)
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.AggregatedHealthReport(Meridian.Application.Monitoring.Core.HealthSeverity, System.DateTimeOffset, System.TimeSpan, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.Core.HealthCheckResult>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Aggregated health report from multiple providers.
+  example: []
+  syntax:
+    content: public AggregatedHealthReport(HealthSeverity OverallSeverity, DateTimeOffset CheckedAt, TimeSpan TotalDuration, IReadOnlyList<HealthCheckResult> Results)
+    parameters:
+    - id: OverallSeverity
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+      description: Worst severity across all components.
+    - id: CheckedAt
+      type: System.DateTimeOffset
+      description: When the report was generated.
+    - id: TotalDuration
+      type: System.TimeSpan
+      description: Total time to complete all checks.
+    - id: Results
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult}
+      description: Individual component results.
+    content.vb: Public Sub New(OverallSeverity As HealthSeverity, CheckedAt As DateTimeOffset, TotalDuration As TimeSpan, Results As IReadOnlyList(Of HealthCheckResult))
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.#ctor*
+  nameWithType.vb: AggregatedHealthReport.New(HealthSeverity, DateTimeOffset, TimeSpan, IReadOnlyList(Of HealthCheckResult))
+  fullName.vb: Meridian.Application.Monitoring.Core.AggregatedHealthReport.New(Meridian.Application.Monitoring.Core.HealthSeverity, System.DateTimeOffset, System.TimeSpan, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.Core.HealthCheckResult))
+  name.vb: New(HealthSeverity, DateTimeOffset, TimeSpan, IReadOnlyList(Of HealthCheckResult))
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity
+  id: OverallSeverity
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: OverallSeverity
+  nameWithType: AggregatedHealthReport.OverallSeverity
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallSeverity
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Worst severity across all components.
+  example: []
+  syntax:
+    content: public HealthSeverity OverallSeverity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+    content.vb: Public Property OverallSeverity As HealthSeverity
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt
+  id: CheckedAt
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: CheckedAt
+  nameWithType: AggregatedHealthReport.CheckedAt
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckedAt
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: When the report was generated.
+  example: []
+  syntax:
+    content: public DateTimeOffset CheckedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CheckedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration
+  id: TotalDuration
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: TotalDuration
+  nameWithType: AggregatedHealthReport.TotalDuration
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDuration
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Total time to complete all checks.
+  example: []
+  syntax:
+    content: public TimeSpan TotalDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results
+  id: Results
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: Results
+  nameWithType: AggregatedHealthReport.Results
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Results
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Individual component results.
+  example: []
+  syntax:
+    content: public IReadOnlyList<HealthCheckResult> Results { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult}
+    content.vb: Public Property Results As IReadOnlyList(Of HealthCheckResult)
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents
+  id: HealthyComponents
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: HealthyComponents
+  nameWithType: AggregatedHealthReport.HealthyComponents
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthyComponents
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Gets all healthy components.
+  example: []
+  syntax:
+    content: public IEnumerable<HealthCheckResult> HealthyComponents { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+    content.vb: Public ReadOnly Property HealthyComponents As IEnumerable(Of HealthCheckResult)
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents
+  id: DegradedComponents
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: DegradedComponents
+  nameWithType: AggregatedHealthReport.DegradedComponents
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DegradedComponents
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Gets all degraded components.
+  example: []
+  syntax:
+    content: public IEnumerable<HealthCheckResult> DegradedComponents { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+    content.vb: Public ReadOnly Property DegradedComponents As IEnumerable(Of HealthCheckResult)
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents
+  id: UnhealthyComponents
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: UnhealthyComponents
+  nameWithType: AggregatedHealthReport.UnhealthyComponents
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnhealthyComponents
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Gets all unhealthy components.
+  example: []
+  syntax:
+    content: public IEnumerable<HealthCheckResult> UnhealthyComponents { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+    content.vb: Public ReadOnly Property UnhealthyComponents As IEnumerable(Of HealthCheckResult)
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents*
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational
+  commentId: P:Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational
+  id: IsOperational
+  parent: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  langs:
+  - csharp
+  - vb
+  name: IsOperational
+  nameWithType: AggregatedHealthReport.IsOperational
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsOperational
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Gets whether the overall system is operational (healthy or degraded).
+  example: []
+  syntax:
+    content: public bool IsOperational { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsOperational As Boolean
+  overload: Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational*
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.Core.AggregatedHealthReport}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.Core.AggregatedHealthReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AggregatedHealthReport>
+  nameWithType: IEquatable<AggregatedHealthReport>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.Core.AggregatedHealthReport>
+  nameWithType.vb: IEquatable(Of AggregatedHealthReport)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.Core.AggregatedHealthReport)
+  name.vb: IEquatable(Of AggregatedHealthReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+    name: AggregatedHealthReport
+    href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+    name: AggregatedHealthReport
+    href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.#ctor
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport__ctor_Meridian_Application_Monitoring_Core_HealthSeverity_System_DateTimeOffset_System_TimeSpan_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_Core_HealthCheckResult__
+  name: AggregatedHealthReport
+  nameWithType: AggregatedHealthReport.AggregatedHealthReport
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.AggregatedHealthReport
+  nameWithType.vb: AggregatedHealthReport.New
+  fullName.vb: Meridian.Application.Monitoring.Core.AggregatedHealthReport.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.HealthSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.HealthSeverity.html
+  name: HealthSeverity
+  nameWithType: HealthSeverity
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<HealthCheckResult>
+  nameWithType: IReadOnlyList<HealthCheckResult>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.Core.HealthCheckResult>
+  nameWithType.vb: IReadOnlyList(Of HealthCheckResult)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.Core.HealthCheckResult)
+  name.vb: IReadOnlyList(Of HealthCheckResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_OverallSeverity
+  name: OverallSeverity
+  nameWithType: AggregatedHealthReport.OverallSeverity
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.OverallSeverity
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_CheckedAt
+  name: CheckedAt
+  nameWithType: AggregatedHealthReport.CheckedAt
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.CheckedAt
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_TotalDuration
+  name: TotalDuration
+  nameWithType: AggregatedHealthReport.TotalDuration
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.TotalDuration
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_Results
+  name: Results
+  nameWithType: AggregatedHealthReport.Results
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.Results
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_HealthyComponents
+  name: HealthyComponents
+  nameWithType: AggregatedHealthReport.HealthyComponents
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.HealthyComponents
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<HealthCheckResult>
+  nameWithType: IEnumerable<HealthCheckResult>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.Monitoring.Core.HealthCheckResult>
+  nameWithType.vb: IEnumerable(Of HealthCheckResult)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.Monitoring.Core.HealthCheckResult)
+  name.vb: IEnumerable(Of HealthCheckResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_DegradedComponents
+  name: DegradedComponents
+  nameWithType: AggregatedHealthReport.DegradedComponents
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.DegradedComponents
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_UnhealthyComponents
+  name: UnhealthyComponents
+  nameWithType: AggregatedHealthReport.UnhealthyComponents
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.UnhealthyComponents
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html#Meridian_Application_Monitoring_Core_AggregatedHealthReport_IsOperational
+  name: IsOperational
+  nameWithType: AggregatedHealthReport.IsOperational
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport.IsOperational
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

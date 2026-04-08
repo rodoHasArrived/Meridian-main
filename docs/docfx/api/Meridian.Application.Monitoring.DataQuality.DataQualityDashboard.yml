@@ -1,0 +1,1063 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  id: DataQualityDashboard
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.#ctor(System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics,Meridian.Application.Monitoring.DataQuality.CompletenessSummary,Meridian.Application.Monitoring.DataQuality.GapStatistics,Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics,Meridian.Application.Monitoring.DataQuality.AnomalyStatistics,Meridian.Application.Monitoring.DataQuality.LatencyStatistics,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly},System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols
+  - Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: DataQualityDashboard
+  nameWithType: DataQualityDashboard
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityDashboard
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Dashboard snapshot containing all quality metrics.
+  example: []
+  syntax:
+    content: 'public sealed record DataQualityDashboard : IEquatable<DataQualityDashboard>'
+    content.vb: Public NotInheritable Class DataQualityDashboard Implements IEquatable(Of DataQualityDashboard)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataQualityDashboard}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.#ctor(System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics,Meridian.Application.Monitoring.DataQuality.CompletenessSummary,Meridian.Application.Monitoring.DataQuality.GapStatistics,Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics,Meridian.Application.Monitoring.DataQuality.AnomalyStatistics,Meridian.Application.Monitoring.DataQuality.LatencyStatistics,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly},System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.#ctor(System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics,Meridian.Application.Monitoring.DataQuality.CompletenessSummary,Meridian.Application.Monitoring.DataQuality.GapStatistics,Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics,Meridian.Application.Monitoring.DataQuality.AnomalyStatistics,Meridian.Application.Monitoring.DataQuality.LatencyStatistics,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly},System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics,Meridian.Application.Monitoring.DataQuality.CompletenessSummary,Meridian.Application.Monitoring.DataQuality.GapStatistics,Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics,Meridian.Application.Monitoring.DataQuality.AnomalyStatistics,Meridian.Application.Monitoring.DataQuality.LatencyStatistics,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly},System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: DataQualityDashboard(DateTimeOffset, RealTimeQualityMetrics, CompletenessSummary, GapStatistics, SequenceErrorStatistics, AnomalyStatistics, LatencyStatistics, IReadOnlyList<DataGap>, IReadOnlyList<SequenceError>, IReadOnlyList<DataAnomaly>, IReadOnlyList<string>)
+  nameWithType: DataQualityDashboard.DataQualityDashboard(DateTimeOffset, RealTimeQualityMetrics, CompletenessSummary, GapStatistics, SequenceErrorStatistics, AnomalyStatistics, LatencyStatistics, IReadOnlyList<DataGap>, IReadOnlyList<SequenceError>, IReadOnlyList<DataAnomaly>, IReadOnlyList<string>)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.DataQualityDashboard(System.DateTimeOffset, Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics, Meridian.Application.Monitoring.DataQuality.CompletenessSummary, Meridian.Application.Monitoring.DataQuality.GapStatistics, Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics, Meridian.Application.Monitoring.DataQuality.AnomalyStatistics, Meridian.Application.Monitoring.DataQuality.LatencyStatistics, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataGap>, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.SequenceError>, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataAnomaly>, System.Collections.Generic.IReadOnlyList<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Dashboard snapshot containing all quality metrics.
+  example: []
+  syntax:
+    content: public DataQualityDashboard(DateTimeOffset Timestamp, RealTimeQualityMetrics RealTimeMetrics, CompletenessSummary CompletenessStats, GapStatistics GapStats, SequenceErrorStatistics SequenceStats, AnomalyStatistics AnomalyStats, LatencyStatistics LatencyStats, IReadOnlyList<DataGap> RecentGaps, IReadOnlyList<SequenceError> RecentErrors, IReadOnlyList<DataAnomaly> RecentAnomalies, IReadOnlyList<string> StaleSymbols)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: RealTimeMetrics
+      type: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+    - id: CompletenessStats
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+    - id: GapStats
+      type: Meridian.Application.Monitoring.DataQuality.GapStatistics
+    - id: SequenceStats
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+    - id: AnomalyStats
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+    - id: LatencyStats
+      type: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    - id: RecentGaps
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+    - id: RecentErrors
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError}
+    - id: RecentAnomalies
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    - id: StaleSymbols
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, RealTimeMetrics As RealTimeQualityMetrics, CompletenessStats As CompletenessSummary, GapStats As GapStatistics, SequenceStats As SequenceErrorStatistics, AnomalyStats As AnomalyStatistics, LatencyStats As LatencyStatistics, RecentGaps As IReadOnlyList(Of DataGap), RecentErrors As IReadOnlyList(Of SequenceError), RecentAnomalies As IReadOnlyList(Of DataAnomaly), StaleSymbols As IReadOnlyList(Of String))
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.#ctor*
+  nameWithType.vb: DataQualityDashboard.New(DateTimeOffset, RealTimeQualityMetrics, CompletenessSummary, GapStatistics, SequenceErrorStatistics, AnomalyStatistics, LatencyStatistics, IReadOnlyList(Of DataGap), IReadOnlyList(Of SequenceError), IReadOnlyList(Of DataAnomaly), IReadOnlyList(Of String))
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.New(System.DateTimeOffset, Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics, Meridian.Application.Monitoring.DataQuality.CompletenessSummary, Meridian.Application.Monitoring.DataQuality.GapStatistics, Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics, Meridian.Application.Monitoring.DataQuality.AnomalyStatistics, Meridian.Application.Monitoring.DataQuality.LatencyStatistics, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataGap), System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.SequenceError), System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly), System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(DateTimeOffset, RealTimeQualityMetrics, CompletenessSummary, GapStatistics, SequenceErrorStatistics, AnomalyStatistics, LatencyStatistics, IReadOnlyList(Of DataGap), IReadOnlyList(Of SequenceError), IReadOnlyList(Of DataAnomaly), IReadOnlyList(Of String))
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: DataQualityDashboard.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics
+  id: RealTimeMetrics
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: RealTimeMetrics
+  nameWithType: DataQualityDashboard.RealTimeMetrics
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealTimeMetrics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public RealTimeQualityMetrics RealTimeMetrics { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+    content.vb: Public Property RealTimeMetrics As RealTimeQualityMetrics
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats
+  id: CompletenessStats
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: CompletenessStats
+  nameWithType: DataQualityDashboard.CompletenessStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessStats
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public CompletenessSummary CompletenessStats { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+    content.vb: Public Property CompletenessStats As CompletenessSummary
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats
+  id: GapStats
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: GapStats
+  nameWithType: DataQualityDashboard.GapStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapStats
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 420
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public GapStatistics GapStats { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapStatistics
+    content.vb: Public Property GapStats As GapStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats
+  id: SequenceStats
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: SequenceStats
+  nameWithType: DataQualityDashboard.SequenceStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceStats
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public SequenceErrorStatistics SequenceStats { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+    content.vb: Public Property SequenceStats As SequenceErrorStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats
+  id: AnomalyStats
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: AnomalyStats
+  nameWithType: DataQualityDashboard.AnomalyStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyStats
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public AnomalyStatistics AnomalyStats { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+    content.vb: Public Property AnomalyStats As AnomalyStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats
+  id: LatencyStats
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: LatencyStats
+  nameWithType: DataQualityDashboard.LatencyStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyStats
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 423
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public LatencyStatistics LatencyStats { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    content.vb: Public Property LatencyStats As LatencyStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps
+  id: RecentGaps
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: RecentGaps
+  nameWithType: DataQualityDashboard.RecentGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 424
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public IReadOnlyList<DataGap> RecentGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+    content.vb: Public Property RecentGaps As IReadOnlyList(Of DataGap)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors
+  id: RecentErrors
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: RecentErrors
+  nameWithType: DataQualityDashboard.RecentErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentErrors
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public IReadOnlyList<SequenceError> RecentErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError}
+    content.vb: Public Property RecentErrors As IReadOnlyList(Of SequenceError)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies
+  id: RecentAnomalies
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: RecentAnomalies
+  nameWithType: DataQualityDashboard.RecentAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 426
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> RecentAnomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Property RecentAnomalies As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols
+  id: StaleSymbols
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+  langs:
+  - csharp
+  - vb
+  name: StaleSymbols
+  nameWithType: DataQualityDashboard.StaleSymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StaleSymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public IReadOnlyList<string> StaleSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property StaleSymbols As IReadOnlyList(Of String)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataQualityDashboard}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataQualityDashboard}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataQualityDashboard>
+  nameWithType: IEquatable<DataQualityDashboard>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.DataQualityDashboard>
+  nameWithType.vb: IEquatable(Of DataQualityDashboard)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.DataQualityDashboard)
+  name.vb: IEquatable(Of DataQualityDashboard)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+    name: DataQualityDashboard
+    href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard
+    name: DataQualityDashboard
+    href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard__ctor_System_DateTimeOffset_Meridian_Application_Monitoring_DataQuality_RealTimeQualityMetrics_Meridian_Application_Monitoring_DataQuality_CompletenessSummary_Meridian_Application_Monitoring_DataQuality_GapStatistics_Meridian_Application_Monitoring_DataQuality_SequenceErrorStatistics_Meridian_Application_Monitoring_DataQuality_AnomalyStatistics_Meridian_Application_Monitoring_DataQuality_LatencyStatistics_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_DataGap__System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_SequenceError__System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_DataAnomaly__System_Collections_Generic_IReadOnlyList_System_String__
+  name: DataQualityDashboard
+  nameWithType: DataQualityDashboard.DataQualityDashboard
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.DataQualityDashboard
+  nameWithType.vb: DataQualityDashboard.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics.html
+  name: RealTimeQualityMetrics
+  nameWithType: RealTimeQualityMetrics
+  fullName: Meridian.Application.Monitoring.DataQuality.RealTimeQualityMetrics
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessSummary.html
+  name: CompletenessSummary
+  nameWithType: CompletenessSummary
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html
+  name: GapStatistics
+  nameWithType: GapStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics.html
+  name: SequenceErrorStatistics
+  nameWithType: SequenceErrorStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics.html
+  name: AnomalyStatistics
+  nameWithType: AnomalyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html
+  name: LatencyStatistics
+  nameWithType: LatencyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataGap}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataGap>
+  nameWithType: IReadOnlyList<DataGap>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataGap>
+  nameWithType.vb: IReadOnlyList(Of DataGap)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataGap)
+  name.vb: IReadOnlyList(Of DataGap)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataGap
+    name: DataGap
+    href: Meridian.Application.Monitoring.DataQuality.DataGap.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataGap
+    name: DataGap
+    href: Meridian.Application.Monitoring.DataQuality.DataGap.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.SequenceError}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SequenceError>
+  nameWithType: IReadOnlyList<SequenceError>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.SequenceError>
+  nameWithType.vb: IReadOnlyList(Of SequenceError)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.SequenceError)
+  name.vb: IReadOnlyList(Of SequenceError)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SequenceError
+    name: SequenceError
+    href: Meridian.Application.Monitoring.DataQuality.SequenceError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SequenceError
+    name: SequenceError
+    href: Meridian.Application.Monitoring.DataQuality.SequenceError.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataAnomaly>
+  nameWithType: IReadOnlyList<DataAnomaly>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataAnomaly>
+  nameWithType.vb: IReadOnlyList(Of DataAnomaly)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly)
+  name.vb: IReadOnlyList(Of DataAnomaly)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_Timestamp
+  name: Timestamp
+  nameWithType: DataQualityDashboard.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.Timestamp
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_RealTimeMetrics
+  name: RealTimeMetrics
+  nameWithType: DataQualityDashboard.RealTimeMetrics
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RealTimeMetrics
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_CompletenessStats
+  name: CompletenessStats
+  nameWithType: DataQualityDashboard.CompletenessStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.CompletenessStats
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_GapStats
+  name: GapStats
+  nameWithType: DataQualityDashboard.GapStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.GapStats
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_SequenceStats
+  name: SequenceStats
+  nameWithType: DataQualityDashboard.SequenceStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.SequenceStats
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_AnomalyStats
+  name: AnomalyStats
+  nameWithType: DataQualityDashboard.AnomalyStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.AnomalyStats
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_LatencyStats
+  name: LatencyStats
+  nameWithType: DataQualityDashboard.LatencyStats
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.LatencyStats
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_RecentGaps
+  name: RecentGaps
+  nameWithType: DataQualityDashboard.RecentGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentGaps
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_RecentErrors
+  name: RecentErrors
+  nameWithType: DataQualityDashboard.RecentErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentErrors
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_RecentAnomalies
+  name: RecentAnomalies
+  nameWithType: DataQualityDashboard.RecentAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.RecentAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.html#Meridian_Application_Monitoring_DataQuality_DataQualityDashboard_StaleSymbols
+  name: StaleSymbols
+  nameWithType: DataQualityDashboard.StaleSymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityDashboard.StaleSymbols

@@ -1,0 +1,694 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  commentId: T:Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  id: LedgerTrialBalanceLine
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32,Meridian.Contracts.Workstation.WorkstationSecurityReference)
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security
+  - Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol
+  langs:
+  - csharp
+  - vb
+  name: LedgerTrialBalanceLine
+  nameWithType: LedgerTrialBalanceLine
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerTrialBalanceLine
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared trial-balance row for workstation ledger views.
+  example: []
+  syntax:
+    content: 'public sealed record LedgerTrialBalanceLine : IEquatable<LedgerTrialBalanceLine>'
+    content.vb: Public NotInheritable Class LedgerTrialBalanceLine Implements IEquatable(Of LedgerTrialBalanceLine)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.LedgerTrialBalanceLine}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32,Meridian.Contracts.Workstation.WorkstationSecurityReference)
+  commentId: M:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32,Meridian.Contracts.Workstation.WorkstationSecurityReference)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32,Meridian.Contracts.Workstation.WorkstationSecurityReference)'
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: LedgerTrialBalanceLine(string, string, string?, string?, decimal, int, WorkstationSecurityReference?)
+  nameWithType: LedgerTrialBalanceLine.LedgerTrialBalanceLine(string, string, string?, string?, decimal, int, WorkstationSecurityReference?)
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.LedgerTrialBalanceLine(string, string, string?, string?, decimal, int, Meridian.Contracts.Workstation.WorkstationSecurityReference?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared trial-balance row for workstation ledger views.
+  example: []
+  syntax:
+    content: public LedgerTrialBalanceLine(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Balance, int EntryCount, WorkstationSecurityReference? Security = null)
+    parameters:
+    - id: AccountName
+      type: System.String
+    - id: AccountType
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: FinancialAccountId
+      type: System.String
+    - id: Balance
+      type: System.Decimal
+    - id: EntryCount
+      type: System.Int32
+    - id: Security
+      type: Meridian.Contracts.Workstation.WorkstationSecurityReference
+    content.vb: Public Sub New(AccountName As String, AccountType As String, Symbol As String, FinancialAccountId As String, Balance As Decimal, EntryCount As Integer, Security As WorkstationSecurityReference = Nothing)
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.#ctor*
+  nameWithType.vb: LedgerTrialBalanceLine.New(String, String, String, String, Decimal, Integer, WorkstationSecurityReference)
+  fullName.vb: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.New(String, String, String, String, Decimal, Integer, Meridian.Contracts.Workstation.WorkstationSecurityReference)
+  name.vb: New(String, String, String, String, Decimal, Integer, WorkstationSecurityReference)
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName
+  id: AccountName
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: AccountName
+  nameWithType: LedgerTrialBalanceLine.AccountName
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountName
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountName As String
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName*
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType
+  id: AccountType
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: AccountType
+  nameWithType: LedgerTrialBalanceLine.AccountType
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountType
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountType As String
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType*
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: LedgerTrialBalanceLine.Symbol
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol*
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId
+  id: FinancialAccountId
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountId
+  nameWithType: LedgerTrialBalanceLine.FinancialAccountId
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccountId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? FinancialAccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FinancialAccountId As String
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId*
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance
+  id: Balance
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: Balance
+  nameWithType: LedgerTrialBalanceLine.Balance
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balance
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Balance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Balance As Decimal
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance*
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount
+  id: EntryCount
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: EntryCount
+  nameWithType: LedgerTrialBalanceLine.EntryCount
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryCount
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int EntryCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EntryCount As Integer
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount*
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security
+  commentId: P:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security
+  id: Security
+  parent: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: Security
+  nameWithType: LedgerTrialBalanceLine.Security
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Security
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public WorkstationSecurityReference? Security { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.WorkstationSecurityReference
+    content.vb: Public Property Security As WorkstationSecurityReference
+  overload: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.LedgerTrialBalanceLine}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.LedgerTrialBalanceLine}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LedgerTrialBalanceLine>
+  nameWithType: IEquatable<LedgerTrialBalanceLine>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.LedgerTrialBalanceLine>
+  nameWithType.vb: IEquatable(Of LedgerTrialBalanceLine)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.LedgerTrialBalanceLine)
+  name.vb: IEquatable(Of LedgerTrialBalanceLine)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+    name: LedgerTrialBalanceLine
+    href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+    name: LedgerTrialBalanceLine
+    href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.#ctor
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine__ctor_System_String_System_String_System_String_System_String_System_Decimal_System_Int32_Meridian_Contracts_Workstation_WorkstationSecurityReference_
+  name: LedgerTrialBalanceLine
+  nameWithType: LedgerTrialBalanceLine.LedgerTrialBalanceLine
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.LedgerTrialBalanceLine
+  nameWithType.vb: LedgerTrialBalanceLine.New
+  fullName.vb: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference
+  commentId: T:Meridian.Contracts.Workstation.WorkstationSecurityReference
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html
+  name: WorkstationSecurityReference
+  nameWithType: WorkstationSecurityReference
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_AccountName
+  name: AccountName
+  nameWithType: LedgerTrialBalanceLine.AccountName
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountName
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_AccountType
+  name: AccountType
+  nameWithType: LedgerTrialBalanceLine.AccountType
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.AccountType
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_Symbol
+  name: Symbol
+  nameWithType: LedgerTrialBalanceLine.Symbol
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Symbol
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_FinancialAccountId
+  name: FinancialAccountId
+  nameWithType: LedgerTrialBalanceLine.FinancialAccountId
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.FinancialAccountId
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_Balance
+  name: Balance
+  nameWithType: LedgerTrialBalanceLine.Balance
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Balance
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_EntryCount
+  name: EntryCount
+  nameWithType: LedgerTrialBalanceLine.EntryCount
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.EntryCount
+- uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security*
+  commentId: Overload:Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security
+  href: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.html#Meridian_Contracts_Workstation_LedgerTrialBalanceLine_Security
+  name: Security
+  nameWithType: LedgerTrialBalanceLine.Security
+  fullName: Meridian.Contracts.Workstation.LedgerTrialBalanceLine.Security

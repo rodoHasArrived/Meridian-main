@@ -1,0 +1,673 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio
+  commentId: T:Meridian.Execution.Interfaces.IAccountPortfolio
+  id: IAccountPortfolio
+  parent: Meridian.Execution.Interfaces
+  children:
+  - Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+  - Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  - Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
+  - Meridian.Execution.Interfaces.IAccountPortfolio.Kind
+  - Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
+  - Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+  - Meridian.Execution.Interfaces.IAccountPortfolio.Positions
+  - Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+  - Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
+  - Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
+  - Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: IAccountPortfolio
+  nameWithType: IAccountPortfolio
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IAccountPortfolio
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    A read-only, per-account view of live portfolio state.
+
+    Covers both brokerage (equity/margin) and bank (cash/money-market) accounts.
+  example: []
+  syntax:
+    content: public interface IAccountPortfolio
+    content.vb: Public Interface IAccountPortfolio
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+  id: AccountId
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: IAccountPortfolio.AccountId
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Unique account identifier (broker-assigned or user-defined).
+  example: []
+  syntax:
+    content: string AccountId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property AccountId As String
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.AccountId*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
+  id: DisplayName
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: IAccountPortfolio.DisplayName
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Human-readable account display name.
+  example: []
+  syntax:
+    content: string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property DisplayName As String
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Kind
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.Kind
+  id: Kind
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: IAccountPortfolio.Kind
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Whether this is a brokerage (equity/margin) or bank (cash/money-market) account.
+  example: []
+  syntax:
+    content: AccountKind Kind { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.AccountKind
+    content.vb: ReadOnly Property Kind As AccountKind
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.Kind*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  id: Cash
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: IAccountPortfolio.Cash
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Available cash balance not tied up in open orders.
+  example: []
+  syntax:
+    content: decimal Cash { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property Cash As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.Cash*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+  id: MarginBalance
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: MarginBalance
+  nameWithType: IAccountPortfolio.MarginBalance
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginBalance
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Margin balance (positive = margin used; 0 for cash-only accounts).
+  example: []
+  syntax:
+    content: decimal MarginBalance { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property MarginBalance As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Positions
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.Positions
+  id: Positions
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: IAccountPortfolio.Positions
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Open positions keyed by ticker symbol (upper-case).
+  example: []
+  syntax:
+    content: IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+    content.vb: ReadOnly Property Positions As IReadOnlyDictionary(Of String, ExecutionPosition)
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.Positions*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: IAccountPortfolio.UnrealisedPnl
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Aggregate unrealised P&amp;L across all open positions.
+  example: []
+  syntax:
+    content: decimal UnrealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property UnrealisedPnl As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+  id: RealisedPnl
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: RealisedPnl
+  nameWithType: IAccountPortfolio.RealisedPnl
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealisedPnl
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Cumulative realised P&amp;L since the session started.
+  example: []
+  syntax:
+    content: decimal RealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property RealisedPnl As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
+  id: LongMarketValue
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: LongMarketValue
+  nameWithType: IAccountPortfolio.LongMarketValue
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LongMarketValue
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Total market value of all long positions.
+  example: []
+  syntax:
+    content: decimal LongMarketValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property LongMarketValue As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
+  id: ShortMarketValue
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ShortMarketValue
+  nameWithType: IAccountPortfolio.ShortMarketValue
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarketValue
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Total (absolute) market value of all short positions.
+  example: []
+  syntax:
+    content: decimal ShortMarketValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property ShortMarketValue As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
+  commentId: M:Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
+  id: TakeSnapshot
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: TakeSnapshot()
+  nameWithType: IAccountPortfolio.TakeSnapshot()
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TakeSnapshot
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Captures the current state as an immutable snapshot suitable for
+
+    persistence or API serialisation.
+  example: []
+  syntax:
+    content: ExecutionAccountDetailSnapshot TakeSnapshot()
+    return:
+      type: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+    content.vb: Function TakeSnapshot() As ExecutionAccountDetailSnapshot
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot*
+references:
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.AccountId*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_AccountId
+  name: AccountId
+  nameWithType: IAccountPortfolio.AccountId
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_DisplayName
+  name: DisplayName
+  nameWithType: IAccountPortfolio.DisplayName
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Kind*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.Kind
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_Kind
+  name: Kind
+  nameWithType: IAccountPortfolio.Kind
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Kind
+- uid: Meridian.Execution.Models.AccountKind
+  commentId: T:Meridian.Execution.Models.AccountKind
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.AccountKind.html
+  name: AccountKind
+  nameWithType: AccountKind
+  fullName: Meridian.Execution.Models.AccountKind
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Cash*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_Cash
+  name: Cash
+  nameWithType: IAccountPortfolio.Cash
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_MarginBalance
+  name: MarginBalance
+  nameWithType: IAccountPortfolio.MarginBalance
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Positions*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.Positions
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_Positions
+  name: Positions
+  nameWithType: IAccountPortfolio.Positions
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Positions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, ExecutionPosition>
+  nameWithType: IReadOnlyDictionary<string, ExecutionPosition>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>
+  nameWithType.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition)
+  name.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: IAccountPortfolio.UnrealisedPnl
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_RealisedPnl
+  name: RealisedPnl
+  nameWithType: IAccountPortfolio.RealisedPnl
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_LongMarketValue
+  name: LongMarketValue
+  nameWithType: IAccountPortfolio.LongMarketValue
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_ShortMarketValue
+  name: ShortMarketValue
+  nameWithType: IAccountPortfolio.ShortMarketValue
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_TakeSnapshot
+  name: TakeSnapshot
+  nameWithType: IAccountPortfolio.TakeSnapshot
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  commentId: T:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  name: ExecutionAccountDetailSnapshot
+  nameWithType: ExecutionAccountDetailSnapshot
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot

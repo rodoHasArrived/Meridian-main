@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NasdaqDataLink
+  commentId: N:Meridian.Infrastructure.Adapters.NasdaqDataLink
+  id: Meridian.Infrastructure.Adapters.NasdaqDataLink
+  children:
+  - Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.NasdaqDataLink
+  nameWithType: Meridian.Infrastructure.Adapters.NasdaqDataLink
+  fullName: Meridian.Infrastructure.Adapters.NasdaqDataLink
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider.html
+  name: NasdaqDataLinkHistoricalDataProvider
+  nameWithType: NasdaqDataLinkHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider

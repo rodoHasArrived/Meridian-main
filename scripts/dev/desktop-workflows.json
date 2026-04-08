@@ -1,0 +1,348 @@
+{
+  "defaults": {
+    "projectPath": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+    "configuration": "Release",
+    "framework": "net9.0-windows10.0.19041.0",
+    "exeName": "Meridian.Desktop.exe",
+    "outputRoot": "artifacts/desktop-workflows",
+    "fixtureMode": true,
+    "settleMs": 1800
+  },
+  "workflows": [
+    {
+      "name": "screenshot-catalog",
+      "title": "Desktop Screenshot Catalog",
+      "description": "Refresh the committed WPF screenshot catalog used in repository documentation.",
+      "purpose": "screenshots",
+      "steps": [
+        {
+          "title": "Dashboard",
+          "pageTag": "Dashboard",
+          "captureName": "wpf-dashboard",
+          "notes": "Validate that the shell loads cleanly and the main dashboard remains screenshot ready."
+        },
+        {
+          "title": "Providers",
+          "pageTag": "Provider",
+          "captureName": "wpf-providers",
+          "notes": "Capture the provider management surface."
+        },
+        {
+          "title": "Provider Health",
+          "pageTag": "ProviderHealth",
+          "captureName": "wpf-provider-health",
+          "notes": "Capture the provider health dashboard."
+        },
+        {
+          "title": "Backfill",
+          "pageTag": "Backfill",
+          "captureName": "wpf-backfill",
+          "notes": "Capture the historical backfill workflow."
+        },
+        {
+          "title": "Live Data",
+          "pageTag": "LiveData",
+          "captureName": "wpf-live-data",
+          "notes": "Capture the live data viewer."
+        },
+        {
+          "title": "Storage",
+          "pageTag": "Storage",
+          "captureName": "wpf-storage",
+          "notes": "Capture the storage management screen."
+        },
+        {
+          "title": "Data Quality",
+          "pageTag": "DataQuality",
+          "captureName": "wpf-data-quality",
+          "notes": "Capture the data quality workflow."
+        },
+        {
+          "title": "Data Browser",
+          "pageTag": "DataBrowser",
+          "captureName": "wpf-data-browser",
+          "notes": "Capture the archive browsing workflow."
+        },
+        {
+          "title": "Strategy Runs",
+          "pageTag": "StrategyRuns",
+          "captureName": "wpf-strategy-runs",
+          "notes": "Capture the strategy run browser."
+        },
+        {
+          "title": "Backtest",
+          "pageTag": "Backtest",
+          "captureName": "wpf-backtest",
+          "notes": "Capture the backtesting workflow."
+        },
+        {
+          "title": "Quant Script",
+          "pageTag": "QuantScript",
+          "captureName": "wpf-quant-script",
+          "notes": "Capture the Quant Script workspace."
+        },
+        {
+          "title": "Security Master",
+          "pageTag": "SecurityMaster",
+          "captureName": "wpf-security-master",
+          "notes": "Capture the security master surface."
+        },
+        {
+          "title": "Diagnostics",
+          "pageTag": "Diagnostics",
+          "captureName": "wpf-diagnostics",
+          "notes": "Capture the diagnostics page."
+        },
+        {
+          "title": "Settings",
+          "pageTag": "Settings",
+          "captureName": "wpf-settings",
+          "notes": "Capture the settings page."
+        }
+      ]
+    },
+    {
+      "name": "debug-startup",
+      "title": "Startup Debug Sweep",
+      "description": "Launch the desktop shell in fixture mode and walk the highest-signal startup and diagnostics pages for quick issue triage.",
+      "purpose": "debug",
+      "steps": [
+        {
+          "title": "Dashboard",
+          "pageTag": "Dashboard",
+          "captureName": "01-dashboard",
+          "notes": "Confirm that the shell rendered, the fixture banner is visible, and the status bar started updating."
+        },
+        {
+          "title": "Provider Health",
+          "pageTag": "ProviderHealth",
+          "captureName": "02-provider-health",
+          "notes": "Check provider-level status badges, connection health, and any immediately visible fault indicators."
+        },
+        {
+          "title": "Diagnostics",
+          "pageTag": "Diagnostics",
+          "captureName": "03-diagnostics",
+          "notes": "Use the diagnostics surface to inspect errors, remediation affordances, and high-level health signals."
+        },
+        {
+          "title": "Advance Fixture Scenario",
+          "keys": "^+N",
+          "capture": false,
+          "waitMs": 900,
+          "notes": "Cycle fixture mode once so degraded-state visuals can be checked without touching production services."
+        },
+        {
+          "title": "System Health",
+          "pageTag": "SystemHealth",
+          "captureName": "04-system-health",
+          "notes": "Verify that health cards and status chips react to a non-happy-path fixture scenario."
+        },
+        {
+          "title": "Settings",
+          "pageTag": "Settings",
+          "captureName": "05-settings",
+          "notes": "Finish in Settings so configuration-related startup issues can be inspected quickly."
+        }
+      ]
+    },
+    {
+      "name": "manual-overview",
+      "title": "Platform Overview",
+      "description": "A top-level walkthrough of the shell, workspace launcher, and the four major workstation shells.",
+      "purpose": "manual",
+      "includeInManual": true,
+      "steps": [
+        {
+          "title": "Dashboard",
+          "pageTag": "Dashboard",
+          "captureName": "01-dashboard",
+          "notes": "Start on the dashboard to review the shell status bar, fixture banner, and the first-launch landing experience."
+        },
+        {
+          "title": "Workspaces",
+          "pageTag": "Workspaces",
+          "captureName": "02-workspaces",
+          "notes": "Use the Workspaces page as the jump-off point for the major trading workstation surfaces."
+        },
+        {
+          "title": "Research Workspace",
+          "pageTag": "ResearchShell",
+          "captureName": "03-research-workspace",
+          "notes": "The Research workspace groups backtesting, Quant Script, and strategy review surfaces."
+        },
+        {
+          "title": "Trading Workspace",
+          "pageTag": "TradingShell",
+          "captureName": "04-trading-workspace",
+          "notes": "The Trading workspace focuses on blotters, live positions, and trading risk controls."
+        },
+        {
+          "title": "Data Operations Workspace",
+          "pageTag": "DataOperationsShell",
+          "captureName": "05-data-operations-workspace",
+          "notes": "The Data Operations workspace centralizes providers, backfills, symbols, and storage operations."
+        },
+        {
+          "title": "Governance Workspace",
+          "pageTag": "GovernanceShell",
+          "captureName": "06-governance-workspace",
+          "notes": "The Governance workspace collects ledger, operational controls, and oversight surfaces."
+        },
+        {
+          "title": "Help",
+          "pageTag": "Help",
+          "captureName": "07-help",
+          "notes": "The Help page is the starting point when an operator needs setup guidance or troubleshooting references."
+        }
+      ]
+    },
+    {
+      "name": "manual-data-operations",
+      "title": "Data Operations Workflow",
+      "description": "A practical walkthrough for operators who manage providers, symbols, storage, and backfills.",
+      "purpose": "manual",
+      "includeInManual": true,
+      "steps": [
+        {
+          "title": "Data Operations Workspace",
+          "pageTag": "DataOperationsShell",
+          "captureName": "01-data-operations-shell",
+          "notes": "Begin in the workspace shell to orient around the operator dashboard and the available data operations tools."
+        },
+        {
+          "title": "Providers",
+          "pageTag": "Provider",
+          "captureName": "02-providers",
+          "notes": "Manage active providers, credentials, and connectivity from the Providers screen."
+        },
+        {
+          "title": "Provider Health",
+          "pageTag": "ProviderHealth",
+          "captureName": "03-provider-health",
+          "notes": "Review feed health, current statuses, and degraded-state signals before changing collection behavior."
+        },
+        {
+          "title": "Backfill",
+          "pageTag": "Backfill",
+          "captureName": "04-backfill",
+          "notes": "Use Backfill to queue or inspect historical data collection work."
+        },
+        {
+          "title": "Data Sources",
+          "pageTag": "DataSources",
+          "captureName": "05-data-sources",
+          "notes": "Use Data Sources to review provider routing, failover ordering, and feed configuration without leaving the data operations workflow."
+        },
+        {
+          "title": "Storage",
+          "pageTag": "Storage",
+          "captureName": "06-storage",
+          "notes": "Use Storage to inspect retention, layout, and data organization settings."
+        },
+        {
+          "title": "Data Quality",
+          "pageTag": "DataQuality",
+          "captureName": "07-data-quality",
+          "notes": "Finish with Data Quality so anomalies and remediation work can be reviewed in one pass."
+        }
+      ]
+    },
+    {
+      "name": "manual-research-and-trading",
+      "title": "Research and Trading Workflow",
+      "description": "Walk through the core strategy research surfaces and the trading cockpit used to inspect positions and risk.",
+      "purpose": "manual",
+      "includeInManual": true,
+      "steps": [
+        {
+          "title": "Research Workspace",
+          "pageTag": "ResearchShell",
+          "captureName": "01-research-shell",
+          "notes": "The Research workspace is the umbrella view for strategy discovery, analysis, and run review."
+        },
+        {
+          "title": "Backtest",
+          "pageTag": "Backtest",
+          "captureName": "02-backtest",
+          "notes": "Use Backtest to configure a strategy replay and inspect summary metrics."
+        },
+        {
+          "title": "Strategy Runs",
+          "pageTag": "StrategyRuns",
+          "captureName": "03-strategy-runs",
+          "notes": "Use Strategy Runs to browse completed runs and drill into the detail pages."
+        },
+        {
+          "title": "Quant Script",
+          "pageTag": "QuantScript",
+          "captureName": "04-quant-script",
+          "notes": "Use Quant Script for exploratory scripting and ad hoc analysis."
+        },
+        {
+          "title": "Trading Workspace",
+          "pageTag": "TradingShell",
+          "captureName": "05-trading-shell",
+          "notes": "Switch to the Trading workspace to inspect live operations and active risk surfaces."
+        },
+        {
+          "title": "Position Blotter",
+          "pageTag": "PositionBlotter",
+          "captureName": "06-position-blotter",
+          "notes": "Use the Position Blotter to review positions, marks, and exposure."
+        },
+        {
+          "title": "Run Risk",
+          "pageTag": "RunRisk",
+          "captureName": "07-run-risk",
+          "notes": "Finish on Run Risk to validate the controls and risk views that govern a strategy run."
+        }
+      ]
+    },
+    {
+      "name": "manual-governance",
+      "title": "Governance Workflow",
+      "description": "Cover the oversight surfaces used for ledger review, fund accounts, notifications, and reference data governance.",
+      "purpose": "manual",
+      "includeInManual": true,
+      "steps": [
+        {
+          "title": "Governance Workspace",
+          "pageTag": "GovernanceShell",
+          "captureName": "01-governance-shell",
+          "notes": "Start in Governance to orient around the oversight and operational control surfaces."
+        },
+        {
+          "title": "Fund Ledger",
+          "pageTag": "FundLedger",
+          "captureName": "02-fund-ledger",
+          "notes": "Use Fund Ledger to inspect balances, journals, and cash flow views."
+        },
+        {
+          "title": "Fund Accounts",
+          "pageTag": "FundAccounts",
+          "captureName": "03-fund-accounts",
+          "notes": "Use Fund Accounts to review account-level positions and supporting fund metadata."
+        },
+        {
+          "title": "Security Master",
+          "pageTag": "SecurityMaster",
+          "captureName": "04-security-master",
+          "notes": "Use Security Master to review reference data coverage and investigate security-level issues."
+        },
+        {
+          "title": "Notification Center",
+          "pageTag": "NotificationCenter",
+          "captureName": "05-notification-center",
+          "notes": "Use Notification Center to review surfaced alerts and follow-up work."
+        },
+        {
+          "title": "Settings",
+          "pageTag": "Settings",
+          "captureName": "06-settings",
+          "notes": "Finish in Settings to review controls that affect the governance and operator experience."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.SelfHealingStrictness
+  commentId: T:Meridian.Application.Config.SelfHealingStrictness
+  id: SelfHealingStrictness
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.SelfHealingStrictness.Development
+  - Meridian.Application.Config.SelfHealingStrictness.Production
+  langs:
+  - csharp
+  - vb
+  name: SelfHealingStrictness
+  nameWithType: SelfHealingStrictness
+  fullName: Meridian.Application.Config.SelfHealingStrictness
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigurationPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SelfHealingStrictness
+    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    startLine: 929
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Controls how self-healing reacts to significant configuration issues.
+  example: []
+  syntax:
+    content: 'public enum SelfHealingStrictness : byte'
+    content.vb: Public Enum SelfHealingStrictness As Byte
+- uid: Meridian.Application.Config.SelfHealingStrictness.Development
+  commentId: F:Meridian.Application.Config.SelfHealingStrictness.Development
+  id: Development
+  parent: Meridian.Application.Config.SelfHealingStrictness
+  langs:
+  - csharp
+  - vb
+  name: Development
+  nameWithType: SelfHealingStrictness.Development
+  fullName: Meridian.Application.Config.SelfHealingStrictness.Development
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigurationPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Development
+    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    startLine: 936
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: >-
+    All self-healing fixes are applied.  <xref href="Meridian.Application.Config.SelfHealingSeverity.Warn" data-throw-if-not-resolved="false"></xref>-level
+
+    changes are applied but logged as <code>Warning</code>.  Suitable for local development
+
+    and CI environments where operator attention is not required for every startup.
+  example: []
+  syntax:
+    content: Development = 0
+    return:
+      type: Meridian.Application.Config.SelfHealingStrictness
+- uid: Meridian.Application.Config.SelfHealingStrictness.Production
+  commentId: F:Meridian.Application.Config.SelfHealingStrictness.Production
+  id: Production
+  parent: Meridian.Application.Config.SelfHealingStrictness
+  langs:
+  - csharp
+  - vb
+  name: Production
+  nameWithType: SelfHealingStrictness.Production
+  fullName: Meridian.Application.Config.SelfHealingStrictness.Production
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigurationPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Production
+    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    startLine: 944
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: >-
+    Only safe cosmetic fixes (<xref href="Meridian.Application.Config.SelfHealingSeverity.AutoFix" data-throw-if-not-resolved="false"></xref>) are applied
+
+    silently.  <xref href="Meridian.Application.Config.SelfHealingSeverity.Warn" data-throw-if-not-resolved="false"></xref>-level fixes are <b>refused</b>
+
+    and surfaced as validation errors so that the process cannot start until a human
+
+    corrects the configuration.  Use <code>MDC_CONFIG_STRICTNESS=production</code> to enable.
+  example: []
+  syntax:
+    content: Production = 1
+    return:
+      type: Meridian.Application.Config.SelfHealingStrictness
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.SelfHealingSeverity.Warn
+  commentId: F:Meridian.Application.Config.SelfHealingSeverity.Warn
+  href: Meridian.Application.Config.SelfHealingSeverity.html#Meridian_Application_Config_SelfHealingSeverity_Warn
+  name: Warn
+  nameWithType: SelfHealingSeverity.Warn
+  fullName: Meridian.Application.Config.SelfHealingSeverity.Warn
+- uid: Meridian.Application.Config.SelfHealingStrictness
+  commentId: T:Meridian.Application.Config.SelfHealingStrictness
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SelfHealingStrictness.html
+  name: SelfHealingStrictness
+  nameWithType: SelfHealingStrictness
+  fullName: Meridian.Application.Config.SelfHealingStrictness
+- uid: Meridian.Application.Config.SelfHealingSeverity.AutoFix
+  commentId: F:Meridian.Application.Config.SelfHealingSeverity.AutoFix
+  href: Meridian.Application.Config.SelfHealingSeverity.html#Meridian_Application_Config_SelfHealingSeverity_AutoFix
+  name: AutoFix
+  nameWithType: SelfHealingSeverity.AutoFix
+  fullName: Meridian.Application.Config.SelfHealingSeverity.AutoFix

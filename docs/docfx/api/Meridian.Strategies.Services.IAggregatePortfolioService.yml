@@ -1,0 +1,397 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService
+  commentId: T:Meridian.Strategies.Services.IAggregatePortfolioService
+  id: IAggregatePortfolioService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions(System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure
+  - Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol(System.String)
+  langs:
+  - csharp
+  - vb
+  name: IAggregatePortfolioService
+  nameWithType: IAggregatePortfolioService
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IAggregatePortfolioService
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Aggregates position data across all currently running strategies registered in
+
+    <xref href="Meridian.Execution.Services.PortfolioRegistry" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public interface IAggregatePortfolioService
+    content.vb: Public Interface IAggregatePortfolioService
+  derivedClasses:
+  - Meridian.Strategies.Services.AggregatePortfolioService
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions(System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions(System.Collections.Generic.IReadOnlyList{System.String})
+  id: GetAggregatedPositions(System.Collections.Generic.IReadOnlyList{System.String})
+  parent: Meridian.Strategies.Services.IAggregatePortfolioService
+  langs:
+  - csharp
+  - vb
+  name: GetAggregatedPositions(IReadOnlyList<string>?)
+  nameWithType: IAggregatePortfolioService.GetAggregatedPositions(IReadOnlyList<string>?)
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions(System.Collections.Generic.IReadOnlyList<string>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregatedPositions
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Returns netted positions across all active strategy runs,
+
+    or only the runs specified in <code class="paramref">runIds</code> when non-null.
+  example: []
+  syntax:
+    content: IReadOnlyList<AggregatedPosition> GetAggregatedPositions(IReadOnlyList<string>? runIds = null)
+    parameters:
+    - id: runIds
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.AggregatedPosition}
+    content.vb: Function GetAggregatedPositions(runIds As IReadOnlyList(Of String) = Nothing) As IReadOnlyList(Of AggregatedPosition)
+  overload: Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions*
+  nameWithType.vb: IAggregatePortfolioService.GetAggregatedPositions(IReadOnlyList(Of String))
+  fullName.vb: Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions(System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: GetAggregatedPositions(IReadOnlyList(Of String))
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure
+  commentId: M:Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure
+  id: GetCrossStrategyExposure
+  parent: Meridian.Strategies.Services.IAggregatePortfolioService
+  langs:
+  - csharp
+  - vb
+  name: GetCrossStrategyExposure()
+  nameWithType: IAggregatePortfolioService.GetCrossStrategyExposure()
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCrossStrategyExposure
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Returns gross/net exposure across all active strategies.
+  example: []
+  syntax:
+    content: CrossStrategyExposureReport GetCrossStrategyExposure()
+    return:
+      type: Meridian.Strategies.Services.CrossStrategyExposureReport
+    content.vb: Function GetCrossStrategyExposure() As CrossStrategyExposureReport
+  overload: Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure*
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol(System.String)
+  commentId: M:Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol(System.String)
+  id: GetNetPositionForSymbol(System.String)
+  parent: Meridian.Strategies.Services.IAggregatePortfolioService
+  langs:
+  - csharp
+  - vb
+  name: GetNetPositionForSymbol(string)
+  nameWithType: IAggregatePortfolioService.GetNetPositionForSymbol(string)
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNetPositionForSymbol
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Returns the net and gross position for a single <code class="paramref">symbol</code> across all
+
+    active strategies.
+  example: []
+  syntax:
+    content: NetSymbolPosition GetNetPositionForSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Strategies.Services.NetSymbolPosition
+    content.vb: Function GetNetPositionForSymbol(symbol As String) As NetSymbolPosition
+  overload: Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol*
+  nameWithType.vb: IAggregatePortfolioService.GetNetPositionForSymbol(String)
+  fullName.vb: Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol(String)
+  name.vb: GetNetPositionForSymbol(String)
+references:
+- uid: Meridian.Execution.Services.PortfolioRegistry
+  commentId: T:Meridian.Execution.Services.PortfolioRegistry
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PortfolioRegistry.html
+  name: PortfolioRegistry
+  nameWithType: PortfolioRegistry
+  fullName: Meridian.Execution.Services.PortfolioRegistry
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions*
+  commentId: Overload:Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions
+  href: Meridian.Strategies.Services.IAggregatePortfolioService.html#Meridian_Strategies_Services_IAggregatePortfolioService_GetAggregatedPositions_System_Collections_Generic_IReadOnlyList_System_String__
+  name: GetAggregatedPositions
+  nameWithType: IAggregatePortfolioService.GetAggregatedPositions
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService.GetAggregatedPositions
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.AggregatedPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.AggregatedPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AggregatedPosition>
+  nameWithType: IReadOnlyList<AggregatedPosition>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Services.AggregatedPosition>
+  nameWithType.vb: IReadOnlyList(Of AggregatedPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Services.AggregatedPosition)
+  name.vb: IReadOnlyList(Of AggregatedPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Strategies.Services.AggregatedPosition
+    name: AggregatedPosition
+    href: Meridian.Strategies.Services.AggregatedPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.AggregatedPosition
+    name: AggregatedPosition
+    href: Meridian.Strategies.Services.AggregatedPosition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure*
+  commentId: Overload:Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure
+  href: Meridian.Strategies.Services.IAggregatePortfolioService.html#Meridian_Strategies_Services_IAggregatePortfolioService_GetCrossStrategyExposure
+  name: GetCrossStrategyExposure
+  nameWithType: IAggregatePortfolioService.GetCrossStrategyExposure
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService.GetCrossStrategyExposure
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport
+  commentId: T:Meridian.Strategies.Services.CrossStrategyExposureReport
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.CrossStrategyExposureReport.html
+  name: CrossStrategyExposureReport
+  nameWithType: CrossStrategyExposureReport
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport
+- uid: Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol*
+  commentId: Overload:Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol
+  href: Meridian.Strategies.Services.IAggregatePortfolioService.html#Meridian_Strategies_Services_IAggregatePortfolioService_GetNetPositionForSymbol_System_String_
+  name: GetNetPositionForSymbol
+  nameWithType: IAggregatePortfolioService.GetNetPositionForSymbol
+  fullName: Meridian.Strategies.Services.IAggregatePortfolioService.GetNetPositionForSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Strategies.Services.NetSymbolPosition
+  commentId: T:Meridian.Strategies.Services.NetSymbolPosition
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.NetSymbolPosition.html
+  name: NetSymbolPosition
+  nameWithType: NetSymbolPosition
+  fullName: Meridian.Strategies.Services.NetSymbolPosition
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

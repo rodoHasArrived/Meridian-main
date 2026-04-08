@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Events
+  commentId: N:Meridian.Execution.Events
+  id: Meridian.Execution.Events
+  children:
+  - Meridian.Execution.Events.ITradeEventPublisher
+  - Meridian.Execution.Events.LedgerPostingConsumer
+  - Meridian.Execution.Events.TradeExecutedEvent
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Events
+  nameWithType: Meridian.Execution.Events
+  fullName: Meridian.Execution.Events
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Events.ITradeEventPublisher
+  commentId: T:Meridian.Execution.Events.ITradeEventPublisher
+  parent: Meridian.Execution.Events
+  href: Meridian.Execution.Events.ITradeEventPublisher.html
+  name: ITradeEventPublisher
+  nameWithType: ITradeEventPublisher
+  fullName: Meridian.Execution.Events.ITradeEventPublisher
+- uid: Meridian.Execution.Events.LedgerPostingConsumer
+  commentId: T:Meridian.Execution.Events.LedgerPostingConsumer
+  href: Meridian.Execution.Events.LedgerPostingConsumer.html
+  name: LedgerPostingConsumer
+  nameWithType: LedgerPostingConsumer
+  fullName: Meridian.Execution.Events.LedgerPostingConsumer
+- uid: Meridian.Execution.Events.TradeExecutedEvent
+  commentId: T:Meridian.Execution.Events.TradeExecutedEvent
+  parent: Meridian.Execution.Events
+  href: Meridian.Execution.Events.TradeExecutedEvent.html
+  name: TradeExecutedEvent
+  nameWithType: TradeExecutedEvent
+  fullName: Meridian.Execution.Events.TradeExecutedEvent
+- uid: Meridian.Execution.Events
+  commentId: N:Meridian.Execution.Events
+  href: Meridian.html
+  name: Meridian.Execution.Events
+  nameWithType: Meridian.Execution.Events
+  fullName: Meridian.Execution.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Events
+    name: Events
+    href: Meridian.Execution.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Events
+    name: Events
+    href: Meridian.Execution.Events.html

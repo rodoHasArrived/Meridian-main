@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  commentId: T:Meridian.Contracts.DirectLending.ProjectionRunStatus
+  id: ProjectionRunStatus
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ProjectionRunStatus.Completed
+  - Meridian.Contracts.DirectLending.ProjectionRunStatus.Failed
+  - Meridian.Contracts.DirectLending.ProjectionRunStatus.Requested
+  - Meridian.Contracts.DirectLending.ProjectionRunStatus.Superseded
+  langs:
+  - csharp
+  - vb
+  name: ProjectionRunStatus
+  nameWithType: ProjectionRunStatus
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectionRunStatus
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum ProjectionRunStatus : byte'
+    content.vb: Public Enum ProjectionRunStatus As Byte
+- uid: Meridian.Contracts.DirectLending.ProjectionRunStatus.Requested
+  commentId: F:Meridian.Contracts.DirectLending.ProjectionRunStatus.Requested
+  id: Requested
+  parent: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Requested
+  nameWithType: ProjectionRunStatus.Requested
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunStatus.Requested
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Requested
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Requested = 0
+    return:
+      type: Meridian.Contracts.DirectLending.ProjectionRunStatus
+- uid: Meridian.Contracts.DirectLending.ProjectionRunStatus.Completed
+  commentId: F:Meridian.Contracts.DirectLending.ProjectionRunStatus.Completed
+  id: Completed
+  parent: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: ProjectionRunStatus.Completed
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Completed = 1
+    return:
+      type: Meridian.Contracts.DirectLending.ProjectionRunStatus
+- uid: Meridian.Contracts.DirectLending.ProjectionRunStatus.Failed
+  commentId: F:Meridian.Contracts.DirectLending.ProjectionRunStatus.Failed
+  id: Failed
+  parent: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: ProjectionRunStatus.Failed
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Failed = 2
+    return:
+      type: Meridian.Contracts.DirectLending.ProjectionRunStatus
+- uid: Meridian.Contracts.DirectLending.ProjectionRunStatus.Superseded
+  commentId: F:Meridian.Contracts.DirectLending.ProjectionRunStatus.Superseded
+  id: Superseded
+  parent: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Superseded
+  nameWithType: ProjectionRunStatus.Superseded
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunStatus.Superseded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Superseded
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Superseded = 3
+    return:
+      type: Meridian.Contracts.DirectLending.ProjectionRunStatus
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.ProjectionRunStatus
+  commentId: T:Meridian.Contracts.DirectLending.ProjectionRunStatus
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.ProjectionRunStatus.html
+  name: ProjectionRunStatus
+  nameWithType: ProjectionRunStatus
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunStatus

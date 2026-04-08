@@ -1,0 +1,945 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.OpenLot
+  commentId: T:Meridian.Backtesting.Sdk.OpenLot
+  id: OpenLot
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.OpenLot.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.String,System.String)
+  - Meridian.Backtesting.Sdk.OpenLot.AccountId
+  - Meridian.Backtesting.Sdk.OpenLot.Age(System.DateTimeOffset)
+  - Meridian.Backtesting.Sdk.OpenLot.EntryPrice
+  - Meridian.Backtesting.Sdk.OpenLot.IsLongTerm(System.DateTimeOffset)
+  - Meridian.Backtesting.Sdk.OpenLot.LotId
+  - Meridian.Backtesting.Sdk.OpenLot.Notes
+  - Meridian.Backtesting.Sdk.OpenLot.NotionalValue(System.Decimal)
+  - Meridian.Backtesting.Sdk.OpenLot.OpenFillId
+  - Meridian.Backtesting.Sdk.OpenLot.OpenedAt
+  - Meridian.Backtesting.Sdk.OpenLot.Quantity
+  - Meridian.Backtesting.Sdk.OpenLot.Symbol
+  - Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl(System.Decimal)
+  langs:
+  - csharp
+  - vb
+  name: OpenLot
+  nameWithType: OpenLot
+  fullName: Meridian.Backtesting.Sdk.OpenLot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenLot
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Represents an open (unrealised) tax lot — a block of shares acquired in a single fill.
+
+    Lots are always positive-quantity records. Short positions use a parallel short-lots
+
+    collection (see <xref href="Meridian.Backtesting.Sdk.ClosedLot" data-throw-if-not-resolved="false"></xref> for closed counterparts).
+  example: []
+  syntax:
+    content: 'public sealed record OpenLot : IEquatable<OpenLot>'
+    content.vb: Public NotInheritable Class OpenLot Implements IEquatable(Of OpenLot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.OpenLot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.OpenLot.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.String,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.OpenLot.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.String,System.String)
+  id: '#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.String,System.String)'
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: OpenLot(Guid, string, long, decimal, DateTimeOffset, Guid, string?, string?)
+  nameWithType: OpenLot.OpenLot(Guid, string, long, decimal, DateTimeOffset, Guid, string?, string?)
+  fullName: Meridian.Backtesting.Sdk.OpenLot.OpenLot(System.Guid, string, long, decimal, System.DateTimeOffset, System.Guid, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Represents an open (unrealised) tax lot — a block of shares acquired in a single fill.
+
+    Lots are always positive-quantity records. Short positions use a parallel short-lots
+
+    collection (see <xref href="Meridian.Backtesting.Sdk.ClosedLot" data-throw-if-not-resolved="false"></xref> for closed counterparts).
+  example: []
+  syntax:
+    content: public OpenLot(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, DateTimeOffset OpenedAt, Guid OpenFillId, string? AccountId = null, string? Notes = null)
+    parameters:
+    - id: LotId
+      type: System.Guid
+    - id: Symbol
+      type: System.String
+    - id: Quantity
+      type: System.Int64
+    - id: EntryPrice
+      type: System.Decimal
+    - id: OpenedAt
+      type: System.DateTimeOffset
+    - id: OpenFillId
+      type: System.Guid
+    - id: AccountId
+      type: System.String
+    - id: Notes
+      type: System.String
+    content.vb: Public Sub New(LotId As Guid, Symbol As String, Quantity As Long, EntryPrice As Decimal, OpenedAt As DateTimeOffset, OpenFillId As Guid, AccountId As String = Nothing, Notes As String = Nothing)
+  overload: Meridian.Backtesting.Sdk.OpenLot.#ctor*
+  nameWithType.vb: OpenLot.New(Guid, String, Long, Decimal, DateTimeOffset, Guid, String, String)
+  fullName.vb: Meridian.Backtesting.Sdk.OpenLot.New(System.Guid, String, Long, Decimal, System.DateTimeOffset, System.Guid, String, String)
+  name.vb: New(Guid, String, Long, Decimal, DateTimeOffset, Guid, String, String)
+- uid: Meridian.Backtesting.Sdk.OpenLot.LotId
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.LotId
+  id: LotId
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: LotId
+  nameWithType: OpenLot.LotId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.LotId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotId
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid LotId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LotId As Guid
+  overload: Meridian.Backtesting.Sdk.OpenLot.LotId*
+- uid: Meridian.Backtesting.Sdk.OpenLot.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OpenLot.Symbol
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.OpenLot.Symbol*
+- uid: Meridian.Backtesting.Sdk.OpenLot.Quantity
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.Quantity
+  id: Quantity
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: OpenLot.Quantity
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quantity As Long
+  overload: Meridian.Backtesting.Sdk.OpenLot.Quantity*
+- uid: Meridian.Backtesting.Sdk.OpenLot.EntryPrice
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.EntryPrice
+  id: EntryPrice
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: EntryPrice
+  nameWithType: OpenLot.EntryPrice
+  fullName: Meridian.Backtesting.Sdk.OpenLot.EntryPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryPrice
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal EntryPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property EntryPrice As Decimal
+  overload: Meridian.Backtesting.Sdk.OpenLot.EntryPrice*
+- uid: Meridian.Backtesting.Sdk.OpenLot.OpenedAt
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.OpenedAt
+  id: OpenedAt
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: OpenedAt
+  nameWithType: OpenLot.OpenedAt
+  fullName: Meridian.Backtesting.Sdk.OpenLot.OpenedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenedAt
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public DateTimeOffset OpenedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OpenedAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.OpenLot.OpenedAt*
+- uid: Meridian.Backtesting.Sdk.OpenLot.OpenFillId
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.OpenFillId
+  id: OpenFillId
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: OpenFillId
+  nameWithType: OpenLot.OpenFillId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.OpenFillId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenFillId
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid OpenFillId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OpenFillId As Guid
+  overload: Meridian.Backtesting.Sdk.OpenLot.OpenFillId*
+- uid: Meridian.Backtesting.Sdk.OpenLot.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: OpenLot.AccountId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.OpenLot.AccountId*
+- uid: Meridian.Backtesting.Sdk.OpenLot.Notes
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.Notes
+  id: Notes
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: OpenLot.Notes
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Backtesting.Sdk.OpenLot.Notes*
+- uid: Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl(System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl(System.Decimal)
+  id: UnrealizedPnl(System.Decimal)
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl(decimal)
+  nameWithType: OpenLot.UnrealizedPnl(decimal)
+  fullName: Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Mark-to-market unrealised P&amp;L for this lot at the given price.
+  example: []
+  syntax:
+    content: public decimal UnrealizedPnl(decimal currentPrice)
+    parameters:
+    - id: currentPrice
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Public Function UnrealizedPnl(currentPrice As Decimal) As Decimal
+  overload: Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl*
+  nameWithType.vb: OpenLot.UnrealizedPnl(Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl(Decimal)
+  name.vb: UnrealizedPnl(Decimal)
+- uid: Meridian.Backtesting.Sdk.OpenLot.NotionalValue(System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.OpenLot.NotionalValue(System.Decimal)
+  id: NotionalValue(System.Decimal)
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: NotionalValue(decimal)
+  nameWithType: OpenLot.NotionalValue(decimal)
+  fullName: Meridian.Backtesting.Sdk.OpenLot.NotionalValue(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotionalValue
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Current notional value of this lot at the given price.
+  example: []
+  syntax:
+    content: public decimal NotionalValue(decimal currentPrice)
+    parameters:
+    - id: currentPrice
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Public Function NotionalValue(currentPrice As Decimal) As Decimal
+  overload: Meridian.Backtesting.Sdk.OpenLot.NotionalValue*
+  nameWithType.vb: OpenLot.NotionalValue(Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.OpenLot.NotionalValue(Decimal)
+  name.vb: NotionalValue(Decimal)
+- uid: Meridian.Backtesting.Sdk.OpenLot.Age(System.DateTimeOffset)
+  commentId: M:Meridian.Backtesting.Sdk.OpenLot.Age(System.DateTimeOffset)
+  id: Age(System.DateTimeOffset)
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: Age(DateTimeOffset)
+  nameWithType: OpenLot.Age(DateTimeOffset)
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Age(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Age
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: How long this lot has been open as of the given point in time.
+  example: []
+  syntax:
+    content: public TimeSpan Age(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: System.TimeSpan
+    content.vb: Public Function Age(asOf As DateTimeOffset) As TimeSpan
+  overload: Meridian.Backtesting.Sdk.OpenLot.Age*
+- uid: Meridian.Backtesting.Sdk.OpenLot.IsLongTerm(System.DateTimeOffset)
+  commentId: M:Meridian.Backtesting.Sdk.OpenLot.IsLongTerm(System.DateTimeOffset)
+  id: IsLongTerm(System.DateTimeOffset)
+  parent: Meridian.Backtesting.Sdk.OpenLot
+  langs:
+  - csharp
+  - vb
+  name: IsLongTerm(DateTimeOffset)
+  nameWithType: OpenLot.IsLongTerm(DateTimeOffset)
+  fullName: Meridian.Backtesting.Sdk.OpenLot.IsLongTerm(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/OpenLot.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsLongTerm
+    path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Returns <code>true</code> when the lot has been held for at least 365 days — the IRS
+
+    long-term capital gains threshold.
+  example: []
+  syntax:
+    content: public bool IsLongTerm(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsLongTerm(asOf As DateTimeOffset) As Boolean
+  overload: Meridian.Backtesting.Sdk.OpenLot.IsLongTerm*
+references:
+- uid: Meridian.Backtesting.Sdk.ClosedLot
+  commentId: T:Meridian.Backtesting.Sdk.ClosedLot
+  href: Meridian.Backtesting.Sdk.ClosedLot.html
+  name: ClosedLot
+  nameWithType: ClosedLot
+  fullName: Meridian.Backtesting.Sdk.ClosedLot
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.OpenLot}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.OpenLot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OpenLot>
+  nameWithType: IEquatable<OpenLot>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.OpenLot>
+  nameWithType.vb: IEquatable(Of OpenLot)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.OpenLot)
+  name.vb: IEquatable(Of OpenLot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.OpenLot
+    name: OpenLot
+    href: Meridian.Backtesting.Sdk.OpenLot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.OpenLot
+    name: OpenLot
+    href: Meridian.Backtesting.Sdk.OpenLot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.OpenLot.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.#ctor
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot__ctor_System_Guid_System_String_System_Int64_System_Decimal_System_DateTimeOffset_System_Guid_System_String_System_String_
+  name: OpenLot
+  nameWithType: OpenLot.OpenLot
+  fullName: Meridian.Backtesting.Sdk.OpenLot.OpenLot
+  nameWithType.vb: OpenLot.New
+  fullName.vb: Meridian.Backtesting.Sdk.OpenLot.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Backtesting.Sdk.OpenLot.LotId*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.LotId
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_LotId
+  name: LotId
+  nameWithType: OpenLot.LotId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.LotId
+- uid: Meridian.Backtesting.Sdk.OpenLot.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.Symbol
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_Symbol
+  name: Symbol
+  nameWithType: OpenLot.Symbol
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Symbol
+- uid: Meridian.Backtesting.Sdk.OpenLot.Quantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.Quantity
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_Quantity
+  name: Quantity
+  nameWithType: OpenLot.Quantity
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Quantity
+- uid: Meridian.Backtesting.Sdk.OpenLot.EntryPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.EntryPrice
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_EntryPrice
+  name: EntryPrice
+  nameWithType: OpenLot.EntryPrice
+  fullName: Meridian.Backtesting.Sdk.OpenLot.EntryPrice
+- uid: Meridian.Backtesting.Sdk.OpenLot.OpenedAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.OpenedAt
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_OpenedAt
+  name: OpenedAt
+  nameWithType: OpenLot.OpenedAt
+  fullName: Meridian.Backtesting.Sdk.OpenLot.OpenedAt
+- uid: Meridian.Backtesting.Sdk.OpenLot.OpenFillId*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.OpenFillId
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_OpenFillId
+  name: OpenFillId
+  nameWithType: OpenLot.OpenFillId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.OpenFillId
+- uid: Meridian.Backtesting.Sdk.OpenLot.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.AccountId
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_AccountId
+  name: AccountId
+  nameWithType: OpenLot.AccountId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.AccountId
+- uid: Meridian.Backtesting.Sdk.OpenLot.Notes*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.Notes
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_Notes
+  name: Notes
+  nameWithType: OpenLot.Notes
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Notes
+- uid: Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_UnrealizedPnl_System_Decimal_
+  name: UnrealizedPnl
+  nameWithType: OpenLot.UnrealizedPnl
+  fullName: Meridian.Backtesting.Sdk.OpenLot.UnrealizedPnl
+- uid: Meridian.Backtesting.Sdk.OpenLot.NotionalValue*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.NotionalValue
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_NotionalValue_System_Decimal_
+  name: NotionalValue
+  nameWithType: OpenLot.NotionalValue
+  fullName: Meridian.Backtesting.Sdk.OpenLot.NotionalValue
+- uid: Meridian.Backtesting.Sdk.OpenLot.Age*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.Age
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_Age_System_DateTimeOffset_
+  name: Age
+  nameWithType: OpenLot.Age
+  fullName: Meridian.Backtesting.Sdk.OpenLot.Age
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Backtesting.Sdk.OpenLot.IsLongTerm*
+  commentId: Overload:Meridian.Backtesting.Sdk.OpenLot.IsLongTerm
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_IsLongTerm_System_DateTimeOffset_
+  name: IsLongTerm
+  nameWithType: OpenLot.IsLongTerm
+  fullName: Meridian.Backtesting.Sdk.OpenLot.IsLongTerm
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

@@ -1,0 +1,105 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Services
+  commentId: N:Meridian.Ui.Shared.Services
+  id: Meridian.Ui.Shared.Services
+  children:
+  - Meridian.Ui.Shared.Services.BackfillCoordinator
+  - Meridian.Ui.Shared.Services.BackfillPreviewResult
+  - Meridian.Ui.Shared.Services.ConfigStore
+  - Meridian.Ui.Shared.Services.ConfigStoreExtensions
+  - Meridian.Ui.Shared.Services.ExistingDataInfo
+  - Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
+  - Meridian.Ui.Shared.Services.SymbolPreview
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Ui.Shared.Services
+  nameWithType: Meridian.Ui.Shared.Services
+  fullName: Meridian.Ui.Shared.Services
+  type: Namespace
+  assemblies:
+  - Meridian.Ui.Shared
+references:
+- uid: Meridian.Ui.Shared.Services.BackfillPreviewResult
+  commentId: T:Meridian.Ui.Shared.Services.BackfillPreviewResult
+  href: Meridian.Ui.Shared.Services.BackfillPreviewResult.html
+  name: BackfillPreviewResult
+  nameWithType: BackfillPreviewResult
+  fullName: Meridian.Ui.Shared.Services.BackfillPreviewResult
+- uid: Meridian.Ui.Shared.Services.SymbolPreview
+  commentId: T:Meridian.Ui.Shared.Services.SymbolPreview
+  href: Meridian.Ui.Shared.Services.SymbolPreview.html
+  name: SymbolPreview
+  nameWithType: SymbolPreview
+  fullName: Meridian.Ui.Shared.Services.SymbolPreview
+- uid: Meridian.Ui.Shared.Services.ExistingDataInfo
+  commentId: T:Meridian.Ui.Shared.Services.ExistingDataInfo
+  parent: Meridian.Ui.Shared.Services
+  href: Meridian.Ui.Shared.Services.ExistingDataInfo.html
+  name: ExistingDataInfo
+  nameWithType: ExistingDataInfo
+  fullName: Meridian.Ui.Shared.Services.ExistingDataInfo
+- uid: Meridian.Ui.Shared.Services.BackfillCoordinator
+  commentId: T:Meridian.Ui.Shared.Services.BackfillCoordinator
+  href: Meridian.Ui.Shared.Services.BackfillCoordinator.html
+  name: BackfillCoordinator
+  nameWithType: BackfillCoordinator
+  fullName: Meridian.Ui.Shared.Services.BackfillCoordinator
+- uid: Meridian.Ui.Shared.Services.ConfigStore
+  commentId: T:Meridian.Ui.Shared.Services.ConfigStore
+  parent: Meridian.Ui.Shared.Services
+  href: Meridian.Ui.Shared.Services.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Ui.Shared.Services.ConfigStore
+- uid: Meridian.Ui.Shared.Services.ConfigStoreExtensions
+  commentId: T:Meridian.Ui.Shared.Services.ConfigStoreExtensions
+  href: Meridian.Ui.Shared.Services.ConfigStoreExtensions.html
+  name: ConfigStoreExtensions
+  nameWithType: ConfigStoreExtensions
+  fullName: Meridian.Ui.Shared.Services.ConfigStoreExtensions
+- uid: Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
+  commentId: T:Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
+  href: Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup.html
+  name: SecurityMasterSecurityReferenceLookup
+  nameWithType: SecurityMasterSecurityReferenceLookup
+  fullName: Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
+- uid: Meridian.Ui.Shared.Services
+  commentId: N:Meridian.Ui.Shared.Services
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Services
+  nameWithType: Meridian.Ui.Shared.Services
+  fullName: Meridian.Ui.Shared.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Services
+    name: Services
+    href: Meridian.Ui.Shared.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Services
+    name: Services
+    href: Meridian.Ui.Shared.Services.html

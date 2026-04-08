@@ -1,0 +1,474 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.PackagedFile
+  commentId: T:Meridian.Ui.Services.PackagedFile
+  id: PackagedFile
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.PackagedFile.Checksum
+  - Meridian.Ui.Services.PackagedFile.OriginalSize
+  - Meridian.Ui.Services.PackagedFile.RelativePath
+  langs:
+  - csharp
+  - vb
+  name: PackagedFile
+  nameWithType: PackagedFile
+  fullName: Meridian.Ui.Services.PackagedFile
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackagedFile
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 816
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public sealed record PackagedFile : IEquatable<PackagedFile>'
+    content.vb: Public NotInheritable Class PackagedFile Implements IEquatable(Of PackagedFile)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Services.PackagedFile}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.PackagedFile.RelativePath
+  commentId: P:Meridian.Ui.Services.PackagedFile.RelativePath
+  id: RelativePath
+  parent: Meridian.Ui.Services.PackagedFile
+  langs:
+  - csharp
+  - vb
+  name: RelativePath
+  nameWithType: PackagedFile.RelativePath
+  fullName: Meridian.Ui.Services.PackagedFile.RelativePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelativePath
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 818
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? RelativePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RelativePath As String
+  overload: Meridian.Ui.Services.PackagedFile.RelativePath*
+- uid: Meridian.Ui.Services.PackagedFile.OriginalSize
+  commentId: P:Meridian.Ui.Services.PackagedFile.OriginalSize
+  id: OriginalSize
+  parent: Meridian.Ui.Services.PackagedFile
+  langs:
+  - csharp
+  - vb
+  name: OriginalSize
+  nameWithType: PackagedFile.OriginalSize
+  fullName: Meridian.Ui.Services.PackagedFile.OriginalSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OriginalSize
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 819
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long OriginalSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property OriginalSize As Long
+  overload: Meridian.Ui.Services.PackagedFile.OriginalSize*
+- uid: Meridian.Ui.Services.PackagedFile.Checksum
+  commentId: P:Meridian.Ui.Services.PackagedFile.Checksum
+  id: Checksum
+  parent: Meridian.Ui.Services.PackagedFile
+  langs:
+  - csharp
+  - vb
+  name: Checksum
+  nameWithType: PackagedFile.Checksum
+  fullName: Meridian.Ui.Services.PackagedFile.Checksum
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Checksum
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 820
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Checksum { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Checksum As String
+  overload: Meridian.Ui.Services.PackagedFile.Checksum*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Services.PackagedFile}
+  commentId: T:System.IEquatable{Meridian.Ui.Services.PackagedFile}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PackagedFile>
+  nameWithType: IEquatable<PackagedFile>
+  fullName: System.IEquatable<Meridian.Ui.Services.PackagedFile>
+  nameWithType.vb: IEquatable(Of PackagedFile)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Services.PackagedFile)
+  name.vb: IEquatable(Of PackagedFile)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackagedFile
+    name: PackagedFile
+    href: Meridian.Ui.Services.PackagedFile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackagedFile
+    name: PackagedFile
+    href: Meridian.Ui.Services.PackagedFile.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.PackagedFile.RelativePath*
+  commentId: Overload:Meridian.Ui.Services.PackagedFile.RelativePath
+  href: Meridian.Ui.Services.PackagedFile.html#Meridian_Ui_Services_PackagedFile_RelativePath
+  name: RelativePath
+  nameWithType: PackagedFile.RelativePath
+  fullName: Meridian.Ui.Services.PackagedFile.RelativePath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.PackagedFile.OriginalSize*
+  commentId: Overload:Meridian.Ui.Services.PackagedFile.OriginalSize
+  href: Meridian.Ui.Services.PackagedFile.html#Meridian_Ui_Services_PackagedFile_OriginalSize
+  name: OriginalSize
+  nameWithType: PackagedFile.OriginalSize
+  fullName: Meridian.Ui.Services.PackagedFile.OriginalSize
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.PackagedFile.Checksum*
+  commentId: Overload:Meridian.Ui.Services.PackagedFile.Checksum
+  href: Meridian.Ui.Services.PackagedFile.html#Meridian_Ui_Services_PackagedFile_Checksum
+  name: Checksum
+  nameWithType: PackagedFile.Checksum
+  fullName: Meridian.Ui.Services.PackagedFile.Checksum

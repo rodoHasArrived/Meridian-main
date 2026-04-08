@@ -1,0 +1,854 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  commentId: T:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  id: UnifiedDataSourcesConfig
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping
+  langs:
+  - csharp
+  - vb
+  name: UnifiedDataSourcesConfig
+  nameWithType: UnifiedDataSourcesConfig
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnifiedDataSourcesConfig
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: >-
+    Unified configuration for all data sources.
+
+    Consolidates settings for real-time, historical, and hybrid providers.
+  example: []
+  syntax:
+    content: 'public sealed record UnifiedDataSourcesConfig : IEquatable<UnifiedDataSourcesConfig>'
+    content.vb: Public NotInheritable Class UnifiedDataSourcesConfig Implements IEquatable(Of UnifiedDataSourcesConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  extensionMethods:
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds
+  - Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(System.String)
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults
+  commentId: P:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults
+  id: Defaults
+  parent: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: Defaults
+  nameWithType: UnifiedDataSourcesConfig.Defaults
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Defaults
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Default settings applied to all sources unless overridden.
+  example: []
+  syntax:
+    content: public DefaultsConfig Defaults { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DefaultsConfig
+    content.vb: Public Property Defaults As DefaultsConfig
+  overload: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults*
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources
+  commentId: P:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources
+  id: Sources
+  parent: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: UnifiedDataSourcesConfig.Sources
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Individual source configurations keyed by source ID.
+  example: []
+  syntax:
+    content: public Dictionary<string, SourceConfig> Sources { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Infrastructure.DataSources.SourceConfig}
+    content.vb: Public Property Sources As Dictionary(Of String, SourceConfig)
+  overload: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources*
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover
+  commentId: P:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover
+  id: Failover
+  parent: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: Failover
+  nameWithType: UnifiedDataSourcesConfig.Failover
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failover
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Failover configuration.
+  example: []
+  syntax:
+    content: public FailoverConfig Failover { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.FailoverConfig
+    content.vb: Public Property Failover As FailoverConfig
+  overload: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover*
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping
+  commentId: P:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping
+  id: SymbolMapping
+  parent: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: SymbolMapping
+  nameWithType: UnifiedDataSourcesConfig.SymbolMapping
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolMapping
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Symbol mapping configuration.
+  example: []
+  syntax:
+    content: public SymbolMappingConfig SymbolMapping { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.SymbolMappingConfig
+    content.vb: Public Property SymbolMapping As SymbolMappingConfig
+  overload: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping*
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins
+  commentId: P:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins
+  id: Plugins
+  parent: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: Plugins
+  nameWithType: UnifiedDataSourcesConfig.Plugins
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Plugins
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Plugin system configuration.
+  example: []
+  syntax:
+    content: public PluginSystemConfig Plugins { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.PluginSystemConfig
+    content.vb: Public Property Plugins As PluginSystemConfig
+  overload: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<UnifiedDataSourcesConfig>
+  nameWithType: IEquatable<UnifiedDataSourcesConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig>
+  nameWithType.vb: IEquatable(Of UnifiedDataSourcesConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  name.vb: IEquatable(Of UnifiedDataSourcesConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  parent: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions
+  definition: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetEnabledSourceIds_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_
+  name: GetEnabledSourceIds(UnifiedDataSourcesConfig)
+  nameWithType: DataSourceConfigurationExtensions.GetEnabledSourceIds(UnifiedDataSourcesConfig)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+    name: GetEnabledSourceIds
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetEnabledSourceIds_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+    name: GetEnabledSourceIds
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetEnabledSourceIds_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(System.String)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+  parent: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions
+  definition: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+  href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetOptionsForSource_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_System_String_
+  name: GetOptionsForSource(UnifiedDataSourcesConfig, string)
+  nameWithType: DataSourceConfigurationExtensions.GetOptionsForSource(UnifiedDataSourcesConfig, string)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig, string)
+  nameWithType.vb: DataSourceConfigurationExtensions.GetOptionsForSource(UnifiedDataSourcesConfig, String)
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig, String)
+  name.vb: GetOptionsForSource(UnifiedDataSourcesConfig, String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+    name: GetOptionsForSource
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetOptionsForSource_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_System_String_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+    name: GetOptionsForSource
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetOptionsForSource_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_System_String_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetEnabledSourceIds_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_
+  name: GetEnabledSourceIds(UnifiedDataSourcesConfig)
+  nameWithType: DataSourceConfigurationExtensions.GetEnabledSourceIds(UnifiedDataSourcesConfig)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+    name: GetEnabledSourceIds
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetEnabledSourceIds_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetEnabledSourceIds(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig)
+    name: GetEnabledSourceIds
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetEnabledSourceIds_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html
+  name: DataSourceConfigurationExtensions
+  nameWithType: DataSourceConfigurationExtensions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions
+- uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetOptionsForSource_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_System_String_
+  name: GetOptionsForSource(UnifiedDataSourcesConfig, string)
+  nameWithType: DataSourceConfigurationExtensions.GetOptionsForSource(UnifiedDataSourcesConfig, string)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig, string)
+  nameWithType.vb: DataSourceConfigurationExtensions.GetOptionsForSource(UnifiedDataSourcesConfig, String)
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig, String)
+  name.vb: GetOptionsForSource(UnifiedDataSourcesConfig, String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+    name: GetOptionsForSource
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetOptionsForSource_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_System_String_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.GetOptionsForSource(Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig,System.String)
+    name: GetOptionsForSource
+    href: Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions.html#Meridian_Infrastructure_DataSources_DataSourceConfigurationExtensions_GetOptionsForSource_Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_System_String_
+  - name: (
+  - uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig
+    name: UnifiedDataSourcesConfig
+    href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults*
+  commentId: Overload:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults
+  href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html#Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_Defaults
+  name: Defaults
+  nameWithType: UnifiedDataSourcesConfig.Defaults
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Defaults
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig
+  commentId: T:Meridian.Infrastructure.DataSources.DefaultsConfig
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DefaultsConfig.html
+  name: DefaultsConfig
+  nameWithType: DefaultsConfig
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources*
+  commentId: Overload:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources
+  href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html#Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_Sources
+  name: Sources
+  nameWithType: UnifiedDataSourcesConfig.Sources
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Sources
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Infrastructure.DataSources.SourceConfig}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Infrastructure.DataSources.SourceConfig}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, SourceConfig>
+  nameWithType: Dictionary<string, SourceConfig>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Infrastructure.DataSources.SourceConfig>
+  nameWithType.vb: Dictionary(Of String, SourceConfig)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Infrastructure.DataSources.SourceConfig)
+  name.vb: Dictionary(Of String, SourceConfig)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.SourceConfig
+    name: SourceConfig
+    href: Meridian.Infrastructure.DataSources.SourceConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.SourceConfig
+    name: SourceConfig
+    href: Meridian.Infrastructure.DataSources.SourceConfig.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover*
+  commentId: Overload:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover
+  href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html#Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_Failover
+  name: Failover
+  nameWithType: UnifiedDataSourcesConfig.Failover
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Failover
+- uid: Meridian.Infrastructure.DataSources.FailoverConfig
+  commentId: T:Meridian.Infrastructure.DataSources.FailoverConfig
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.FailoverConfig.html
+  name: FailoverConfig
+  nameWithType: FailoverConfig
+  fullName: Meridian.Infrastructure.DataSources.FailoverConfig
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping*
+  commentId: Overload:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping
+  href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html#Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_SymbolMapping
+  name: SymbolMapping
+  nameWithType: UnifiedDataSourcesConfig.SymbolMapping
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.SymbolMapping
+- uid: Meridian.Application.Config.SymbolMappingConfig
+  commentId: T:Meridian.Application.Config.SymbolMappingConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SymbolMappingConfig.html
+  name: SymbolMappingConfig
+  nameWithType: SymbolMappingConfig
+  fullName: Meridian.Application.Config.SymbolMappingConfig
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins*
+  commentId: Overload:Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins
+  href: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.html#Meridian_Infrastructure_DataSources_UnifiedDataSourcesConfig_Plugins
+  name: Plugins
+  nameWithType: UnifiedDataSourcesConfig.Plugins
+  fullName: Meridian.Infrastructure.DataSources.UnifiedDataSourcesConfig.Plugins
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  commentId: T:Meridian.Infrastructure.DataSources.PluginSystemConfig
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html
+  name: PluginSystemConfig
+  nameWithType: PluginSystemConfig
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig

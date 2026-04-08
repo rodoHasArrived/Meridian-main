@@ -1,0 +1,215 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunPromotionState
+  id: StrategyRunPromotionState
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForLive
+  - Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForPaper
+  - Meridian.Contracts.Workstation.StrategyRunPromotionState.LiveManaged
+  - Meridian.Contracts.Workstation.StrategyRunPromotionState.None
+  - Meridian.Contracts.Workstation.StrategyRunPromotionState.RequiresCompletion
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunPromotionState
+  nameWithType: StrategyRunPromotionState
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunPromotionState
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Promotion-oriented readiness signal derived from the current run state.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<StrategyRunPromotionState>))]
+
+      public enum StrategyRunPromotionState : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of StrategyRunPromotionState)))>
+
+      Public Enum StrategyRunPromotionState As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.StrategyRunPromotionState}
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState.None
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunPromotionState.None
+  id: None
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: StrategyRunPromotionState.None
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionState
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState.RequiresCompletion
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunPromotionState.RequiresCompletion
+  id: RequiresCompletion
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  langs:
+  - csharp
+  - vb
+  name: RequiresCompletion
+  nameWithType: StrategyRunPromotionState.RequiresCompletion
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState.RequiresCompletion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequiresCompletion
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: RequiresCompletion = 1
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionState
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForPaper
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForPaper
+  id: CandidateForPaper
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  langs:
+  - csharp
+  - vb
+  name: CandidateForPaper
+  nameWithType: StrategyRunPromotionState.CandidateForPaper
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForPaper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CandidateForPaper
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: CandidateForPaper = 2
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionState
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForLive
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForLive
+  id: CandidateForLive
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  langs:
+  - csharp
+  - vb
+  name: CandidateForLive
+  nameWithType: StrategyRunPromotionState.CandidateForLive
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState.CandidateForLive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CandidateForLive
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: CandidateForLive = 3
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionState
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState.LiveManaged
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunPromotionState.LiveManaged
+  id: LiveManaged
+  parent: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  langs:
+  - csharp
+  - vb
+  name: LiveManaged
+  nameWithType: StrategyRunPromotionState.LiveManaged
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState.LiveManaged
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiveManaged
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: LiveManaged = 4
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionState
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionState
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunPromotionState
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionState.html
+  name: StrategyRunPromotionState
+  nameWithType: StrategyRunPromotionState
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState

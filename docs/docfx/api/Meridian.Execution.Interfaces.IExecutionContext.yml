@@ -1,0 +1,494 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Interfaces.IExecutionContext
+  commentId: T:Meridian.Execution.Interfaces.IExecutionContext
+  id: IExecutionContext
+  parent: Meridian.Execution.Interfaces
+  children:
+  - Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  - Meridian.Execution.Interfaces.IExecutionContext.Feed
+  - Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  - Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  - Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  - Meridian.Execution.Interfaces.IExecutionContext.Universe
+  langs:
+  - csharp
+  - vb
+  name: IExecutionContext
+  nameWithType: IExecutionContext
+  fullName: Meridian.Execution.Interfaces.IExecutionContext
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IExecutionContext
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    The live-mode analogue of <code>IBacktestContext</code>. Provides a strategy with a
+
+    unified view of the current feed, portfolio state, and order gateway without
+
+    exposing any broker-specific or provider-specific type. Enforced by ADR-015.
+  example: []
+  syntax:
+    content: public interface IExecutionContext
+    content.vb: Public Interface IExecutionContext
+  derivedClasses:
+  - Meridian.Execution.PaperExecutionContext
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  id: Gateway
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Gateway
+  nameWithType: IExecutionContext.Gateway
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gateway
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: The order gateway used to submit and cancel orders in this session.
+  example: []
+  syntax:
+    content: IOrderGateway Gateway { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Interfaces.IOrderGateway
+    content.vb: ReadOnly Property Gateway As IOrderGateway
+  overload: Meridian.Execution.Interfaces.IExecutionContext.Gateway*
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Feed
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Feed
+  id: Feed
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Feed
+  nameWithType: IExecutionContext.Feed
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Feed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Feed
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Live market data adapter for the symbols in this session.
+  example: []
+  syntax:
+    content: ILiveFeedAdapter Feed { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Interfaces.ILiveFeedAdapter
+    content.vb: ReadOnly Property Feed As ILiveFeedAdapter
+  overload: Meridian.Execution.Interfaces.IExecutionContext.Feed*
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  id: Portfolio
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Portfolio
+  nameWithType: IExecutionContext.Portfolio
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Portfolio
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Read-only view of the current portfolio state.
+  example: []
+  syntax:
+    content: IPortfolioState Portfolio { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.IPortfolioState
+    content.vb: ReadOnly Property Portfolio As IPortfolioState
+  overload: Meridian.Execution.Interfaces.IExecutionContext.Portfolio*
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Universe
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Universe
+  id: Universe
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Universe
+  nameWithType: IExecutionContext.Universe
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Universe
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Universe
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Symbols available in this execution session.
+  example: []
+  syntax:
+    content: IReadOnlySet<string> Universe { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: ReadOnly Property Universe As IReadOnlySet(Of String)
+  overload: Meridian.Execution.Interfaces.IExecutionContext.Universe*
+- uid: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  id: CurrentTime
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: CurrentTime
+  nameWithType: IExecutionContext.CurrentTime
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentTime
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Wall-clock time at the moment of the current market event.
+  example: []
+  syntax:
+    content: DateTimeOffset CurrentTime { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: ReadOnly Property CurrentTime As DateTimeOffset
+  overload: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime*
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  id: Ledger
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: IExecutionContext.Ledger
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Read-only view of the double-entry ledger for this session.
+
+    <code>null</code> when the session was started without ledger tracking enabled.
+  example: []
+  syntax:
+    content: IReadOnlyLedger? Ledger { get; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.IReadOnlyLedger
+    content.vb: ReadOnly Property Ledger As IReadOnlyLedger
+  overload: Meridian.Execution.Interfaces.IExecutionContext.Ledger*
+references:
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Gateway*
+  commentId: Overload:Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Gateway
+  name: Gateway
+  nameWithType: IExecutionContext.Gateway
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Gateway
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IOrderGateway.html
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Feed*
+  commentId: Overload:Meridian.Execution.Interfaces.IExecutionContext.Feed
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Feed
+  name: Feed
+  nameWithType: IExecutionContext.Feed
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Feed
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  commentId: T:Meridian.Execution.Interfaces.ILiveFeedAdapter
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html
+  name: ILiveFeedAdapter
+  nameWithType: ILiveFeedAdapter
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Portfolio*
+  commentId: Overload:Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Portfolio
+  name: Portfolio
+  nameWithType: IExecutionContext.Portfolio
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+- uid: Meridian.Execution.Models.IPortfolioState
+  commentId: T:Meridian.Execution.Models.IPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IPortfolioState.html
+  name: IPortfolioState
+  nameWithType: IPortfolioState
+  fullName: Meridian.Execution.Models.IPortfolioState
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Universe*
+  commentId: Overload:Meridian.Execution.Interfaces.IExecutionContext.Universe
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Universe
+  name: Universe
+  nameWithType: IExecutionContext.Universe
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Universe
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime*
+  commentId: Overload:Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_CurrentTime
+  name: CurrentTime
+  nameWithType: IExecutionContext.CurrentTime
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Ledger*
+  commentId: Overload:Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Ledger
+  name: Ledger
+  nameWithType: IExecutionContext.Ledger
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Ledger
+- uid: Meridian.Ledger.IReadOnlyLedger
+  commentId: T:Meridian.Ledger.IReadOnlyLedger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.IReadOnlyLedger.html
+  name: IReadOnlyLedger
+  nameWithType: IReadOnlyLedger
+  fullName: Meridian.Ledger.IReadOnlyLedger
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html

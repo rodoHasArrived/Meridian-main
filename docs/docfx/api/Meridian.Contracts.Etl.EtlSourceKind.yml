@@ -1,0 +1,132 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlSourceKind
+  commentId: T:Meridian.Contracts.Etl.EtlSourceKind
+  id: EtlSourceKind
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlSourceKind.Local
+  - Meridian.Contracts.Etl.EtlSourceKind.Sftp
+  langs:
+  - csharp
+  - vb
+  name: EtlSourceKind
+  nameWithType: EtlSourceKind
+  fullName: Meridian.Contracts.Etl.EtlSourceKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlSourceKind
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum EtlSourceKind : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum EtlSourceKind As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Etl.EtlSourceKind.Local
+  commentId: F:Meridian.Contracts.Etl.EtlSourceKind.Local
+  id: Local
+  parent: Meridian.Contracts.Etl.EtlSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Local
+  nameWithType: EtlSourceKind.Local
+  fullName: Meridian.Contracts.Etl.EtlSourceKind.Local
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Local
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Local = 0
+    return:
+      type: Meridian.Contracts.Etl.EtlSourceKind
+- uid: Meridian.Contracts.Etl.EtlSourceKind.Sftp
+  commentId: F:Meridian.Contracts.Etl.EtlSourceKind.Sftp
+  id: Sftp
+  parent: Meridian.Contracts.Etl.EtlSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Sftp
+  nameWithType: EtlSourceKind.Sftp
+  fullName: Meridian.Contracts.Etl.EtlSourceKind.Sftp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sftp
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Sftp = 1
+    return:
+      type: Meridian.Contracts.Etl.EtlSourceKind
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.EtlSourceKind
+  commentId: T:Meridian.Contracts.Etl.EtlSourceKind
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlSourceKind.html
+  name: EtlSourceKind
+  nameWithType: EtlSourceKind
+  fullName: Meridian.Contracts.Etl.EtlSourceKind

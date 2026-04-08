@@ -1,0 +1,808 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.OrderBookSnapshot
+  commentId: T:Meridian.Ui.Services.OrderBookSnapshot
+  id: OrderBookSnapshot
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.OrderBookSnapshot.Asks
+  - Meridian.Ui.Services.OrderBookSnapshot.BestAsk
+  - Meridian.Ui.Services.OrderBookSnapshot.BestBid
+  - Meridian.Ui.Services.OrderBookSnapshot.Bids
+  - Meridian.Ui.Services.OrderBookSnapshot.Imbalance
+  - Meridian.Ui.Services.OrderBookSnapshot.MidPrice
+  - Meridian.Ui.Services.OrderBookSnapshot.Spread
+  - Meridian.Ui.Services.OrderBookSnapshot.Symbol
+  - Meridian.Ui.Services.OrderBookSnapshot.Timestamp
+  - Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume
+  - Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume
+  langs:
+  - csharp
+  - vb
+  name: OrderBookSnapshot
+  nameWithType: OrderBookSnapshot
+  fullName: Meridian.Ui.Services.OrderBookSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBookSnapshot
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class OrderBookSnapshot
+    content.vb: Public NotInheritable Class OrderBookSnapshot
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Symbol
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OrderBookSnapshot.Symbol
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.OrderBookSnapshot.Symbol*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Timestamp
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.Timestamp
+  id: Timestamp
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OrderBookSnapshot.Timestamp
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property Timestamp As Date
+  overload: Meridian.Ui.Services.OrderBookSnapshot.Timestamp*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Bids
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.Bids
+  id: Bids
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Bids
+  nameWithType: OrderBookSnapshot.Bids
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Bids
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bids
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<OrderBookLevel> Bids { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.OrderBookLevel}
+    content.vb: Public Property Bids As List(Of OrderBookLevel)
+  overload: Meridian.Ui.Services.OrderBookSnapshot.Bids*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Asks
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.Asks
+  id: Asks
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Asks
+  nameWithType: OrderBookSnapshot.Asks
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Asks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Asks
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<OrderBookLevel> Asks { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.OrderBookLevel}
+    content.vb: Public Property Asks As List(Of OrderBookLevel)
+  overload: Meridian.Ui.Services.OrderBookSnapshot.Asks*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.BestBid
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.BestBid
+  id: BestBid
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BestBid
+  nameWithType: OrderBookSnapshot.BestBid
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.BestBid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BestBid
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal BestBid { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BestBid As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.BestBid*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.BestAsk
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.BestAsk
+  id: BestAsk
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BestAsk
+  nameWithType: OrderBookSnapshot.BestAsk
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.BestAsk
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BestAsk
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal BestAsk { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BestAsk As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.BestAsk*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Spread
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.Spread
+  id: Spread
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Spread
+  nameWithType: OrderBookSnapshot.Spread
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Spread
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Spread
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal Spread { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Spread As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.Spread*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.MidPrice
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.MidPrice
+  id: MidPrice
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MidPrice
+  nameWithType: OrderBookSnapshot.MidPrice
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.MidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MidPrice
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal MidPrice { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MidPrice As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.MidPrice*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume
+  id: TotalBidVolume
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalBidVolume
+  nameWithType: OrderBookSnapshot.TotalBidVolume
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBidVolume
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal TotalBidVolume { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalBidVolume As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume
+  id: TotalAskVolume
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalAskVolume
+  nameWithType: OrderBookSnapshot.TotalAskVolume
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAskVolume
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal TotalAskVolume { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalAskVolume As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume*
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Imbalance
+  commentId: P:Meridian.Ui.Services.OrderBookSnapshot.Imbalance
+  id: Imbalance
+  parent: Meridian.Ui.Services.OrderBookSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Imbalance
+  nameWithType: OrderBookSnapshot.Imbalance
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Imbalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Imbalance
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal Imbalance { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Imbalance As Decimal
+  overload: Meridian.Ui.Services.OrderBookSnapshot.Imbalance*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Symbol*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.Symbol
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_Symbol
+  name: Symbol
+  nameWithType: OrderBookSnapshot.Symbol
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Timestamp*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.Timestamp
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_Timestamp
+  name: Timestamp
+  nameWithType: OrderBookSnapshot.Timestamp
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Timestamp
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Bids*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.Bids
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_Bids
+  name: Bids
+  nameWithType: OrderBookSnapshot.Bids
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Bids
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.OrderBookLevel}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.OrderBookLevel}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<OrderBookLevel>
+  nameWithType: List<OrderBookLevel>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.OrderBookLevel>
+  nameWithType.vb: List(Of OrderBookLevel)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.OrderBookLevel)
+  name.vb: List(Of OrderBookLevel)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.OrderBookLevel
+    name: OrderBookLevel
+    href: Meridian.Ui.Services.OrderBookLevel.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.OrderBookLevel
+    name: OrderBookLevel
+    href: Meridian.Ui.Services.OrderBookLevel.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Asks*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.Asks
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_Asks
+  name: Asks
+  nameWithType: OrderBookSnapshot.Asks
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Asks
+- uid: Meridian.Ui.Services.OrderBookSnapshot.BestBid*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.BestBid
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_BestBid
+  name: BestBid
+  nameWithType: OrderBookSnapshot.BestBid
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.BestBid
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ui.Services.OrderBookSnapshot.BestAsk*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.BestAsk
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_BestAsk
+  name: BestAsk
+  nameWithType: OrderBookSnapshot.BestAsk
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.BestAsk
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Spread*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.Spread
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_Spread
+  name: Spread
+  nameWithType: OrderBookSnapshot.Spread
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Spread
+- uid: Meridian.Ui.Services.OrderBookSnapshot.MidPrice*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.MidPrice
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_MidPrice
+  name: MidPrice
+  nameWithType: OrderBookSnapshot.MidPrice
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.MidPrice
+- uid: Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_TotalBidVolume
+  name: TotalBidVolume
+  nameWithType: OrderBookSnapshot.TotalBidVolume
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.TotalBidVolume
+- uid: Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_TotalAskVolume
+  name: TotalAskVolume
+  nameWithType: OrderBookSnapshot.TotalAskVolume
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.TotalAskVolume
+- uid: Meridian.Ui.Services.OrderBookSnapshot.Imbalance*
+  commentId: Overload:Meridian.Ui.Services.OrderBookSnapshot.Imbalance
+  href: Meridian.Ui.Services.OrderBookSnapshot.html#Meridian_Ui_Services_OrderBookSnapshot_Imbalance
+  name: Imbalance
+  nameWithType: OrderBookSnapshot.Imbalance
+  fullName: Meridian.Ui.Services.OrderBookSnapshot.Imbalance

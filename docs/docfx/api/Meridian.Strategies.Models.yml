@@ -1,0 +1,70 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  id: Meridian.Strategies.Models
+  children:
+  - Meridian.Strategies.Models.RunType
+  - Meridian.Strategies.Models.StrategyRunEntry
+  - Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  type: Namespace
+  assemblies:
+  - Meridian.Strategies
+references:
+- uid: Meridian.Strategies.Models.RunType
+  commentId: T:Meridian.Strategies.Models.RunType
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.RunType.html
+  name: RunType
+  nameWithType: RunType
+  fullName: Meridian.Strategies.Models.RunType
+- uid: Meridian.Strategies.Models.StrategyRunEntry
+  commentId: T:Meridian.Strategies.Models.StrategyRunEntry
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyRunEntry.html
+  name: StrategyRunEntry
+  nameWithType: StrategyRunEntry
+  fullName: Meridian.Strategies.Models.StrategyRunEntry
+- uid: Meridian.Strategies.Models.StrategyStatus
+  commentId: T:Meridian.Strategies.Models.StrategyStatus
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyStatus.html
+  name: StrategyStatus
+  nameWithType: StrategyStatus
+  fullName: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html

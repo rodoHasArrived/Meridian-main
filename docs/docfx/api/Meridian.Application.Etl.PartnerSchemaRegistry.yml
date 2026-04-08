@@ -1,0 +1,495 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Etl.PartnerSchemaRegistry
+  commentId: T:Meridian.Application.Etl.PartnerSchemaRegistry
+  id: PartnerSchemaRegistry
+  parent: Meridian.Application.Etl
+  children:
+  - Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema(System.String)
+  - Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported(System.String)
+  langs:
+  - csharp
+  - vb
+  name: PartnerSchemaRegistry
+  nameWithType: PartnerSchemaRegistry
+  fullName: Meridian.Application.Etl.PartnerSchemaRegistry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartnerSchemaRegistry
+    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: 'public sealed class PartnerSchemaRegistry : IPartnerSchemaRegistry'
+    content.vb: Public NotInheritable Class PartnerSchemaRegistry Implements IPartnerSchemaRegistry
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Contracts.Etl.IPartnerSchemaRegistry
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema(System.String)
+  commentId: M:Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema(System.String)
+  id: GetCsvSchema(System.String)
+  parent: Meridian.Application.Etl.PartnerSchemaRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetCsvSchema(string)
+  nameWithType: PartnerSchemaRegistry.GetCsvSchema(string)
+  fullName: Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCsvSchema
+    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  example: []
+  syntax:
+    content: public CsvSchemaDefinition GetCsvSchema(string schemaId)
+    parameters:
+    - id: schemaId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Etl.CsvSchemaDefinition
+    content.vb: Public Function GetCsvSchema(schemaId As String) As CsvSchemaDefinition
+  overload: Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema*
+  implements:
+  - Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(System.String)
+  nameWithType.vb: PartnerSchemaRegistry.GetCsvSchema(String)
+  fullName.vb: Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema(String)
+  name.vb: GetCsvSchema(String)
+- uid: Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported(System.String)
+  commentId: M:Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported(System.String)
+  id: IsSupported(System.String)
+  parent: Meridian.Application.Etl.PartnerSchemaRegistry
+  langs:
+  - csharp
+  - vb
+  name: IsSupported(string)
+  nameWithType: PartnerSchemaRegistry.IsSupported(string)
+  fullName: Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSupported
+    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  example: []
+  syntax:
+    content: public bool IsSupported(string schemaId)
+    parameters:
+    - id: schemaId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsSupported(schemaId As String) As Boolean
+  overload: Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported*
+  implements:
+  - Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(System.String)
+  nameWithType.vb: PartnerSchemaRegistry.IsSupported(String)
+  fullName.vb: Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported(String)
+  name.vb: IsSupported(String)
+references:
+- uid: Meridian.Application.Etl
+  commentId: N:Meridian.Application.Etl
+  href: Meridian.html
+  name: Meridian.Application.Etl
+  nameWithType: Meridian.Application.Etl
+  fullName: Meridian.Application.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry
+  commentId: T:Meridian.Contracts.Etl.IPartnerSchemaRegistry
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.IPartnerSchemaRegistry.html
+  name: IPartnerSchemaRegistry
+  nameWithType: IPartnerSchemaRegistry
+  fullName: Meridian.Contracts.Etl.IPartnerSchemaRegistry
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema*
+  commentId: Overload:Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema
+  href: Meridian.Application.Etl.PartnerSchemaRegistry.html#Meridian_Application_Etl_PartnerSchemaRegistry_GetCsvSchema_System_String_
+  name: GetCsvSchema
+  nameWithType: PartnerSchemaRegistry.GetCsvSchema
+  fullName: Meridian.Application.Etl.PartnerSchemaRegistry.GetCsvSchema
+- uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(System.String)
+  commentId: M:Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(System.String)
+  parent: Meridian.Contracts.Etl.IPartnerSchemaRegistry
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetCsvSchema(string)
+  nameWithType: IPartnerSchemaRegistry.GetCsvSchema(string)
+  fullName: Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(string)
+  nameWithType.vb: IPartnerSchemaRegistry.GetCsvSchema(String)
+  fullName.vb: Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(String)
+  name.vb: GetCsvSchema(String)
+  spec.csharp:
+  - uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(System.String)
+    name: GetCsvSchema
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry.GetCsvSchema(System.String)
+    name: GetCsvSchema
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Etl.CsvSchemaDefinition
+  commentId: T:Meridian.Contracts.Etl.CsvSchemaDefinition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.CsvSchemaDefinition.html
+  name: CsvSchemaDefinition
+  nameWithType: CsvSchemaDefinition
+  fullName: Meridian.Contracts.Etl.CsvSchemaDefinition
+- uid: Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported*
+  commentId: Overload:Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported
+  href: Meridian.Application.Etl.PartnerSchemaRegistry.html#Meridian_Application_Etl_PartnerSchemaRegistry_IsSupported_System_String_
+  name: IsSupported
+  nameWithType: PartnerSchemaRegistry.IsSupported
+  fullName: Meridian.Application.Etl.PartnerSchemaRegistry.IsSupported
+- uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(System.String)
+  commentId: M:Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(System.String)
+  parent: Meridian.Contracts.Etl.IPartnerSchemaRegistry
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: IsSupported(string)
+  nameWithType: IPartnerSchemaRegistry.IsSupported(string)
+  fullName: Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(string)
+  nameWithType.vb: IPartnerSchemaRegistry.IsSupported(String)
+  fullName.vb: Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(String)
+  name.vb: IsSupported(String)
+  spec.csharp:
+  - uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(System.String)
+    name: IsSupported
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Etl.IPartnerSchemaRegistry.IsSupported(System.String)
+    name: IsSupported
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

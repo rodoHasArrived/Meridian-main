@@ -1,0 +1,662 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureGraphDto
+  id: FundStructureGraphDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.FundStructureGraphDto.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto})
+  - Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments
+  - Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes
+  - Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks
+  langs:
+  - csharp
+  - vb
+  name: FundStructureGraphDto
+  nameWithType: FundStructureGraphDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundStructureGraphDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record FundStructureGraphDto : IEquatable<FundStructureGraphDto>'
+    content.vb: Public NotInheritable Class FundStructureGraphDto Implements IEquatable(Of FundStructureGraphDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.FundStructureGraphDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto})
+  commentId: M:Meridian.Contracts.FundStructure.FundStructureGraphDto.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto})
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto})'
+  parent: Meridian.Contracts.FundStructure.FundStructureGraphDto
+  langs:
+  - csharp
+  - vb
+  name: FundStructureGraphDto(IReadOnlyList<FundStructureNodeDto>, IReadOnlyList<OwnershipLinkDto>, IReadOnlyList<FundStructureAssignmentDto>)
+  nameWithType: FundStructureGraphDto.FundStructureGraphDto(IReadOnlyList<FundStructureNodeDto>, IReadOnlyList<OwnershipLinkDto>, IReadOnlyList<FundStructureAssignmentDto>)
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.FundStructureGraphDto(System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.FundStructureNodeDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.OwnershipLinkDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.FundStructureAssignmentDto>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public FundStructureGraphDto(IReadOnlyList<FundStructureNodeDto> Nodes, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<FundStructureAssignmentDto> Assignments)
+    parameters:
+    - id: Nodes
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto}
+    - id: OwnershipLinks
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+    - id: Assignments
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+    content.vb: Public Sub New(Nodes As IReadOnlyList(Of FundStructureNodeDto), OwnershipLinks As IReadOnlyList(Of OwnershipLinkDto), Assignments As IReadOnlyList(Of FundStructureAssignmentDto))
+  overload: Meridian.Contracts.FundStructure.FundStructureGraphDto.#ctor*
+  nameWithType.vb: FundStructureGraphDto.New(IReadOnlyList(Of FundStructureNodeDto), IReadOnlyList(Of OwnershipLinkDto), IReadOnlyList(Of FundStructureAssignmentDto))
+  fullName.vb: Meridian.Contracts.FundStructure.FundStructureGraphDto.New(System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.FundStructureNodeDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.OwnershipLinkDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.FundStructureAssignmentDto))
+  name.vb: New(IReadOnlyList(Of FundStructureNodeDto), IReadOnlyList(Of OwnershipLinkDto), IReadOnlyList(Of FundStructureAssignmentDto))
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes
+  commentId: P:Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes
+  id: Nodes
+  parent: Meridian.Contracts.FundStructure.FundStructureGraphDto
+  langs:
+  - csharp
+  - vb
+  name: Nodes
+  nameWithType: FundStructureGraphDto.Nodes
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Nodes
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<FundStructureNodeDto> Nodes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto}
+    content.vb: Public Property Nodes As IReadOnlyList(Of FundStructureNodeDto)
+  overload: Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes*
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks
+  commentId: P:Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks
+  id: OwnershipLinks
+  parent: Meridian.Contracts.FundStructure.FundStructureGraphDto
+  langs:
+  - csharp
+  - vb
+  name: OwnershipLinks
+  nameWithType: FundStructureGraphDto.OwnershipLinks
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OwnershipLinks
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<OwnershipLinkDto> OwnershipLinks { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+    content.vb: Public Property OwnershipLinks As IReadOnlyList(Of OwnershipLinkDto)
+  overload: Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks*
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments
+  commentId: P:Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments
+  id: Assignments
+  parent: Meridian.Contracts.FundStructure.FundStructureGraphDto
+  langs:
+  - csharp
+  - vb
+  name: Assignments
+  nameWithType: FundStructureGraphDto.Assignments
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Assignments
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<FundStructureAssignmentDto> Assignments { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+    content.vb: Public Property Assignments As IReadOnlyList(Of FundStructureAssignmentDto)
+  overload: Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.FundStructureGraphDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.FundStructureGraphDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundStructureGraphDto>
+  nameWithType: IEquatable<FundStructureGraphDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.FundStructureGraphDto>
+  nameWithType.vb: IEquatable(Of FundStructureGraphDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.FundStructureGraphDto)
+  name.vb: IEquatable(Of FundStructureGraphDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundStructureGraphDto
+    name: FundStructureGraphDto
+    href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundStructureGraphDto
+    name: FundStructureGraphDto
+    href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundStructureGraphDto.#ctor
+  href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html#Meridian_Contracts_FundStructure_FundStructureGraphDto__ctor_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_FundStructureNodeDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_OwnershipLinkDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_FundStructureAssignmentDto__
+  name: FundStructureGraphDto
+  nameWithType: FundStructureGraphDto.FundStructureGraphDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.FundStructureGraphDto
+  nameWithType.vb: FundStructureGraphDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.FundStructureGraphDto.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureNodeDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FundStructureNodeDto>
+  nameWithType: IReadOnlyList<FundStructureNodeDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.FundStructureNodeDto>
+  nameWithType.vb: IReadOnlyList(Of FundStructureNodeDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.FundStructureNodeDto)
+  name.vb: IReadOnlyList(Of FundStructureNodeDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundStructureNodeDto
+    name: FundStructureNodeDto
+    href: Meridian.Contracts.FundStructure.FundStructureNodeDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundStructureNodeDto
+    name: FundStructureNodeDto
+    href: Meridian.Contracts.FundStructure.FundStructureNodeDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OwnershipLinkDto>
+  nameWithType: IReadOnlyList<OwnershipLinkDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.OwnershipLinkDto>
+  nameWithType.vb: IReadOnlyList(Of OwnershipLinkDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.OwnershipLinkDto)
+  name.vb: IReadOnlyList(Of OwnershipLinkDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.OwnershipLinkDto
+    name: OwnershipLinkDto
+    href: Meridian.Contracts.FundStructure.OwnershipLinkDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.OwnershipLinkDto
+    name: OwnershipLinkDto
+    href: Meridian.Contracts.FundStructure.OwnershipLinkDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FundStructureAssignmentDto>
+  nameWithType: IReadOnlyList<FundStructureAssignmentDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.FundStructureAssignmentDto>
+  nameWithType.vb: IReadOnlyList(Of FundStructureAssignmentDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.FundStructureAssignmentDto)
+  name.vb: IReadOnlyList(Of FundStructureAssignmentDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundStructureAssignmentDto
+    name: FundStructureAssignmentDto
+    href: Meridian.Contracts.FundStructure.FundStructureAssignmentDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundStructureAssignmentDto
+    name: FundStructureAssignmentDto
+    href: Meridian.Contracts.FundStructure.FundStructureAssignmentDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes
+  href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html#Meridian_Contracts_FundStructure_FundStructureGraphDto_Nodes
+  name: Nodes
+  nameWithType: FundStructureGraphDto.Nodes
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.Nodes
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks
+  href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html#Meridian_Contracts_FundStructure_FundStructureGraphDto_OwnershipLinks
+  name: OwnershipLinks
+  nameWithType: FundStructureGraphDto.OwnershipLinks
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.OwnershipLinks
+- uid: Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments
+  href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html#Meridian_Contracts_FundStructure_FundStructureGraphDto_Assignments
+  name: Assignments
+  nameWithType: FundStructureGraphDto.Assignments
+  fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto.Assignments

@@ -1,0 +1,515 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.RiskValidationResult
+  commentId: T:Meridian.Execution.RiskValidationResult
+  id: RiskValidationResult
+  parent: Meridian.Execution
+  children:
+  - Meridian.Execution.RiskValidationResult.Approved
+  - Meridian.Execution.RiskValidationResult.IsApproved
+  - Meridian.Execution.RiskValidationResult.RejectReason
+  - Meridian.Execution.RiskValidationResult.Rejected(System.String)
+  langs:
+  - csharp
+  - vb
+  name: RiskValidationResult
+  nameWithType: RiskValidationResult
+  fullName: Meridian.Execution.RiskValidationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RiskValidationResult
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Result of a risk validation check.
+  example: []
+  syntax:
+    content: 'public sealed record RiskValidationResult : IEquatable<RiskValidationResult>'
+    content.vb: Public NotInheritable Class RiskValidationResult Implements IEquatable(Of RiskValidationResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.RiskValidationResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.RiskValidationResult.IsApproved
+  commentId: P:Meridian.Execution.RiskValidationResult.IsApproved
+  id: IsApproved
+  parent: Meridian.Execution.RiskValidationResult
+  langs:
+  - csharp
+  - vb
+  name: IsApproved
+  nameWithType: RiskValidationResult.IsApproved
+  fullName: Meridian.Execution.RiskValidationResult.IsApproved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsApproved
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  syntax:
+    content: public required bool IsApproved { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsApproved As Boolean
+  overload: Meridian.Execution.RiskValidationResult.IsApproved*
+- uid: Meridian.Execution.RiskValidationResult.RejectReason
+  commentId: P:Meridian.Execution.RiskValidationResult.RejectReason
+  id: RejectReason
+  parent: Meridian.Execution.RiskValidationResult
+  langs:
+  - csharp
+  - vb
+  name: RejectReason
+  nameWithType: RiskValidationResult.RejectReason
+  fullName: Meridian.Execution.RiskValidationResult.RejectReason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectReason
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  syntax:
+    content: public string? RejectReason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RejectReason As String
+  overload: Meridian.Execution.RiskValidationResult.RejectReason*
+- uid: Meridian.Execution.RiskValidationResult.Approved
+  commentId: M:Meridian.Execution.RiskValidationResult.Approved
+  id: Approved
+  parent: Meridian.Execution.RiskValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Approved()
+  nameWithType: RiskValidationResult.Approved()
+  fullName: Meridian.Execution.RiskValidationResult.Approved()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Approved
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  syntax:
+    content: public static RiskValidationResult Approved()
+    return:
+      type: Meridian.Execution.RiskValidationResult
+    content.vb: Public Shared Function Approved() As RiskValidationResult
+  overload: Meridian.Execution.RiskValidationResult.Approved*
+- uid: Meridian.Execution.RiskValidationResult.Rejected(System.String)
+  commentId: M:Meridian.Execution.RiskValidationResult.Rejected(System.String)
+  id: Rejected(System.String)
+  parent: Meridian.Execution.RiskValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Rejected(string)
+  nameWithType: RiskValidationResult.Rejected(string)
+  fullName: Meridian.Execution.RiskValidationResult.Rejected(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/IRiskValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  syntax:
+    content: public static RiskValidationResult Rejected(string reason)
+    parameters:
+    - id: reason
+      type: System.String
+    return:
+      type: Meridian.Execution.RiskValidationResult
+    content.vb: Public Shared Function Rejected(reason As String) As RiskValidationResult
+  overload: Meridian.Execution.RiskValidationResult.Rejected*
+  nameWithType.vb: RiskValidationResult.Rejected(String)
+  fullName.vb: Meridian.Execution.RiskValidationResult.Rejected(String)
+  name.vb: Rejected(String)
+references:
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.RiskValidationResult}
+  commentId: T:System.IEquatable{Meridian.Execution.RiskValidationResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RiskValidationResult>
+  nameWithType: IEquatable<RiskValidationResult>
+  fullName: System.IEquatable<Meridian.Execution.RiskValidationResult>
+  nameWithType.vb: IEquatable(Of RiskValidationResult)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.RiskValidationResult)
+  name.vb: IEquatable(Of RiskValidationResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.RiskValidationResult
+    name: RiskValidationResult
+    href: Meridian.Execution.RiskValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.RiskValidationResult
+    name: RiskValidationResult
+    href: Meridian.Execution.RiskValidationResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.RiskValidationResult.IsApproved*
+  commentId: Overload:Meridian.Execution.RiskValidationResult.IsApproved
+  href: Meridian.Execution.RiskValidationResult.html#Meridian_Execution_RiskValidationResult_IsApproved
+  name: IsApproved
+  nameWithType: RiskValidationResult.IsApproved
+  fullName: Meridian.Execution.RiskValidationResult.IsApproved
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Execution.RiskValidationResult.RejectReason*
+  commentId: Overload:Meridian.Execution.RiskValidationResult.RejectReason
+  href: Meridian.Execution.RiskValidationResult.html#Meridian_Execution_RiskValidationResult_RejectReason
+  name: RejectReason
+  nameWithType: RiskValidationResult.RejectReason
+  fullName: Meridian.Execution.RiskValidationResult.RejectReason
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.RiskValidationResult.Approved*
+  commentId: Overload:Meridian.Execution.RiskValidationResult.Approved
+  href: Meridian.Execution.RiskValidationResult.html#Meridian_Execution_RiskValidationResult_Approved
+  name: Approved
+  nameWithType: RiskValidationResult.Approved
+  fullName: Meridian.Execution.RiskValidationResult.Approved
+- uid: Meridian.Execution.RiskValidationResult
+  commentId: T:Meridian.Execution.RiskValidationResult
+  parent: Meridian.Execution
+  href: Meridian.Execution.RiskValidationResult.html
+  name: RiskValidationResult
+  nameWithType: RiskValidationResult
+  fullName: Meridian.Execution.RiskValidationResult
+- uid: Meridian.Execution.RiskValidationResult.Rejected*
+  commentId: Overload:Meridian.Execution.RiskValidationResult.Rejected
+  href: Meridian.Execution.RiskValidationResult.html#Meridian_Execution_RiskValidationResult_Rejected_System_String_
+  name: Rejected
+  nameWithType: RiskValidationResult.Rejected
+  fullName: Meridian.Execution.RiskValidationResult.Rejected

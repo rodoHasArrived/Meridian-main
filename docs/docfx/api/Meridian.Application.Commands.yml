@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Commands
+  commentId: N:Meridian.Application.Commands
+  id: Meridian.Application.Commands
+  children:
+  - Meridian.Application.Commands.CliArguments
+  - Meridian.Application.Commands.CliResult
+  - Meridian.Application.Commands.ICliCommand
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Commands
+  nameWithType: Meridian.Application.Commands
+  fullName: Meridian.Application.Commands
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Commands.CliArguments
+  commentId: T:Meridian.Application.Commands.CliArguments
+  parent: Meridian.Application.Commands
+  href: Meridian.Application.Commands.CliArguments.html
+  name: CliArguments
+  nameWithType: CliArguments
+  fullName: Meridian.Application.Commands.CliArguments
+- uid: Meridian.Application.Commands.ICliCommand
+  commentId: T:Meridian.Application.Commands.ICliCommand
+  href: Meridian.Application.Commands.ICliCommand.html
+  name: ICliCommand
+  nameWithType: ICliCommand
+  fullName: Meridian.Application.Commands.ICliCommand
+- uid: Meridian.Application.Commands.CliResult
+  commentId: T:Meridian.Application.Commands.CliResult
+  parent: Meridian.Application.Commands
+  href: Meridian.Application.Commands.CliResult.html
+  name: CliResult
+  nameWithType: CliResult
+  fullName: Meridian.Application.Commands.CliResult
+- uid: Meridian.Application.Commands
+  commentId: N:Meridian.Application.Commands
+  href: Meridian.html
+  name: Meridian.Application.Commands
+  nameWithType: Meridian.Application.Commands
+  fullName: Meridian.Application.Commands
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html

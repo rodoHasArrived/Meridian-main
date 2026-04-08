@@ -1,0 +1,94 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.Derivatives
+  commentId: N:Meridian.Execution.Sdk.Derivatives
+  id: Meridian.Execution.Sdk.Derivatives
+  children:
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails
+  - Meridian.Execution.Sdk.Derivatives.OptionDetails
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  - Meridian.Execution.Sdk.Derivatives.OptionRight
+  - Meridian.Execution.Sdk.Derivatives.OptionStyle
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Sdk.Derivatives
+  nameWithType: Meridian.Execution.Sdk.Derivatives
+  fullName: Meridian.Execution.Sdk.Derivatives
+  type: Namespace
+  assemblies:
+  - Meridian.Execution.Sdk
+references:
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  commentId: T:Meridian.Execution.Sdk.Derivatives.FutureDetails
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html
+  name: FutureDetails
+  nameWithType: FutureDetails
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails
+- uid: Meridian.Execution.Sdk.Derivatives.OptionRight
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionRight
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.OptionRight.html
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionRight
+- uid: Meridian.Execution.Sdk.Derivatives.OptionStyle
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionStyle
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.OptionStyle.html
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionStyle
+- uid: Meridian.Execution.Sdk.Derivatives.OptionDetails
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionDetails
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.OptionDetails.html
+  name: OptionDetails
+  nameWithType: OptionDetails
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionDetails
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html
+  name: OptionGreeks
+  nameWithType: OptionGreeks
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+- uid: Meridian.Execution.Sdk.Derivatives
+  commentId: N:Meridian.Execution.Sdk.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Sdk.Derivatives
+  nameWithType: Meridian.Execution.Sdk.Derivatives
+  fullName: Meridian.Execution.Sdk.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html

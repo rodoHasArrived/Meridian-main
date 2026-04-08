@@ -1,0 +1,615 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.RunPositionContribution
+  commentId: T:Meridian.Strategies.Services.RunPositionContribution
+  id: RunPositionContribution
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.RunPositionContribution.#ctor(System.String,System.String,System.Decimal,System.Decimal,System.Decimal)
+  - Meridian.Strategies.Services.RunPositionContribution.AccountId
+  - Meridian.Strategies.Services.RunPositionContribution.CostBasis
+  - Meridian.Strategies.Services.RunPositionContribution.Quantity
+  - Meridian.Strategies.Services.RunPositionContribution.RunId
+  - Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: RunPositionContribution
+  nameWithType: RunPositionContribution
+  fullName: Meridian.Strategies.Services.RunPositionContribution
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunPositionContribution
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Contribution of one strategy run to an aggregated position.
+  example: []
+  syntax:
+    content: 'public sealed record RunPositionContribution : IEquatable<RunPositionContribution>'
+    content.vb: Public NotInheritable Class RunPositionContribution Implements IEquatable(Of RunPositionContribution)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Strategies.Services.RunPositionContribution}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.RunPositionContribution.#ctor(System.String,System.String,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Strategies.Services.RunPositionContribution.#ctor(System.String,System.String,System.Decimal,System.Decimal,System.Decimal)
+  id: '#ctor(System.String,System.String,System.Decimal,System.Decimal,System.Decimal)'
+  parent: Meridian.Strategies.Services.RunPositionContribution
+  langs:
+  - csharp
+  - vb
+  name: RunPositionContribution(string, string, decimal, decimal, decimal)
+  nameWithType: RunPositionContribution.RunPositionContribution(string, string, decimal, decimal, decimal)
+  fullName: Meridian.Strategies.Services.RunPositionContribution.RunPositionContribution(string, string, decimal, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Contribution of one strategy run to an aggregated position.
+  example: []
+  syntax:
+    content: public RunPositionContribution(string RunId, string AccountId, decimal Quantity, decimal CostBasis, decimal UnrealisedPnl)
+    parameters:
+    - id: RunId
+      type: System.String
+      description: Strategy run identifier.
+    - id: AccountId
+      type: System.String
+      description: Account within that run.
+    - id: Quantity
+      type: System.Decimal
+      description: Signed quantity from this run/account.
+    - id: CostBasis
+      type: System.Decimal
+      description: Average cost basis in this run/account.
+    - id: UnrealisedPnl
+      type: System.Decimal
+      description: Unrealised P&amp;L in this run/account.
+    content.vb: Public Sub New(RunId As String, AccountId As String, Quantity As Decimal, CostBasis As Decimal, UnrealisedPnl As Decimal)
+  overload: Meridian.Strategies.Services.RunPositionContribution.#ctor*
+  nameWithType.vb: RunPositionContribution.New(String, String, Decimal, Decimal, Decimal)
+  fullName.vb: Meridian.Strategies.Services.RunPositionContribution.New(String, String, Decimal, Decimal, Decimal)
+  name.vb: New(String, String, Decimal, Decimal, Decimal)
+- uid: Meridian.Strategies.Services.RunPositionContribution.RunId
+  commentId: P:Meridian.Strategies.Services.RunPositionContribution.RunId
+  id: RunId
+  parent: Meridian.Strategies.Services.RunPositionContribution
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: RunPositionContribution.RunId
+  fullName: Meridian.Strategies.Services.RunPositionContribution.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Strategy run identifier.
+  example: []
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Strategies.Services.RunPositionContribution.RunId*
+- uid: Meridian.Strategies.Services.RunPositionContribution.AccountId
+  commentId: P:Meridian.Strategies.Services.RunPositionContribution.AccountId
+  id: AccountId
+  parent: Meridian.Strategies.Services.RunPositionContribution
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: RunPositionContribution.AccountId
+  fullName: Meridian.Strategies.Services.RunPositionContribution.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Account within that run.
+  example: []
+  syntax:
+    content: public string AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Strategies.Services.RunPositionContribution.AccountId*
+- uid: Meridian.Strategies.Services.RunPositionContribution.Quantity
+  commentId: P:Meridian.Strategies.Services.RunPositionContribution.Quantity
+  id: Quantity
+  parent: Meridian.Strategies.Services.RunPositionContribution
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: RunPositionContribution.Quantity
+  fullName: Meridian.Strategies.Services.RunPositionContribution.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Signed quantity from this run/account.
+  example: []
+  syntax:
+    content: public decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Strategies.Services.RunPositionContribution.Quantity*
+- uid: Meridian.Strategies.Services.RunPositionContribution.CostBasis
+  commentId: P:Meridian.Strategies.Services.RunPositionContribution.CostBasis
+  id: CostBasis
+  parent: Meridian.Strategies.Services.RunPositionContribution
+  langs:
+  - csharp
+  - vb
+  name: CostBasis
+  nameWithType: RunPositionContribution.CostBasis
+  fullName: Meridian.Strategies.Services.RunPositionContribution.CostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CostBasis
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Average cost basis in this run/account.
+  example: []
+  syntax:
+    content: public decimal CostBasis { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CostBasis As Decimal
+  overload: Meridian.Strategies.Services.RunPositionContribution.CostBasis*
+- uid: Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl
+  commentId: P:Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Strategies.Services.RunPositionContribution
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: RunPositionContribution.UnrealisedPnl
+  fullName: Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Unrealised P&amp;L in this run/account.
+  example: []
+  syntax:
+    content: public decimal UnrealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealisedPnl As Decimal
+  overload: Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl*
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Strategies.Services.RunPositionContribution}
+  commentId: T:System.IEquatable{Meridian.Strategies.Services.RunPositionContribution}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RunPositionContribution>
+  nameWithType: IEquatable<RunPositionContribution>
+  fullName: System.IEquatable<Meridian.Strategies.Services.RunPositionContribution>
+  nameWithType.vb: IEquatable(Of RunPositionContribution)
+  fullName.vb: System.IEquatable(Of Meridian.Strategies.Services.RunPositionContribution)
+  name.vb: IEquatable(Of RunPositionContribution)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Strategies.Services.RunPositionContribution
+    name: RunPositionContribution
+    href: Meridian.Strategies.Services.RunPositionContribution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.RunPositionContribution
+    name: RunPositionContribution
+    href: Meridian.Strategies.Services.RunPositionContribution.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Strategies.Services.RunPositionContribution.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.RunPositionContribution.#ctor
+  href: Meridian.Strategies.Services.RunPositionContribution.html#Meridian_Strategies_Services_RunPositionContribution__ctor_System_String_System_String_System_Decimal_System_Decimal_System_Decimal_
+  name: RunPositionContribution
+  nameWithType: RunPositionContribution.RunPositionContribution
+  fullName: Meridian.Strategies.Services.RunPositionContribution.RunPositionContribution
+  nameWithType.vb: RunPositionContribution.New
+  fullName.vb: Meridian.Strategies.Services.RunPositionContribution.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Strategies.Services.RunPositionContribution.RunId*
+  commentId: Overload:Meridian.Strategies.Services.RunPositionContribution.RunId
+  href: Meridian.Strategies.Services.RunPositionContribution.html#Meridian_Strategies_Services_RunPositionContribution_RunId
+  name: RunId
+  nameWithType: RunPositionContribution.RunId
+  fullName: Meridian.Strategies.Services.RunPositionContribution.RunId
+- uid: Meridian.Strategies.Services.RunPositionContribution.AccountId*
+  commentId: Overload:Meridian.Strategies.Services.RunPositionContribution.AccountId
+  href: Meridian.Strategies.Services.RunPositionContribution.html#Meridian_Strategies_Services_RunPositionContribution_AccountId
+  name: AccountId
+  nameWithType: RunPositionContribution.AccountId
+  fullName: Meridian.Strategies.Services.RunPositionContribution.AccountId
+- uid: Meridian.Strategies.Services.RunPositionContribution.Quantity*
+  commentId: Overload:Meridian.Strategies.Services.RunPositionContribution.Quantity
+  href: Meridian.Strategies.Services.RunPositionContribution.html#Meridian_Strategies_Services_RunPositionContribution_Quantity
+  name: Quantity
+  nameWithType: RunPositionContribution.Quantity
+  fullName: Meridian.Strategies.Services.RunPositionContribution.Quantity
+- uid: Meridian.Strategies.Services.RunPositionContribution.CostBasis*
+  commentId: Overload:Meridian.Strategies.Services.RunPositionContribution.CostBasis
+  href: Meridian.Strategies.Services.RunPositionContribution.html#Meridian_Strategies_Services_RunPositionContribution_CostBasis
+  name: CostBasis
+  nameWithType: RunPositionContribution.CostBasis
+  fullName: Meridian.Strategies.Services.RunPositionContribution.CostBasis
+- uid: Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl*
+  commentId: Overload:Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl
+  href: Meridian.Strategies.Services.RunPositionContribution.html#Meridian_Strategies_Services_RunPositionContribution_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: RunPositionContribution.UnrealisedPnl
+  fullName: Meridian.Strategies.Services.RunPositionContribution.UnrealisedPnl

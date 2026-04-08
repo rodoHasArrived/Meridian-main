@@ -1,0 +1,1306 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.WriteAheadLog
+  commentId: T:Meridian.Storage.Archival.WriteAheadLog
+  id: WriteAheadLog
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.WriteAheadLog.#ctor(System.String,Meridian.Storage.Archival.WalOptions)
+  - Meridian.Storage.Archival.WriteAheadLog.AppendAsync``1(``0,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.WriteAheadLog.CommitAsync(System.Int64,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount
+  - Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+  - Meridian.Storage.Archival.WriteAheadLog.DisposeAsync
+  - Meridian.Storage.Archival.WriteAheadLog.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.WriteAheadLog.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs
+  - Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount
+  - Meridian.Storage.Archival.WriteAheadLog.RepairAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount
+  - Meridian.Storage.Archival.WriteAheadLog.TruncateAsync(System.Int64,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: WriteAheadLog
+  nameWithType: WriteAheadLog
+  fullName: Meridian.Storage.Archival.WriteAheadLog
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteAheadLog
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Write-Ahead Log (WAL) for durable, crash-safe storage operations.
+
+    All market events are first written to the WAL before being committed to primary storage.
+  example: []
+  syntax:
+    content: 'public sealed class WriteAheadLog : IAsyncDisposable'
+    content.vb: Public NotInheritable Class WriteAheadLog Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.WriteAheadLog.#ctor(System.String,Meridian.Storage.Archival.WalOptions)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.#ctor(System.String,Meridian.Storage.Archival.WalOptions)
+  id: '#ctor(System.String,Meridian.Storage.Archival.WalOptions)'
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: WriteAheadLog(string, WalOptions?)
+  nameWithType: WriteAheadLog.WriteAheadLog(string, WalOptions?)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.WriteAheadLog(string, Meridian.Storage.Archival.WalOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public WriteAheadLog(string walDirectory, WalOptions? options = null)
+    parameters:
+    - id: walDirectory
+      type: System.String
+    - id: options
+      type: Meridian.Storage.Archival.WalOptions
+    content.vb: Public Sub New(walDirectory As String, options As WalOptions = Nothing)
+  overload: Meridian.Storage.Archival.WriteAheadLog.#ctor*
+  nameWithType.vb: WriteAheadLog.New(String, WalOptions)
+  fullName.vb: Meridian.Storage.Archival.WriteAheadLog.New(String, Meridian.Storage.Archival.WalOptions)
+  name.vb: New(String, WalOptions)
+- uid: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount
+  commentId: P:Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount
+  id: LastRecoveryEventCount
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: LastRecoveryEventCount
+  nameWithType: WriteAheadLog.LastRecoveryEventCount
+  fullName: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastRecoveryEventCount
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Gets the number of valid events recovered during the last initialization.
+  example: []
+  syntax:
+    content: public long LastRecoveryEventCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property LastRecoveryEventCount As Long
+  overload: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount*
+- uid: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs
+  commentId: P:Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs
+  id: LastRecoveryDurationMs
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: LastRecoveryDurationMs
+  nameWithType: WriteAheadLog.LastRecoveryDurationMs
+  fullName: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastRecoveryDurationMs
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Gets the duration of the last recovery in milliseconds.
+  example: []
+  syntax:
+    content: public double LastRecoveryDurationMs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LastRecoveryDurationMs As Double
+  overload: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs*
+- uid: Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount
+  commentId: P:Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount
+  id: CorruptedRecordCount
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: CorruptedRecordCount
+  nameWithType: WriteAheadLog.CorruptedRecordCount
+  fullName: Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorruptedRecordCount
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Gets the total number of corrupted records encountered across all reads and recoveries.
+  example: []
+  syntax:
+    content: public long CorruptedRecordCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property CorruptedRecordCount As Long
+  overload: Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount*
+- uid: Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount
+  commentId: P:Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount
+  id: SkippedRecordCount
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: SkippedRecordCount
+  nameWithType: WriteAheadLog.SkippedRecordCount
+  fullName: Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedRecordCount
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Gets the total number of records skipped due to corruption across all reads and recoveries.
+  example: []
+  syntax:
+    content: public long SkippedRecordCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property SkippedRecordCount As Long
+  overload: Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount*
+- uid: Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+  commentId: E:Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+  id: CorruptionDetected
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: CorruptionDetected
+  nameWithType: WriteAheadLog.CorruptionDetected
+  fullName: Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorruptionDetected
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Raised when a corrupted WAL record is detected during recovery, provided
+
+    <xref href="Meridian.Storage.Archival.WalOptions.CorruptionMode" data-throw-if-not-resolved="false"></xref> is <xref href="Meridian.Storage.Archival.WalCorruptionMode.Alert" data-throw-if-not-resolved="false"></xref>.
+
+    The argument is the number of corrupted records found in the current recovery pass.
+
+    Subscribe to this event to forward alerts to your monitoring infrastructure.
+  example: []
+  syntax:
+    content: public event Action<long>? CorruptionDetected
+    return:
+      type: System.Action{System.Int64}
+    content.vb: Public Event CorruptionDetected As Action(Of Long)
+- uid: Meridian.Storage.Archival.WriteAheadLog.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: WriteAheadLog.InitializeAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Initialize the WAL, recovering any uncommitted transactions.
+  example: []
+  syntax:
+    content: public Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.WriteAheadLog.InitializeAsync*
+- uid: Meridian.Storage.Archival.WriteAheadLog.AppendAsync``1(``0,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.AppendAsync``1(``0,System.String,System.Threading.CancellationToken)
+  id: AppendAsync``1(``0,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync<T>(T, string, CancellationToken)
+  nameWithType: WriteAheadLog.AppendAsync<T>(T, string, CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.AppendAsync<T>(T, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Append a record to the WAL.
+  example: []
+  syntax:
+    content: public Task<WalRecord> AppendAsync<T>(T data, string recordType, CancellationToken ct = default)
+    parameters:
+    - id: data
+      type: '{T}'
+    - id: recordType
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Archival.WalRecord}
+    content.vb: Public Function AppendAsync(Of T)(data As T, recordType As String, ct As CancellationToken = Nothing) As Task(Of WalRecord)
+  overload: Meridian.Storage.Archival.WriteAheadLog.AppendAsync*
+  nameWithType.vb: WriteAheadLog.AppendAsync(Of T)(T, String, CancellationToken)
+  fullName.vb: Meridian.Storage.Archival.WriteAheadLog.AppendAsync(Of T)(T, String, System.Threading.CancellationToken)
+  name.vb: AppendAsync(Of T)(T, String, CancellationToken)
+- uid: Meridian.Storage.Archival.WriteAheadLog.CommitAsync(System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.CommitAsync(System.Int64,System.Threading.CancellationToken)
+  id: CommitAsync(System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: CommitAsync(long, CancellationToken)
+  nameWithType: WriteAheadLog.CommitAsync(long, CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.CommitAsync(long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommitAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Commit a batch of records, marking them as successfully persisted.
+  example: []
+  syntax:
+    content: public Task CommitAsync(long throughSequence, CancellationToken ct = default)
+    parameters:
+    - id: throughSequence
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function CommitAsync(throughSequence As Long, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.WriteAheadLog.CommitAsync*
+  nameWithType.vb: WriteAheadLog.CommitAsync(Long, CancellationToken)
+  fullName.vb: Meridian.Storage.Archival.WriteAheadLog.CommitAsync(Long, System.Threading.CancellationToken)
+  name.vb: CommitAsync(Long, CancellationToken)
+- uid: Meridian.Storage.Archival.WriteAheadLog.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: WriteAheadLog.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Flush any buffered writes to disk.
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.WriteAheadLog.FlushAsync*
+- uid: Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync(System.Threading.CancellationToken)
+  id: GetUncommittedRecordsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: GetUncommittedRecordsAsync(CancellationToken)
+  nameWithType: WriteAheadLog.GetUncommittedRecordsAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUncommittedRecordsAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Get uncommitted records for replay/recovery using streaming reads.
+
+    Processes records in batches to avoid loading entire WAL into memory.
+  example: []
+  syntax:
+    content: public IAsyncEnumerable<WalRecord> GetUncommittedRecordsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Storage.Archival.WalRecord}
+    content.vb: Public Function GetUncommittedRecordsAsync(ct As CancellationToken = Nothing) As IAsyncEnumerable(Of WalRecord)
+  overload: Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync*
+- uid: Meridian.Storage.Archival.WriteAheadLog.TruncateAsync(System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.TruncateAsync(System.Int64,System.Threading.CancellationToken)
+  id: TruncateAsync(System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: TruncateAsync(long, CancellationToken)
+  nameWithType: WriteAheadLog.TruncateAsync(long, CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.TruncateAsync(long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TruncateAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Truncate WAL files that have been fully committed.
+  example: []
+  syntax:
+    content: public Task TruncateAsync(long throughSequence, CancellationToken ct = default)
+    parameters:
+    - id: throughSequence
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function TruncateAsync(throughSequence As Long, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.WriteAheadLog.TruncateAsync*
+  nameWithType.vb: WriteAheadLog.TruncateAsync(Long, CancellationToken)
+  fullName.vb: Meridian.Storage.Archival.WriteAheadLog.TruncateAsync(Long, System.Threading.CancellationToken)
+  name.vb: TruncateAsync(Long, CancellationToken)
+- uid: Meridian.Storage.Archival.WriteAheadLog.RepairAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.RepairAsync(System.Threading.CancellationToken)
+  id: RepairAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: RepairAsync(CancellationToken)
+  nameWithType: WriteAheadLog.RepairAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.WriteAheadLog.RepairAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 699
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Repairs all WAL files by scanning every record, validating checksums,
+
+    and rewriting only valid records into new WAL files.
+
+    Corrupted records are discarded and counted in the result.
+  example: []
+  syntax:
+    content: public Task<WalRepairResult> RepairAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Archival.WalRepairResult}
+    content.vb: Public Function RepairAsync(ct As CancellationToken = Nothing) As Task(Of WalRepairResult)
+  overload: Meridian.Storage.Archival.WriteAheadLog.RepairAsync*
+- uid: Meridian.Storage.Archival.WriteAheadLog.DisposeAsync
+  commentId: M:Meridian.Storage.Archival.WriteAheadLog.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Storage.Archival.WriteAheadLog
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: WriteAheadLog.DisposeAsync()
+  fullName: Meridian.Storage.Archival.WriteAheadLog.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 844
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Storage.Archival.WriteAheadLog.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.WriteAheadLog.#ctor*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.#ctor
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog__ctor_System_String_Meridian_Storage_Archival_WalOptions_
+  name: WriteAheadLog
+  nameWithType: WriteAheadLog.WriteAheadLog
+  fullName: Meridian.Storage.Archival.WriteAheadLog.WriteAheadLog
+  nameWithType.vb: WriteAheadLog.New
+  fullName.vb: Meridian.Storage.Archival.WriteAheadLog.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Archival.WalOptions
+  commentId: T:Meridian.Storage.Archival.WalOptions
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WalOptions.html
+  name: WalOptions
+  nameWithType: WalOptions
+  fullName: Meridian.Storage.Archival.WalOptions
+- uid: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_LastRecoveryEventCount
+  name: LastRecoveryEventCount
+  nameWithType: WriteAheadLog.LastRecoveryEventCount
+  fullName: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryEventCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_LastRecoveryDurationMs
+  name: LastRecoveryDurationMs
+  nameWithType: WriteAheadLog.LastRecoveryDurationMs
+  fullName: Meridian.Storage.Archival.WriteAheadLog.LastRecoveryDurationMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_CorruptedRecordCount
+  name: CorruptedRecordCount
+  nameWithType: WriteAheadLog.CorruptedRecordCount
+  fullName: Meridian.Storage.Archival.WriteAheadLog.CorruptedRecordCount
+- uid: Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_SkippedRecordCount
+  name: SkippedRecordCount
+  nameWithType: WriteAheadLog.SkippedRecordCount
+  fullName: Meridian.Storage.Archival.WriteAheadLog.SkippedRecordCount
+- uid: Meridian.Storage.Archival.WalOptions.CorruptionMode
+  commentId: P:Meridian.Storage.Archival.WalOptions.CorruptionMode
+  href: Meridian.Storage.Archival.WalOptions.html#Meridian_Storage_Archival_WalOptions_CorruptionMode
+  name: CorruptionMode
+  nameWithType: WalOptions.CorruptionMode
+  fullName: Meridian.Storage.Archival.WalOptions.CorruptionMode
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Alert
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Alert
+  href: Meridian.Storage.Archival.WalCorruptionMode.html#Meridian_Storage_Archival_WalCorruptionMode_Alert
+  name: Alert
+  nameWithType: WalCorruptionMode.Alert
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Alert
+- uid: System.Action{System.Int64}
+  commentId: T:System.Action{System.Int64}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<long>
+  nameWithType: Action<long>
+  fullName: System.Action<long>
+  nameWithType.vb: Action(Of Long)
+  fullName.vb: System.Action(Of Long)
+  name.vb: Action(Of Long)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Archival.WriteAheadLog.InitializeAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.InitializeAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: WriteAheadLog.InitializeAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Archival.WriteAheadLog.AppendAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.AppendAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_AppendAsync__1___0_System_String_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: WriteAheadLog.AppendAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.AppendAsync
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Archival.WalRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Archival.WalRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WalRecord>
+  nameWithType: Task<WalRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Archival.WalRecord>
+  nameWithType.vb: Task(Of WalRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Archival.WalRecord)
+  name.vb: Task(Of WalRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Archival.WalRecord
+    name: WalRecord
+    href: Meridian.Storage.Archival.WalRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.WalRecord
+    name: WalRecord
+    href: Meridian.Storage.Archival.WalRecord.html
+  - name: )
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.Archival.WriteAheadLog.CommitAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.CommitAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_CommitAsync_System_Int64_System_Threading_CancellationToken_
+  name: CommitAsync
+  nameWithType: WriteAheadLog.CommitAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.CommitAsync
+- uid: Meridian.Storage.Archival.WriteAheadLog.FlushAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.FlushAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: WriteAheadLog.FlushAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.FlushAsync
+- uid: Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_GetUncommittedRecordsAsync_System_Threading_CancellationToken_
+  name: GetUncommittedRecordsAsync
+  nameWithType: WriteAheadLog.GetUncommittedRecordsAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.GetUncommittedRecordsAsync
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Storage.Archival.WalRecord}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Storage.Archival.WalRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<WalRecord>
+  nameWithType: IAsyncEnumerable<WalRecord>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Storage.Archival.WalRecord>
+  nameWithType.vb: IAsyncEnumerable(Of WalRecord)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Storage.Archival.WalRecord)
+  name.vb: IAsyncEnumerable(Of WalRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Storage.Archival.WalRecord
+    name: WalRecord
+    href: Meridian.Storage.Archival.WalRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.WalRecord
+    name: WalRecord
+    href: Meridian.Storage.Archival.WalRecord.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Archival.WriteAheadLog.TruncateAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.TruncateAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_TruncateAsync_System_Int64_System_Threading_CancellationToken_
+  name: TruncateAsync
+  nameWithType: WriteAheadLog.TruncateAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.TruncateAsync
+- uid: Meridian.Storage.Archival.WriteAheadLog.RepairAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.RepairAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_RepairAsync_System_Threading_CancellationToken_
+  name: RepairAsync
+  nameWithType: WriteAheadLog.RepairAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.RepairAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Archival.WalRepairResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Archival.WalRepairResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WalRepairResult>
+  nameWithType: Task<WalRepairResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Archival.WalRepairResult>
+  nameWithType.vb: Task(Of WalRepairResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Archival.WalRepairResult)
+  name.vb: Task(Of WalRepairResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Archival.WalRepairResult
+    name: WalRepairResult
+    href: Meridian.Storage.Archival.WalRepairResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.WalRepairResult
+    name: WalRepairResult
+    href: Meridian.Storage.Archival.WalRepairResult.html
+  - name: )
+- uid: Meridian.Storage.Archival.WriteAheadLog.DisposeAsync*
+  commentId: Overload:Meridian.Storage.Archival.WriteAheadLog.DisposeAsync
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_DisposeAsync
+  name: DisposeAsync
+  nameWithType: WriteAheadLog.DisposeAsync
+  fullName: Meridian.Storage.Archival.WriteAheadLog.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

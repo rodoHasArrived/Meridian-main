@@ -1,0 +1,134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.OptionRight
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionRight
+  id: OptionRight
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.OptionRight.Call
+  - Meridian.Contracts.Domain.Enums.OptionRight.Put
+  langs:
+  - csharp
+  - vb
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionRight
+    path: ../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Indicates whether an option contract is a call or a put.
+  example: []
+  syntax:
+    content: 'public enum OptionRight : byte'
+    content.vb: Public Enum OptionRight As Byte
+- uid: Meridian.Contracts.Domain.Enums.OptionRight.Call
+  commentId: F:Meridian.Contracts.Domain.Enums.OptionRight.Call
+  id: Call
+  parent: Meridian.Contracts.Domain.Enums.OptionRight
+  langs:
+  - csharp
+  - vb
+  name: Call
+  nameWithType: OptionRight.Call
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight.Call
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Call
+    path: ../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Call option — the right to buy the underlying at the strike price.
+  example: []
+  syntax:
+    content: Call = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionRight
+- uid: Meridian.Contracts.Domain.Enums.OptionRight.Put
+  commentId: F:Meridian.Contracts.Domain.Enums.OptionRight.Put
+  id: Put
+  parent: Meridian.Contracts.Domain.Enums.OptionRight
+  langs:
+  - csharp
+  - vb
+  name: Put
+  nameWithType: OptionRight.Put
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight.Put
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Put
+    path: ../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Put option — the right to sell the underlying at the strike price.
+  example: []
+  syntax:
+    content: Put = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionRight
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.OptionRight
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionRight
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionRight.html
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight

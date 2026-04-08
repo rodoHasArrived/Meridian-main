@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.PriceAggregation
+  commentId: T:Meridian.Storage.Export.PriceAggregation
+  id: PriceAggregation
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.PriceAggregation.Last
+  - Meridian.Storage.Export.PriceAggregation.Mean
+  - Meridian.Storage.Export.PriceAggregation.Ohlc
+  - Meridian.Storage.Export.PriceAggregation.Twap
+  - Meridian.Storage.Export.PriceAggregation.Vwap
+  langs:
+  - csharp
+  - vb
+  name: PriceAggregation
+  nameWithType: PriceAggregation
+  fullName: Meridian.Storage.Export.PriceAggregation
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceAggregation
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Price aggregation methods.
+  example: []
+  syntax:
+    content: 'public enum PriceAggregation : byte'
+    content.vb: Public Enum PriceAggregation As Byte
+- uid: Meridian.Storage.Export.PriceAggregation.Ohlc
+  commentId: F:Meridian.Storage.Export.PriceAggregation.Ohlc
+  id: Ohlc
+  parent: Meridian.Storage.Export.PriceAggregation
+  langs:
+  - csharp
+  - vb
+  name: Ohlc
+  nameWithType: PriceAggregation.Ohlc
+  fullName: Meridian.Storage.Export.PriceAggregation.Ohlc
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ohlc
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Open, High, Low, Close.
+  example: []
+  syntax:
+    content: Ohlc = 0
+    return:
+      type: Meridian.Storage.Export.PriceAggregation
+- uid: Meridian.Storage.Export.PriceAggregation.Vwap
+  commentId: F:Meridian.Storage.Export.PriceAggregation.Vwap
+  id: Vwap
+  parent: Meridian.Storage.Export.PriceAggregation
+  langs:
+  - csharp
+  - vb
+  name: Vwap
+  nameWithType: PriceAggregation.Vwap
+  fullName: Meridian.Storage.Export.PriceAggregation.Vwap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vwap
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Volume-weighted average price.
+  example: []
+  syntax:
+    content: Vwap = 1
+    return:
+      type: Meridian.Storage.Export.PriceAggregation
+- uid: Meridian.Storage.Export.PriceAggregation.Twap
+  commentId: F:Meridian.Storage.Export.PriceAggregation.Twap
+  id: Twap
+  parent: Meridian.Storage.Export.PriceAggregation
+  langs:
+  - csharp
+  - vb
+  name: Twap
+  nameWithType: PriceAggregation.Twap
+  fullName: Meridian.Storage.Export.PriceAggregation.Twap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Twap
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Time-weighted average price.
+  example: []
+  syntax:
+    content: Twap = 2
+    return:
+      type: Meridian.Storage.Export.PriceAggregation
+- uid: Meridian.Storage.Export.PriceAggregation.Last
+  commentId: F:Meridian.Storage.Export.PriceAggregation.Last
+  id: Last
+  parent: Meridian.Storage.Export.PriceAggregation
+  langs:
+  - csharp
+  - vb
+  name: Last
+  nameWithType: PriceAggregation.Last
+  fullName: Meridian.Storage.Export.PriceAggregation.Last
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Last
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Last price in interval.
+  example: []
+  syntax:
+    content: Last = 3
+    return:
+      type: Meridian.Storage.Export.PriceAggregation
+- uid: Meridian.Storage.Export.PriceAggregation.Mean
+  commentId: F:Meridian.Storage.Export.PriceAggregation.Mean
+  id: Mean
+  parent: Meridian.Storage.Export.PriceAggregation
+  langs:
+  - csharp
+  - vb
+  name: Mean
+  nameWithType: PriceAggregation.Mean
+  fullName: Meridian.Storage.Export.PriceAggregation.Mean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mean
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Average price.
+  example: []
+  syntax:
+    content: Mean = 4
+    return:
+      type: Meridian.Storage.Export.PriceAggregation
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.PriceAggregation
+  commentId: T:Meridian.Storage.Export.PriceAggregation
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.PriceAggregation.html
+  name: PriceAggregation
+  nameWithType: PriceAggregation
+  fullName: Meridian.Storage.Export.PriceAggregation

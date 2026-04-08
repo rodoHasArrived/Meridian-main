@@ -1,0 +1,1623 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService
+  commentId: T:Meridian.Ui.Services.ScheduledMaintenanceService
+  id: ScheduledMaintenanceService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ScheduledMaintenanceService.AddTask(Meridian.Ui.Services.MaintenanceTask)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask(System.String)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog
+  - Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime(System.String)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks(System.Int32)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.Instance
+  - Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning
+  - Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask(System.String)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStarted
+  - Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStopped
+  - Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled(System.String,System.Boolean)
+  - Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler
+  - Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler
+  - Meridian.Ui.Services.ScheduledMaintenanceService.TaskAdded
+  - Meridian.Ui.Services.ScheduledMaintenanceService.TaskCompleted
+  - Meridian.Ui.Services.ScheduledMaintenanceService.TaskRemoved
+  - Meridian.Ui.Services.ScheduledMaintenanceService.TaskStarted
+  - Meridian.Ui.Services.ScheduledMaintenanceService.TaskUpdated
+  - Meridian.Ui.Services.ScheduledMaintenanceService.Tasks
+  - Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask(Meridian.Ui.Services.MaintenanceTask)
+  langs:
+  - csharp
+  - vb
+  name: ScheduledMaintenanceService
+  nameWithType: ScheduledMaintenanceService
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledMaintenanceService
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for scheduling and executing archive maintenance tasks.
+
+    Supports recurring maintenance jobs like verification, optimization, and cleanup.
+  example: []
+  syntax:
+    content: public sealed class ScheduledMaintenanceService
+    content.vb: Public NotInheritable Class ScheduledMaintenanceService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.Instance
+  commentId: P:Meridian.Ui.Services.ScheduledMaintenanceService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: ScheduledMaintenanceService.Instance
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ScheduledMaintenanceService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ScheduledMaintenanceService
+    content.vb: Public Shared ReadOnly Property Instance As ScheduledMaintenanceService
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.Instance*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.Tasks
+  commentId: P:Meridian.Ui.Services.ScheduledMaintenanceService.Tasks
+  id: Tasks
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: Tasks
+  nameWithType: ScheduledMaintenanceService.Tasks
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.Tasks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tasks
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all configured maintenance tasks.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MaintenanceTask> Tasks { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MaintenanceTask}
+    content.vb: Public ReadOnly Property Tasks As IReadOnlyList(Of MaintenanceTask)
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.Tasks*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog
+  commentId: P:Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog
+  id: ExecutionLog
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionLog
+  nameWithType: ScheduledMaintenanceService.ExecutionLog
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionLog
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the maintenance execution log.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MaintenanceExecutionLog> ExecutionLog { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MaintenanceExecutionLog}
+    content.vb: Public ReadOnly Property ExecutionLog As IReadOnlyList(Of MaintenanceExecutionLog)
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning
+  commentId: P:Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning
+  id: IsSchedulerRunning
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: IsSchedulerRunning
+  nameWithType: ScheduledMaintenanceService.IsSchedulerRunning
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSchedulerRunning
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets whether the scheduler is running.
+  example: []
+  syntax:
+    content: public bool IsSchedulerRunning { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsSchedulerRunning As Boolean
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler
+  id: StartScheduler
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: StartScheduler()
+  nameWithType: ScheduledMaintenanceService.StartScheduler()
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartScheduler
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts the maintenance scheduler.
+  example: []
+  syntax:
+    content: public void StartScheduler()
+    content.vb: Public Sub StartScheduler()
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler
+  id: StopScheduler
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: StopScheduler()
+  nameWithType: ScheduledMaintenanceService.StopScheduler()
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopScheduler
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Stops the maintenance scheduler.
+  example: []
+  syntax:
+    content: public void StopScheduler()
+    content.vb: Public Sub StopScheduler()
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.AddTask(Meridian.Ui.Services.MaintenanceTask)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.AddTask(Meridian.Ui.Services.MaintenanceTask)
+  id: AddTask(Meridian.Ui.Services.MaintenanceTask)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: AddTask(MaintenanceTask)
+  nameWithType: ScheduledMaintenanceService.AddTask(MaintenanceTask)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.AddTask(Meridian.Ui.Services.MaintenanceTask)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddTask
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Adds a new maintenance task.
+  example: []
+  syntax:
+    content: public void AddTask(MaintenanceTask task)
+    parameters:
+    - id: task
+      type: Meridian.Ui.Services.MaintenanceTask
+    content.vb: Public Sub AddTask(task As MaintenanceTask)
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.AddTask*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask(System.String)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask(System.String)
+  id: RemoveTask(System.String)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RemoveTask(string)
+  nameWithType: ScheduledMaintenanceService.RemoveTask(string)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveTask
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Removes a maintenance task.
+  example: []
+  syntax:
+    content: public bool RemoveTask(string taskId)
+    parameters:
+    - id: taskId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function RemoveTask(taskId As String) As Boolean
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask*
+  nameWithType.vb: ScheduledMaintenanceService.RemoveTask(String)
+  fullName.vb: Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask(String)
+  name.vb: RemoveTask(String)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask(Meridian.Ui.Services.MaintenanceTask)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask(Meridian.Ui.Services.MaintenanceTask)
+  id: UpdateTask(Meridian.Ui.Services.MaintenanceTask)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: UpdateTask(MaintenanceTask)
+  nameWithType: ScheduledMaintenanceService.UpdateTask(MaintenanceTask)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask(Meridian.Ui.Services.MaintenanceTask)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateTask
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates an existing maintenance task.
+  example: []
+  syntax:
+    content: public bool UpdateTask(MaintenanceTask updatedTask)
+    parameters:
+    - id: updatedTask
+      type: Meridian.Ui.Services.MaintenanceTask
+    return:
+      type: System.Boolean
+    content.vb: Public Function UpdateTask(updatedTask As MaintenanceTask) As Boolean
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask*
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled(System.String,System.Boolean)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled(System.String,System.Boolean)
+  id: SetTaskEnabled(System.String,System.Boolean)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: SetTaskEnabled(string, bool)
+  nameWithType: ScheduledMaintenanceService.SetTaskEnabled(string, bool)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled(string, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetTaskEnabled
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Enables or disables a maintenance task.
+  example: []
+  syntax:
+    content: public void SetTaskEnabled(string taskId, bool enabled)
+    parameters:
+    - id: taskId
+      type: System.String
+    - id: enabled
+      type: System.Boolean
+    content.vb: Public Sub SetTaskEnabled(taskId As String, enabled As Boolean)
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled*
+  nameWithType.vb: ScheduledMaintenanceService.SetTaskEnabled(String, Boolean)
+  fullName.vb: Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled(String, Boolean)
+  name.vb: SetTaskEnabled(String, Boolean)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: RunTaskNowAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RunTaskNowAsync(string, bool, CancellationToken)
+  nameWithType: ScheduledMaintenanceService.RunTaskNowAsync(string, bool, CancellationToken)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunTaskNowAsync
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Runs a maintenance task immediately.
+  example: []
+  syntax:
+    content: public Task<MaintenanceResult> RunTaskNowAsync(string taskId, bool dryRun = false, CancellationToken ct = default)
+    parameters:
+    - id: taskId
+      type: System.String
+    - id: dryRun
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceResult}
+    content.vb: Public Function RunTaskNowAsync(taskId As String, dryRun As Boolean = False, ct As CancellationToken = Nothing) As Task(Of MaintenanceResult)
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync*
+  nameWithType.vb: ScheduledMaintenanceService.RunTaskNowAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: RunTaskNowAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask(System.String)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask(System.String)
+  id: CancelTask(System.String)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: CancelTask(string)
+  nameWithType: ScheduledMaintenanceService.CancelTask(string)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelTask
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Cancels a running maintenance task.
+  example: []
+  syntax:
+    content: public bool CancelTask(string taskId)
+    parameters:
+    - id: taskId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function CancelTask(taskId As String) As Boolean
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask*
+  nameWithType.vb: ScheduledMaintenanceService.CancelTask(String)
+  fullName.vb: Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask(String)
+  name.vb: CancelTask(String)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime(System.String)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime(System.String)
+  id: GetNextRunTime(System.String)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetNextRunTime(string)
+  nameWithType: ScheduledMaintenanceService.GetNextRunTime(string)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextRunTime
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the next scheduled run time for a task.
+  example: []
+  syntax:
+    content: public DateTime? GetNextRunTime(string taskId)
+    parameters:
+    - id: taskId
+      type: System.String
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Function GetNextRunTime(taskId As String) As Date?
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime*
+  nameWithType.vb: ScheduledMaintenanceService.GetNextRunTime(String)
+  fullName.vb: Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime(String)
+  name.vb: GetNextRunTime(String)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks(System.Int32)
+  commentId: M:Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks(System.Int32)
+  id: GetUpcomingTasks(System.Int32)
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetUpcomingTasks(int)
+  nameWithType: ScheduledMaintenanceService.GetUpcomingTasks(int)
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUpcomingTasks
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets upcoming maintenance tasks.
+  example: []
+  syntax:
+    content: public IReadOnlyList<(MaintenanceTask Task, DateTime NextRun)> GetUpcomingTasks(int count = 5)
+    parameters:
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}}
+    content.vb: Public Function GetUpcomingTasks(count As Integer = 5) As IReadOnlyList(Of (Task As MaintenanceTask, NextRun As Date))
+  overload: Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks*
+  nameWithType.vb: ScheduledMaintenanceService.GetUpcomingTasks(Integer)
+  fullName.vb: Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks(Integer)
+  name.vb: GetUpcomingTasks(Integer)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStarted
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStarted
+  id: SchedulerStarted
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: SchedulerStarted
+  nameWithType: ScheduledMaintenanceService.SchedulerStarted
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchedulerStarted
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when the scheduler starts.
+  example: []
+  syntax:
+    content: public event EventHandler? SchedulerStarted
+    return:
+      type: System.EventHandler
+    content.vb: Public Event SchedulerStarted As EventHandler
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStopped
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStopped
+  id: SchedulerStopped
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: SchedulerStopped
+  nameWithType: ScheduledMaintenanceService.SchedulerStopped
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.SchedulerStopped
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchedulerStopped
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when the scheduler stops.
+  example: []
+  syntax:
+    content: public event EventHandler? SchedulerStopped
+    return:
+      type: System.EventHandler
+    content.vb: Public Event SchedulerStopped As EventHandler
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.TaskAdded
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.TaskAdded
+  id: TaskAdded
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: TaskAdded
+  nameWithType: ScheduledMaintenanceService.TaskAdded
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.TaskAdded
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskAdded
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a task is added.
+  example: []
+  syntax:
+    content: public event EventHandler<MaintenanceTask>? TaskAdded
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.MaintenanceTask}
+    content.vb: Public Event TaskAdded As EventHandler(Of MaintenanceTask)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.TaskRemoved
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.TaskRemoved
+  id: TaskRemoved
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: TaskRemoved
+  nameWithType: ScheduledMaintenanceService.TaskRemoved
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.TaskRemoved
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskRemoved
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a task is removed.
+  example: []
+  syntax:
+    content: public event EventHandler<MaintenanceTask>? TaskRemoved
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.MaintenanceTask}
+    content.vb: Public Event TaskRemoved As EventHandler(Of MaintenanceTask)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.TaskUpdated
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.TaskUpdated
+  id: TaskUpdated
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: TaskUpdated
+  nameWithType: ScheduledMaintenanceService.TaskUpdated
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.TaskUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskUpdated
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 535
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a task is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<MaintenanceTask>? TaskUpdated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.MaintenanceTask}
+    content.vb: Public Event TaskUpdated As EventHandler(Of MaintenanceTask)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.TaskStarted
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.TaskStarted
+  id: TaskStarted
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: TaskStarted
+  nameWithType: ScheduledMaintenanceService.TaskStarted
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.TaskStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskStarted
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 540
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a task starts execution.
+  example: []
+  syntax:
+    content: public event EventHandler<MaintenanceTask>? TaskStarted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.MaintenanceTask}
+    content.vb: Public Event TaskStarted As EventHandler(Of MaintenanceTask)
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.TaskCompleted
+  commentId: E:Meridian.Ui.Services.ScheduledMaintenanceService.TaskCompleted
+  id: TaskCompleted
+  parent: Meridian.Ui.Services.ScheduledMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: TaskCompleted
+  nameWithType: ScheduledMaintenanceService.TaskCompleted
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.TaskCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskCompleted
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 545
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a task completes execution.
+  example: []
+  syntax:
+    content: public event EventHandler<(MaintenanceTask Task, MaintenanceResult Result)>? TaskCompleted
+    return:
+      type: System.EventHandler{System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}}
+    content.vb: Public Event TaskCompleted As EventHandler(Of (Task As MaintenanceTask, Result As MaintenanceResult))
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.Instance*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.Instance
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_Instance
+  name: Instance
+  nameWithType: ScheduledMaintenanceService.Instance
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.Instance
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService
+  commentId: T:Meridian.Ui.Services.ScheduledMaintenanceService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html
+  name: ScheduledMaintenanceService
+  nameWithType: ScheduledMaintenanceService
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.Tasks*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.Tasks
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_Tasks
+  name: Tasks
+  nameWithType: ScheduledMaintenanceService.Tasks
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.Tasks
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MaintenanceTask}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MaintenanceTask}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MaintenanceTask>
+  nameWithType: IReadOnlyList<MaintenanceTask>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.MaintenanceTask>
+  nameWithType.vb: IReadOnlyList(Of MaintenanceTask)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.MaintenanceTask)
+  name.vb: IReadOnlyList(Of MaintenanceTask)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_ExecutionLog
+  name: ExecutionLog
+  nameWithType: ScheduledMaintenanceService.ExecutionLog
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.ExecutionLog
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MaintenanceExecutionLog}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MaintenanceExecutionLog}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MaintenanceExecutionLog>
+  nameWithType: IReadOnlyList<MaintenanceExecutionLog>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.MaintenanceExecutionLog>
+  nameWithType.vb: IReadOnlyList(Of MaintenanceExecutionLog)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.MaintenanceExecutionLog)
+  name.vb: IReadOnlyList(Of MaintenanceExecutionLog)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceExecutionLog
+    name: MaintenanceExecutionLog
+    href: Meridian.Ui.Services.MaintenanceExecutionLog.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceExecutionLog
+    name: MaintenanceExecutionLog
+    href: Meridian.Ui.Services.MaintenanceExecutionLog.html
+  - name: )
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_IsSchedulerRunning
+  name: IsSchedulerRunning
+  nameWithType: ScheduledMaintenanceService.IsSchedulerRunning
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.IsSchedulerRunning
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_StartScheduler
+  name: StartScheduler
+  nameWithType: ScheduledMaintenanceService.StartScheduler
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.StartScheduler
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_StopScheduler
+  name: StopScheduler
+  nameWithType: ScheduledMaintenanceService.StopScheduler
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.StopScheduler
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.AddTask*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.AddTask
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_AddTask_Meridian_Ui_Services_MaintenanceTask_
+  name: AddTask
+  nameWithType: ScheduledMaintenanceService.AddTask
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.AddTask
+- uid: Meridian.Ui.Services.MaintenanceTask
+  commentId: T:Meridian.Ui.Services.MaintenanceTask
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.MaintenanceTask.html
+  name: MaintenanceTask
+  nameWithType: MaintenanceTask
+  fullName: Meridian.Ui.Services.MaintenanceTask
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_RemoveTask_System_String_
+  name: RemoveTask
+  nameWithType: ScheduledMaintenanceService.RemoveTask
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.RemoveTask
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_UpdateTask_Meridian_Ui_Services_MaintenanceTask_
+  name: UpdateTask
+  nameWithType: ScheduledMaintenanceService.UpdateTask
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.UpdateTask
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_SetTaskEnabled_System_String_System_Boolean_
+  name: SetTaskEnabled
+  nameWithType: ScheduledMaintenanceService.SetTaskEnabled
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.SetTaskEnabled
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_RunTaskNowAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: RunTaskNowAsync
+  nameWithType: ScheduledMaintenanceService.RunTaskNowAsync
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.RunTaskNowAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MaintenanceResult>
+  nameWithType: Task<MaintenanceResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.MaintenanceResult>
+  nameWithType.vb: Task(Of MaintenanceResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.MaintenanceResult)
+  name.vb: Task(Of MaintenanceResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceResult
+    name: MaintenanceResult
+    href: Meridian.Ui.Services.MaintenanceResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceResult
+    name: MaintenanceResult
+    href: Meridian.Ui.Services.MaintenanceResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_CancelTask_System_String_
+  name: CancelTask
+  nameWithType: ScheduledMaintenanceService.CancelTask
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.CancelTask
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_GetNextRunTime_System_String_
+  name: GetNextRunTime
+  nameWithType: ScheduledMaintenanceService.GetNextRunTime
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.GetNextRunTime
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks*
+  commentId: Overload:Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks
+  href: Meridian.Ui.Services.ScheduledMaintenanceService.html#Meridian_Ui_Services_ScheduledMaintenanceService_GetUpcomingTasks_System_Int32_
+  name: GetUpcomingTasks
+  nameWithType: ScheduledMaintenanceService.GetUpcomingTasks
+  fullName: Meridian.Ui.Services.ScheduledMaintenanceService.GetUpcomingTasks
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<(MaintenanceTask Task, DateTime NextRun)>
+  nameWithType: IReadOnlyList<(MaintenanceTask Task, DateTime NextRun)>
+  fullName: System.Collections.Generic.IReadOnlyList<(Meridian.Ui.Services.MaintenanceTask Task, System.DateTime NextRun)>
+  nameWithType.vb: IReadOnlyList(Of (Task As MaintenanceTask, NextRun As Date))
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of (Task As Meridian.Ui.Services.MaintenanceTask, NextRun As Date))
+  name.vb: IReadOnlyList(Of (Task As MaintenanceTask, NextRun As Date))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: (
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}.Task
+    name: Task
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,system.datetime-.task
+  - name: ','
+  - name: " "
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}.NextRun
+    name: NextRun
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,system.datetime-.nextrun
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}.Task
+    name: Task
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,system.datetime-.task
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,System.DateTime}.NextRun
+    name: NextRun
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,system.datetime-.nextrun
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: )
+  - name: )
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: System.EventHandler{Meridian.Ui.Services.MaintenanceTask}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.MaintenanceTask}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<MaintenanceTask>
+  nameWithType: EventHandler<MaintenanceTask>
+  fullName: System.EventHandler<Meridian.Ui.Services.MaintenanceTask>
+  nameWithType.vb: EventHandler(Of MaintenanceTask)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.MaintenanceTask)
+  name.vb: EventHandler(Of MaintenanceTask)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}}
+  commentId: T:System.EventHandler{System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<(MaintenanceTask Task, MaintenanceResult Result)>
+  nameWithType: EventHandler<(MaintenanceTask Task, MaintenanceResult Result)>
+  fullName: System.EventHandler<(Meridian.Ui.Services.MaintenanceTask Task, Meridian.Ui.Services.MaintenanceResult Result)>
+  nameWithType.vb: EventHandler(Of (Task As MaintenanceTask, Result As MaintenanceResult))
+  fullName.vb: System.EventHandler(Of (Task As Meridian.Ui.Services.MaintenanceTask, Result As Meridian.Ui.Services.MaintenanceResult))
+  name.vb: EventHandler(Of (Task As MaintenanceTask, Result As MaintenanceResult))
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: (
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}.Task
+    name: Task
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,meridian.ui.services.maintenanceresult-.task
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceResult
+    name: MaintenanceResult
+    href: Meridian.Ui.Services.MaintenanceResult.html
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}.Result
+    name: Result
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,meridian.ui.services.maintenanceresult-.result
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}.Task
+    name: Task
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,meridian.ui.services.maintenanceresult-.task
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceTask
+    name: MaintenanceTask
+    href: Meridian.Ui.Services.MaintenanceTask.html
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ui.Services.MaintenanceTask,Meridian.Ui.Services.MaintenanceResult}.Result
+    name: Result
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ui.services.maintenancetask,meridian.ui.services.maintenanceresult-.result
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceResult
+    name: MaintenanceResult
+    href: Meridian.Ui.Services.MaintenanceResult.html
+  - name: )
+  - name: )

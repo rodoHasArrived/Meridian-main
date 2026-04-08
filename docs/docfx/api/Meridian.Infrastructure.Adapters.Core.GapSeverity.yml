@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.GapSeverity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.GapSeverity
+  id: GapSeverity
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.GapSeverity.Critical
+  - Meridian.Infrastructure.Adapters.Core.GapSeverity.Info
+  - Meridian.Infrastructure.Adapters.Core.GapSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: GapSeverity
+  nameWithType: GapSeverity
+  fullName: Meridian.Infrastructure.Adapters.Core.GapSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapSeverity
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Severity of a data gap.
+  example: []
+  syntax:
+    content: 'public enum GapSeverity : byte'
+    content.vb: Public Enum GapSeverity As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.GapSeverity.Info
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapSeverity.Info
+  id: Info
+  parent: Meridian.Infrastructure.Adapters.Core.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: GapSeverity.Info
+  fullName: Meridian.Infrastructure.Adapters.Core.GapSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Expected gaps (holidays, weekends).
+  example: []
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapSeverity
+- uid: Meridian.Infrastructure.Adapters.Core.GapSeverity.Warning
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapSeverity.Warning
+  id: Warning
+  parent: Meridian.Infrastructure.Adapters.Core.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: GapSeverity.Warning
+  fullName: Meridian.Infrastructure.Adapters.Core.GapSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Partial data.
+  example: []
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapSeverity
+- uid: Meridian.Infrastructure.Adapters.Core.GapSeverity.Critical
+  commentId: F:Meridian.Infrastructure.Adapters.Core.GapSeverity.Critical
+  id: Critical
+  parent: Meridian.Infrastructure.Adapters.Core.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: GapSeverity.Critical
+  fullName: Meridian.Infrastructure.Adapters.Core.GapSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Missing critical data.
+  example: []
+  syntax:
+    content: Critical = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.GapSeverity
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.GapSeverity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.GapSeverity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.GapSeverity.html
+  name: GapSeverity
+  nameWithType: GapSeverity
+  fullName: Meridian.Infrastructure.Adapters.Core.GapSeverity

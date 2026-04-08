@@ -1,0 +1,270 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.IHostAdapter
+  commentId: T:Meridian.Application.Composition.IHostAdapter
+  id: IHostAdapter
+  parent: Meridian.Application.Composition
+  children:
+  - Meridian.Application.Composition.IHostAdapter.ConfigureApplication(Microsoft.AspNetCore.Builder.WebApplication)
+  - Meridian.Application.Composition.IHostAdapter.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  langs:
+  - csharp
+  - vb
+  name: IHostAdapter
+  nameWithType: IHostAdapter
+  fullName: Meridian.Application.Composition.IHostAdapter
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostAdapters.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IHostAdapter
+    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Adapter interface for host-specific behavior.
+
+    Each host type (console, web, desktop) can customize endpoint exposure
+
+    while sharing the same service graph from <xref href="Meridian.Application.Composition.ServiceCompositionRoot" data-throw-if-not-resolved="false"></xref>
+
+    and the same startup abstractions used by <xref href="Meridian.Application.Composition.HostStartup" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Host adapters for mode-specific behavior")]
+
+      public interface IHostAdapter
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Host adapters for mode-specific behavior")>
+
+      Public Interface IHostAdapter
+  derivedClasses:
+  - Meridian.Application.Composition.BackfillHostAdapter
+  - Meridian.Application.Composition.ConsoleHostAdapter
+  - Meridian.Application.Composition.DesktopHostAdapter
+  - Meridian.Application.Composition.StreamingHostAdapter
+  - Meridian.Application.Composition.WebHostAdapter
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Host adapters for mode-specific behavior
+- uid: Meridian.Application.Composition.IHostAdapter.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  commentId: M:Meridian.Application.Composition.IHostAdapter.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  id: ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  parent: Meridian.Application.Composition.IHostAdapter
+  langs:
+  - csharp
+  - vb
+  name: ConfigureServices(IServiceCollection)
+  nameWithType: IHostAdapter.ConfigureServices(IServiceCollection)
+  fullName: Meridian.Application.Composition.IHostAdapter.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostAdapters.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureServices
+    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Configures additional services specific to this host type.
+
+    Called after the common services are registered.
+  example: []
+  syntax:
+    content: void ConfigureServices(IServiceCollection services)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    content.vb: Sub ConfigureServices(services As IServiceCollection)
+  overload: Meridian.Application.Composition.IHostAdapter.ConfigureServices*
+- uid: Meridian.Application.Composition.IHostAdapter.ConfigureApplication(Microsoft.AspNetCore.Builder.WebApplication)
+  commentId: M:Meridian.Application.Composition.IHostAdapter.ConfigureApplication(Microsoft.AspNetCore.Builder.WebApplication)
+  id: ConfigureApplication(Microsoft.AspNetCore.Builder.WebApplication)
+  parent: Meridian.Application.Composition.IHostAdapter
+  langs:
+  - csharp
+  - vb
+  name: ConfigureApplication(WebApplication)
+  nameWithType: IHostAdapter.ConfigureApplication(WebApplication)
+  fullName: Meridian.Application.Composition.IHostAdapter.ConfigureApplication(Microsoft.AspNetCore.Builder.WebApplication)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostAdapters.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureApplication
+    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Configures the application (routes, middleware, etc.) after build.
+  example: []
+  syntax:
+    content: void ConfigureApplication(WebApplication app)
+    parameters:
+    - id: app
+      type: Microsoft.AspNetCore.Builder.WebApplication
+    content.vb: Sub ConfigureApplication(app As WebApplication)
+  overload: Meridian.Application.Composition.IHostAdapter.ConfigureApplication*
+references:
+- uid: Meridian.Application.Composition.ServiceCompositionRoot
+  commentId: T:Meridian.Application.Composition.ServiceCompositionRoot
+  href: Meridian.Application.Composition.ServiceCompositionRoot.html
+  name: ServiceCompositionRoot
+  nameWithType: ServiceCompositionRoot
+  fullName: Meridian.Application.Composition.ServiceCompositionRoot
+- uid: Meridian.Application.Composition.HostStartup
+  commentId: T:Meridian.Application.Composition.HostStartup
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.HostStartup.html
+  name: HostStartup
+  nameWithType: HostStartup
+  fullName: Meridian.Application.Composition.HostStartup
+- uid: Meridian.Application.Composition
+  commentId: N:Meridian.Application.Composition
+  href: Meridian.html
+  name: Meridian.Application.Composition
+  nameWithType: Meridian.Application.Composition
+  fullName: Meridian.Application.Composition
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+- uid: Meridian.Application.Composition.IHostAdapter.ConfigureServices*
+  commentId: Overload:Meridian.Application.Composition.IHostAdapter.ConfigureServices
+  href: Meridian.Application.Composition.IHostAdapter.html#Meridian_Application_Composition_IHostAdapter_ConfigureServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_
+  name: ConfigureServices
+  nameWithType: IHostAdapter.ConfigureServices
+  fullName: Meridian.Application.Composition.IHostAdapter.ConfigureServices
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+- uid: Meridian.Application.Composition.IHostAdapter.ConfigureApplication*
+  commentId: Overload:Meridian.Application.Composition.IHostAdapter.ConfigureApplication
+  href: Meridian.Application.Composition.IHostAdapter.html#Meridian_Application_Composition_IHostAdapter_ConfigureApplication_Microsoft_AspNetCore_Builder_WebApplication_
+  name: ConfigureApplication
+  nameWithType: IHostAdapter.ConfigureApplication
+  fullName: Meridian.Application.Composition.IHostAdapter.ConfigureApplication
+- uid: Microsoft.AspNetCore.Builder.WebApplication
+  commentId: T:Microsoft.AspNetCore.Builder.WebApplication
+  parent: Microsoft.AspNetCore.Builder
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.webapplication
+  name: WebApplication
+  nameWithType: WebApplication
+  fullName: Microsoft.AspNetCore.Builder.WebApplication
+- uid: Microsoft.AspNetCore.Builder
+  commentId: N:Microsoft.AspNetCore.Builder
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.AspNetCore.Builder
+  nameWithType: Microsoft.AspNetCore.Builder
+  fullName: Microsoft.AspNetCore.Builder
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.AspNetCore
+    name: AspNetCore
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore
+  - name: .
+  - uid: Microsoft.AspNetCore.Builder
+    name: Builder
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.AspNetCore
+    name: AspNetCore
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore
+  - name: .
+  - uid: Microsoft.AspNetCore.Builder
+    name: Builder
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder

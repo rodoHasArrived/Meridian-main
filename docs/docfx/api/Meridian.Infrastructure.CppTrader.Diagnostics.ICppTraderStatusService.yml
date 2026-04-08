@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  id: ICppTraderStatusService
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  children:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+  langs:
+  - csharp
+  - vb
+  name: ICppTraderStatusService
+  nameWithType: ICppTraderStatusService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICppTraderStatusService
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderStatusService.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public interface ICppTraderStatusService
+    content.vb: Public Interface ICppTraderStatusService
+  derivedClasses:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+  commentId: M:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+  id: GetStatus
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  langs:
+  - csharp
+  - vb
+  name: GetStatus()
+  nameWithType: ICppTraderStatusService.GetStatus()
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatus
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderStatusService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: HostHealthSnapshot GetStatus()
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+    content.vb: Function GetStatus() As HostHealthSnapshot
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics
+  commentId: N:Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Diagnostics
+  nameWithType: Meridian.Infrastructure.CppTrader.Diagnostics
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.html#Meridian_Infrastructure_CppTrader_Diagnostics_ICppTraderStatusService_GetStatus
+  name: GetStatus
+  nameWithType: ICppTraderStatusService.GetStatus
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+- uid: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot.html
+  name: HostHealthSnapshot
+  nameWithType: HostHealthSnapshot
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Events.Publishers
+  commentId: N:Meridian.Domain.Events.Publishers
+  id: Meridian.Domain.Events.Publishers
+  children:
+  - Meridian.Domain.Events.Publishers.CompositePublisher
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Domain.Events.Publishers
+  nameWithType: Meridian.Domain.Events.Publishers
+  fullName: Meridian.Domain.Events.Publishers
+  type: Namespace
+  assemblies:
+  - Meridian.Domain
+references:
+- uid: Meridian.Domain.Events.Publishers.CompositePublisher
+  commentId: T:Meridian.Domain.Events.Publishers.CompositePublisher
+  href: Meridian.Domain.Events.Publishers.CompositePublisher.html
+  name: CompositePublisher
+  nameWithType: CompositePublisher
+  fullName: Meridian.Domain.Events.Publishers.CompositePublisher

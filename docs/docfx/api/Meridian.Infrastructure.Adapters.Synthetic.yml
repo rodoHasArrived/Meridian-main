@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Synthetic
+  commentId: N:Meridian.Infrastructure.Adapters.Synthetic
+  id: Meridian.Infrastructure.Adapters.Synthetic
+  children:
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Synthetic
+  nameWithType: Meridian.Infrastructure.Adapters.Synthetic
+  fullName: Meridian.Infrastructure.Adapters.Synthetic
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider.html
+  name: SyntheticHistoricalDataProvider
+  nameWithType: SyntheticHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+  href: Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient.html
+  name: SyntheticMarketDataClient
+  nameWithType: SyntheticMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient

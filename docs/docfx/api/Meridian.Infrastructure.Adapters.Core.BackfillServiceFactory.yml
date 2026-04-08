@@ -1,0 +1,594 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory
+  id: BackfillServiceFactory
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.#ctor(Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices(Meridian.Application.Config.AppConfig,Meridian.Application.Config.BackfillConfig,System.String,System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Contracts.Services.IConnectivityProbeService)
+  langs:
+  - csharp
+  - vb
+  name: BackfillServiceFactory
+  nameWithType: BackfillServiceFactory
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillServiceFactory
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 693
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Factory for creating backfill service instances.
+  example: []
+  syntax:
+    content: public sealed class BackfillServiceFactory
+    content.vb: Public NotInheritable Class BackfillServiceFactory
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.#ctor(Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.#ctor(Serilog.ILogger)
+  id: '#ctor(Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory
+  langs:
+  - csharp
+  - vb
+  name: BackfillServiceFactory(ILogger?)
+  nameWithType: BackfillServiceFactory.BackfillServiceFactory(ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.BackfillServiceFactory(Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 697
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public BackfillServiceFactory(ILogger? log = null)
+    parameters:
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.#ctor*
+  nameWithType.vb: BackfillServiceFactory.New(ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.New(Serilog.ILogger)
+  name.vb: New(ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices(Meridian.Application.Config.AppConfig,Meridian.Application.Config.BackfillConfig,System.String,System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Contracts.Services.IConnectivityProbeService)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices(Meridian.Application.Config.AppConfig,Meridian.Application.Config.BackfillConfig,System.String,System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Contracts.Services.IConnectivityProbeService)
+  id: CreateServices(Meridian.Application.Config.AppConfig,Meridian.Application.Config.BackfillConfig,System.String,System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Contracts.Services.IConnectivityProbeService)
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory
+  langs:
+  - csharp
+  - vb
+  name: CreateServices(AppConfig, BackfillConfig, string, IEnumerable<IHistoricalDataProvider>, IConnectivityProbeService?)
+  nameWithType: BackfillServiceFactory.CreateServices(AppConfig, BackfillConfig, string, IEnumerable<IHistoricalDataProvider>, IConnectivityProbeService?)
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices(Meridian.Application.Config.AppConfig, Meridian.Application.Config.BackfillConfig, string, System.Collections.Generic.IEnumerable<Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider>, Meridian.Contracts.Services.IConnectivityProbeService?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateServices
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 705
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Create a complete backfill service stack from configuration.
+  example: []
+  syntax:
+    content: public BackfillServices CreateServices(AppConfig appConfig, BackfillConfig config, string dataRoot, IEnumerable<IHistoricalDataProvider> providers, IConnectivityProbeService? connectivityProbe = null)
+    parameters:
+    - id: appConfig
+      type: Meridian.Application.Config.AppConfig
+    - id: config
+      type: Meridian.Application.Config.BackfillConfig
+    - id: dataRoot
+      type: System.String
+    - id: providers
+      type: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+    - id: connectivityProbe
+      type: Meridian.Contracts.Services.IConnectivityProbeService
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillServices
+    content.vb: Public Function CreateServices(appConfig As AppConfig, config As BackfillConfig, dataRoot As String, providers As IEnumerable(Of IHistoricalDataProvider), connectivityProbe As IConnectivityProbeService = Nothing) As BackfillServices
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices*
+  nameWithType.vb: BackfillServiceFactory.CreateServices(AppConfig, BackfillConfig, String, IEnumerable(Of IHistoricalDataProvider), IConnectivityProbeService)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices(Meridian.Application.Config.AppConfig, Meridian.Application.Config.BackfillConfig, String, System.Collections.Generic.IEnumerable(Of Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider), Meridian.Contracts.Services.IConnectivityProbeService)
+  name.vb: CreateServices(AppConfig, BackfillConfig, String, IEnumerable(Of IHistoricalDataProvider), IConnectivityProbeService)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.html#Meridian_Infrastructure_Adapters_Core_BackfillServiceFactory__ctor_Serilog_ILogger_
+  name: BackfillServiceFactory
+  nameWithType: BackfillServiceFactory.BackfillServiceFactory
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.BackfillServiceFactory
+  nameWithType.vb: BackfillServiceFactory.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.html#Meridian_Infrastructure_Adapters_Core_BackfillServiceFactory_CreateServices_Meridian_Application_Config_AppConfig_Meridian_Application_Config_BackfillConfig_System_String_System_Collections_Generic_IEnumerable_Meridian_Infrastructure_Adapters_Core_IHistoricalDataProvider__Meridian_Contracts_Services_IConnectivityProbeService_
+  name: CreateServices
+  nameWithType: BackfillServiceFactory.CreateServices
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory.CreateServices
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Config.BackfillConfig
+  commentId: T:Meridian.Application.Config.BackfillConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.BackfillConfig.html
+  name: BackfillConfig
+  nameWithType: BackfillConfig
+  fullName: Meridian.Application.Config.BackfillConfig
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<IHistoricalDataProvider>
+  nameWithType: IEnumerable<IHistoricalDataProvider>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider>
+  nameWithType.vb: IEnumerable(Of IHistoricalDataProvider)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  name.vb: IEnumerable(Of IHistoricalDataProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: )
+- uid: Meridian.Contracts.Services.IConnectivityProbeService
+  commentId: T:Meridian.Contracts.Services.IConnectivityProbeService
+  parent: Meridian.Contracts.Services
+  href: Meridian.Contracts.Services.IConnectivityProbeService.html
+  name: IConnectivityProbeService
+  nameWithType: IConnectivityProbeService
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillServices
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html
+  name: BackfillServices
+  nameWithType: BackfillServices
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Services
+  commentId: N:Meridian.Contracts.Services
+  href: Meridian.html
+  name: Meridian.Contracts.Services
+  nameWithType: Meridian.Contracts.Services
+  fullName: Meridian.Contracts.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Services
+    name: Services
+    href: Meridian.Contracts.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Services
+    name: Services
+    href: Meridian.Contracts.Services.html

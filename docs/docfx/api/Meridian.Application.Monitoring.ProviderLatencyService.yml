@@ -1,0 +1,938 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderLatencyService
+  commentId: T:Meridian.Application.Monitoring.ProviderLatencyService
+  id: ProviderLatencyService
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderLatencyService.#ctor(Meridian.Application.Monitoring.ProviderLatencyConfig)
+  - Meridian.Application.Monitoring.ProviderLatencyService.Dispose
+  - Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms
+  - Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders(System.Double)
+  - Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram(System.String)
+  - Meridian.Application.Monitoring.ProviderLatencyService.GetSummary
+  - Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(System.String,System.Double,System.String)
+  - Meridian.Application.Monitoring.ProviderLatencyService.Reset(System.String)
+  - Meridian.Application.Monitoring.ProviderLatencyService.ResetAll
+  - Meridian.Application.Monitoring.ProviderLatencyService.ToJson
+  langs:
+  - csharp
+  - vb
+  name: ProviderLatencyService
+  nameWithType: ProviderLatencyService
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderLatencyService
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Tracks and provides latency histograms per data provider.
+
+    Implements PROV-11: Provider Latency Histogram.
+  example: []
+  syntax:
+    content: 'public sealed class ProviderLatencyService : IDisposable'
+    content.vb: Public NotInheritable Class ProviderLatencyService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.#ctor(Meridian.Application.Monitoring.ProviderLatencyConfig)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.#ctor(Meridian.Application.Monitoring.ProviderLatencyConfig)
+  id: '#ctor(Meridian.Application.Monitoring.ProviderLatencyConfig)'
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: ProviderLatencyService(ProviderLatencyConfig?)
+  nameWithType: ProviderLatencyService.ProviderLatencyService(ProviderLatencyConfig?)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.ProviderLatencyService(Meridian.Application.Monitoring.ProviderLatencyConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ProviderLatencyService(ProviderLatencyConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.ProviderLatencyConfig
+    content.vb: Public Sub New(config As ProviderLatencyConfig = Nothing)
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.#ctor*
+  nameWithType.vb: ProviderLatencyService.New(ProviderLatencyConfig)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.New(Meridian.Application.Monitoring.ProviderLatencyConfig)
+  name.vb: New(ProviderLatencyConfig)
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(System.String,System.Double,System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(System.String,System.Double,System.String)
+  id: RecordLatency(System.String,System.Double,System.String)
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(string, double, string?)
+  nameWithType: ProviderLatencyService.RecordLatency(string, double, string?)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(string, double, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a latency measurement for a provider.
+  example: []
+  syntax:
+    content: public void RecordLatency(string provider, double latencyMs, string? symbol = null)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: latencyMs
+      type: System.Double
+    - id: symbol
+      type: System.String
+    content.vb: Public Sub RecordLatency(provider As String, latencyMs As Double, symbol As String = Nothing)
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency*
+  nameWithType.vb: ProviderLatencyService.RecordLatency(String, Double, String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(String, Double, String)
+  name.vb: RecordLatency(String, Double, String)
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  id: RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(string, DateTimeOffset, DateTimeOffset, string?)
+  nameWithType: ProviderLatencyService.RecordLatency(string, DateTimeOffset, DateTimeOffset, string?)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(string, System.DateTimeOffset, System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records latency from timestamps.
+  example: []
+  syntax:
+    content: public void RecordLatency(string provider, DateTimeOffset eventTime, DateTimeOffset receiveTime, string? symbol = null)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: eventTime
+      type: System.DateTimeOffset
+    - id: receiveTime
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    content.vb: Public Sub RecordLatency(provider As String, eventTime As DateTimeOffset, receiveTime As DateTimeOffset, symbol As String = Nothing)
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency*
+  nameWithType.vb: ProviderLatencyService.RecordLatency(String, DateTimeOffset, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency(String, System.DateTimeOffset, System.DateTimeOffset, String)
+  name.vb: RecordLatency(String, DateTimeOffset, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram(System.String)
+  id: GetHistogram(System.String)
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: GetHistogram(string)
+  nameWithType: ProviderLatencyService.GetHistogram(string)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistogram
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the latency histogram for a specific provider.
+  example: []
+  syntax:
+    content: public ProviderLatencyHistogram? GetHistogram(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.ProviderLatencyHistogram
+    content.vb: Public Function GetHistogram(provider As String) As ProviderLatencyHistogram
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram*
+  nameWithType.vb: ProviderLatencyService.GetHistogram(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram(String)
+  name.vb: GetHistogram(String)
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms
+  id: GetAllHistograms
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: GetAllHistograms()
+  nameWithType: ProviderLatencyService.GetAllHistograms()
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllHistograms
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets latency histograms for all providers.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderLatencyHistogram> GetAllHistograms()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderLatencyHistogram}
+    content.vb: Public Function GetAllHistograms() As IReadOnlyList(Of ProviderLatencyHistogram)
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms*
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetSummary
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.GetSummary
+  id: GetSummary
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: ProviderLatencyService.GetSummary()
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a summary comparison of all providers.
+  example: []
+  syntax:
+    content: public ProviderLatencySummary GetSummary()
+    return:
+      type: Meridian.Application.Monitoring.ProviderLatencySummary
+    content.vb: Public Function GetSummary() As ProviderLatencySummary
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.GetSummary*
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders(System.Double)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders(System.Double)
+  id: GetHighLatencyProviders(System.Double)
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: GetHighLatencyProviders(double)
+  nameWithType: ProviderLatencyService.GetHighLatencyProviders(double)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHighLatencyProviders
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets providers with latency above threshold.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderLatencyStats> GetHighLatencyProviders(double thresholdMs)
+    parameters:
+    - id: thresholdMs
+      type: System.Double
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderLatencyStats}
+    content.vb: Public Function GetHighLatencyProviders(thresholdMs As Double) As IReadOnlyList(Of ProviderLatencyStats)
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders*
+  nameWithType.vb: ProviderLatencyService.GetHighLatencyProviders(Double)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders(Double)
+  name.vb: GetHighLatencyProviders(Double)
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.Reset(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.Reset(System.String)
+  id: Reset(System.String)
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: Reset(string)
+  nameWithType: ProviderLatencyService.Reset(string)
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.Reset(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Resets tracking for a provider.
+  example: []
+  syntax:
+    content: public void Reset(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    content.vb: Public Sub Reset(provider As String)
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.Reset*
+  nameWithType.vb: ProviderLatencyService.Reset(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.Reset(String)
+  name.vb: Reset(String)
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.ResetAll
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.ResetAll
+  id: ResetAll
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: ResetAll()
+  nameWithType: ProviderLatencyService.ResetAll()
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.ResetAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetAll
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Resets all tracking.
+  example: []
+  syntax:
+    content: public void ResetAll()
+    content.vb: Public Sub ResetAll()
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.ResetAll*
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.ToJson
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.ToJson
+  id: ToJson
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: ToJson()
+  nameWithType: ProviderLatencyService.ToJson()
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.ToJson()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToJson
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Serializes the summary to JSON.
+  example: []
+  syntax:
+    content: public string ToJson()
+    return:
+      type: System.String
+    content.vb: Public Function ToJson() As String
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.ToJson*
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.Dispose
+  commentId: M:Meridian.Application.Monitoring.ProviderLatencyService.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.ProviderLatencyService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ProviderLatencyService.Dispose()
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.ProviderLatencyService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.#ctor
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService__ctor_Meridian_Application_Monitoring_ProviderLatencyConfig_
+  name: ProviderLatencyService
+  nameWithType: ProviderLatencyService.ProviderLatencyService
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.ProviderLatencyService
+  nameWithType.vb: ProviderLatencyService.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderLatencyService.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.ProviderLatencyConfig
+  commentId: T:Meridian.Application.Monitoring.ProviderLatencyConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderLatencyConfig.html
+  name: ProviderLatencyConfig
+  nameWithType: ProviderLatencyConfig
+  fullName: Meridian.Application.Monitoring.ProviderLatencyConfig
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_RecordLatency_System_String_System_Double_System_String_
+  name: RecordLatency
+  nameWithType: ProviderLatencyService.RecordLatency
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.RecordLatency
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_GetHistogram_System_String_
+  name: GetHistogram
+  nameWithType: ProviderLatencyService.GetHistogram
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetHistogram
+- uid: Meridian.Application.Monitoring.ProviderLatencyHistogram
+  commentId: T:Meridian.Application.Monitoring.ProviderLatencyHistogram
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderLatencyHistogram.html
+  name: ProviderLatencyHistogram
+  nameWithType: ProviderLatencyHistogram
+  fullName: Meridian.Application.Monitoring.ProviderLatencyHistogram
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_GetAllHistograms
+  name: GetAllHistograms
+  nameWithType: ProviderLatencyService.GetAllHistograms
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetAllHistograms
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderLatencyHistogram}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderLatencyHistogram}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderLatencyHistogram>
+  nameWithType: IReadOnlyList<ProviderLatencyHistogram>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderLatencyHistogram>
+  nameWithType.vb: IReadOnlyList(Of ProviderLatencyHistogram)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderLatencyHistogram)
+  name.vb: IReadOnlyList(Of ProviderLatencyHistogram)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderLatencyHistogram
+    name: ProviderLatencyHistogram
+    href: Meridian.Application.Monitoring.ProviderLatencyHistogram.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderLatencyHistogram
+    name: ProviderLatencyHistogram
+    href: Meridian.Application.Monitoring.ProviderLatencyHistogram.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetSummary*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.GetSummary
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_GetSummary
+  name: GetSummary
+  nameWithType: ProviderLatencyService.GetSummary
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetSummary
+- uid: Meridian.Application.Monitoring.ProviderLatencySummary
+  commentId: T:Meridian.Application.Monitoring.ProviderLatencySummary
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderLatencySummary.html
+  name: ProviderLatencySummary
+  nameWithType: ProviderLatencySummary
+  fullName: Meridian.Application.Monitoring.ProviderLatencySummary
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_GetHighLatencyProviders_System_Double_
+  name: GetHighLatencyProviders
+  nameWithType: ProviderLatencyService.GetHighLatencyProviders
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.GetHighLatencyProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderLatencyStats}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderLatencyStats}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderLatencyStats>
+  nameWithType: IReadOnlyList<ProviderLatencyStats>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderLatencyStats>
+  nameWithType.vb: IReadOnlyList(Of ProviderLatencyStats)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderLatencyStats)
+  name.vb: IReadOnlyList(Of ProviderLatencyStats)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderLatencyStats
+    name: ProviderLatencyStats
+    href: Meridian.Application.Monitoring.ProviderLatencyStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderLatencyStats
+    name: ProviderLatencyStats
+    href: Meridian.Application.Monitoring.ProviderLatencyStats.html
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.Reset
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_Reset_System_String_
+  name: Reset
+  nameWithType: ProviderLatencyService.Reset
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.Reset
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.ResetAll*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.ResetAll
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_ResetAll
+  name: ResetAll
+  nameWithType: ProviderLatencyService.ResetAll
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.ResetAll
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.ToJson*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.ToJson
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_ToJson
+  name: ToJson
+  nameWithType: ProviderLatencyService.ToJson
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.ToJson
+- uid: Meridian.Application.Monitoring.ProviderLatencyService.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderLatencyService.Dispose
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html#Meridian_Application_Monitoring_ProviderLatencyService_Dispose
+  name: Dispose
+  nameWithType: ProviderLatencyService.Dispose
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

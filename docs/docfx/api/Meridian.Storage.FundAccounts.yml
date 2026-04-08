@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.FundAccounts
+  commentId: N:Meridian.Storage.FundAccounts
+  id: Meridian.Storage.FundAccounts
+  children:
+  - Meridian.Storage.FundAccounts.IFundAccountStore
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.FundAccounts
+  nameWithType: Meridian.Storage.FundAccounts
+  fullName: Meridian.Storage.FundAccounts
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.FundAccounts.IFundAccountStore
+  commentId: T:Meridian.Storage.FundAccounts.IFundAccountStore
+  href: Meridian.Storage.FundAccounts.IFundAccountStore.html
+  name: IFundAccountStore
+  nameWithType: IFundAccountStore
+  fullName: Meridian.Storage.FundAccounts.IFundAccountStore

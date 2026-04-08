@@ -1,0 +1,1157 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.GovernanceException
+  commentId: T:Meridian.Application.Services.GovernanceException
+  id: GovernanceException
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.GovernanceException.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,Meridian.Application.Services.GovernanceExceptionSeverity,Meridian.Application.Services.GovernanceExceptionStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Application.Services.GovernanceException.ActualAmount
+  - Meridian.Application.Services.GovernanceException.AsOf
+  - Meridian.Application.Services.GovernanceException.Category
+  - Meridian.Application.Services.GovernanceException.CheckId
+  - Meridian.Application.Services.GovernanceException.CreatedAt
+  - Meridian.Application.Services.GovernanceException.ExceptionId
+  - Meridian.Application.Services.GovernanceException.ExpectedAmount
+  - Meridian.Application.Services.GovernanceException.Label
+  - Meridian.Application.Services.GovernanceException.Notes
+  - Meridian.Application.Services.GovernanceException.PortfolioId
+  - Meridian.Application.Services.GovernanceException.Reason
+  - Meridian.Application.Services.GovernanceException.ResolvedAt
+  - Meridian.Application.Services.GovernanceException.RunId
+  - Meridian.Application.Services.GovernanceException.Severity
+  - Meridian.Application.Services.GovernanceException.Status
+  - Meridian.Application.Services.GovernanceException.UpdatedAt
+  - Meridian.Application.Services.GovernanceException.Variance
+  langs:
+  - csharp
+  - vb
+  name: GovernanceException
+  nameWithType: GovernanceException
+  fullName: Meridian.Application.Services.GovernanceException
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceException
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: An individual governance exception derived from a reconciliation break.
+  example: []
+  syntax:
+    content: 'public sealed record GovernanceException : IEquatable<GovernanceException>'
+    content.vb: Public NotInheritable Class GovernanceException Implements IEquatable(Of GovernanceException)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.GovernanceException}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.GovernanceException.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,Meridian.Application.Services.GovernanceExceptionSeverity,Meridian.Application.Services.GovernanceExceptionStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Application.Services.GovernanceException.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,Meridian.Application.Services.GovernanceExceptionSeverity,Meridian.Application.Services.GovernanceExceptionStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,Meridian.Application.Services.GovernanceExceptionSeverity,Meridian.Application.Services.GovernanceExceptionStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: GovernanceException(Guid, Guid, string, string, string, string, GovernanceExceptionSeverity, GovernanceExceptionStatus, decimal?, decimal?, decimal, string, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset?, string?)
+  nameWithType: GovernanceException.GovernanceException(Guid, Guid, string, string, string, string, GovernanceExceptionSeverity, GovernanceExceptionStatus, decimal?, decimal?, decimal, string, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset?, string?)
+  fullName: Meridian.Application.Services.GovernanceException.GovernanceException(System.Guid, System.Guid, string, string, string, string, Meridian.Application.Services.GovernanceExceptionSeverity, Meridian.Application.Services.GovernanceExceptionStatus, decimal?, decimal?, decimal, string, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: An individual governance exception derived from a reconciliation break.
+  example: []
+  syntax:
+    content: public GovernanceException(Guid ExceptionId, Guid RunId, string PortfolioId, string CheckId, string Label, string Category, GovernanceExceptionSeverity Severity, GovernanceExceptionStatus Status, decimal? ExpectedAmount, decimal? ActualAmount, decimal Variance, string Reason, DateTimeOffset AsOf, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? ResolvedAt, string? Notes)
+    parameters:
+    - id: ExceptionId
+      type: System.Guid
+    - id: RunId
+      type: System.Guid
+    - id: PortfolioId
+      type: System.String
+    - id: CheckId
+      type: System.String
+    - id: Label
+      type: System.String
+    - id: Category
+      type: System.String
+    - id: Severity
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+    - id: Status
+      type: Meridian.Application.Services.GovernanceExceptionStatus
+    - id: ExpectedAmount
+      type: System.Nullable{System.Decimal}
+    - id: ActualAmount
+      type: System.Nullable{System.Decimal}
+    - id: Variance
+      type: System.Decimal
+    - id: Reason
+      type: System.String
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    - id: UpdatedAt
+      type: System.DateTimeOffset
+    - id: ResolvedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Notes
+      type: System.String
+    content.vb: Public Sub New(ExceptionId As Guid, RunId As Guid, PortfolioId As String, CheckId As String, Label As String, Category As String, Severity As GovernanceExceptionSeverity, Status As GovernanceExceptionStatus, ExpectedAmount As Decimal?, ActualAmount As Decimal?, Variance As Decimal, Reason As String, AsOf As DateTimeOffset, CreatedAt As DateTimeOffset, UpdatedAt As DateTimeOffset, ResolvedAt As DateTimeOffset?, Notes As String)
+  overload: Meridian.Application.Services.GovernanceException.#ctor*
+  nameWithType.vb: GovernanceException.New(Guid, Guid, String, String, String, String, GovernanceExceptionSeverity, GovernanceExceptionStatus, Decimal?, Decimal?, Decimal, String, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset?, String)
+  fullName.vb: Meridian.Application.Services.GovernanceException.New(System.Guid, System.Guid, String, String, String, String, Meridian.Application.Services.GovernanceExceptionSeverity, Meridian.Application.Services.GovernanceExceptionStatus, Decimal?, Decimal?, Decimal, String, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset?, String)
+  name.vb: New(Guid, Guid, String, String, String, String, GovernanceExceptionSeverity, GovernanceExceptionStatus, Decimal?, Decimal?, Decimal, String, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset?, String)
+- uid: Meridian.Application.Services.GovernanceException.ExceptionId
+  commentId: P:Meridian.Application.Services.GovernanceException.ExceptionId
+  id: ExceptionId
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: ExceptionId
+  nameWithType: GovernanceException.ExceptionId
+  fullName: Meridian.Application.Services.GovernanceException.ExceptionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceptionId
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Guid ExceptionId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ExceptionId As Guid
+  overload: Meridian.Application.Services.GovernanceException.ExceptionId*
+- uid: Meridian.Application.Services.GovernanceException.RunId
+  commentId: P:Meridian.Application.Services.GovernanceException.RunId
+  id: RunId
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: GovernanceException.RunId
+  fullName: Meridian.Application.Services.GovernanceException.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Guid RunId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property RunId As Guid
+  overload: Meridian.Application.Services.GovernanceException.RunId*
+- uid: Meridian.Application.Services.GovernanceException.PortfolioId
+  commentId: P:Meridian.Application.Services.GovernanceException.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: GovernanceException.PortfolioId
+  fullName: Meridian.Application.Services.GovernanceException.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Application.Services.GovernanceException.PortfolioId*
+- uid: Meridian.Application.Services.GovernanceException.CheckId
+  commentId: P:Meridian.Application.Services.GovernanceException.CheckId
+  id: CheckId
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: CheckId
+  nameWithType: GovernanceException.CheckId
+  fullName: Meridian.Application.Services.GovernanceException.CheckId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckId
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string CheckId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CheckId As String
+  overload: Meridian.Application.Services.GovernanceException.CheckId*
+- uid: Meridian.Application.Services.GovernanceException.Label
+  commentId: P:Meridian.Application.Services.GovernanceException.Label
+  id: Label
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Label
+  nameWithType: GovernanceException.Label
+  fullName: Meridian.Application.Services.GovernanceException.Label
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Label
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Label { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Label As String
+  overload: Meridian.Application.Services.GovernanceException.Label*
+- uid: Meridian.Application.Services.GovernanceException.Category
+  commentId: P:Meridian.Application.Services.GovernanceException.Category
+  id: Category
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: GovernanceException.Category
+  fullName: Meridian.Application.Services.GovernanceException.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Category { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Application.Services.GovernanceException.Category*
+- uid: Meridian.Application.Services.GovernanceException.Severity
+  commentId: P:Meridian.Application.Services.GovernanceException.Severity
+  id: Severity
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: GovernanceException.Severity
+  fullName: Meridian.Application.Services.GovernanceException.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public GovernanceExceptionSeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionSeverity
+    content.vb: Public Property Severity As GovernanceExceptionSeverity
+  overload: Meridian.Application.Services.GovernanceException.Severity*
+- uid: Meridian.Application.Services.GovernanceException.Status
+  commentId: P:Meridian.Application.Services.GovernanceException.Status
+  id: Status
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: GovernanceException.Status
+  fullName: Meridian.Application.Services.GovernanceException.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public GovernanceExceptionStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionStatus
+    content.vb: Public Property Status As GovernanceExceptionStatus
+  overload: Meridian.Application.Services.GovernanceException.Status*
+- uid: Meridian.Application.Services.GovernanceException.ExpectedAmount
+  commentId: P:Meridian.Application.Services.GovernanceException.ExpectedAmount
+  id: ExpectedAmount
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: ExpectedAmount
+  nameWithType: GovernanceException.ExpectedAmount
+  fullName: Meridian.Application.Services.GovernanceException.ExpectedAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedAmount
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public decimal? ExpectedAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ExpectedAmount As Decimal?
+  overload: Meridian.Application.Services.GovernanceException.ExpectedAmount*
+- uid: Meridian.Application.Services.GovernanceException.ActualAmount
+  commentId: P:Meridian.Application.Services.GovernanceException.ActualAmount
+  id: ActualAmount
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: ActualAmount
+  nameWithType: GovernanceException.ActualAmount
+  fullName: Meridian.Application.Services.GovernanceException.ActualAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualAmount
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public decimal? ActualAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ActualAmount As Decimal?
+  overload: Meridian.Application.Services.GovernanceException.ActualAmount*
+- uid: Meridian.Application.Services.GovernanceException.Variance
+  commentId: P:Meridian.Application.Services.GovernanceException.Variance
+  id: Variance
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Variance
+  nameWithType: GovernanceException.Variance
+  fullName: Meridian.Application.Services.GovernanceException.Variance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Variance
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public decimal Variance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Variance As Decimal
+  overload: Meridian.Application.Services.GovernanceException.Variance*
+- uid: Meridian.Application.Services.GovernanceException.Reason
+  commentId: P:Meridian.Application.Services.GovernanceException.Reason
+  id: Reason
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: GovernanceException.Reason
+  fullName: Meridian.Application.Services.GovernanceException.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Application.Services.GovernanceException.Reason*
+- uid: Meridian.Application.Services.GovernanceException.AsOf
+  commentId: P:Meridian.Application.Services.GovernanceException.AsOf
+  id: AsOf
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: GovernanceException.AsOf
+  fullName: Meridian.Application.Services.GovernanceException.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Application.Services.GovernanceException.AsOf*
+- uid: Meridian.Application.Services.GovernanceException.CreatedAt
+  commentId: P:Meridian.Application.Services.GovernanceException.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: GovernanceException.CreatedAt
+  fullName: Meridian.Application.Services.GovernanceException.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Application.Services.GovernanceException.CreatedAt*
+- uid: Meridian.Application.Services.GovernanceException.UpdatedAt
+  commentId: P:Meridian.Application.Services.GovernanceException.UpdatedAt
+  id: UpdatedAt
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: UpdatedAt
+  nameWithType: GovernanceException.UpdatedAt
+  fullName: Meridian.Application.Services.GovernanceException.UpdatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdatedAt
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset UpdatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property UpdatedAt As DateTimeOffset
+  overload: Meridian.Application.Services.GovernanceException.UpdatedAt*
+- uid: Meridian.Application.Services.GovernanceException.ResolvedAt
+  commentId: P:Meridian.Application.Services.GovernanceException.ResolvedAt
+  id: ResolvedAt
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: ResolvedAt
+  nameWithType: GovernanceException.ResolvedAt
+  fullName: Meridian.Application.Services.GovernanceException.ResolvedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedAt
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset? ResolvedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ResolvedAt As DateTimeOffset?
+  overload: Meridian.Application.Services.GovernanceException.ResolvedAt*
+- uid: Meridian.Application.Services.GovernanceException.Notes
+  commentId: P:Meridian.Application.Services.GovernanceException.Notes
+  id: Notes
+  parent: Meridian.Application.Services.GovernanceException
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: GovernanceException.Notes
+  fullName: Meridian.Application.Services.GovernanceException.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Application.Services.GovernanceException.Notes*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.GovernanceException}
+  commentId: T:System.IEquatable{Meridian.Application.Services.GovernanceException}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<GovernanceException>
+  nameWithType: IEquatable<GovernanceException>
+  fullName: System.IEquatable<Meridian.Application.Services.GovernanceException>
+  nameWithType.vb: IEquatable(Of GovernanceException)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.GovernanceException)
+  name.vb: IEquatable(Of GovernanceException)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.GovernanceException
+    name: GovernanceException
+    href: Meridian.Application.Services.GovernanceException.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.GovernanceException
+    name: GovernanceException
+    href: Meridian.Application.Services.GovernanceException.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.GovernanceException.#ctor*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.#ctor
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException__ctor_System_Guid_System_Guid_System_String_System_String_System_String_System_String_Meridian_Application_Services_GovernanceExceptionSeverity_Meridian_Application_Services_GovernanceExceptionStatus_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Decimal_System_String_System_DateTimeOffset_System_DateTimeOffset_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_
+  name: GovernanceException
+  nameWithType: GovernanceException.GovernanceException
+  fullName: Meridian.Application.Services.GovernanceException.GovernanceException
+  nameWithType.vb: GovernanceException.New
+  fullName.vb: Meridian.Application.Services.GovernanceException.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.GovernanceExceptionSeverity
+  commentId: T:Meridian.Application.Services.GovernanceExceptionSeverity
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GovernanceExceptionSeverity.html
+  name: GovernanceExceptionSeverity
+  nameWithType: GovernanceExceptionSeverity
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity
+- uid: Meridian.Application.Services.GovernanceExceptionStatus
+  commentId: T:Meridian.Application.Services.GovernanceExceptionStatus
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GovernanceExceptionStatus.html
+  name: GovernanceExceptionStatus
+  nameWithType: GovernanceExceptionStatus
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.GovernanceException.ExceptionId*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.ExceptionId
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_ExceptionId
+  name: ExceptionId
+  nameWithType: GovernanceException.ExceptionId
+  fullName: Meridian.Application.Services.GovernanceException.ExceptionId
+- uid: Meridian.Application.Services.GovernanceException.RunId*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.RunId
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_RunId
+  name: RunId
+  nameWithType: GovernanceException.RunId
+  fullName: Meridian.Application.Services.GovernanceException.RunId
+- uid: Meridian.Application.Services.GovernanceException.PortfolioId*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.PortfolioId
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_PortfolioId
+  name: PortfolioId
+  nameWithType: GovernanceException.PortfolioId
+  fullName: Meridian.Application.Services.GovernanceException.PortfolioId
+- uid: Meridian.Application.Services.GovernanceException.CheckId*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.CheckId
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_CheckId
+  name: CheckId
+  nameWithType: GovernanceException.CheckId
+  fullName: Meridian.Application.Services.GovernanceException.CheckId
+- uid: Meridian.Application.Services.GovernanceException.Label*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Label
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Label
+  name: Label
+  nameWithType: GovernanceException.Label
+  fullName: Meridian.Application.Services.GovernanceException.Label
+- uid: Meridian.Application.Services.GovernanceException.Category*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Category
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Category
+  name: Category
+  nameWithType: GovernanceException.Category
+  fullName: Meridian.Application.Services.GovernanceException.Category
+- uid: Meridian.Application.Services.GovernanceException.Severity*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Severity
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Severity
+  name: Severity
+  nameWithType: GovernanceException.Severity
+  fullName: Meridian.Application.Services.GovernanceException.Severity
+- uid: Meridian.Application.Services.GovernanceException.Status*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Status
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Status
+  name: Status
+  nameWithType: GovernanceException.Status
+  fullName: Meridian.Application.Services.GovernanceException.Status
+- uid: Meridian.Application.Services.GovernanceException.ExpectedAmount*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.ExpectedAmount
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_ExpectedAmount
+  name: ExpectedAmount
+  nameWithType: GovernanceException.ExpectedAmount
+  fullName: Meridian.Application.Services.GovernanceException.ExpectedAmount
+- uid: Meridian.Application.Services.GovernanceException.ActualAmount*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.ActualAmount
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_ActualAmount
+  name: ActualAmount
+  nameWithType: GovernanceException.ActualAmount
+  fullName: Meridian.Application.Services.GovernanceException.ActualAmount
+- uid: Meridian.Application.Services.GovernanceException.Variance*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Variance
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Variance
+  name: Variance
+  nameWithType: GovernanceException.Variance
+  fullName: Meridian.Application.Services.GovernanceException.Variance
+- uid: Meridian.Application.Services.GovernanceException.Reason*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Reason
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Reason
+  name: Reason
+  nameWithType: GovernanceException.Reason
+  fullName: Meridian.Application.Services.GovernanceException.Reason
+- uid: Meridian.Application.Services.GovernanceException.AsOf*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.AsOf
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_AsOf
+  name: AsOf
+  nameWithType: GovernanceException.AsOf
+  fullName: Meridian.Application.Services.GovernanceException.AsOf
+- uid: Meridian.Application.Services.GovernanceException.CreatedAt*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.CreatedAt
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_CreatedAt
+  name: CreatedAt
+  nameWithType: GovernanceException.CreatedAt
+  fullName: Meridian.Application.Services.GovernanceException.CreatedAt
+- uid: Meridian.Application.Services.GovernanceException.UpdatedAt*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.UpdatedAt
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_UpdatedAt
+  name: UpdatedAt
+  nameWithType: GovernanceException.UpdatedAt
+  fullName: Meridian.Application.Services.GovernanceException.UpdatedAt
+- uid: Meridian.Application.Services.GovernanceException.ResolvedAt*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.ResolvedAt
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_ResolvedAt
+  name: ResolvedAt
+  nameWithType: GovernanceException.ResolvedAt
+  fullName: Meridian.Application.Services.GovernanceException.ResolvedAt
+- uid: Meridian.Application.Services.GovernanceException.Notes*
+  commentId: Overload:Meridian.Application.Services.GovernanceException.Notes
+  href: Meridian.Application.Services.GovernanceException.html#Meridian_Application_Services_GovernanceException_Notes
+  name: Notes
+  nameWithType: GovernanceException.Notes
+  fullName: Meridian.Application.Services.GovernanceException.Notes

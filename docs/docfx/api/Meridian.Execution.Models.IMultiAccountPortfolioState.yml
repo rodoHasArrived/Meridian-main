@@ -1,0 +1,397 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+  commentId: T:Meridian.Execution.Models.IMultiAccountPortfolioState
+  id: IMultiAccountPortfolioState
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  - Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+  - Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+  langs:
+  - csharp
+  - vb
+  name: IMultiAccountPortfolioState
+  nameWithType: IMultiAccountPortfolioState
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMultiAccountPortfolioState
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Extends <xref href="Meridian.Execution.Models.IPortfolioState" data-throw-if-not-resolved="false"></xref> with per-account granularity.
+
+    Implementations should aggregate across all owned accounts for the
+
+    single-account <xref href="Meridian.Execution.Models.IPortfolioState" data-throw-if-not-resolved="false"></xref> surface (backward-compatibility).
+  example: []
+  syntax:
+    content: 'public interface IMultiAccountPortfolioState : IPortfolioState'
+    content.vb: Public Interface IMultiAccountPortfolioState Inherits IPortfolioState
+  derivedClasses:
+  - Meridian.Execution.Services.PaperTradingPortfolio
+  inheritedMembers:
+  - Meridian.Execution.Models.IPortfolioState.Cash
+  - Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  - Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  - Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  - Meridian.Execution.Models.IPortfolioState.Positions
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  commentId: P:Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  id: Accounts
+  parent: Meridian.Execution.Models.IMultiAccountPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: IMultiAccountPortfolioState.Accounts
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Read-only list of all tracked accounts (brokerage + bank).
+  example: []
+  syntax:
+    content: IReadOnlyList<IAccountPortfolio> Accounts { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.IAccountPortfolio}
+    content.vb: ReadOnly Property Accounts As IReadOnlyList(Of IAccountPortfolio)
+  overload: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts*
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+  commentId: M:Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(System.String)
+  id: GetAccount(System.String)
+  parent: Meridian.Execution.Models.IMultiAccountPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: GetAccount(string)
+  nameWithType: IMultiAccountPortfolioState.GetAccount(string)
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccount
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Retrieves a single account by <code class="paramref">accountId</code>.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no account with that ID is registered.
+  example: []
+  syntax:
+    content: IAccountPortfolio? GetAccount(string accountId)
+    parameters:
+    - id: accountId
+      type: System.String
+    return:
+      type: Meridian.Execution.Interfaces.IAccountPortfolio
+    content.vb: Function GetAccount(accountId As String) As IAccountPortfolio
+  overload: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount*
+  nameWithType.vb: IMultiAccountPortfolioState.GetAccount(String)
+  fullName.vb: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount(String)
+  name.vb: GetAccount(String)
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+  commentId: M:Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+  id: GetAggregateSnapshot
+  parent: Meridian.Execution.Models.IMultiAccountPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: GetAggregateSnapshot()
+  nameWithType: IMultiAccountPortfolioState.GetAggregateSnapshot()
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregateSnapshot
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Produces an aggregate snapshot across all accounts.
+  example: []
+  syntax:
+    content: MultiAccountPortfolioSnapshot GetAggregateSnapshot()
+    return:
+      type: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+    content.vb: Function GetAggregateSnapshot() As MultiAccountPortfolioSnapshot
+  overload: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot*
+references:
+- uid: Meridian.Execution.Models.IPortfolioState
+  commentId: T:Meridian.Execution.Models.IPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IPortfolioState.html
+  name: IPortfolioState
+  nameWithType: IPortfolioState
+  fullName: Meridian.Execution.Models.IPortfolioState
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Models.IPortfolioState.Cash
+  commentId: P:Meridian.Execution.Models.IPortfolioState.Cash
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_Cash
+  name: Cash
+  nameWithType: IPortfolioState.Cash
+  fullName: Meridian.Execution.Models.IPortfolioState.Cash
+- uid: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  commentId: P:Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_PortfolioValue
+  name: PortfolioValue
+  nameWithType: IPortfolioState.PortfolioValue
+  fullName: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+- uid: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  commentId: P:Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: IPortfolioState.UnrealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+- uid: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  commentId: P:Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_RealisedPnl
+  name: RealisedPnl
+  nameWithType: IPortfolioState.RealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+- uid: Meridian.Execution.Models.IPortfolioState.Positions
+  commentId: P:Meridian.Execution.Models.IPortfolioState.Positions
+  parent: Meridian.Execution.Models.IPortfolioState
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_Positions
+  name: Positions
+  nameWithType: IPortfolioState.Positions
+  fullName: Meridian.Execution.Models.IPortfolioState.Positions
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts*
+  commentId: Overload:Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_Accounts
+  name: Accounts
+  nameWithType: IMultiAccountPortfolioState.Accounts
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.Accounts
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.IAccountPortfolio}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.IAccountPortfolio}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IAccountPortfolio>
+  nameWithType: IReadOnlyList<IAccountPortfolio>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Interfaces.IAccountPortfolio>
+  nameWithType.vb: IReadOnlyList(Of IAccountPortfolio)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Interfaces.IAccountPortfolio)
+  name.vb: IReadOnlyList(Of IAccountPortfolio)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Interfaces.IAccountPortfolio
+    name: IAccountPortfolio
+    href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Interfaces.IAccountPortfolio
+    name: IAccountPortfolio
+    href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount*
+  commentId: Overload:Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAccount_System_String_
+  name: GetAccount
+  nameWithType: IMultiAccountPortfolioState.GetAccount
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAccount
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio
+  commentId: T:Meridian.Execution.Interfaces.IAccountPortfolio
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  name: IAccountPortfolio
+  nameWithType: IAccountPortfolio
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot*
+  commentId: Overload:Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html#Meridian_Execution_Models_IMultiAccountPortfolioState_GetAggregateSnapshot
+  name: GetAggregateSnapshot
+  nameWithType: IMultiAccountPortfolioState.GetAggregateSnapshot
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState.GetAggregateSnapshot
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  commentId: T:Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html
+  name: MultiAccountPortfolioSnapshot
+  nameWithType: MultiAccountPortfolioSnapshot
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot

@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.SourceType
+  commentId: T:Meridian.Storage.Interfaces.SourceType
+  id: SourceType
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.SourceType.Consolidated
+  - Meridian.Storage.Interfaces.SourceType.Historical
+  - Meridian.Storage.Interfaces.SourceType.Live
+  langs:
+  - csharp
+  - vb
+  name: SourceType
+  nameWithType: SourceType
+  fullName: Meridian.Storage.Interfaces.SourceType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceType
+    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Type of data source.
+  example: []
+  syntax:
+    content: 'public enum SourceType : byte'
+    content.vb: Public Enum SourceType As Byte
+- uid: Meridian.Storage.Interfaces.SourceType.Live
+  commentId: F:Meridian.Storage.Interfaces.SourceType.Live
+  id: Live
+  parent: Meridian.Storage.Interfaces.SourceType
+  langs:
+  - csharp
+  - vb
+  name: Live
+  nameWithType: SourceType.Live
+  fullName: Meridian.Storage.Interfaces.SourceType.Live
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Live
+    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Live real-time data source.
+  example: []
+  syntax:
+    content: Live = 0
+    return:
+      type: Meridian.Storage.Interfaces.SourceType
+- uid: Meridian.Storage.Interfaces.SourceType.Historical
+  commentId: F:Meridian.Storage.Interfaces.SourceType.Historical
+  id: Historical
+  parent: Meridian.Storage.Interfaces.SourceType
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: SourceType.Historical
+  fullName: Meridian.Storage.Interfaces.SourceType.Historical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Historical backfill data source.
+  example: []
+  syntax:
+    content: Historical = 1
+    return:
+      type: Meridian.Storage.Interfaces.SourceType
+- uid: Meridian.Storage.Interfaces.SourceType.Consolidated
+  commentId: F:Meridian.Storage.Interfaces.SourceType.Consolidated
+  id: Consolidated
+  parent: Meridian.Storage.Interfaces.SourceType
+  langs:
+  - csharp
+  - vb
+  name: Consolidated
+  nameWithType: SourceType.Consolidated
+  fullName: Meridian.Storage.Interfaces.SourceType.Consolidated
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Consolidated
+    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Consolidated/derived data source.
+  example: []
+  syntax:
+    content: Consolidated = 2
+    return:
+      type: Meridian.Storage.Interfaces.SourceType
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Interfaces.SourceType
+  commentId: T:Meridian.Storage.Interfaces.SourceType
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.SourceType.html
+  name: SourceType
+  nameWithType: SourceType
+  fullName: Meridian.Storage.Interfaces.SourceType

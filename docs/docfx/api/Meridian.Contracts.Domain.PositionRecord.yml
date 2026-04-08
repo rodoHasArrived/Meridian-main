@@ -1,0 +1,632 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.PositionRecord
+  commentId: T:Meridian.Contracts.Domain.PositionRecord
+  id: PositionRecord
+  parent: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.PositionRecord.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  - Meridian.Contracts.Domain.PositionRecord.CostBasis
+  - Meridian.Contracts.Domain.PositionRecord.Quantity
+  - Meridian.Contracts.Domain.PositionRecord.RealisedPnl
+  - Meridian.Contracts.Domain.PositionRecord.Symbol
+  - Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: PositionRecord
+  nameWithType: PositionRecord
+  fullName: Meridian.Contracts.Domain.PositionRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionRecord
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: >-
+    Serialisation-friendly snapshot of a single position for persistence.
+
+    Used by <xref href="Meridian.Contracts.Domain.IPositionSnapshotStore" data-throw-if-not-resolved="false"></xref> — deliberately flat so that the
+
+    storage layer has no dependency on <code>Meridian.Execution</code> types.
+  example: []
+  syntax:
+    content: 'public sealed record PositionRecord : IEquatable<PositionRecord>'
+    content.vb: Public NotInheritable Class PositionRecord Implements IEquatable(Of PositionRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Domain.PositionRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.PositionRecord.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Contracts.Domain.PositionRecord.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)'
+  parent: Meridian.Contracts.Domain.PositionRecord
+  langs:
+  - csharp
+  - vb
+  name: PositionRecord(string, decimal, decimal, decimal, decimal)
+  nameWithType: PositionRecord.PositionRecord(string, decimal, decimal, decimal, decimal)
+  fullName: Meridian.Contracts.Domain.PositionRecord.PositionRecord(string, decimal, decimal, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: >-
+    Serialisation-friendly snapshot of a single position for persistence.
+
+    Used by <xref href="Meridian.Contracts.Domain.IPositionSnapshotStore" data-throw-if-not-resolved="false"></xref> — deliberately flat so that the
+
+    storage layer has no dependency on <code>Meridian.Execution</code> types.
+  example: []
+  syntax:
+    content: public PositionRecord(string Symbol, decimal Quantity, decimal CostBasis, decimal UnrealisedPnl, decimal RealisedPnl)
+    parameters:
+    - id: Symbol
+      type: System.String
+      description: Ticker symbol.
+    - id: Quantity
+      type: System.Decimal
+      description: Signed quantity (positive = long, negative = short).
+    - id: CostBasis
+      type: System.Decimal
+      description: Average cost per share.
+    - id: UnrealisedPnl
+      type: System.Decimal
+      description: Mark-to-market unrealised P&amp;L.
+    - id: RealisedPnl
+      type: System.Decimal
+      description: Cumulative realised P&amp;L.
+    content.vb: Public Sub New(Symbol As String, Quantity As Decimal, CostBasis As Decimal, UnrealisedPnl As Decimal, RealisedPnl As Decimal)
+  overload: Meridian.Contracts.Domain.PositionRecord.#ctor*
+  nameWithType.vb: PositionRecord.New(String, Decimal, Decimal, Decimal, Decimal)
+  fullName.vb: Meridian.Contracts.Domain.PositionRecord.New(String, Decimal, Decimal, Decimal, Decimal)
+  name.vb: New(String, Decimal, Decimal, Decimal, Decimal)
+- uid: Meridian.Contracts.Domain.PositionRecord.Symbol
+  commentId: P:Meridian.Contracts.Domain.PositionRecord.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.PositionRecord
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PositionRecord.Symbol
+  fullName: Meridian.Contracts.Domain.PositionRecord.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Ticker symbol.
+  example: []
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Domain.PositionRecord.Symbol*
+- uid: Meridian.Contracts.Domain.PositionRecord.Quantity
+  commentId: P:Meridian.Contracts.Domain.PositionRecord.Quantity
+  id: Quantity
+  parent: Meridian.Contracts.Domain.PositionRecord
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: PositionRecord.Quantity
+  fullName: Meridian.Contracts.Domain.PositionRecord.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Signed quantity (positive = long, negative = short).
+  example: []
+  syntax:
+    content: public decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Contracts.Domain.PositionRecord.Quantity*
+- uid: Meridian.Contracts.Domain.PositionRecord.CostBasis
+  commentId: P:Meridian.Contracts.Domain.PositionRecord.CostBasis
+  id: CostBasis
+  parent: Meridian.Contracts.Domain.PositionRecord
+  langs:
+  - csharp
+  - vb
+  name: CostBasis
+  nameWithType: PositionRecord.CostBasis
+  fullName: Meridian.Contracts.Domain.PositionRecord.CostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CostBasis
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Average cost per share.
+  example: []
+  syntax:
+    content: public decimal CostBasis { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CostBasis As Decimal
+  overload: Meridian.Contracts.Domain.PositionRecord.CostBasis*
+- uid: Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl
+  commentId: P:Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Contracts.Domain.PositionRecord
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: PositionRecord.UnrealisedPnl
+  fullName: Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Mark-to-market unrealised P&amp;L.
+  example: []
+  syntax:
+    content: public decimal UnrealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealisedPnl As Decimal
+  overload: Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl*
+- uid: Meridian.Contracts.Domain.PositionRecord.RealisedPnl
+  commentId: P:Meridian.Contracts.Domain.PositionRecord.RealisedPnl
+  id: RealisedPnl
+  parent: Meridian.Contracts.Domain.PositionRecord
+  langs:
+  - csharp
+  - vb
+  name: RealisedPnl
+  nameWithType: PositionRecord.RealisedPnl
+  fullName: Meridian.Contracts.Domain.PositionRecord.RealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealisedPnl
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Cumulative realised P&amp;L.
+  example: []
+  syntax:
+    content: public decimal RealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealisedPnl As Decimal
+  overload: Meridian.Contracts.Domain.PositionRecord.RealisedPnl*
+references:
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore
+  commentId: T:Meridian.Contracts.Domain.IPositionSnapshotStore
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.IPositionSnapshotStore.html
+  name: IPositionSnapshotStore
+  nameWithType: IPositionSnapshotStore
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Domain.PositionRecord}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.PositionRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PositionRecord>
+  nameWithType: IEquatable<PositionRecord>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.PositionRecord>
+  nameWithType.vb: IEquatable(Of PositionRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.PositionRecord)
+  name.vb: IEquatable(Of PositionRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.PositionRecord
+    name: PositionRecord
+    href: Meridian.Contracts.Domain.PositionRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.PositionRecord
+    name: PositionRecord
+    href: Meridian.Contracts.Domain.PositionRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.PositionRecord.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.PositionRecord.#ctor
+  href: Meridian.Contracts.Domain.PositionRecord.html#Meridian_Contracts_Domain_PositionRecord__ctor_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_
+  name: PositionRecord
+  nameWithType: PositionRecord.PositionRecord
+  fullName: Meridian.Contracts.Domain.PositionRecord.PositionRecord
+  nameWithType.vb: PositionRecord.New
+  fullName.vb: Meridian.Contracts.Domain.PositionRecord.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.PositionRecord.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.PositionRecord.Symbol
+  href: Meridian.Contracts.Domain.PositionRecord.html#Meridian_Contracts_Domain_PositionRecord_Symbol
+  name: Symbol
+  nameWithType: PositionRecord.Symbol
+  fullName: Meridian.Contracts.Domain.PositionRecord.Symbol
+- uid: Meridian.Contracts.Domain.PositionRecord.Quantity*
+  commentId: Overload:Meridian.Contracts.Domain.PositionRecord.Quantity
+  href: Meridian.Contracts.Domain.PositionRecord.html#Meridian_Contracts_Domain_PositionRecord_Quantity
+  name: Quantity
+  nameWithType: PositionRecord.Quantity
+  fullName: Meridian.Contracts.Domain.PositionRecord.Quantity
+- uid: Meridian.Contracts.Domain.PositionRecord.CostBasis*
+  commentId: Overload:Meridian.Contracts.Domain.PositionRecord.CostBasis
+  href: Meridian.Contracts.Domain.PositionRecord.html#Meridian_Contracts_Domain_PositionRecord_CostBasis
+  name: CostBasis
+  nameWithType: PositionRecord.CostBasis
+  fullName: Meridian.Contracts.Domain.PositionRecord.CostBasis
+- uid: Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl*
+  commentId: Overload:Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl
+  href: Meridian.Contracts.Domain.PositionRecord.html#Meridian_Contracts_Domain_PositionRecord_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: PositionRecord.UnrealisedPnl
+  fullName: Meridian.Contracts.Domain.PositionRecord.UnrealisedPnl
+- uid: Meridian.Contracts.Domain.PositionRecord.RealisedPnl*
+  commentId: Overload:Meridian.Contracts.Domain.PositionRecord.RealisedPnl
+  href: Meridian.Contracts.Domain.PositionRecord.html#Meridian_Contracts_Domain_PositionRecord_RealisedPnl
+  name: RealisedPnl
+  nameWithType: PositionRecord.RealisedPnl
+  fullName: Meridian.Contracts.Domain.PositionRecord.RealisedPnl

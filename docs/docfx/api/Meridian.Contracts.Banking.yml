@@ -1,0 +1,115 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Banking
+  commentId: N:Meridian.Contracts.Banking
+  id: Meridian.Contracts.Banking
+  children:
+  - Meridian.Contracts.Banking.ApprovePaymentRequest
+  - Meridian.Contracts.Banking.BankTransactionDto
+  - Meridian.Contracts.Banking.BankTransactionSeedRequest
+  - Meridian.Contracts.Banking.BankTransactionSeedResultDto
+  - Meridian.Contracts.Banking.IBankTransactionSource
+  - Meridian.Contracts.Banking.InitiatePaymentRequest
+  - Meridian.Contracts.Banking.PaymentApprovalStatus
+  - Meridian.Contracts.Banking.PendingPaymentDto
+  - Meridian.Contracts.Banking.RejectPaymentRequest
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Banking
+  nameWithType: Meridian.Contracts.Banking
+  fullName: Meridian.Contracts.Banking
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus
+  commentId: T:Meridian.Contracts.Banking.PaymentApprovalStatus
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.PaymentApprovalStatus.html
+  name: PaymentApprovalStatus
+  nameWithType: PaymentApprovalStatus
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus
+- uid: Meridian.Contracts.Banking.InitiatePaymentRequest
+  commentId: T:Meridian.Contracts.Banking.InitiatePaymentRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.InitiatePaymentRequest.html
+  name: InitiatePaymentRequest
+  nameWithType: InitiatePaymentRequest
+  fullName: Meridian.Contracts.Banking.InitiatePaymentRequest
+- uid: Meridian.Contracts.Banking.PendingPaymentDto
+  commentId: T:Meridian.Contracts.Banking.PendingPaymentDto
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html
+  name: PendingPaymentDto
+  nameWithType: PendingPaymentDto
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto
+- uid: Meridian.Contracts.Banking.ApprovePaymentRequest
+  commentId: T:Meridian.Contracts.Banking.ApprovePaymentRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.ApprovePaymentRequest.html
+  name: ApprovePaymentRequest
+  nameWithType: ApprovePaymentRequest
+  fullName: Meridian.Contracts.Banking.ApprovePaymentRequest
+- uid: Meridian.Contracts.Banking.RejectPaymentRequest
+  commentId: T:Meridian.Contracts.Banking.RejectPaymentRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.RejectPaymentRequest.html
+  name: RejectPaymentRequest
+  nameWithType: RejectPaymentRequest
+  fullName: Meridian.Contracts.Banking.RejectPaymentRequest
+- uid: Meridian.Contracts.Banking.BankTransactionDto
+  commentId: T:Meridian.Contracts.Banking.BankTransactionDto
+  href: Meridian.Contracts.Banking.BankTransactionDto.html
+  name: BankTransactionDto
+  nameWithType: BankTransactionDto
+  fullName: Meridian.Contracts.Banking.BankTransactionDto
+- uid: Meridian.Contracts.Banking.BankTransactionSeedRequest
+  commentId: T:Meridian.Contracts.Banking.BankTransactionSeedRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.BankTransactionSeedRequest.html
+  name: BankTransactionSeedRequest
+  nameWithType: BankTransactionSeedRequest
+  fullName: Meridian.Contracts.Banking.BankTransactionSeedRequest
+- uid: Meridian.Contracts.Banking.BankTransactionSeedResultDto
+  commentId: T:Meridian.Contracts.Banking.BankTransactionSeedResultDto
+  href: Meridian.Contracts.Banking.BankTransactionSeedResultDto.html
+  name: BankTransactionSeedResultDto
+  nameWithType: BankTransactionSeedResultDto
+  fullName: Meridian.Contracts.Banking.BankTransactionSeedResultDto
+- uid: Meridian.Contracts.Banking.IBankTransactionSource
+  commentId: T:Meridian.Contracts.Banking.IBankTransactionSource
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.IBankTransactionSource.html
+  name: IBankTransactionSource
+  nameWithType: IBankTransactionSource
+  fullName: Meridian.Contracts.Banking.IBankTransactionSource
+- uid: Meridian.Contracts.Banking
+  commentId: N:Meridian.Contracts.Banking
+  href: Meridian.html
+  name: Meridian.Contracts.Banking
+  nameWithType: Meridian.Contracts.Banking
+  fullName: Meridian.Contracts.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html

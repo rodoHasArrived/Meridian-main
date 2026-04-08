@@ -1,0 +1,848 @@
+<Page x:Class="Meridian.Wpf.Views.FundLedgerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      PreviewKeyDown="OnPagePreviewKeyDown"
+      AutomationProperties.Name="Fund Operations">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <Style x:Key="RightAlignedCellStyle" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="FontFamily" Value="Consolas" />
+        </Style>
+        <Style x:Key="HighlightedReconciliationRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,20,28,32" MaxWidth="1320">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                    BorderBrush="{StaticResource WarningColorBrush}" BorderThickness="1" Margin="0,0,12,0">
+                                <TextBlock Text="&#xEE94;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24" Foreground="{StaticResource WarningColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="Governance Home" Command="{Binding OpenGovernanceCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Accounts" Command="{Binding OpenAccountsCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Banking" Command="{Binding OpenBankingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Cash &amp; Financing" Command="{Binding OpenCashFinancingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Reconciliation" Command="{Binding OpenReconciliationCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Switch Fund" Command="{Binding SwitchFundCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+                <TabItem Header="Overview">
+                    <StackPanel Margin="0,16,0,0">
+                        <UniformGrid Columns="4" Margin="0,0,0,20">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Workspace As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Accounts" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalAccountsText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Open Breaks" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding OpenBreaksText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Reconciliation Runs" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding ReconciliationRunsText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <UniformGrid Columns="4" Margin="0,0,0,20">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Total Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding GrossExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Net Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Total Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Overview" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                                <TextBlock Text="{Binding OverviewStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Accounts">
+                    <StackPanel Margin="0,16,0,0">
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                            <DockPanel>
+                                <TextBlock Text="Account-first drill-throughs for banking, portfolio, and ledger review." Style="{StaticResource CardDescriptionStyle}" />
+                                <Button DockPanel.Dock="Right" Content="Open Account Portfolio"
+                                        Command="{Binding OpenSelectedAccountPortfolioCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </DockPanel>
+                        </Border>
+                        <DataGrid ItemsSource="{Binding Accounts}"
+                                  SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*" />
+                                <DataGridTextColumn Header="Code" Binding="{Binding AccountCode}" Width="130" />
+                                <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="120" />
+                                <DataGridTextColumn Header="Institution" Binding="{Binding Institution}" Width="170" />
+                                <DataGridTextColumn Header="Structure" Binding="{Binding StructureLabel}" Width="220" />
+                                <DataGridTextColumn Header="Workflow" Binding="{Binding WorkflowLabel}" Width="240" />
+                                <DataGridTextColumn Header="Cash" Binding="{Binding CashBalance, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Securities" Binding="{Binding SecuritiesMarketValue, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="NAV" Binding="{Binding NetAssetValue, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Last Snapshot" Binding="{Binding LastSnapshotDate}" Width="110" />
+                                <DataGridTextColumn Header="Open Breaks" Binding="{Binding OpenBreaks}" Width="90" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Banking">
+                    <StackPanel Margin="0,16,0,0">
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                            <TextBlock Text="{Binding BankingStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                        </Border>
+                        <DataGrid ItemsSource="{Binding BankSnapshots}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Account" Binding="{Binding DisplayName}" Width="*" />
+                                <DataGridTextColumn Header="Code" Binding="{Binding AccountCode}" Width="120" />
+                                <DataGridTextColumn Header="Bank" Binding="{Binding BankName}" Width="160" />
+                                <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="90" />
+                                <DataGridTextColumn Header="Balance" Binding="{Binding CurrentBalance, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Pending Settlement" Binding="{Binding PendingSettlement, StringFormat={}{0:C2}}" Width="140" />
+                                <DataGridTextColumn Header="Last Statement" Binding="{Binding LastStatementDate}" Width="110" />
+                                <DataGridTextColumn Header="Lines" Binding="{Binding StatementLineCount}" Width="70" />
+                                <DataGridTextColumn Header="Latest Txn" Binding="{Binding LatestTransactionType}" Width="120" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Portfolio">
+                    <StackPanel Margin="0,16,0,0">
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                            <DockPanel>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding PortfolioStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Button DockPanel.Dock="Right"
+                                        Content="Open Security Master"
+                                        Command="{Binding OpenSelectedPortfolioSecurityCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}" />
+                            </DockPanel>
+                        </Border>
+                        <UniformGrid Columns="4" Margin="0,0,0,16">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding GrossExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Net Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Total Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Total Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <DataGrid ItemsSource="{Binding PortfolioPositions}"
+                                  SelectedItem="{Binding SelectedPortfolioPosition, Mode=TwoWay}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="*" />
+                                <DataGridTextColumn Header="Security" Binding="{Binding SecurityDisplayName}" Width="200" />
+                                <DataGridTextColumn Header="Asset Class" Binding="{Binding AssetClass}" Width="120" />
+                                <DataGridTextColumn Header="Coverage" Binding="{Binding CoverageLabel}" Width="100" />
+                                <DataGridTextColumn Header="Net Qty" Binding="{Binding NetQuantity}" Width="100" />
+                                <DataGridTextColumn Header="Avg Cost" Binding="{Binding WeightedAverageCostBasis, StringFormat={}{0:C4}}" Width="120" />
+                                <DataGridTextColumn Header="Realized P&amp;L" Binding="{Binding RealizedPnl, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Unrealized P&amp;L" Binding="{Binding UnrealizedPnl, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Runs" Binding="{Binding ContributingRuns}" Width="80" />
+                                <DataGridTextColumn Header="Linked Accounts" Binding="{Binding LinkedAccounts}" Width="110" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Cash &amp; Financing">
+                    <StackPanel Margin="0,16,0,0">
+                        <UniformGrid Columns="4" Margin="0,0,0,16">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Total Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Financing Cost" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding FinancingCostText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Pending Settlement" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding PendingSettlementText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Total Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Highlights" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                                <ItemsControl ItemsSource="{Binding CashFinancingHighlights}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,8" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Journal">
+                    <StackPanel Margin="0,16,0,0">
+                        <UniformGrid Columns="5" Margin="0,0,0,20">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding AsOfText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Journal Entries" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding JournalEntriesText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Assets" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding AssetBalanceText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding EquityBalanceText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Revenue" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding RevenueBalanceText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <DataGrid ItemsSource="{Binding Journal}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                                <DataGridTextColumn Header="Debits" Binding="{Binding TotalDebits, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Credits" Binding="{Binding TotalCredits, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Lines" Binding="{Binding LineCount}" Width="70" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Trial Balance">
+                    <StackPanel Margin="0,16,0,0">
+                        <DataGrid ItemsSource="{Binding TrialBalance}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
+                                <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="110" />
+                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="110" />
+                                <DataGridTextColumn Header="Financial Account" Binding="{Binding FinancialAccountId}" Width="180" />
+                                <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="80" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Reconciliation">
+                    <Grid Margin="0,16,0,0" MinHeight="780">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="280" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Reconciliation Workbench" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding ReconciliationStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,14" TextWrapping="Wrap" />
+                                    <UniformGrid Columns="3">
+                                        <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Active Fund" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding Title}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Legal Entity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationLegalEntityText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource CardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Base Currency" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationBaseCurrencyText}" Style="{StaticResource CardDescriptionStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="Default Ledger Scope" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationScopeText}" Style="{StaticResource CardDescriptionStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="Workspace As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationWorkspaceAsOfText}" Style="{StaticResource CardDescriptionStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Last Refresh" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationLastRefreshText}" Style="{StaticResource CardDescriptionStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <UniformGrid Columns="4" Margin="0,0,0,16">
+                                    <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Open Breaks" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding OpenBreaksText}" Style="{StaticResource CardHeaderStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="In Review" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding InReviewBreaksText}" Style="{StaticResource CardHeaderStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Runs" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationRunsText}" Style="{StaticResource CardHeaderStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource CardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Security Issues" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding ReconciliationSecurityCoverageIssuesText}" Style="{StaticResource CardHeaderStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="220" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <RadioButton Content="Open" GroupName="BreakQueueFilter" IsChecked="{Binding IsOpenBreakQueueFilterSelected, Mode=TwoWay}" Margin="0,0,12,0" TabIndex="0" />
+                                        <RadioButton Content="In Review" GroupName="BreakQueueFilter" IsChecked="{Binding IsInReviewBreakQueueFilterSelected, Mode=TwoWay}" Margin="0,0,12,0" TabIndex="1" />
+                                        <RadioButton Content="All" GroupName="BreakQueueFilter" IsChecked="{Binding IsAllBreakQueueFilterSelected, Mode=TwoWay}" TabIndex="2" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,16,0">
+                                        <TextBlock Text="Scope" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox SelectedIndex="{Binding SelectedReconciliationScopeFilterIndex, Mode=TwoWay}" Width="150" TabIndex="3">
+                                            <ComboBoxItem Content="All" />
+                                            <ComboBoxItem Content="Strategy" />
+                                            <ComboBoxItem Content="Account" />
+                                        </ComboBox>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="0,0,16,0">
+                                        <TextBlock Text="Local Search" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox x:Name="ReconciliationSearchBox" Text="{Binding ReconciliationSearchText, UpdateSourceTrigger=PropertyChanged}" TabIndex="4" />
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="3" Text="{Binding ReconciliationActionFeedbackText}" Style="{StaticResource CardDescriptionStyle}" VerticalAlignment="Center" Margin="0,20,16,0" TextWrapping="Wrap" />
+
+                                    <Button Grid.Column="4" Content="Refresh Queue" Click="OnReconciliationRefreshClick" Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Bottom" TabIndex="5" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Grid.Row="2" x:Name="ReconciliationWorkbenchHost">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="480" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                                <TabControl SelectedIndex="{Binding SelectedReconciliationQueueIndex, Mode=TwoWay}">
+                                    <TabItem Header="Break Queue">
+                                        <DockPanel Margin="0,12,0,0">
+                                            <TextBlock DockPanel.Dock="Bottom"
+                                                       Text="{Binding ReconciliationBreakQueueEmptyStateText}"
+                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                       Margin="0,12,0,0"
+                                                       TextWrapping="Wrap" />
+                                            <DataGrid x:Name="BreakQueueGrid"
+                                                      ItemsSource="{Binding ReconciliationBreakQueueItems}"
+                                                      SelectedItem="{Binding SelectedBreakQueueItem, Mode=TwoWay}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      FrozenColumnCount="2"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      PreviewKeyDown="OnReconciliationQueuePreviewKeyDown"
+                                                      MouseDoubleClick="OnReconciliationQueueMouseDoubleClick"
+                                                      TabIndex="10">
+                                                <DataGrid.Columns>
+                                                    <DataGridTemplateColumn Header="Status" Width="120">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="999" Padding="8,4">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="{Binding StatusIcon}" Margin="0,0,6,0" />
+                                                                        <TextBlock Text="{Binding StatusLabel}" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    <DataGridTemplateColumn Header="Strategy / Run" Width="210">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding StrategyName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                                    <TextBlock Text="{Binding DisplayLabel}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="130" />
+                                                    <DataGridTextColumn Header="Variance" Binding="{Binding VarianceText}" Width="100" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Assigned" Binding="{Binding AssignedToLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Detected" Binding="{Binding DetectedAtText}" Width="140" />
+                                                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </DockPanel>
+                                    </TabItem>
+
+                                    <TabItem Header="Runs">
+                                        <DockPanel Margin="0,12,0,0">
+                                            <TextBlock DockPanel.Dock="Bottom"
+                                                       Text="{Binding ReconciliationRunsEmptyStateText}"
+                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                       Margin="0,12,0,0"
+                                                       TextWrapping="Wrap" />
+                                            <DataGrid x:Name="RunsGrid"
+                                                      ItemsSource="{Binding ReconciliationRunItems}"
+                                                      SelectedItem="{Binding SelectedReconciliationRun, Mode=TwoWay}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      FrozenColumnCount="2"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      PreviewKeyDown="OnReconciliationQueuePreviewKeyDown"
+                                                      MouseDoubleClick="OnReconciliationQueueMouseDoubleClick"
+                                                      TabIndex="11">
+                                                <DataGrid.Columns>
+                                                    <DataGridTemplateColumn Header="Scope" Width="100">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="999" Padding="8,4">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="{Binding ScopeIcon}" Margin="0,0,6,0" />
+                                                                        <TextBlock Text="{Binding ScopeLabel}" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    <DataGridTemplateColumn Header="Run" Width="220">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding PrimaryLabel}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                                    <TextBlock Text="{Binding SecondaryLabel}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    <DataGridTextColumn Header="As Of" Binding="{Binding AsOfDateText}" Width="95" />
+                                                    <DataGridTemplateColumn Header="Status" Width="130">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="999" Padding="8,4">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <TextBlock Text="{Binding StatusIcon}" Margin="0,0,6,0" />
+                                                                        <TextBlock Text="{Binding StatusLabel}" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    <DataGridTextColumn Header="Checks" Binding="{Binding TotalChecks}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Matched" Binding="{Binding TotalMatched}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Breaks" Binding="{Binding TotalBreaks}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Security" Binding="{Binding SecurityIssueCount}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Requested" Binding="{Binding RequestedAtText}" Width="140" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </DockPanel>
+                                    </TabItem>
+                                </TabControl>
+                            </Border>
+
+                            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource BorderSubtleBrush}" />
+
+                            <Border Grid.Column="2" Style="{StaticResource CardStyle}" x:Name="ReconciliationDetailHost">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding ReconciliationDetailTitle}" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding ReconciliationDetailSubtitle}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ReconciliationDetailStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                                            <TextBlock Text="{Binding ReconciliationDetailCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                            <TextBlock Text="Last Updated" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
+                                            <TextBlock Text="{Binding ReconciliationDetailLastUpdatedText}" Style="{StaticResource CardDescriptionStyle}" HorizontalAlignment="Right" />
+                                            <Button Content="Open Account Workflow"
+                                                    Command="{Binding OpenSelectedReconciliationAccountWorkflowCommand}"
+                                                    Visibility="{Binding CanOpenSelectedReconciliationAccountWorkflow, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Margin="0,12,0,0"
+                                                    TabIndex="20" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Border Grid.Row="1"
+                                            Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="12"
+                                            Margin="0,16,0,16"
+                                            Visibility="{Binding SupportsSelectedBreakActions, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="190" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="Operator" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBox Text="{Binding ReconciliationOperatorText, UpdateSourceTrigger=PropertyChanged}" TabIndex="21" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,12,0">
+                                                <TextBlock Text="Note" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBox Text="{Binding ReconciliationNoteText, UpdateSourceTrigger=PropertyChanged}" TabIndex="22" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                                <Button Content="Start Review"
+                                                        Click="OnStartReviewBreakClick"
+                                                        IsEnabled="{Binding CanStartReviewSelectedBreak}"
+                                                        Style="{StaticResource GhostButtonStyle}"
+                                                        Margin="0,0,8,0"
+                                                        TabIndex="23" />
+                                                <Button Content="Resolve"
+                                                        Click="OnResolveBreakClick"
+                                                        IsEnabled="{Binding CanResolveSelectedBreak}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Margin="0,0,8,0"
+                                                        TabIndex="24" />
+                                                <Button Content="Dismiss"
+                                                        Click="OnDismissBreakClick"
+                                                        IsEnabled="{Binding CanDismissSelectedBreak}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        TabIndex="25" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Row="1"
+                                                       Grid.ColumnSpan="3"
+                                                       Text="{Binding ReconciliationDetailGuidanceText}"
+                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                       Margin="0,12,0,0"
+                                                       TextWrapping="Wrap" />
+                                        </Grid>
+                                    </Border>
+
+                                    <UniformGrid Grid.Row="2" Columns="5" Margin="0,0,0,16">
+                                        <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Checks" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationDetailTotalChecksText}" Style="{StaticResource CardHeaderStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Matched" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationDetailMatchedText}" Style="{StaticResource CardHeaderStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Breaks" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationDetailBreaksText}" Style="{StaticResource CardHeaderStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Break Amount" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationDetailBreakAmountText}" Style="{StaticResource CardHeaderStyle}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource CardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Security Issues" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding ReconciliationDetailSecurityIssuesText}" Style="{StaticResource CardHeaderStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+
+                                    <TabControl x:Name="ReconciliationDetailTabs"
+                                                Grid.Row="3"
+                                                SelectedIndex="{Binding SelectedReconciliationDetailTabIndex, Mode=TwoWay}"
+                                                TabIndex="30">
+                                        <TabItem Header="Exceptions">
+                                            <DataGrid x:Name="ReconciliationExceptionsGrid"
+                                                      ItemsSource="{Binding ReconciliationExceptionRows}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      RowStyle="{StaticResource HighlightedReconciliationRowStyle}"
+                                                      TabIndex="31">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Check" Binding="{Binding CheckLabel}" Width="*" />
+                                                    <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="130" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="150" />
+                                                    <DataGridTextColumn Header="Expected" Binding="{Binding ExpectedAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Actual" Binding="{Binding ActualAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Variance" Binding="{Binding VarianceText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="220" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="All Checks">
+                                            <DataGrid x:Name="ReconciliationAllChecksGrid"
+                                                      ItemsSource="{Binding ReconciliationAllCheckRows}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      RowStyle="{StaticResource HighlightedReconciliationRowStyle}"
+                                                      TabIndex="32">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Check" Binding="{Binding CheckLabel}" Width="*" />
+                                                    <DataGridTextColumn Header="Category" Binding="{Binding CategoryLabel}" Width="130" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="150" />
+                                                    <DataGridTextColumn Header="Expected" Binding="{Binding ExpectedAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Actual" Binding="{Binding ActualAmountText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Variance" Binding="{Binding VarianceText}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="220" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="Security Coverage">
+                                            <DataGrid x:Name="ReconciliationCoverageGrid"
+                                                      ItemsSource="{Binding ReconciliationSecurityCoverageRows}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      TabIndex="33">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="140" />
+                                                    <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="120" />
+                                                    <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="180" />
+                                                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="Audit">
+                                            <DataGrid x:Name="ReconciliationAuditGrid"
+                                                      ItemsSource="{Binding ReconciliationAuditRows}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      TabIndex="34">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Timestamp" Binding="{Binding TimestampText}" Width="150" />
+                                                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="180" />
+                                                    <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                                                    <DataGridTextColumn Header="Actor" Binding="{Binding ActorLabel}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                    </TabControl>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Audit Trail">
+                    <StackPanel Margin="0,16,0,0">
+                        <DataGrid ItemsSource="{Binding AuditTrail}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="Column"
+                                  BorderThickness="0"
+                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
+                                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" />
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                                <DataGridTextColumn Header="Reference" Binding="{Binding Reference}" Width="250" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

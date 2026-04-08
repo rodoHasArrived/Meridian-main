@@ -1,0 +1,561 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Resources.ConventionResources
+  commentId: T:Meridian.Mcp.Resources.ConventionResources
+  id: ConventionResources
+  parent: Meridian.Mcp.Resources
+  children:
+  - Meridian.Mcp.Resources.ConventionResources.#ctor(Meridian.Mcp.Services.RepoPathService)
+  - Meridian.Mcp.Resources.ConventionResources.GetConventions
+  - Meridian.Mcp.Resources.ConventionResources.GetGuide(System.String)
+  - Meridian.Mcp.Resources.ConventionResources.GetKnownErrors
+  langs:
+  - csharp
+  - vb
+  name: ConventionResources
+  nameWithType: ConventionResources
+  fullName: Meridian.Mcp.Resources.ConventionResources
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Mcp/Resources/ConventionResources.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConventionResources
+    path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
+    startLine: 2
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Resources
+  syntax:
+    content: >-
+      [McpServerResourceType]
+
+      public sealed class ConventionResources
+    content.vb: >-
+      <McpServerResourceType>
+
+      Public NotInheritable Class ConventionResources
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceTypeAttribute.#ctor
+    arguments: []
+- uid: Meridian.Mcp.Resources.ConventionResources.#ctor(Meridian.Mcp.Services.RepoPathService)
+  commentId: M:Meridian.Mcp.Resources.ConventionResources.#ctor(Meridian.Mcp.Services.RepoPathService)
+  id: '#ctor(Meridian.Mcp.Services.RepoPathService)'
+  parent: Meridian.Mcp.Resources.ConventionResources
+  langs:
+  - csharp
+  - vb
+  name: ConventionResources(RepoPathService)
+  nameWithType: ConventionResources.ConventionResources(RepoPathService)
+  fullName: Meridian.Mcp.Resources.ConventionResources.ConventionResources(Meridian.Mcp.Services.RepoPathService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Mcp/Resources/ConventionResources.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
+    startLine: 2
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Resources
+  syntax:
+    content: public ConventionResources(RepoPathService repo)
+    parameters:
+    - id: repo
+      type: Meridian.Mcp.Services.RepoPathService
+    content.vb: Public Sub New(repo As RepoPathService)
+  overload: Meridian.Mcp.Resources.ConventionResources.#ctor*
+  nameWithType.vb: ConventionResources.New(RepoPathService)
+  fullName.vb: Meridian.Mcp.Resources.ConventionResources.New(Meridian.Mcp.Services.RepoPathService)
+  name.vb: New(RepoPathService)
+- uid: Meridian.Mcp.Resources.ConventionResources.GetConventions
+  commentId: M:Meridian.Mcp.Resources.ConventionResources.GetConventions
+  id: GetConventions
+  parent: Meridian.Mcp.Resources.ConventionResources
+  langs:
+  - csharp
+  - vb
+  name: GetConventions()
+  nameWithType: ConventionResources.GetConventions()
+  fullName: Meridian.Mcp.Resources.ConventionResources.GetConventions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Resources/ConventionResources.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConventions
+    path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
+    startLine: 5
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Resources
+  syntax:
+    content: >-
+      [McpServerResource(UriTemplate = "mdc://conventions", Name = "coding_conventions", Title = "C# Coding Conventions", MimeType = "text/markdown")]
+
+      public string GetConventions()
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerResource(UriTemplate:="mdc://conventions", Name:="coding_conventions", Title:="C# Coding Conventions", MimeType:="text/markdown")>
+
+      Public Function GetConventions() As String
+  overload: Meridian.Mcp.Resources.ConventionResources.GetConventions*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: UriTemplate
+      type: System.String
+      value: mdc://conventions
+    - name: Name
+      type: System.String
+      value: coding_conventions
+    - name: Title
+      type: System.String
+      value: C# Coding Conventions
+    - name: MimeType
+      type: System.String
+      value: text/markdown
+- uid: Meridian.Mcp.Resources.ConventionResources.GetKnownErrors
+  commentId: M:Meridian.Mcp.Resources.ConventionResources.GetKnownErrors
+  id: GetKnownErrors
+  parent: Meridian.Mcp.Resources.ConventionResources
+  langs:
+  - csharp
+  - vb
+  name: GetKnownErrors()
+  nameWithType: ConventionResources.GetKnownErrors()
+  fullName: Meridian.Mcp.Resources.ConventionResources.GetKnownErrors()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Resources/ConventionResources.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetKnownErrors
+    path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
+    startLine: 19
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Resources
+  syntax:
+    content: >-
+      [McpServerResource(UriTemplate = "mdc://known-errors", Name = "known_errors", Title = "AI Known Error Registry", MimeType = "text/markdown")]
+
+      public string GetKnownErrors()
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerResource(UriTemplate:="mdc://known-errors", Name:="known_errors", Title:="AI Known Error Registry", MimeType:="text/markdown")>
+
+      Public Function GetKnownErrors() As String
+  overload: Meridian.Mcp.Resources.ConventionResources.GetKnownErrors*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: UriTemplate
+      type: System.String
+      value: mdc://known-errors
+    - name: Name
+      type: System.String
+      value: known_errors
+    - name: Title
+      type: System.String
+      value: AI Known Error Registry
+    - name: MimeType
+      type: System.String
+      value: text/markdown
+- uid: Meridian.Mcp.Resources.ConventionResources.GetGuide(System.String)
+  commentId: M:Meridian.Mcp.Resources.ConventionResources.GetGuide(System.String)
+  id: GetGuide(System.String)
+  parent: Meridian.Mcp.Resources.ConventionResources
+  langs:
+  - csharp
+  - vb
+  name: GetGuide(string)
+  nameWithType: ConventionResources.GetGuide(string)
+  fullName: Meridian.Mcp.Resources.ConventionResources.GetGuide(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Resources/ConventionResources.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGuide
+    path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
+    startLine: 31
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Resources
+  syntax:
+    content: >-
+      [McpServerResource(UriTemplate = "mdc://guides/{name}", Name = "dev_guide", Title = "Developer Guide", MimeType = "text/markdown")]
+
+      public string GetGuide(string name)
+    parameters:
+    - id: name
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerResource(UriTemplate:="mdc://guides/{name}", Name:="dev_guide", Title:="Developer Guide", MimeType:="text/markdown")>
+
+      Public Function GetGuide(name As String) As String
+  overload: Meridian.Mcp.Resources.ConventionResources.GetGuide*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: UriTemplate
+      type: System.String
+      value: mdc://guides/{name}
+    - name: Name
+      type: System.String
+      value: dev_guide
+    - name: Title
+      type: System.String
+      value: Developer Guide
+    - name: MimeType
+      type: System.String
+      value: text/markdown
+  nameWithType.vb: ConventionResources.GetGuide(String)
+  fullName.vb: Meridian.Mcp.Resources.ConventionResources.GetGuide(String)
+  name.vb: GetGuide(String)
+references:
+- uid: Meridian.Mcp.Resources
+  commentId: N:Meridian.Mcp.Resources
+  href: Meridian.html
+  name: Meridian.Mcp.Resources
+  nameWithType: Meridian.Mcp.Resources
+  fullName: Meridian.Mcp.Resources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Resources
+    name: Resources
+    href: Meridian.Mcp.Resources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Resources
+    name: Resources
+    href: Meridian.Mcp.Resources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Mcp.Resources.ConventionResources.#ctor*
+  commentId: Overload:Meridian.Mcp.Resources.ConventionResources.#ctor
+  href: Meridian.Mcp.Resources.ConventionResources.html#Meridian_Mcp_Resources_ConventionResources__ctor_Meridian_Mcp_Services_RepoPathService_
+  name: ConventionResources
+  nameWithType: ConventionResources.ConventionResources
+  fullName: Meridian.Mcp.Resources.ConventionResources.ConventionResources
+  nameWithType.vb: ConventionResources.New
+  fullName.vb: Meridian.Mcp.Resources.ConventionResources.New
+  name.vb: New
+- uid: Meridian.Mcp.Services.RepoPathService
+  commentId: T:Meridian.Mcp.Services.RepoPathService
+  parent: Meridian.Mcp.Services
+  href: Meridian.Mcp.Services.RepoPathService.html
+  name: RepoPathService
+  nameWithType: RepoPathService
+  fullName: Meridian.Mcp.Services.RepoPathService
+- uid: Meridian.Mcp.Services
+  commentId: N:Meridian.Mcp.Services
+  href: Meridian.html
+  name: Meridian.Mcp.Services
+  nameWithType: Meridian.Mcp.Services
+  fullName: Meridian.Mcp.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+- uid: Meridian.Mcp.Resources.ConventionResources.GetConventions*
+  commentId: Overload:Meridian.Mcp.Resources.ConventionResources.GetConventions
+  href: Meridian.Mcp.Resources.ConventionResources.html#Meridian_Mcp_Resources_ConventionResources_GetConventions
+  name: GetConventions
+  nameWithType: ConventionResources.GetConventions
+  fullName: Meridian.Mcp.Resources.ConventionResources.GetConventions
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Mcp.Resources.ConventionResources.GetKnownErrors*
+  commentId: Overload:Meridian.Mcp.Resources.ConventionResources.GetKnownErrors
+  href: Meridian.Mcp.Resources.ConventionResources.html#Meridian_Mcp_Resources_ConventionResources_GetKnownErrors
+  name: GetKnownErrors
+  nameWithType: ConventionResources.GetKnownErrors
+  fullName: Meridian.Mcp.Resources.ConventionResources.GetKnownErrors
+- uid: Meridian.Mcp.Resources.ConventionResources.GetGuide*
+  commentId: Overload:Meridian.Mcp.Resources.ConventionResources.GetGuide
+  href: Meridian.Mcp.Resources.ConventionResources.html#Meridian_Mcp_Resources_ConventionResources_GetGuide_System_String_
+  name: GetGuide
+  nameWithType: ConventionResources.GetGuide
+  fullName: Meridian.Mcp.Resources.ConventionResources.GetGuide

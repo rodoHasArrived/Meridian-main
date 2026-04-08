@@ -1,0 +1,195 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  id: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager
+  - Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  - Meridian.Storage.Maintenance.MaintenanceExecution
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  - Meridian.Storage.Maintenance.MaintenanceIssue
+  - Meridian.Storage.Maintenance.MaintenancePriority
+  - Meridian.Storage.Maintenance.MaintenanceResult
+  - Meridian.Storage.Maintenance.MaintenanceSchedulePresets
+  - Meridian.Storage.Maintenance.MaintenanceScheduleSummary
+  - Meridian.Storage.Maintenance.MaintenanceServiceStatus
+  - Meridian.Storage.Maintenance.MaintenanceStatistics
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  - Meridian.Storage.Maintenance.MaintenanceTaskType
+  - Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  - Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  commentId: T:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html
+  name: ArchiveMaintenanceSchedule
+  nameWithType: ArchiveMaintenanceSchedule
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskType
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskType.html
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenancePriority
+  commentId: T:Meridian.Storage.Maintenance.MaintenancePriority
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenancePriority.html
+  name: MaintenancePriority
+  nameWithType: MaintenancePriority
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html
+  name: MaintenanceTaskOptions
+  nameWithType: MaintenanceTaskOptions
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+- uid: Meridian.Storage.Maintenance.MaintenanceExecution
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecution
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  name: MaintenanceExecution
+  nameWithType: MaintenanceExecution
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecution
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  name: MaintenanceExecutionStatus
+  nameWithType: MaintenanceExecutionStatus
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceResult
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceResult
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html
+  name: MaintenanceResult
+  nameWithType: MaintenanceResult
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult
+- uid: Meridian.Storage.Maintenance.MaintenanceIssue
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceIssue
+  href: Meridian.Storage.Maintenance.MaintenanceIssue.html
+  name: MaintenanceIssue
+  nameWithType: MaintenanceIssue
+  fullName: Meridian.Storage.Maintenance.MaintenanceIssue
+- uid: Meridian.Storage.Maintenance.MaintenanceSchedulePresets
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceSchedulePresets
+  href: Meridian.Storage.Maintenance.MaintenanceSchedulePresets.html
+  name: MaintenanceSchedulePresets
+  nameWithType: MaintenanceSchedulePresets
+  fullName: Meridian.Storage.Maintenance.MaintenanceSchedulePresets
+- uid: Meridian.Storage.Maintenance.MaintenanceStatistics
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceStatistics
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceStatistics.html
+  name: MaintenanceStatistics
+  nameWithType: MaintenanceStatistics
+  fullName: Meridian.Storage.Maintenance.MaintenanceStatistics
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  commentId: T:Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html
+  name: ScheduleExecutionSummary
+  nameWithType: ScheduleExecutionSummary
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager
+  commentId: T:Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.html
+  name: ArchiveMaintenanceScheduleManager
+  nameWithType: ArchiveMaintenanceScheduleManager
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html
+  name: MaintenanceExecutionHistory
+  nameWithType: MaintenanceExecutionHistory
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager
+  commentId: T:Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager.html
+  name: IArchiveMaintenanceScheduleManager
+  nameWithType: IArchiveMaintenanceScheduleManager
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager
+- uid: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  commentId: T:Meridian.Storage.Maintenance.IArchiveMaintenanceService
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.IArchiveMaintenanceService.html
+  name: IArchiveMaintenanceService
+  nameWithType: IArchiveMaintenanceService
+  fullName: Meridian.Storage.Maintenance.IArchiveMaintenanceService
+- uid: Meridian.Storage.Maintenance.MaintenanceServiceStatus
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceServiceStatus
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceServiceStatus.html
+  name: MaintenanceServiceStatus
+  nameWithType: MaintenanceServiceStatus
+  fullName: Meridian.Storage.Maintenance.MaintenanceServiceStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceScheduleSummary
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceScheduleSummary
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceScheduleSummary.html
+  name: MaintenanceScheduleSummary
+  nameWithType: MaintenanceScheduleSummary
+  fullName: Meridian.Storage.Maintenance.MaintenanceScheduleSummary
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  commentId: T:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html
+  name: IMaintenanceExecutionHistory
+  nameWithType: IMaintenanceExecutionHistory
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+- uid: Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService
+  commentId: T:Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService
+  href: Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService.html
+  name: ScheduledArchiveMaintenanceService
+  nameWithType: ScheduledArchiveMaintenanceService
+  fullName: Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html

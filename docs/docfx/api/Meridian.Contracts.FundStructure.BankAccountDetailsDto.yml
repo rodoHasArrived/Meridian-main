@@ -1,0 +1,815 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  id: BankAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber
+  - Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode
+  langs:
+  - csharp
+  - vb
+  name: BankAccountDetailsDto
+  nameWithType: BankAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankAccountDetailsDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: 'public sealed record BankAccountDetailsDto : IEquatable<BankAccountDetailsDto>'
+    content.vb: Public NotInheritable Class BankAccountDetailsDto Implements IEquatable(Of BankAccountDetailsDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.BankAccountDetailsDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.BankAccountDetailsDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: BankAccountDetailsDto(string, string, string?, string?, string?, string?, string?, string?, string?, string?, string?)
+  nameWithType: BankAccountDetailsDto.BankAccountDetailsDto(string, string, string?, string?, string?, string?, string?, string?, string?, string?, string?)
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankAccountDetailsDto(string, string, string?, string?, string?, string?, string?, string?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: public BankAccountDetailsDto(string AccountNumber, string BankName, string? BranchName, string? Iban, string? BicSwift, string? RoutingNumber, string? SortCode, string? IntermediaryBankBic, string? IntermediaryBankName, string? BeneficiaryName, string? BeneficiaryAddress)
+    parameters:
+    - id: AccountNumber
+      type: System.String
+    - id: BankName
+      type: System.String
+    - id: BranchName
+      type: System.String
+    - id: Iban
+      type: System.String
+    - id: BicSwift
+      type: System.String
+    - id: RoutingNumber
+      type: System.String
+    - id: SortCode
+      type: System.String
+    - id: IntermediaryBankBic
+      type: System.String
+    - id: IntermediaryBankName
+      type: System.String
+    - id: BeneficiaryName
+      type: System.String
+    - id: BeneficiaryAddress
+      type: System.String
+    content.vb: Public Sub New(AccountNumber As String, BankName As String, BranchName As String, Iban As String, BicSwift As String, RoutingNumber As String, SortCode As String, IntermediaryBankBic As String, IntermediaryBankName As String, BeneficiaryName As String, BeneficiaryAddress As String)
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.#ctor*
+  nameWithType.vb: BankAccountDetailsDto.New(String, String, String, String, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Contracts.FundStructure.BankAccountDetailsDto.New(String, String, String, String, String, String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String, String, String, String, String, String)
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber
+  id: AccountNumber
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: AccountNumber
+  nameWithType: BankAccountDetailsDto.AccountNumber
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountNumber
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string AccountNumber { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountNumber As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName
+  id: BankName
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: BankName
+  nameWithType: BankAccountDetailsDto.BankName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankName
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string BankName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BankName As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName
+  id: BranchName
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: BranchName
+  nameWithType: BankAccountDetailsDto.BranchName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BranchName
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? BranchName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BranchName As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban
+  id: Iban
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: Iban
+  nameWithType: BankAccountDetailsDto.Iban
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Iban
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Iban { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Iban As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift
+  id: BicSwift
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: BicSwift
+  nameWithType: BankAccountDetailsDto.BicSwift
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BicSwift
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? BicSwift { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BicSwift As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber
+  id: RoutingNumber
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: RoutingNumber
+  nameWithType: BankAccountDetailsDto.RoutingNumber
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RoutingNumber
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? RoutingNumber { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RoutingNumber As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode
+  id: SortCode
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: SortCode
+  nameWithType: BankAccountDetailsDto.SortCode
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SortCode
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? SortCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SortCode As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic
+  id: IntermediaryBankBic
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: IntermediaryBankBic
+  nameWithType: BankAccountDetailsDto.IntermediaryBankBic
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntermediaryBankBic
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? IntermediaryBankBic { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IntermediaryBankBic As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName
+  id: IntermediaryBankName
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: IntermediaryBankName
+  nameWithType: BankAccountDetailsDto.IntermediaryBankName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntermediaryBankName
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? IntermediaryBankName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IntermediaryBankName As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName
+  id: BeneficiaryName
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: BeneficiaryName
+  nameWithType: BankAccountDetailsDto.BeneficiaryName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BeneficiaryName
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? BeneficiaryName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BeneficiaryName As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName*
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress
+  commentId: P:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress
+  id: BeneficiaryAddress
+  parent: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: BeneficiaryAddress
+  nameWithType: BankAccountDetailsDto.BeneficiaryAddress
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BeneficiaryAddress
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? BeneficiaryAddress { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BeneficiaryAddress As String
+  overload: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.BankAccountDetailsDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.BankAccountDetailsDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BankAccountDetailsDto>
+  nameWithType: IEquatable<BankAccountDetailsDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.BankAccountDetailsDto>
+  nameWithType.vb: IEquatable(Of BankAccountDetailsDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  name.vb: IEquatable(Of BankAccountDetailsDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+    name: BankAccountDetailsDto
+    href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+    name: BankAccountDetailsDto
+    href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.#ctor
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: BankAccountDetailsDto
+  nameWithType: BankAccountDetailsDto.BankAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankAccountDetailsDto
+  nameWithType.vb: BankAccountDetailsDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.BankAccountDetailsDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_AccountNumber
+  name: AccountNumber
+  nameWithType: BankAccountDetailsDto.AccountNumber
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.AccountNumber
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_BankName
+  name: BankName
+  nameWithType: BankAccountDetailsDto.BankName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BankName
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_BranchName
+  name: BranchName
+  nameWithType: BankAccountDetailsDto.BranchName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BranchName
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_Iban
+  name: Iban
+  nameWithType: BankAccountDetailsDto.Iban
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.Iban
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_BicSwift
+  name: BicSwift
+  nameWithType: BankAccountDetailsDto.BicSwift
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BicSwift
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_RoutingNumber
+  name: RoutingNumber
+  nameWithType: BankAccountDetailsDto.RoutingNumber
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.RoutingNumber
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_SortCode
+  name: SortCode
+  nameWithType: BankAccountDetailsDto.SortCode
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.SortCode
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_IntermediaryBankBic
+  name: IntermediaryBankBic
+  nameWithType: BankAccountDetailsDto.IntermediaryBankBic
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankBic
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_IntermediaryBankName
+  name: IntermediaryBankName
+  nameWithType: BankAccountDetailsDto.IntermediaryBankName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.IntermediaryBankName
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_BeneficiaryName
+  name: BeneficiaryName
+  nameWithType: BankAccountDetailsDto.BeneficiaryName
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryName
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html#Meridian_Contracts_FundStructure_BankAccountDetailsDto_BeneficiaryAddress
+  name: BeneficiaryAddress
+  nameWithType: BankAccountDetailsDto.BeneficiaryAddress
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto.BeneficiaryAddress

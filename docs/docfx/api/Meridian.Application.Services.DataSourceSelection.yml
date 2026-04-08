@@ -1,0 +1,485 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.DataSourceSelection
+  commentId: T:Meridian.Application.Services.DataSourceSelection
+  id: DataSourceSelection
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.DataSourceSelection.Alpaca
+  - Meridian.Application.Services.DataSourceSelection.DataSource
+  - Meridian.Application.Services.DataSourceSelection.IB
+  - Meridian.Application.Services.DataSourceSelection.Polygon
+  langs:
+  - csharp
+  - vb
+  name: DataSourceSelection
+  nameWithType: DataSourceSelection
+  fullName: Meridian.Application.Services.DataSourceSelection
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationWizard.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceSelection
+    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    startLine: 322
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Data source selection from wizard.
+  example: []
+  syntax:
+    content: public sealed class DataSourceSelection
+    content.vb: Public NotInheritable Class DataSourceSelection
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.DataSourceSelection.DataSource
+  commentId: P:Meridian.Application.Services.DataSourceSelection.DataSource
+  id: DataSource
+  parent: Meridian.Application.Services.DataSourceSelection
+  langs:
+  - csharp
+  - vb
+  name: DataSource
+  nameWithType: DataSourceSelection.DataSource
+  fullName: Meridian.Application.Services.DataSourceSelection.DataSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationWizard.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSource
+    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    startLine: 324
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DataSourceKind DataSource { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+    content.vb: Public Property DataSource As DataSourceKind
+  overload: Meridian.Application.Services.DataSourceSelection.DataSource*
+- uid: Meridian.Application.Services.DataSourceSelection.Alpaca
+  commentId: P:Meridian.Application.Services.DataSourceSelection.Alpaca
+  id: Alpaca
+  parent: Meridian.Application.Services.DataSourceSelection
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: DataSourceSelection.Alpaca
+  fullName: Meridian.Application.Services.DataSourceSelection.Alpaca
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationWizard.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    startLine: 325
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public AlpacaOptions? Alpaca { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AlpacaOptions
+    content.vb: Public Property Alpaca As AlpacaOptions
+  overload: Meridian.Application.Services.DataSourceSelection.Alpaca*
+- uid: Meridian.Application.Services.DataSourceSelection.Polygon
+  commentId: P:Meridian.Application.Services.DataSourceSelection.Polygon
+  id: Polygon
+  parent: Meridian.Application.Services.DataSourceSelection
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: DataSourceSelection.Polygon
+  fullName: Meridian.Application.Services.DataSourceSelection.Polygon
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationWizard.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    startLine: 326
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public PolygonOptions? Polygon { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.PolygonOptions
+    content.vb: Public Property Polygon As PolygonOptions
+  overload: Meridian.Application.Services.DataSourceSelection.Polygon*
+- uid: Meridian.Application.Services.DataSourceSelection.IB
+  commentId: P:Meridian.Application.Services.DataSourceSelection.IB
+  id: IB
+  parent: Meridian.Application.Services.DataSourceSelection
+  langs:
+  - csharp
+  - vb
+  name: IB
+  nameWithType: DataSourceSelection.IB
+  fullName: Meridian.Application.Services.DataSourceSelection.IB
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationWizard.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IB
+    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IBOptions? IB { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.IBOptions
+    content.vb: Public Property IB As IBOptions
+  overload: Meridian.Application.Services.DataSourceSelection.IB*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.DataSourceSelection.DataSource*
+  commentId: Overload:Meridian.Application.Services.DataSourceSelection.DataSource
+  href: Meridian.Application.Services.DataSourceSelection.html#Meridian_Application_Services_DataSourceSelection_DataSource
+  name: DataSource
+  nameWithType: DataSourceSelection.DataSource
+  fullName: Meridian.Application.Services.DataSourceSelection.DataSource
+- uid: Meridian.Application.Config.DataSourceKind
+  commentId: T:Meridian.Application.Config.DataSourceKind
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourceKind.html
+  name: DataSourceKind
+  nameWithType: DataSourceKind
+  fullName: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Services.DataSourceSelection.Alpaca*
+  commentId: Overload:Meridian.Application.Services.DataSourceSelection.Alpaca
+  href: Meridian.Application.Services.DataSourceSelection.html#Meridian_Application_Services_DataSourceSelection_Alpaca
+  name: Alpaca
+  nameWithType: DataSourceSelection.Alpaca
+  fullName: Meridian.Application.Services.DataSourceSelection.Alpaca
+- uid: Meridian.Application.Config.AlpacaOptions
+  commentId: T:Meridian.Application.Config.AlpacaOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlpacaOptions.html
+  name: AlpacaOptions
+  nameWithType: AlpacaOptions
+  fullName: Meridian.Application.Config.AlpacaOptions
+- uid: Meridian.Application.Services.DataSourceSelection.Polygon*
+  commentId: Overload:Meridian.Application.Services.DataSourceSelection.Polygon
+  href: Meridian.Application.Services.DataSourceSelection.html#Meridian_Application_Services_DataSourceSelection_Polygon
+  name: Polygon
+  nameWithType: DataSourceSelection.Polygon
+  fullName: Meridian.Application.Services.DataSourceSelection.Polygon
+- uid: Meridian.Application.Config.PolygonOptions
+  commentId: T:Meridian.Application.Config.PolygonOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PolygonOptions.html
+  name: PolygonOptions
+  nameWithType: PolygonOptions
+  fullName: Meridian.Application.Config.PolygonOptions
+- uid: Meridian.Application.Services.DataSourceSelection.IB*
+  commentId: Overload:Meridian.Application.Services.DataSourceSelection.IB
+  href: Meridian.Application.Services.DataSourceSelection.html#Meridian_Application_Services_DataSourceSelection_IB
+  name: IB
+  nameWithType: DataSourceSelection.IB
+  fullName: Meridian.Application.Services.DataSourceSelection.IB
+- uid: Meridian.Application.Config.IBOptions
+  commentId: T:Meridian.Application.Config.IBOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBOptions.html
+  name: IBOptions
+  nameWithType: IBOptions
+  fullName: Meridian.Application.Config.IBOptions

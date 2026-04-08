@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCategory
+  id: DataSourceCategory
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceCategory.Aggregator
+  - Meridian.Infrastructure.DataSources.DataSourceCategory.Broker
+  - Meridian.Infrastructure.DataSources.DataSourceCategory.Exchange
+  - Meridian.Infrastructure.DataSources.DataSourceCategory.Free
+  - Meridian.Infrastructure.DataSources.DataSourceCategory.Premium
+  langs:
+  - csharp
+  - vb
+  name: DataSourceCategory
+  nameWithType: DataSourceCategory
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceCategory
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 127
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Category of the data source indicating its business model and reliability.
+  example: []
+  syntax:
+    content: 'public enum DataSourceCategory : byte'
+    content.vb: Public Enum DataSourceCategory As Byte
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory.Exchange
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCategory.Exchange
+  id: Exchange
+  parent: Meridian.Infrastructure.DataSources.DataSourceCategory
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: DataSourceCategory.Exchange
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory.Exchange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 130
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Direct exchange feed (highest reliability, lowest latency).
+  example: []
+  syntax:
+    content: Exchange = 0
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory.Broker
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCategory.Broker
+  id: Broker
+  parent: Meridian.Infrastructure.DataSources.DataSourceCategory
+  langs:
+  - csharp
+  - vb
+  name: Broker
+  nameWithType: DataSourceCategory.Broker
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory.Broker
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Broker
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 133
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Broker-provided data (may have subscription requirements).
+  example: []
+  syntax:
+    content: Broker = 1
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory.Aggregator
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCategory.Aggregator
+  id: Aggregator
+  parent: Meridian.Infrastructure.DataSources.DataSourceCategory
+  langs:
+  - csharp
+  - vb
+  name: Aggregator
+  nameWithType: DataSourceCategory.Aggregator
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory.Aggregator
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aggregator
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 136
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Data aggregator service (e.g., Polygon, Refinitiv).
+  example: []
+  syntax:
+    content: Aggregator = 2
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory.Free
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCategory.Free
+  id: Free
+  parent: Meridian.Infrastructure.DataSources.DataSourceCategory
+  langs:
+  - csharp
+  - vb
+  name: Free
+  nameWithType: DataSourceCategory.Free
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory.Free
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Free
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 139
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Free data source (may have rate limits, no SLA).
+  example: []
+  syntax:
+    content: Free = 3
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory.Premium
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCategory.Premium
+  id: Premium
+  parent: Meridian.Infrastructure.DataSources.DataSourceCategory
+  langs:
+  - csharp
+  - vb
+  name: Premium
+  nameWithType: DataSourceCategory.Premium
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory.Premium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Premium
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 142
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Premium paid data source (higher quality, SLA).
+  example: []
+  syntax:
+    content: Premium = 4
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCategory
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCategory.html
+  name: DataSourceCategory
+  nameWithType: DataSourceCategory
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory

@@ -1,0 +1,566 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  commentId: T:Meridian.Contracts.DirectLending.BookDrawdownRequest
+  id: BookDrawdownRequest
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.BookDrawdownRequest.#ctor(System.Decimal,System.DateOnly,System.DateOnly,System.String)
+  - Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount
+  - Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef
+  - Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate
+  - Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate
+  langs:
+  - csharp
+  - vb
+  name: BookDrawdownRequest
+  nameWithType: BookDrawdownRequest
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BookDrawdownRequest
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record BookDrawdownRequest : IEquatable<BookDrawdownRequest>'
+    content.vb: Public NotInheritable Class BookDrawdownRequest Implements IEquatable(Of BookDrawdownRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.BookDrawdownRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.#ctor(System.Decimal,System.DateOnly,System.DateOnly,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.BookDrawdownRequest.#ctor(System.Decimal,System.DateOnly,System.DateOnly,System.String)
+  id: '#ctor(System.Decimal,System.DateOnly,System.DateOnly,System.String)'
+  parent: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  langs:
+  - csharp
+  - vb
+  name: BookDrawdownRequest(decimal, DateOnly, DateOnly, string?)
+  nameWithType: BookDrawdownRequest.BookDrawdownRequest(decimal, DateOnly, DateOnly, string?)
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.BookDrawdownRequest(decimal, System.DateOnly, System.DateOnly, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public BookDrawdownRequest(decimal Amount, DateOnly TradeDate, DateOnly SettleDate, string? ExternalRef)
+    parameters:
+    - id: Amount
+      type: System.Decimal
+    - id: TradeDate
+      type: System.DateOnly
+    - id: SettleDate
+      type: System.DateOnly
+    - id: ExternalRef
+      type: System.String
+    content.vb: Public Sub New(Amount As Decimal, TradeDate As DateOnly, SettleDate As DateOnly, ExternalRef As String)
+  overload: Meridian.Contracts.DirectLending.BookDrawdownRequest.#ctor*
+  nameWithType.vb: BookDrawdownRequest.New(Decimal, DateOnly, DateOnly, String)
+  fullName.vb: Meridian.Contracts.DirectLending.BookDrawdownRequest.New(Decimal, System.DateOnly, System.DateOnly, String)
+  name.vb: New(Decimal, DateOnly, DateOnly, String)
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount
+  commentId: P:Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount
+  id: Amount
+  parent: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  langs:
+  - csharp
+  - vb
+  name: Amount
+  nameWithType: BookDrawdownRequest.Amount
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Amount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal Amount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Amount As Decimal
+  overload: Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount*
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate
+  commentId: P:Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate
+  id: TradeDate
+  parent: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  langs:
+  - csharp
+  - vb
+  name: TradeDate
+  nameWithType: BookDrawdownRequest.TradeDate
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly TradeDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property TradeDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate*
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate
+  commentId: P:Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate
+  id: SettleDate
+  parent: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  langs:
+  - csharp
+  - vb
+  name: SettleDate
+  nameWithType: BookDrawdownRequest.SettleDate
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SettleDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly SettleDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property SettleDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate*
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef
+  commentId: P:Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef
+  id: ExternalRef
+  parent: Meridian.Contracts.DirectLending.BookDrawdownRequest
+  langs:
+  - csharp
+  - vb
+  name: ExternalRef
+  nameWithType: BookDrawdownRequest.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalRef
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ExternalRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalRef As String
+  overload: Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.BookDrawdownRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.BookDrawdownRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BookDrawdownRequest>
+  nameWithType: IEquatable<BookDrawdownRequest>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.BookDrawdownRequest>
+  nameWithType.vb: IEquatable(Of BookDrawdownRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.BookDrawdownRequest)
+  name.vb: IEquatable(Of BookDrawdownRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.BookDrawdownRequest
+    name: BookDrawdownRequest
+    href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.BookDrawdownRequest
+    name: BookDrawdownRequest
+    href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.BookDrawdownRequest.#ctor
+  href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html#Meridian_Contracts_DirectLending_BookDrawdownRequest__ctor_System_Decimal_System_DateOnly_System_DateOnly_System_String_
+  name: BookDrawdownRequest
+  nameWithType: BookDrawdownRequest.BookDrawdownRequest
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.BookDrawdownRequest
+  nameWithType.vb: BookDrawdownRequest.New
+  fullName.vb: Meridian.Contracts.DirectLending.BookDrawdownRequest.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount*
+  commentId: Overload:Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount
+  href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html#Meridian_Contracts_DirectLending_BookDrawdownRequest_Amount
+  name: Amount
+  nameWithType: BookDrawdownRequest.Amount
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.Amount
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate
+  href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html#Meridian_Contracts_DirectLending_BookDrawdownRequest_TradeDate
+  name: TradeDate
+  nameWithType: BookDrawdownRequest.TradeDate
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.TradeDate
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate
+  href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html#Meridian_Contracts_DirectLending_BookDrawdownRequest_SettleDate
+  name: SettleDate
+  nameWithType: BookDrawdownRequest.SettleDate
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.SettleDate
+- uid: Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef*
+  commentId: Overload:Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef
+  href: Meridian.Contracts.DirectLending.BookDrawdownRequest.html#Meridian_Contracts_DirectLending_BookDrawdownRequest_ExternalRef
+  name: ExternalRef
+  nameWithType: BookDrawdownRequest.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.BookDrawdownRequest.ExternalRef

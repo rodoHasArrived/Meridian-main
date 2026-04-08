@@ -1,0 +1,75 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Portfolio
+  commentId: N:Meridian.Backtesting.Portfolio
+  id: Meridian.Backtesting.Portfolio
+  children:
+  - Meridian.Backtesting.Portfolio.FixedCommissionModel
+  - Meridian.Backtesting.Portfolio.ICommissionModel
+  - Meridian.Backtesting.Portfolio.PerShareCommissionModel
+  - Meridian.Backtesting.Portfolio.PercentageCommissionModel
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Backtesting.Portfolio
+  nameWithType: Meridian.Backtesting.Portfolio
+  fullName: Meridian.Backtesting.Portfolio
+  type: Namespace
+  assemblies:
+  - Meridian.Backtesting
+references:
+- uid: Meridian.Backtesting.Portfolio.ICommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.ICommissionModel
+  parent: Meridian.Backtesting.Portfolio
+  href: Meridian.Backtesting.Portfolio.ICommissionModel.html
+  name: ICommissionModel
+  nameWithType: ICommissionModel
+  fullName: Meridian.Backtesting.Portfolio.ICommissionModel
+- uid: Meridian.Backtesting.Portfolio.FixedCommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.FixedCommissionModel
+  href: Meridian.Backtesting.Portfolio.FixedCommissionModel.html
+  name: FixedCommissionModel
+  nameWithType: FixedCommissionModel
+  fullName: Meridian.Backtesting.Portfolio.FixedCommissionModel
+- uid: Meridian.Backtesting.Portfolio.PerShareCommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.PerShareCommissionModel
+  href: Meridian.Backtesting.Portfolio.PerShareCommissionModel.html
+  name: PerShareCommissionModel
+  nameWithType: PerShareCommissionModel
+  fullName: Meridian.Backtesting.Portfolio.PerShareCommissionModel
+- uid: Meridian.Backtesting.Portfolio.PercentageCommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.PercentageCommissionModel
+  href: Meridian.Backtesting.Portfolio.PercentageCommissionModel.html
+  name: PercentageCommissionModel
+  nameWithType: PercentageCommissionModel
+  fullName: Meridian.Backtesting.Portfolio.PercentageCommissionModel
+- uid: Meridian.Backtesting.Portfolio
+  commentId: N:Meridian.Backtesting.Portfolio
+  href: Meridian.html
+  name: Meridian.Backtesting.Portfolio
+  nameWithType: Meridian.Backtesting.Portfolio
+  fullName: Meridian.Backtesting.Portfolio
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Portfolio
+    name: Portfolio
+    href: Meridian.Backtesting.Portfolio.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Portfolio
+    name: Portfolio
+    href: Meridian.Backtesting.Portfolio.html

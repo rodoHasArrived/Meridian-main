@@ -1,0 +1,1085 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ReconciliationReport
+  commentId: T:Meridian.Application.Monitoring.ReconciliationReport
+  id: ReconciliationReport
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ReconciliationReport.#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation})
+  - Meridian.Application.Monitoring.ReconciliationReport.Duplicates
+  - Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled
+  - Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent
+  - Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted
+  - Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped
+  - Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown
+  - Meridian.Application.Monitoring.ReconciliationReport.Received
+  - Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate
+  - Meridian.Application.Monitoring.ReconciliationReport.Rejected
+  - Meridian.Application.Monitoring.ReconciliationReport.StoreFailed
+  - Meridian.Application.Monitoring.ReconciliationReport.Stored
+  - Meridian.Application.Monitoring.ReconciliationReport.Timestamp
+  - Meridian.Application.Monitoring.ReconciliationReport.Unaccounted
+  - Meridian.Application.Monitoring.ReconciliationReport.Validated
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationReport
+  nameWithType: ReconciliationReport
+  fullName: Meridian.Application.Monitoring.ReconciliationReport
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationReport
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Full pipeline reconciliation report.
+
+    Invariant: Received == Duplicates + Rejected + PipelineDropped + StoreFailed + Stored + Unaccounted
+  example: []
+  syntax:
+    content: 'public readonly record struct ReconciliationReport : IEquatable<ReconciliationReport>'
+    content.vb: Public Structure ReconciliationReport Implements IEquatable(Of ReconciliationReport)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ReconciliationReport}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.ReconciliationReport.#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation})
+  commentId: M:Meridian.Application.Monitoring.ReconciliationReport.#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation})
+  id: '#ctor(System.DateTimeOffset,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double,System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation})'
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationReport(DateTimeOffset, long, long, long, long, long, long, long, long, long, double, Dictionary<string, ProviderReconciliation>)
+  nameWithType: ReconciliationReport.ReconciliationReport(DateTimeOffset, long, long, long, long, long, long, long, long, long, double, Dictionary<string, ProviderReconciliation>)
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationReport(System.DateTimeOffset, long, long, long, long, long, long, long, long, long, double, System.Collections.Generic.Dictionary<string, Meridian.Application.Monitoring.ProviderReconciliation>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Full pipeline reconciliation report.
+
+    Invariant: Received == Duplicates + Rejected + PipelineDropped + StoreFailed + Stored + Unaccounted
+  example: []
+  syntax:
+    content: public ReconciliationReport(DateTimeOffset Timestamp, long Received, long Duplicates, long Validated, long Rejected, long PipelineAccepted, long PipelineDropped, long Stored, long StoreFailed, long Unaccounted, double ReconciliationRate, Dictionary<string, ProviderReconciliation> ProviderBreakdown)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Received
+      type: System.Int64
+    - id: Duplicates
+      type: System.Int64
+    - id: Validated
+      type: System.Int64
+    - id: Rejected
+      type: System.Int64
+    - id: PipelineAccepted
+      type: System.Int64
+    - id: PipelineDropped
+      type: System.Int64
+    - id: Stored
+      type: System.Int64
+    - id: StoreFailed
+      type: System.Int64
+    - id: Unaccounted
+      type: System.Int64
+    - id: ReconciliationRate
+      type: System.Double
+    - id: ProviderBreakdown
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation}
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Received As Long, Duplicates As Long, Validated As Long, Rejected As Long, PipelineAccepted As Long, PipelineDropped As Long, Stored As Long, StoreFailed As Long, Unaccounted As Long, ReconciliationRate As Double, ProviderBreakdown As Dictionary(Of String, ProviderReconciliation))
+  overload: Meridian.Application.Monitoring.ReconciliationReport.#ctor*
+  nameWithType.vb: ReconciliationReport.New(DateTimeOffset, Long, Long, Long, Long, Long, Long, Long, Long, Long, Double, Dictionary(Of String, ProviderReconciliation))
+  fullName.vb: Meridian.Application.Monitoring.ReconciliationReport.New(System.DateTimeOffset, Long, Long, Long, Long, Long, Long, Long, Long, Long, Double, System.Collections.Generic.Dictionary(Of String, Meridian.Application.Monitoring.ProviderReconciliation))
+  name.vb: New(DateTimeOffset, Long, Long, Long, Long, Long, Long, Long, Long, Long, Double, Dictionary(Of String, ProviderReconciliation))
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Timestamp
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ReconciliationReport.Timestamp
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Timestamp*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Received
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Received
+  id: Received
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Received
+  nameWithType: ReconciliationReport.Received
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Received
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Received
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Received { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Received As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Received*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Duplicates
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Duplicates
+  id: Duplicates
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Duplicates
+  nameWithType: ReconciliationReport.Duplicates
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Duplicates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duplicates
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Duplicates { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Duplicates As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Duplicates*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Validated
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Validated
+  id: Validated
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Validated
+  nameWithType: ReconciliationReport.Validated
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Validated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validated
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Validated { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Validated As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Validated*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Rejected
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Rejected
+  id: Rejected
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: ReconciliationReport.Rejected
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Rejected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Rejected { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Rejected As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Rejected*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted
+  id: PipelineAccepted
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: PipelineAccepted
+  nameWithType: ReconciliationReport.PipelineAccepted
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PipelineAccepted
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long PipelineAccepted { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property PipelineAccepted As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped
+  id: PipelineDropped
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: PipelineDropped
+  nameWithType: ReconciliationReport.PipelineDropped
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PipelineDropped
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long PipelineDropped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property PipelineDropped As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Stored
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Stored
+  id: Stored
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Stored
+  nameWithType: ReconciliationReport.Stored
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Stored
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stored
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Stored { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Stored As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Stored*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.StoreFailed
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.StoreFailed
+  id: StoreFailed
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: StoreFailed
+  nameWithType: ReconciliationReport.StoreFailed
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.StoreFailed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StoreFailed
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long StoreFailed { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property StoreFailed As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.StoreFailed*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Unaccounted
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.Unaccounted
+  id: Unaccounted
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: Unaccounted
+  nameWithType: ReconciliationReport.Unaccounted
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Unaccounted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unaccounted
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long Unaccounted { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Unaccounted As Long
+  overload: Meridian.Application.Monitoring.ReconciliationReport.Unaccounted*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate
+  id: ReconciliationRate
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRate
+  nameWithType: ReconciliationReport.ReconciliationRate
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationRate
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double ReconciliationRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ReconciliationRate As Double
+  overload: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown
+  id: ProviderBreakdown
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: ProviderBreakdown
+  nameWithType: ReconciliationReport.ProviderBreakdown
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderBreakdown
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public Dictionary<string, ProviderReconciliation> ProviderBreakdown { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation}
+    content.vb: Public Property ProviderBreakdown As Dictionary(Of String, ProviderReconciliation)
+  overload: Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled
+  id: IsFullyReconciled
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: IsFullyReconciled
+  nameWithType: ReconciliationReport.IsFullyReconciled
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFullyReconciled
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Whether the pipeline is fully reconciled (no unexplained loss).
+  example: []
+  syntax:
+    content: public bool IsFullyReconciled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsFullyReconciled As Boolean
+  overload: Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled*
+- uid: Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent
+  commentId: P:Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent
+  id: LossRatePercent
+  parent: Meridian.Application.Monitoring.ReconciliationReport
+  langs:
+  - csharp
+  - vb
+  name: LossRatePercent
+  nameWithType: ReconciliationReport.LossRatePercent
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LossRatePercent
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Overall loss rate as a percentage.
+  example: []
+  syntax:
+    content: public double LossRatePercent { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property LossRatePercent As Double
+  overload: Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.ReconciliationReport}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ReconciliationReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconciliationReport>
+  nameWithType: IEquatable<ReconciliationReport>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ReconciliationReport>
+  nameWithType.vb: IEquatable(Of ReconciliationReport)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ReconciliationReport)
+  name.vb: IEquatable(Of ReconciliationReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ReconciliationReport
+    name: ReconciliationReport
+    href: Meridian.Application.Monitoring.ReconciliationReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ReconciliationReport
+    name: ReconciliationReport
+    href: Meridian.Application.Monitoring.ReconciliationReport.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.ReconciliationReport.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.#ctor
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport__ctor_System_DateTimeOffset_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Double_System_Collections_Generic_Dictionary_System_String_Meridian_Application_Monitoring_ProviderReconciliation__
+  name: ReconciliationReport
+  nameWithType: ReconciliationReport.ReconciliationReport
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationReport
+  nameWithType.vb: ReconciliationReport.New
+  fullName.vb: Meridian.Application.Monitoring.ReconciliationReport.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Application.Monitoring.ProviderReconciliation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, ProviderReconciliation>
+  nameWithType: Dictionary<string, ProviderReconciliation>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Application.Monitoring.ProviderReconciliation>
+  nameWithType.vb: Dictionary(Of String, ProviderReconciliation)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Application.Monitoring.ProviderReconciliation)
+  name.vb: Dictionary(Of String, ProviderReconciliation)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderReconciliation
+    name: ProviderReconciliation
+    href: Meridian.Application.Monitoring.ProviderReconciliation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderReconciliation
+    name: ProviderReconciliation
+    href: Meridian.Application.Monitoring.ProviderReconciliation.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Timestamp
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Timestamp
+  name: Timestamp
+  nameWithType: ReconciliationReport.Timestamp
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Timestamp
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Received*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Received
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Received
+  name: Received
+  nameWithType: ReconciliationReport.Received
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Received
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Duplicates*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Duplicates
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Duplicates
+  name: Duplicates
+  nameWithType: ReconciliationReport.Duplicates
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Duplicates
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Validated*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Validated
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Validated
+  name: Validated
+  nameWithType: ReconciliationReport.Validated
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Validated
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Rejected*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Rejected
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Rejected
+  name: Rejected
+  nameWithType: ReconciliationReport.Rejected
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Rejected
+- uid: Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_PipelineAccepted
+  name: PipelineAccepted
+  nameWithType: ReconciliationReport.PipelineAccepted
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.PipelineAccepted
+- uid: Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_PipelineDropped
+  name: PipelineDropped
+  nameWithType: ReconciliationReport.PipelineDropped
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.PipelineDropped
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Stored*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Stored
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Stored
+  name: Stored
+  nameWithType: ReconciliationReport.Stored
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Stored
+- uid: Meridian.Application.Monitoring.ReconciliationReport.StoreFailed*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.StoreFailed
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_StoreFailed
+  name: StoreFailed
+  nameWithType: ReconciliationReport.StoreFailed
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.StoreFailed
+- uid: Meridian.Application.Monitoring.ReconciliationReport.Unaccounted*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.Unaccounted
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_Unaccounted
+  name: Unaccounted
+  nameWithType: ReconciliationReport.Unaccounted
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.Unaccounted
+- uid: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_ReconciliationRate
+  name: ReconciliationRate
+  nameWithType: ReconciliationReport.ReconciliationRate
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.ReconciliationRate
+- uid: Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_ProviderBreakdown
+  name: ProviderBreakdown
+  nameWithType: ReconciliationReport.ProviderBreakdown
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.ProviderBreakdown
+- uid: Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_IsFullyReconciled
+  name: IsFullyReconciled
+  nameWithType: ReconciliationReport.IsFullyReconciled
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.IsFullyReconciled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent*
+  commentId: Overload:Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent
+  href: Meridian.Application.Monitoring.ReconciliationReport.html#Meridian_Application_Monitoring_ReconciliationReport_LossRatePercent
+  name: LossRatePercent
+  nameWithType: ReconciliationReport.LossRatePercent
+  fullName: Meridian.Application.Monitoring.ReconciliationReport.LossRatePercent

@@ -1,0 +1,233 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  id: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  - Meridian.Application.Monitoring.Core.AlertCategory
+  - Meridian.Application.Monitoring.Core.AlertDispatcher
+  - Meridian.Application.Monitoring.Core.AlertFilter
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  - Meridian.Application.Monitoring.Core.AlertRunbookRegistry
+  - Meridian.Application.Monitoring.Core.AlertSeverity
+  - Meridian.Application.Monitoring.Core.AlertStatistics
+  - Meridian.Application.Monitoring.Core.HealthCheckAggregator
+  - Meridian.Application.Monitoring.Core.HealthCheckResult
+  - Meridian.Application.Monitoring.Core.HealthSeverity
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher
+  - Meridian.Application.Monitoring.Core.IHealthCheckAggregator
+  - Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  - Meridian.Application.Monitoring.Core.MonitoringAlert
+  - Meridian.Application.Monitoring.Core.SloComplianceDashboard
+  - Meridian.Application.Monitoring.Core.SloComplianceResult
+  - Meridian.Application.Monitoring.Core.SloComplianceState
+  - Meridian.Application.Monitoring.Core.SloDefinition
+  - Meridian.Application.Monitoring.Core.SloDefinitionRegistry
+  - Meridian.Application.Monitoring.Core.SloDefinitionSummary
+  - Meridian.Application.Monitoring.Core.SloSubsystem
+  - Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher
+  commentId: T:Meridian.Application.Monitoring.Core.AlertDispatcher
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html
+  name: AlertDispatcher
+  nameWithType: AlertDispatcher
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookRegistry
+  commentId: T:Meridian.Application.Monitoring.Core.AlertRunbookRegistry
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertRunbookRegistry.html
+  name: AlertRunbookRegistry
+  nameWithType: AlertRunbookRegistry
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookRegistry
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  commentId: T:Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html
+  name: AlertRunbookEntry
+  nameWithType: AlertRunbookEntry
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+- uid: Meridian.Application.Monitoring.Core.HealthCheckAggregator
+  commentId: T:Meridian.Application.Monitoring.Core.HealthCheckAggregator
+  href: Meridian.Application.Monitoring.Core.HealthCheckAggregator.html
+  name: HealthCheckAggregator
+  nameWithType: HealthCheckAggregator
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckAggregator
+- uid: Meridian.Application.Monitoring.Core.SloDefinitionRegistry
+  commentId: T:Meridian.Application.Monitoring.Core.SloDefinitionRegistry
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloDefinitionRegistry.html
+  name: SloDefinitionRegistry
+  nameWithType: SloDefinitionRegistry
+  fullName: Meridian.Application.Monitoring.Core.SloDefinitionRegistry
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem
+  commentId: T:Meridian.Application.Monitoring.Core.SloSubsystem
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloSubsystem.html
+  name: SloSubsystem
+  nameWithType: SloSubsystem
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloDefinition
+  commentId: T:Meridian.Application.Monitoring.Core.SloDefinition
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html
+  name: SloDefinition
+  nameWithType: SloDefinition
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition
+- uid: Meridian.Application.Monitoring.Core.SloComplianceResult
+  commentId: T:Meridian.Application.Monitoring.Core.SloComplianceResult
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloComplianceResult.html
+  name: SloComplianceResult
+  nameWithType: SloComplianceResult
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceResult
+- uid: Meridian.Application.Monitoring.Core.SloComplianceState
+  commentId: T:Meridian.Application.Monitoring.Core.SloComplianceState
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloComplianceState.html
+  name: SloComplianceState
+  nameWithType: SloComplianceState
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceState
+- uid: Meridian.Application.Monitoring.Core.SloComplianceDashboard
+  commentId: T:Meridian.Application.Monitoring.Core.SloComplianceDashboard
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloComplianceDashboard.html
+  name: SloComplianceDashboard
+  nameWithType: SloComplianceDashboard
+  fullName: Meridian.Application.Monitoring.Core.SloComplianceDashboard
+- uid: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  commentId: T:Meridian.Application.Monitoring.Core.SloSubsystemSummary
+  href: Meridian.Application.Monitoring.Core.SloSubsystemSummary.html
+  name: SloSubsystemSummary
+  nameWithType: SloSubsystemSummary
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystemSummary
+- uid: Meridian.Application.Monitoring.Core.SloDefinitionSummary
+  commentId: T:Meridian.Application.Monitoring.Core.SloDefinitionSummary
+  href: Meridian.Application.Monitoring.Core.SloDefinitionSummary.html
+  name: SloDefinitionSummary
+  nameWithType: SloDefinitionSummary
+  fullName: Meridian.Application.Monitoring.Core.SloDefinitionSummary
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.AlertSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertSeverity.html
+  name: AlertSeverity
+  nameWithType: AlertSeverity
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity
+- uid: Meridian.Application.Monitoring.Core.AlertCategory
+  commentId: T:Meridian.Application.Monitoring.Core.AlertCategory
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertCategory.html
+  name: AlertCategory
+  nameWithType: AlertCategory
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+  commentId: T:Meridian.Application.Monitoring.Core.MonitoringAlert
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  name: MonitoringAlert
+  nameWithType: MonitoringAlert
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert
+- uid: Meridian.Application.Monitoring.Core.AlertFilter
+  commentId: T:Meridian.Application.Monitoring.Core.AlertFilter
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertFilter.html
+  name: AlertFilter
+  nameWithType: AlertFilter
+  fullName: Meridian.Application.Monitoring.Core.AlertFilter
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  commentId: T:Meridian.Application.Monitoring.Core.IAlertDispatcher
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.IAlertDispatcher.html
+  name: IAlertDispatcher
+  nameWithType: IAlertDispatcher
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher
+- uid: Meridian.Application.Monitoring.Core.AlertStatistics
+  commentId: T:Meridian.Application.Monitoring.Core.AlertStatistics
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertStatistics.html
+  name: AlertStatistics
+  nameWithType: AlertStatistics
+  fullName: Meridian.Application.Monitoring.Core.AlertStatistics
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.HealthSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.HealthSeverity.html
+  name: HealthSeverity
+  nameWithType: HealthSeverity
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+  commentId: T:Meridian.Application.Monitoring.Core.HealthCheckResult
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  name: HealthCheckResult
+  nameWithType: HealthCheckResult
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  commentId: T:Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.IHealthCheckProvider.html
+  name: IHealthCheckProvider
+  nameWithType: IHealthCheckProvider
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckProvider
+- uid: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  commentId: T:Meridian.Application.Monitoring.Core.AggregatedHealthReport
+  href: Meridian.Application.Monitoring.Core.AggregatedHealthReport.html
+  name: AggregatedHealthReport
+  nameWithType: AggregatedHealthReport
+  fullName: Meridian.Application.Monitoring.Core.AggregatedHealthReport
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckAggregator
+  commentId: T:Meridian.Application.Monitoring.Core.IHealthCheckAggregator
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.IHealthCheckAggregator.html
+  name: IHealthCheckAggregator
+  nameWithType: IHealthCheckAggregator
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckAggregator
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html

@@ -1,0 +1,624 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap
+  commentId: T:Meridian.Infrastructure.Resilience.ReconnectionGap
+  id: ReconnectionGap
+  parent: Meridian.Infrastructure.Resilience
+  children:
+  - Meridian.Infrastructure.Resilience.ReconnectionGap.#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  - Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt
+  - Meridian.Infrastructure.Resilience.ReconnectionGap.Duration
+  - Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName
+  - Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts
+  - Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt
+  langs:
+  - csharp
+  - vb
+  name: ReconnectionGap
+  nameWithType: ReconnectionGap
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectionGap
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 625
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Represents a gap in data caused by a WebSocket disconnection and reconnection.
+
+    Subscribers should use this to trigger backfill for the missed time window.
+  example: []
+  syntax:
+    content: 'public readonly record struct ReconnectionGap : IEquatable<ReconnectionGap>'
+    content.vb: Public Structure ReconnectionGap Implements IEquatable(Of ReconnectionGap)
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Resilience.ReconnectionGap}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  commentId: M:Meridian.Infrastructure.Resilience.ReconnectionGap.#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  id: '#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int32)'
+  parent: Meridian.Infrastructure.Resilience.ReconnectionGap
+  langs:
+  - csharp
+  - vb
+  name: ReconnectionGap(string, DateTimeOffset, DateTimeOffset, int)
+  nameWithType: ReconnectionGap.ReconnectionGap(string, DateTimeOffset, DateTimeOffset, int)
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectionGap(string, System.DateTimeOffset, System.DateTimeOffset, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 625
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Represents a gap in data caused by a WebSocket disconnection and reconnection.
+
+    Subscribers should use this to trigger backfill for the missed time window.
+  example: []
+  syntax:
+    content: public ReconnectionGap(string ProviderName, DateTimeOffset DisconnectedAt, DateTimeOffset ReconnectedAt, int ReconnectAttempts)
+    parameters:
+    - id: ProviderName
+      type: System.String
+    - id: DisconnectedAt
+      type: System.DateTimeOffset
+    - id: ReconnectedAt
+      type: System.DateTimeOffset
+    - id: ReconnectAttempts
+      type: System.Int32
+    content.vb: Public Sub New(ProviderName As String, DisconnectedAt As DateTimeOffset, ReconnectedAt As DateTimeOffset, ReconnectAttempts As Integer)
+  overload: Meridian.Infrastructure.Resilience.ReconnectionGap.#ctor*
+  nameWithType.vb: ReconnectionGap.New(String, DateTimeOffset, DateTimeOffset, Integer)
+  fullName.vb: Meridian.Infrastructure.Resilience.ReconnectionGap.New(String, System.DateTimeOffset, System.DateTimeOffset, Integer)
+  name.vb: New(String, DateTimeOffset, DateTimeOffset, Integer)
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName
+  commentId: P:Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName
+  id: ProviderName
+  parent: Meridian.Infrastructure.Resilience.ReconnectionGap
+  langs:
+  - csharp
+  - vb
+  name: ProviderName
+  nameWithType: ReconnectionGap.ProviderName
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderName
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 626
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public string ProviderName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderName As String
+  overload: Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName*
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt
+  commentId: P:Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt
+  id: DisconnectedAt
+  parent: Meridian.Infrastructure.Resilience.ReconnectionGap
+  langs:
+  - csharp
+  - vb
+  name: DisconnectedAt
+  nameWithType: ReconnectionGap.DisconnectedAt
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectedAt
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 627
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public DateTimeOffset DisconnectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property DisconnectedAt As DateTimeOffset
+  overload: Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt*
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt
+  commentId: P:Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt
+  id: ReconnectedAt
+  parent: Meridian.Infrastructure.Resilience.ReconnectionGap
+  langs:
+  - csharp
+  - vb
+  name: ReconnectedAt
+  nameWithType: ReconnectionGap.ReconnectedAt
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectedAt
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 628
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public DateTimeOffset ReconnectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ReconnectedAt As DateTimeOffset
+  overload: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt*
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts
+  commentId: P:Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts
+  id: ReconnectAttempts
+  parent: Meridian.Infrastructure.Resilience.ReconnectionGap
+  langs:
+  - csharp
+  - vb
+  name: ReconnectAttempts
+  nameWithType: ReconnectionGap.ReconnectAttempts
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectAttempts
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 629
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public int ReconnectAttempts { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ReconnectAttempts As Integer
+  overload: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts*
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.Duration
+  commentId: P:Meridian.Infrastructure.Resilience.ReconnectionGap.Duration
+  id: Duration
+  parent: Meridian.Infrastructure.Resilience.ReconnectionGap
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: ReconnectionGap.Duration
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
+    startLine: 634
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Duration of the gap (time without data).
+  example: []
+  syntax:
+    content: public TimeSpan Duration { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public ReadOnly Property Duration As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.ReconnectionGap.Duration*
+references:
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  href: Meridian.html
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+- uid: System.IEquatable{Meridian.Infrastructure.Resilience.ReconnectionGap}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Resilience.ReconnectionGap}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconnectionGap>
+  nameWithType: IEquatable<ReconnectionGap>
+  fullName: System.IEquatable<Meridian.Infrastructure.Resilience.ReconnectionGap>
+  nameWithType.vb: IEquatable(Of ReconnectionGap)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Resilience.ReconnectionGap)
+  name.vb: IEquatable(Of ReconnectionGap)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Resilience.ReconnectionGap
+    name: ReconnectionGap
+    href: Meridian.Infrastructure.Resilience.ReconnectionGap.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Resilience.ReconnectionGap
+    name: ReconnectionGap
+    href: Meridian.Infrastructure.Resilience.ReconnectionGap.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Resilience.ReconnectionGap.#ctor
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html#Meridian_Infrastructure_Resilience_ReconnectionGap__ctor_System_String_System_DateTimeOffset_System_DateTimeOffset_System_Int32_
+  name: ReconnectionGap
+  nameWithType: ReconnectionGap.ReconnectionGap
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectionGap
+  nameWithType.vb: ReconnectionGap.New
+  fullName.vb: Meridian.Infrastructure.Resilience.ReconnectionGap.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName*
+  commentId: Overload:Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html#Meridian_Infrastructure_Resilience_ReconnectionGap_ProviderName
+  name: ProviderName
+  nameWithType: ReconnectionGap.ProviderName
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ProviderName
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt*
+  commentId: Overload:Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html#Meridian_Infrastructure_Resilience_ReconnectionGap_DisconnectedAt
+  name: DisconnectedAt
+  nameWithType: ReconnectionGap.DisconnectedAt
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.DisconnectedAt
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt*
+  commentId: Overload:Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html#Meridian_Infrastructure_Resilience_ReconnectionGap_ReconnectedAt
+  name: ReconnectedAt
+  nameWithType: ReconnectionGap.ReconnectedAt
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectedAt
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts*
+  commentId: Overload:Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html#Meridian_Infrastructure_Resilience_ReconnectionGap_ReconnectAttempts
+  name: ReconnectAttempts
+  nameWithType: ReconnectionGap.ReconnectAttempts
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.ReconnectAttempts
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap.Duration*
+  commentId: Overload:Meridian.Infrastructure.Resilience.ReconnectionGap.Duration
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html#Meridian_Infrastructure_Resilience_ReconnectionGap_Duration
+  name: Duration
+  nameWithType: ReconnectionGap.Duration
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap.Duration
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan

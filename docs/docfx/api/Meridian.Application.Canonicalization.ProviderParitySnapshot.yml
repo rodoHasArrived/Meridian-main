@@ -1,0 +1,714 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  commentId: T:Meridian.Application.Canonicalization.ProviderParitySnapshot
+  id: ProviderParitySnapshot
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.Success
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.Total
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue
+  langs:
+  - csharp
+  - vb
+  name: ProviderParitySnapshot
+  nameWithType: ProviderParitySnapshot
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderParitySnapshot
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Per-provider parity statistics for Phase 2 validation dashboard.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderParitySnapshot : IEquatable<ProviderParitySnapshot>'
+    content.vb: Public NotInheritable Class ProviderParitySnapshot Implements IEquatable(Of ProviderParitySnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Canonicalization.ProviderParitySnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)
+  commentId: M:Meridian.Application.Canonicalization.ProviderParitySnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)
+  id: '#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)'
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: ProviderParitySnapshot(long, long, long, long, long, long, long, double)
+  nameWithType: ProviderParitySnapshot.ProviderParitySnapshot(long, long, long, long, long, long, long, double)
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.ProviderParitySnapshot(long, long, long, long, long, long, long, double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Per-provider parity statistics for Phase 2 validation dashboard.
+  example: []
+  syntax:
+    content: public ProviderParitySnapshot(long Total, long Success, long SoftFail, long HardFail, long UnresolvedSymbol, long UnresolvedVenue, long UnresolvedCondition, double MatchRatePercent)
+    parameters:
+    - id: Total
+      type: System.Int64
+    - id: Success
+      type: System.Int64
+    - id: SoftFail
+      type: System.Int64
+    - id: HardFail
+      type: System.Int64
+    - id: UnresolvedSymbol
+      type: System.Int64
+    - id: UnresolvedVenue
+      type: System.Int64
+    - id: UnresolvedCondition
+      type: System.Int64
+    - id: MatchRatePercent
+      type: System.Double
+    content.vb: Public Sub New(Total As Long, Success As Long, SoftFail As Long, HardFail As Long, UnresolvedSymbol As Long, UnresolvedVenue As Long, UnresolvedCondition As Long, MatchRatePercent As Double)
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.#ctor*
+  nameWithType.vb: ProviderParitySnapshot.New(Long, Long, Long, Long, Long, Long, Long, Double)
+  fullName.vb: Meridian.Application.Canonicalization.ProviderParitySnapshot.New(Long, Long, Long, Long, Long, Long, Long, Double)
+  name.vb: New(Long, Long, Long, Long, Long, Long, Long, Double)
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.Total
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.Total
+  id: Total
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: Total
+  nameWithType: ProviderParitySnapshot.Total
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.Total
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Total
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long Total { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Total As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.Total*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.Success
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.Success
+  id: Success
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: ProviderParitySnapshot.Success
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long Success { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Success As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.Success*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail
+  id: SoftFail
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: SoftFail
+  nameWithType: ProviderParitySnapshot.SoftFail
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SoftFail
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long SoftFail { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SoftFail As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail
+  id: HardFail
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: HardFail
+  nameWithType: ProviderParitySnapshot.HardFail
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HardFail
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long HardFail { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property HardFail As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol
+  id: UnresolvedSymbol
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnresolvedSymbol
+  nameWithType: ProviderParitySnapshot.UnresolvedSymbol
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnresolvedSymbol
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long UnresolvedSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property UnresolvedSymbol As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue
+  id: UnresolvedVenue
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnresolvedVenue
+  nameWithType: ProviderParitySnapshot.UnresolvedVenue
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnresolvedVenue
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long UnresolvedVenue { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property UnresolvedVenue As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition
+  id: UnresolvedCondition
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnresolvedCondition
+  nameWithType: ProviderParitySnapshot.UnresolvedCondition
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnresolvedCondition
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long UnresolvedCondition { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property UnresolvedCondition As Long
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition*
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent
+  commentId: P:Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent
+  id: MatchRatePercent
+  parent: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  langs:
+  - csharp
+  - vb
+  name: MatchRatePercent
+  nameWithType: ProviderParitySnapshot.MatchRatePercent
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MatchRatePercent
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public double MatchRatePercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MatchRatePercent As Double
+  overload: Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent*
+references:
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Canonicalization.ProviderParitySnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Canonicalization.ProviderParitySnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderParitySnapshot>
+  nameWithType: IEquatable<ProviderParitySnapshot>
+  fullName: System.IEquatable<Meridian.Application.Canonicalization.ProviderParitySnapshot>
+  nameWithType.vb: IEquatable(Of ProviderParitySnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Canonicalization.ProviderParitySnapshot)
+  name.vb: IEquatable(Of ProviderParitySnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Canonicalization.ProviderParitySnapshot
+    name: ProviderParitySnapshot
+    href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Canonicalization.ProviderParitySnapshot
+    name: ProviderParitySnapshot
+    href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.#ctor
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot__ctor_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Double_
+  name: ProviderParitySnapshot
+  nameWithType: ProviderParitySnapshot.ProviderParitySnapshot
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.ProviderParitySnapshot
+  nameWithType.vb: ProviderParitySnapshot.New
+  fullName.vb: Meridian.Application.Canonicalization.ProviderParitySnapshot.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.Total*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.Total
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_Total
+  name: Total
+  nameWithType: ProviderParitySnapshot.Total
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.Total
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.Success*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.Success
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_Success
+  name: Success
+  nameWithType: ProviderParitySnapshot.Success
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.Success
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_SoftFail
+  name: SoftFail
+  nameWithType: ProviderParitySnapshot.SoftFail
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.SoftFail
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_HardFail
+  name: HardFail
+  nameWithType: ProviderParitySnapshot.HardFail
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.HardFail
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_UnresolvedSymbol
+  name: UnresolvedSymbol
+  nameWithType: ProviderParitySnapshot.UnresolvedSymbol
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedSymbol
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_UnresolvedVenue
+  name: UnresolvedVenue
+  nameWithType: ProviderParitySnapshot.UnresolvedVenue
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedVenue
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_UnresolvedCondition
+  name: UnresolvedCondition
+  nameWithType: ProviderParitySnapshot.UnresolvedCondition
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.UnresolvedCondition
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent*
+  commentId: Overload:Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html#Meridian_Application_Canonicalization_ProviderParitySnapshot_MatchRatePercent
+  name: MatchRatePercent
+  nameWithType: ProviderParitySnapshot.MatchRatePercent
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot.MatchRatePercent

@@ -1,0 +1,529 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.HistoricalDataRecord
+  commentId: T:Meridian.Application.Services.HistoricalDataRecord
+  id: HistoricalDataRecord
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.HistoricalDataRecord.EventType
+  - Meridian.Application.Services.HistoricalDataRecord.LineNumber
+  - Meridian.Application.Services.HistoricalDataRecord.RawJson
+  - Meridian.Application.Services.HistoricalDataRecord.SourceFile
+  - Meridian.Application.Services.HistoricalDataRecord.Symbol
+  - Meridian.Application.Services.HistoricalDataRecord.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: HistoricalDataRecord
+  nameWithType: HistoricalDataRecord
+  fullName: Meridian.Application.Services.HistoricalDataRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalDataRecord
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: A single record from historical data.
+  example: []
+  syntax:
+    content: public sealed class HistoricalDataRecord
+    content.vb: Public NotInheritable Class HistoricalDataRecord
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.HistoricalDataRecord.SourceFile
+  commentId: P:Meridian.Application.Services.HistoricalDataRecord.SourceFile
+  id: SourceFile
+  parent: Meridian.Application.Services.HistoricalDataRecord
+  langs:
+  - csharp
+  - vb
+  name: SourceFile
+  nameWithType: HistoricalDataRecord.SourceFile
+  fullName: Meridian.Application.Services.HistoricalDataRecord.SourceFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceFile
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 399
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? SourceFile { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceFile As String
+  overload: Meridian.Application.Services.HistoricalDataRecord.SourceFile*
+- uid: Meridian.Application.Services.HistoricalDataRecord.LineNumber
+  commentId: P:Meridian.Application.Services.HistoricalDataRecord.LineNumber
+  id: LineNumber
+  parent: Meridian.Application.Services.HistoricalDataRecord
+  langs:
+  - csharp
+  - vb
+  name: LineNumber
+  nameWithType: HistoricalDataRecord.LineNumber
+  fullName: Meridian.Application.Services.HistoricalDataRecord.LineNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LineNumber
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 400
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int LineNumber { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LineNumber As Integer
+  overload: Meridian.Application.Services.HistoricalDataRecord.LineNumber*
+- uid: Meridian.Application.Services.HistoricalDataRecord.Timestamp
+  commentId: P:Meridian.Application.Services.HistoricalDataRecord.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Services.HistoricalDataRecord
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: HistoricalDataRecord.Timestamp
+  fullName: Meridian.Application.Services.HistoricalDataRecord.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Services.HistoricalDataRecord.Timestamp*
+- uid: Meridian.Application.Services.HistoricalDataRecord.Symbol
+  commentId: P:Meridian.Application.Services.HistoricalDataRecord.Symbol
+  id: Symbol
+  parent: Meridian.Application.Services.HistoricalDataRecord
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: HistoricalDataRecord.Symbol
+  fullName: Meridian.Application.Services.HistoricalDataRecord.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Services.HistoricalDataRecord.Symbol*
+- uid: Meridian.Application.Services.HistoricalDataRecord.EventType
+  commentId: P:Meridian.Application.Services.HistoricalDataRecord.EventType
+  id: EventType
+  parent: Meridian.Application.Services.HistoricalDataRecord
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: HistoricalDataRecord.EventType
+  fullName: Meridian.Application.Services.HistoricalDataRecord.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? EventType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Application.Services.HistoricalDataRecord.EventType*
+- uid: Meridian.Application.Services.HistoricalDataRecord.RawJson
+  commentId: P:Meridian.Application.Services.HistoricalDataRecord.RawJson
+  id: RawJson
+  parent: Meridian.Application.Services.HistoricalDataRecord
+  langs:
+  - csharp
+  - vb
+  name: RawJson
+  nameWithType: HistoricalDataRecord.RawJson
+  fullName: Meridian.Application.Services.HistoricalDataRecord.RawJson
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RawJson
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? RawJson { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RawJson As String
+  overload: Meridian.Application.Services.HistoricalDataRecord.RawJson*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.HistoricalDataRecord.SourceFile*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataRecord.SourceFile
+  href: Meridian.Application.Services.HistoricalDataRecord.html#Meridian_Application_Services_HistoricalDataRecord_SourceFile
+  name: SourceFile
+  nameWithType: HistoricalDataRecord.SourceFile
+  fullName: Meridian.Application.Services.HistoricalDataRecord.SourceFile
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.HistoricalDataRecord.LineNumber*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataRecord.LineNumber
+  href: Meridian.Application.Services.HistoricalDataRecord.html#Meridian_Application_Services_HistoricalDataRecord_LineNumber
+  name: LineNumber
+  nameWithType: HistoricalDataRecord.LineNumber
+  fullName: Meridian.Application.Services.HistoricalDataRecord.LineNumber
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.HistoricalDataRecord.Timestamp*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataRecord.Timestamp
+  href: Meridian.Application.Services.HistoricalDataRecord.html#Meridian_Application_Services_HistoricalDataRecord_Timestamp
+  name: Timestamp
+  nameWithType: HistoricalDataRecord.Timestamp
+  fullName: Meridian.Application.Services.HistoricalDataRecord.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Services.HistoricalDataRecord.Symbol*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataRecord.Symbol
+  href: Meridian.Application.Services.HistoricalDataRecord.html#Meridian_Application_Services_HistoricalDataRecord_Symbol
+  name: Symbol
+  nameWithType: HistoricalDataRecord.Symbol
+  fullName: Meridian.Application.Services.HistoricalDataRecord.Symbol
+- uid: Meridian.Application.Services.HistoricalDataRecord.EventType*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataRecord.EventType
+  href: Meridian.Application.Services.HistoricalDataRecord.html#Meridian_Application_Services_HistoricalDataRecord_EventType
+  name: EventType
+  nameWithType: HistoricalDataRecord.EventType
+  fullName: Meridian.Application.Services.HistoricalDataRecord.EventType
+- uid: Meridian.Application.Services.HistoricalDataRecord.RawJson*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataRecord.RawJson
+  href: Meridian.Application.Services.HistoricalDataRecord.html#Meridian_Application_Services_HistoricalDataRecord_RawJson
+  name: RawJson
+  nameWithType: HistoricalDataRecord.RawJson
+  fullName: Meridian.Application.Services.HistoricalDataRecord.RawJson

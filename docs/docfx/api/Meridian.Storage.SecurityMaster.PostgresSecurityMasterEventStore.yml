@@ -1,0 +1,1385 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  commentId: T:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  id: PostgresSecurityMasterEventStore
+  parent: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.#ctor(Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore})
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PostgresSecurityMasterEventStore
+  nameWithType: PostgresSecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostgresSecurityMasterEventStore
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: 'public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore'
+    content.vb: Public NotInheritable Class PostgresSecurityMasterEventStore Implements ISecurityMasterEventStore
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.#ctor(Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore})
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.#ctor(Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore})
+  id: '#ctor(Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore})'
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: PostgresSecurityMasterEventStore(SecurityMasterOptions, ILogger<PostgresSecurityMasterEventStore>?)
+  nameWithType: PostgresSecurityMasterEventStore.PostgresSecurityMasterEventStore(SecurityMasterOptions, ILogger<PostgresSecurityMasterEventStore>?)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.PostgresSecurityMasterEventStore(Meridian.Contracts.SecurityMaster.SecurityMasterOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public PostgresSecurityMasterEventStore(SecurityMasterOptions options, ILogger<PostgresSecurityMasterEventStore>? logger = null)
+    parameters:
+    - id: options
+      type: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore}
+    content.vb: Public Sub New(options As SecurityMasterOptions, logger As ILogger(Of PostgresSecurityMasterEventStore) = Nothing)
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.#ctor*
+  nameWithType.vb: PostgresSecurityMasterEventStore.New(SecurityMasterOptions, ILogger(Of PostgresSecurityMasterEventStore))
+  fullName.vb: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.New(Meridian.Contracts.SecurityMaster.SecurityMasterOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore))
+  name.vb: New(SecurityMasterOptions, ILogger(Of PostgresSecurityMasterEventStore))
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  id: AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(Guid, long, IReadOnlyList<SecurityMasterEventEnvelope>, CancellationToken)
+  nameWithType: PostgresSecurityMasterEventStore.AppendAsync(Guid, long, IReadOnlyList<SecurityMasterEventEnvelope>, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync(System.Guid, long, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  example: []
+  syntax:
+    content: public Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList<SecurityMasterEventEnvelope> events, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: expectedVersion
+      type: System.Int64
+    - id: events
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function AppendAsync(securityId As Guid, expectedVersion As Long, events As IReadOnlyList(Of SecurityMasterEventEnvelope), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync*
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  nameWithType.vb: PostgresSecurityMasterEventStore.AppendAsync(Guid, Long, IReadOnlyList(Of SecurityMasterEventEnvelope), CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync(System.Guid, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope), System.Threading.CancellationToken)
+  name.vb: AppendAsync(Guid, Long, IReadOnlyList(Of SecurityMasterEventEnvelope), CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  id: LoadAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAsync(Guid, CancellationToken)
+  nameWithType: PostgresSecurityMasterEventStore.LoadAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+    content.vb: Public Function LoadAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync*
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  id: LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: LoadSinceSequenceAsync(long, int, CancellationToken)
+  nameWithType: PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(long, int, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(long, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadSinceSequenceAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default)
+    parameters:
+    - id: sequenceExclusive
+      type: System.Int64
+    - id: take
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+    content.vb: Public Function LoadSinceSequenceAsync(sequenceExclusive As Long, take As Integer, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync*
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  nameWithType.vb: PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(Long, Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync(Long, Integer, System.Threading.CancellationToken)
+  name.vb: LoadSinceSequenceAsync(Long, Integer, CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  id: GetLatestSequenceAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestSequenceAsync(CancellationToken)
+  nameWithType: PostgresSecurityMasterEventStore.GetLatestSequenceAsync(CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestSequenceAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<long> GetLatestSequenceAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int64}
+    content.vb: Public Function GetLatestSequenceAsync(ct As CancellationToken = Nothing) As Task(Of Long)
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync*
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  id: AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: AppendCorporateActionAsync(CorporateActionDto, CancellationToken)
+  nameWithType: PostgresSecurityMasterEventStore.AppendCorporateActionAsync(CorporateActionDto, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendCorporateActionAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  summary: Appends one or more corporate action events for a security.
+  example: []
+  syntax:
+    content: public Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default)
+    parameters:
+    - id: action
+      type: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function AppendCorporateActionAsync(action As CorporateActionDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync*
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  id: LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: LoadCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: PostgresSecurityMasterEventStore.LoadCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadCorporateActionsAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  summary: Returns all corporate action events for a security in ascending ex-date order.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+    content.vb: Public Function LoadCorporateActionsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CorporateActionDto))
+  overload: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync*
+  implements:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html
+  name: ISecurityMasterEventStore
+  nameWithType: ISecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.#ctor*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.#ctor
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore__ctor_Meridian_Contracts_SecurityMaster_SecurityMasterOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore__
+  name: PostgresSecurityMasterEventStore
+  nameWithType: PostgresSecurityMasterEventStore.PostgresSecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.PostgresSecurityMasterEventStore
+  nameWithType.vb: PostgresSecurityMasterEventStore.New
+  fullName.vb: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.New
+  name.vb: New
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html
+  name: SecurityMasterOptions
+  nameWithType: SecurityMasterOptions
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<PostgresSecurityMasterEventStore>
+  nameWithType: ILogger<PostgresSecurityMasterEventStore>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore>
+  nameWithType.vb: ILogger(Of PostgresSecurityMasterEventStore)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore)
+  name.vb: ILogger(Of PostgresSecurityMasterEventStore)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+    name: PostgresSecurityMasterEventStore
+    href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+    name: PostgresSecurityMasterEventStore
+    href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore_AppendAsync_System_Guid_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope__System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: PostgresSecurityMasterEventStore.AppendAsync
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendAsync
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  isExternal: true
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendAsync_System_Guid_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope__System_Threading_CancellationToken_
+  name: AppendAsync(Guid, long, IReadOnlyList<SecurityMasterEventEnvelope>, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.AppendAsync(Guid, long, IReadOnlyList<SecurityMasterEventEnvelope>, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid, long, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterEventStore.AppendAsync(Guid, Long, IReadOnlyList(Of SecurityMasterEventEnvelope), CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope), System.Threading.CancellationToken)
+  name.vb: AppendAsync(Guid, Long, IReadOnlyList(Of SecurityMasterEventEnvelope), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendAsync_System_Guid_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendAsync_System_Guid_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SecurityMasterEventEnvelope>
+  nameWithType: IReadOnlyList<SecurityMasterEventEnvelope>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>
+  nameWithType.vb: IReadOnlyList(Of SecurityMasterEventEnvelope)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope)
+  name.vb: IReadOnlyList(Of SecurityMasterEventEnvelope)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore_LoadAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadAsync
+  nameWithType: PostgresSecurityMasterEventStore.LoadAsync
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadAsync
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  isExternal: true
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.LoadAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+    name: LoadAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+    name: LoadAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecurityMasterEventEnvelope>>
+  nameWithType: Task<IReadOnlyList<SecurityMasterEventEnvelope>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope))
+  name.vb: Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+    href: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+    href: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore_LoadSinceSequenceAsync_System_Int64_System_Int32_System_Threading_CancellationToken_
+  name: LoadSinceSequenceAsync
+  nameWithType: PostgresSecurityMasterEventStore.LoadSinceSequenceAsync
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadSinceSequenceAsync
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  isExternal: true
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadSinceSequenceAsync_System_Int64_System_Int32_System_Threading_CancellationToken_
+  name: LoadSinceSequenceAsync(long, int, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.LoadSinceSequenceAsync(long, int, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(long, int, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterEventStore.LoadSinceSequenceAsync(Long, Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(Long, Integer, System.Threading.CancellationToken)
+  name.vb: LoadSinceSequenceAsync(Long, Integer, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+    name: LoadSinceSequenceAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadSinceSequenceAsync_System_Int64_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+    name: LoadSinceSequenceAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadSinceSequenceAsync_System_Int64_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore_GetLatestSequenceAsync_System_Threading_CancellationToken_
+  name: GetLatestSequenceAsync
+  nameWithType: PostgresSecurityMasterEventStore.GetLatestSequenceAsync
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.GetLatestSequenceAsync
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  isExternal: true
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_GetLatestSequenceAsync_System_Threading_CancellationToken_
+  name: GetLatestSequenceAsync(CancellationToken)
+  nameWithType: ISecurityMasterEventStore.GetLatestSequenceAsync(CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+    name: GetLatestSequenceAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_GetLatestSequenceAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+    name: GetLatestSequenceAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_GetLatestSequenceAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Int64}
+  commentId: T:System.Threading.Tasks.Task{System.Int64}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<long>
+  nameWithType: Task<long>
+  fullName: System.Threading.Tasks.Task<long>
+  nameWithType.vb: Task(Of Long)
+  fullName.vb: System.Threading.Tasks.Task(Of Long)
+  name.vb: Task(Of Long)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore_AppendCorporateActionAsync_Meridian_Contracts_SecurityMaster_CorporateActionDto_System_Threading_CancellationToken_
+  name: AppendCorporateActionAsync
+  nameWithType: PostgresSecurityMasterEventStore.AppendCorporateActionAsync
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.AppendCorporateActionAsync
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  isExternal: true
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendCorporateActionAsync_Meridian_Contracts_SecurityMaster_CorporateActionDto_System_Threading_CancellationToken_
+  name: AppendCorporateActionAsync(CorporateActionDto, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.AppendCorporateActionAsync(CorporateActionDto, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+    name: AppendCorporateActionAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendCorporateActionAsync_Meridian_Contracts_SecurityMaster_CorporateActionDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+    name: AppendCorporateActionAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendCorporateActionAsync_Meridian_Contracts_SecurityMaster_CorporateActionDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  commentId: T:Meridian.Contracts.SecurityMaster.CorporateActionDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  name: CorporateActionDto
+  nameWithType: CorporateActionDto
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_PostgresSecurityMasterEventStore_LoadCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadCorporateActionsAsync
+  nameWithType: PostgresSecurityMasterEventStore.LoadCorporateActionsAsync
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.LoadCorporateActionsAsync
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  isExternal: true
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.LoadCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: LoadCorporateActionsAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: LoadCorporateActionsAsync
+    href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CorporateActionDto>>
+  nameWithType: Task<IReadOnlyList<CorporateActionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.CorporateActionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.CorporateActionDto))
+  name.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: )
+  - name: )

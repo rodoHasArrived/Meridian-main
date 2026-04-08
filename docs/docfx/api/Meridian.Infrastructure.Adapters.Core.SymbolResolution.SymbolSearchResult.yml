@@ -1,0 +1,694 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  id: SymbolSearchResult
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  children:
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Double})
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchResult
+  nameWithType: SymbolSearchResult
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearchResult
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Symbol search result.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolSearchResult : IEquatable<SymbolSearchResult>'
+    content.vb: Public NotInheritable Class SymbolSearchResult Implements IEquatable(Of SymbolSearchResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Double})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Double})
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Double})'
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchResult(string, string, string?, string?, string?, double?)
+  nameWithType: SymbolSearchResult.SymbolSearchResult(string, string, string?, string?, string?, double?)
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SymbolSearchResult(string, string, string?, string?, string?, double?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Symbol search result.
+  example: []
+  syntax:
+    content: public SymbolSearchResult(string Ticker, string Name, string? Exchange = null, string? SecurityType = null, string? Figi = null, double? Score = null)
+    parameters:
+    - id: Ticker
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: SecurityType
+      type: System.String
+    - id: Figi
+      type: System.String
+    - id: Score
+      type: System.Nullable{System.Double}
+    content.vb: Public Sub New(Ticker As String, Name As String, Exchange As String = Nothing, SecurityType As String = Nothing, Figi As String = Nothing, Score As Double? = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.#ctor*
+  nameWithType.vb: SymbolSearchResult.New(String, String, String, String, String, Double?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.New(String, String, String, String, String, Double?)
+  name.vb: New(String, String, String, String, String, Double?)
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker
+  id: Ticker
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Ticker
+  nameWithType: SymbolSearchResult.Ticker
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ticker
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  syntax:
+    content: public string Ticker { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Ticker As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SymbolSearchResult.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange
+  id: Exchange
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: SymbolSearchResult.Exchange
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType
+  id: SecurityType
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: SymbolSearchResult.SecurityType
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  syntax:
+    content: public string? SecurityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityType As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi
+  id: Figi
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: SymbolSearchResult.Figi
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  syntax:
+    content: public string? Figi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Figi As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score
+  id: Score
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: SymbolSearchResult.Score
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  syntax:
+    content: public double? Score { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property Score As Double?
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  commentId: N:Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  nameWithType: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolSearchResult>
+  nameWithType: IEquatable<SymbolSearchResult>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult>
+  nameWithType.vb: IEquatable(Of SymbolSearchResult)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult)
+  name.vb: IEquatable(Of SymbolSearchResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+    name: SymbolSearchResult
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+    name: SymbolSearchResult
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult__ctor_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_Double__
+  name: SymbolSearchResult
+  nameWithType: SymbolSearchResult.SymbolSearchResult
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SymbolSearchResult
+  nameWithType.vb: SymbolSearchResult.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult_Ticker
+  name: Ticker
+  nameWithType: SymbolSearchResult.Ticker
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Ticker
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult_Name
+  name: Name
+  nameWithType: SymbolSearchResult.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Name
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult_Exchange
+  name: Exchange
+  nameWithType: SymbolSearchResult.Exchange
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Exchange
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult_SecurityType
+  name: SecurityType
+  nameWithType: SymbolSearchResult.SecurityType
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.SecurityType
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult_Figi
+  name: Figi
+  nameWithType: SymbolSearchResult.Figi
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Figi
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_SymbolSearchResult_Score
+  name: Score
+  nameWithType: SymbolSearchResult.Score
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.Score

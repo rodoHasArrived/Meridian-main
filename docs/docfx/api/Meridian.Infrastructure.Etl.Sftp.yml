@@ -1,0 +1,84 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Etl.Sftp
+  commentId: N:Meridian.Infrastructure.Etl.Sftp
+  id: Meridian.Infrastructure.Etl.Sftp
+  children:
+  - Meridian.Infrastructure.Etl.Sftp.ISftpClient
+  - Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  - Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  - Meridian.Infrastructure.Etl.Sftp.SftpClientFactory
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Etl.Sftp
+  nameWithType: Meridian.Infrastructure.Etl.Sftp
+  fullName: Meridian.Infrastructure.Etl.Sftp
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry.html
+  name: ISftpFileEntry
+  nameWithType: ISftpFileEntry
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpFileEntry
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClient
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpClient
+  parent: Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpClient.html
+  name: ISftpClient
+  nameWithType: ISftpClient
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClient
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  parent: Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.html
+  name: ISftpClientFactory
+  nameWithType: ISftpClientFactory
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+- uid: Meridian.Infrastructure.Etl.Sftp.SftpClientFactory
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.SftpClientFactory
+  href: Meridian.Infrastructure.Etl.Sftp.SftpClientFactory.html
+  name: SftpClientFactory
+  nameWithType: SftpClientFactory
+  fullName: Meridian.Infrastructure.Etl.Sftp.SftpClientFactory
+- uid: Meridian.Infrastructure.Etl.Sftp
+  commentId: N:Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Etl.Sftp
+  nameWithType: Meridian.Infrastructure.Etl.Sftp
+  fullName: Meridian.Infrastructure.Etl.Sftp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html

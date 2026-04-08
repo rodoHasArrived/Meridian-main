@@ -1,0 +1,469 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderConnectionId
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionId
+  id: ProviderConnectionId
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderConnectionId.#ctor(System.String)
+  - Meridian.ProviderSdk.ProviderConnectionId.ToString
+  - Meridian.ProviderSdk.ProviderConnectionId.Value
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectionId
+  nameWithType: ProviderConnectionId
+  fullName: Meridian.ProviderSdk.ProviderConnectionId
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnectionId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 70
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Strongly typed provider connection identifier.
+  example: []
+  syntax:
+    content: 'public readonly record struct ProviderConnectionId : IEquatable<ProviderConnectionId>'
+    content.vb: Public Structure ProviderConnectionId Implements IEquatable(Of ProviderConnectionId)
+  implements:
+  - System.IEquatable{Meridian.ProviderSdk.ProviderConnectionId}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.ProviderSdk.ProviderConnectionId.#ctor(System.String)
+  commentId: M:Meridian.ProviderSdk.ProviderConnectionId.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.ProviderSdk.ProviderConnectionId
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectionId(string)
+  nameWithType: ProviderConnectionId.ProviderConnectionId(string)
+  fullName: Meridian.ProviderSdk.ProviderConnectionId.ProviderConnectionId(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 70
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Strongly typed provider connection identifier.
+  example: []
+  syntax:
+    content: public ProviderConnectionId(string Value)
+    parameters:
+    - id: Value
+      type: System.String
+    content.vb: Public Sub New(Value As String)
+  overload: Meridian.ProviderSdk.ProviderConnectionId.#ctor*
+  nameWithType.vb: ProviderConnectionId.New(String)
+  fullName.vb: Meridian.ProviderSdk.ProviderConnectionId.New(String)
+  name.vb: New(String)
+- uid: Meridian.ProviderSdk.ProviderConnectionId.Value
+  commentId: P:Meridian.ProviderSdk.ProviderConnectionId.Value
+  id: Value
+  parent: Meridian.ProviderSdk.ProviderConnectionId
+  langs:
+  - csharp
+  - vb
+  name: Value
+  nameWithType: ProviderConnectionId.Value
+  fullName: Meridian.ProviderSdk.ProviderConnectionId.Value
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 70
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public string Value { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Value As String
+  overload: Meridian.ProviderSdk.ProviderConnectionId.Value*
+- uid: Meridian.ProviderSdk.ProviderConnectionId.ToString
+  commentId: M:Meridian.ProviderSdk.ProviderConnectionId.ToString
+  id: ToString
+  parent: Meridian.ProviderSdk.ProviderConnectionId
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: ProviderConnectionId.ToString()
+  fullName: Meridian.ProviderSdk.ProviderConnectionId.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Returns the fully qualified type name of this instance.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: The fully qualified type name.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.ValueType.ToString
+  overload: Meridian.ProviderSdk.ProviderConnectionId.ToString*
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: System.IEquatable{Meridian.ProviderSdk.ProviderConnectionId}
+  commentId: T:System.IEquatable{Meridian.ProviderSdk.ProviderConnectionId}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderConnectionId>
+  nameWithType: IEquatable<ProviderConnectionId>
+  fullName: System.IEquatable<Meridian.ProviderSdk.ProviderConnectionId>
+  nameWithType.vb: IEquatable(Of ProviderConnectionId)
+  fullName.vb: System.IEquatable(Of Meridian.ProviderSdk.ProviderConnectionId)
+  name.vb: IEquatable(Of ProviderConnectionId)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderConnectionId
+    name: ProviderConnectionId
+    href: Meridian.ProviderSdk.ProviderConnectionId.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderConnectionId
+    name: ProviderConnectionId
+    href: Meridian.ProviderSdk.ProviderConnectionId.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.ProviderSdk.ProviderConnectionId.#ctor*
+  commentId: Overload:Meridian.ProviderSdk.ProviderConnectionId.#ctor
+  href: Meridian.ProviderSdk.ProviderConnectionId.html#Meridian_ProviderSdk_ProviderConnectionId__ctor_System_String_
+  name: ProviderConnectionId
+  nameWithType: ProviderConnectionId.ProviderConnectionId
+  fullName: Meridian.ProviderSdk.ProviderConnectionId.ProviderConnectionId
+  nameWithType.vb: ProviderConnectionId.New
+  fullName.vb: Meridian.ProviderSdk.ProviderConnectionId.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.ProviderSdk.ProviderConnectionId.Value*
+  commentId: Overload:Meridian.ProviderSdk.ProviderConnectionId.Value
+  href: Meridian.ProviderSdk.ProviderConnectionId.html#Meridian_ProviderSdk_ProviderConnectionId_Value
+  name: Value
+  nameWithType: ProviderConnectionId.Value
+  fullName: Meridian.ProviderSdk.ProviderConnectionId.Value
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: Meridian.ProviderSdk.ProviderConnectionId.ToString*
+  commentId: Overload:Meridian.ProviderSdk.ProviderConnectionId.ToString
+  href: Meridian.ProviderSdk.ProviderConnectionId.html#Meridian_ProviderSdk_ProviderConnectionId_ToString
+  name: ToString
+  nameWithType: ProviderConnectionId.ToString
+  fullName: Meridian.ProviderSdk.ProviderConnectionId.ToString

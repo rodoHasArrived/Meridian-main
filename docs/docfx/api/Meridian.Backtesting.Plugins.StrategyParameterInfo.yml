@@ -1,0 +1,559 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  commentId: T:Meridian.Backtesting.Plugins.StrategyParameterInfo
+  id: StrategyParameterInfo
+  parent: Meridian.Backtesting.Plugins
+  children:
+  - Meridian.Backtesting.Plugins.StrategyParameterInfo.#ctor(System.String,System.String,System.String,System.Type)
+  - Meridian.Backtesting.Plugins.StrategyParameterInfo.Description
+  - Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName
+  - Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType
+  - Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName
+  langs:
+  - csharp
+  - vb
+  name: StrategyParameterInfo
+  nameWithType: StrategyParameterInfo
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyParameterInfo
+    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Plugins
+  summary: Metadata for a discoverable strategy parameter.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyParameterInfo : IEquatable<StrategyParameterInfo>'
+    content.vb: Public NotInheritable Class StrategyParameterInfo Implements IEquatable(Of StrategyParameterInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Plugins.StrategyParameterInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.#ctor(System.String,System.String,System.String,System.Type)
+  commentId: M:Meridian.Backtesting.Plugins.StrategyParameterInfo.#ctor(System.String,System.String,System.String,System.Type)
+  id: '#ctor(System.String,System.String,System.String,System.Type)'
+  parent: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  langs:
+  - csharp
+  - vb
+  name: StrategyParameterInfo(string, string, string?, Type)
+  nameWithType: StrategyParameterInfo.StrategyParameterInfo(string, string, string?, Type)
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.StrategyParameterInfo(string, string, string?, System.Type)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Plugins
+  summary: Metadata for a discoverable strategy parameter.
+  example: []
+  syntax:
+    content: public StrategyParameterInfo(string PropertyName, string DisplayName, string? Description, Type ParameterType)
+    parameters:
+    - id: PropertyName
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: ParameterType
+      type: System.Type
+    content.vb: Public Sub New(PropertyName As String, DisplayName As String, Description As String, ParameterType As Type)
+  overload: Meridian.Backtesting.Plugins.StrategyParameterInfo.#ctor*
+  nameWithType.vb: StrategyParameterInfo.New(String, String, String, Type)
+  fullName.vb: Meridian.Backtesting.Plugins.StrategyParameterInfo.New(String, String, String, System.Type)
+  name.vb: New(String, String, String, Type)
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName
+  commentId: P:Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName
+  id: PropertyName
+  parent: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  langs:
+  - csharp
+  - vb
+  name: PropertyName
+  nameWithType: StrategyParameterInfo.PropertyName
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PropertyName
+    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Plugins
+  syntax:
+    content: public string PropertyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PropertyName As String
+  overload: Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName*
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName
+  commentId: P:Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName
+  id: DisplayName
+  parent: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: StrategyParameterInfo.DisplayName
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Plugins
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName*
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.Description
+  commentId: P:Meridian.Backtesting.Plugins.StrategyParameterInfo.Description
+  id: Description
+  parent: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: StrategyParameterInfo.Description
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Plugins
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Backtesting.Plugins.StrategyParameterInfo.Description*
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType
+  commentId: P:Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType
+  id: ParameterType
+  parent: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  langs:
+  - csharp
+  - vb
+  name: ParameterType
+  nameWithType: StrategyParameterInfo.ParameterType
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParameterType
+    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Plugins
+  syntax:
+    content: public Type ParameterType { get; init; }
+    parameters: []
+    return:
+      type: System.Type
+    content.vb: Public Property ParameterType As Type
+  overload: Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType*
+references:
+- uid: Meridian.Backtesting.Plugins
+  commentId: N:Meridian.Backtesting.Plugins
+  href: Meridian.html
+  name: Meridian.Backtesting.Plugins
+  nameWithType: Meridian.Backtesting.Plugins
+  fullName: Meridian.Backtesting.Plugins
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Plugins
+    name: Plugins
+    href: Meridian.Backtesting.Plugins.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Plugins
+    name: Plugins
+    href: Meridian.Backtesting.Plugins.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Plugins.StrategyParameterInfo}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Plugins.StrategyParameterInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyParameterInfo>
+  nameWithType: IEquatable<StrategyParameterInfo>
+  fullName: System.IEquatable<Meridian.Backtesting.Plugins.StrategyParameterInfo>
+  nameWithType.vb: IEquatable(Of StrategyParameterInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Plugins.StrategyParameterInfo)
+  name.vb: IEquatable(Of StrategyParameterInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Plugins.StrategyParameterInfo
+    name: StrategyParameterInfo
+    href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Plugins.StrategyParameterInfo
+    name: StrategyParameterInfo
+    href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.#ctor*
+  commentId: Overload:Meridian.Backtesting.Plugins.StrategyParameterInfo.#ctor
+  href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html#Meridian_Backtesting_Plugins_StrategyParameterInfo__ctor_System_String_System_String_System_String_System_Type_
+  name: StrategyParameterInfo
+  nameWithType: StrategyParameterInfo.StrategyParameterInfo
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.StrategyParameterInfo
+  nameWithType.vb: StrategyParameterInfo.New
+  fullName.vb: Meridian.Backtesting.Plugins.StrategyParameterInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName*
+  commentId: Overload:Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName
+  href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html#Meridian_Backtesting_Plugins_StrategyParameterInfo_PropertyName
+  name: PropertyName
+  nameWithType: StrategyParameterInfo.PropertyName
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.PropertyName
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName*
+  commentId: Overload:Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName
+  href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html#Meridian_Backtesting_Plugins_StrategyParameterInfo_DisplayName
+  name: DisplayName
+  nameWithType: StrategyParameterInfo.DisplayName
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.DisplayName
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.Description*
+  commentId: Overload:Meridian.Backtesting.Plugins.StrategyParameterInfo.Description
+  href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html#Meridian_Backtesting_Plugins_StrategyParameterInfo_Description
+  name: Description
+  nameWithType: StrategyParameterInfo.Description
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.Description
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType*
+  commentId: Overload:Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType
+  href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html#Meridian_Backtesting_Plugins_StrategyParameterInfo_ParameterType
+  name: ParameterType
+  nameWithType: StrategyParameterInfo.ParameterType
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo.ParameterType

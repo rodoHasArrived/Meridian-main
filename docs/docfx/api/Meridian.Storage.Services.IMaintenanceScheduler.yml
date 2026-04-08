@@ -1,0 +1,933 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IMaintenanceScheduler
+  commentId: T:Meridian.Storage.Services.IMaintenanceScheduler
+  id: IMaintenanceScheduler
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync(Meridian.Storage.Services.MaintenanceType,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync(Meridian.Storage.Services.MaintenanceJob,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync(Meridian.Storage.Services.MaintenanceType,System.TimeSpan,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus(System.String)
+  - Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs
+  - Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs
+  - Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds
+  - Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive
+  - Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync(Meridian.Storage.Services.MaintenanceJob,Meridian.Storage.Services.ScheduleOptions,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IMaintenanceScheduler
+  nameWithType: IMaintenanceScheduler
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMaintenanceScheduler
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Interface for maintenance scheduler.
+  example: []
+  syntax:
+    content: public interface IMaintenanceScheduler
+    content.vb: Public Interface IMaintenanceScheduler
+  derivedClasses:
+  - Meridian.Storage.Services.MaintenanceScheduler
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync(Meridian.Storage.Services.MaintenanceType,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync(Meridian.Storage.Services.MaintenanceType,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  id: CanRunNowAsync(Meridian.Storage.Services.MaintenanceType,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: CanRunNowAsync(MaintenanceType, ResourceRequirements, CancellationToken)
+  nameWithType: IMaintenanceScheduler.CanRunNowAsync(MaintenanceType, ResourceRequirements, CancellationToken)
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync(Meridian.Storage.Services.MaintenanceType, Meridian.Storage.Services.ResourceRequirements, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanRunNowAsync
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<ScheduleDecision> CanRunNowAsync(MaintenanceType operation, ResourceRequirements requirements, CancellationToken ct = default)
+    parameters:
+    - id: operation
+      type: Meridian.Storage.Services.MaintenanceType
+    - id: requirements
+      type: Meridian.Storage.Services.ResourceRequirements
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduleDecision}
+    content.vb: Function CanRunNowAsync(operation As MaintenanceType, requirements As ResourceRequirements, ct As CancellationToken = Nothing) As Task(Of ScheduleDecision)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync(Meridian.Storage.Services.MaintenanceType,System.TimeSpan,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync(Meridian.Storage.Services.MaintenanceType,System.TimeSpan,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  id: FindNextWindowAsync(Meridian.Storage.Services.MaintenanceType,System.TimeSpan,Meridian.Storage.Services.ResourceRequirements,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: FindNextWindowAsync(MaintenanceType, TimeSpan, ResourceRequirements, CancellationToken)
+  nameWithType: IMaintenanceScheduler.FindNextWindowAsync(MaintenanceType, TimeSpan, ResourceRequirements, CancellationToken)
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync(Meridian.Storage.Services.MaintenanceType, System.TimeSpan, Meridian.Storage.Services.ResourceRequirements, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindNextWindowAsync
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<ScheduleSlot?> FindNextWindowAsync(MaintenanceType operation, TimeSpan estimatedDuration, ResourceRequirements requirements, CancellationToken ct = default)
+    parameters:
+    - id: operation
+      type: Meridian.Storage.Services.MaintenanceType
+    - id: estimatedDuration
+      type: System.TimeSpan
+    - id: requirements
+      type: Meridian.Storage.Services.ResourceRequirements
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduleSlot}
+    content.vb: Function FindNextWindowAsync(operation As MaintenanceType, estimatedDuration As TimeSpan, requirements As ResourceRequirements, ct As CancellationToken = Nothing) As Task(Of ScheduleSlot)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync(Meridian.Storage.Services.MaintenanceJob,Meridian.Storage.Services.ScheduleOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync(Meridian.Storage.Services.MaintenanceJob,Meridian.Storage.Services.ScheduleOptions,System.Threading.CancellationToken)
+  id: ScheduleAsync(Meridian.Storage.Services.MaintenanceJob,Meridian.Storage.Services.ScheduleOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: ScheduleAsync(MaintenanceJob, ScheduleOptions, CancellationToken)
+  nameWithType: IMaintenanceScheduler.ScheduleAsync(MaintenanceJob, ScheduleOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync(Meridian.Storage.Services.MaintenanceJob, Meridian.Storage.Services.ScheduleOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleAsync
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<ScheduledJob> ScheduleAsync(MaintenanceJob job, ScheduleOptions options, CancellationToken ct = default)
+    parameters:
+    - id: job
+      type: Meridian.Storage.Services.MaintenanceJob
+    - id: options
+      type: Meridian.Storage.Services.ScheduleOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduledJob}
+    content.vb: Function ScheduleAsync(job As MaintenanceJob, options As ScheduleOptions, ct As CancellationToken = Nothing) As Task(Of ScheduledJob)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync(System.Threading.CancellationToken)
+  id: GetStateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetStateAsync(CancellationToken)
+  nameWithType: IMaintenanceScheduler.GetStateAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStateAsync
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<OperationalState> GetStateAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.OperationalState}
+    content.vb: Function GetStateAsync(ct As CancellationToken = Nothing) As Task(Of OperationalState)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync(Meridian.Storage.Services.MaintenanceJob,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync(Meridian.Storage.Services.MaintenanceJob,System.Threading.CancellationToken)
+  id: ExecuteJobAsync(Meridian.Storage.Services.MaintenanceJob,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: ExecuteJobAsync(MaintenanceJob, CancellationToken)
+  nameWithType: IMaintenanceScheduler.ExecuteJobAsync(MaintenanceJob, CancellationToken)
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync(Meridian.Storage.Services.MaintenanceJob, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteJobAsync
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<JobExecutionStatus> ExecuteJobAsync(MaintenanceJob job, CancellationToken ct = default)
+    parameters:
+    - id: job
+      type: Meridian.Storage.Services.MaintenanceJob
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.JobExecutionStatus}
+    content.vb: Function ExecuteJobAsync(job As MaintenanceJob, ct As CancellationToken = Nothing) As Task(Of JobExecutionStatus)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs
+  id: GetPendingJobs
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetPendingJobs()
+  nameWithType: IMaintenanceScheduler.GetPendingJobs()
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPendingJobs
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: IReadOnlyList<ScheduledJob> GetPendingJobs()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.ScheduledJob}
+    content.vb: Function GetPendingJobs() As IReadOnlyList(Of ScheduledJob)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs
+  id: GetRunningJobs
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetRunningJobs()
+  nameWithType: IMaintenanceScheduler.GetRunningJobs()
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunningJobs
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: IReadOnlyList<ScheduledJob> GetRunningJobs()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.ScheduledJob}
+    content.vb: Function GetRunningJobs() As IReadOnlyList(Of ScheduledJob)
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus(System.String)
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus(System.String)
+  id: GetJobStatus(System.String)
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetJobStatus(string)
+  nameWithType: IMaintenanceScheduler.GetJobStatus(string)
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJobStatus
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: JobExecutionStatus? GetJobStatus(string jobId)
+    parameters:
+    - id: jobId
+      type: System.String
+    return:
+      type: Meridian.Storage.Services.JobExecutionStatus
+    content.vb: Function GetJobStatus(jobId As String) As JobExecutionStatus
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus*
+  nameWithType.vb: IMaintenanceScheduler.GetJobStatus(String)
+  fullName.vb: Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus(String)
+  name.vb: GetJobStatus(String)
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive
+  id: IsRealTimeCollectionActive
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: IsRealTimeCollectionActive()
+  nameWithType: IMaintenanceScheduler.IsRealTimeCollectionActive()
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRealTimeCollectionActive
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: bool IsRealTimeCollectionActive()
+    return:
+      type: System.Boolean
+    content.vb: Function IsRealTimeCollectionActive() As Boolean
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive*
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds
+  commentId: M:Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds
+  id: GetTimeUntilCollectionEnds
+  parent: Meridian.Storage.Services.IMaintenanceScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetTimeUntilCollectionEnds()
+  nameWithType: IMaintenanceScheduler.GetTimeUntilCollectionEnds()
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTimeUntilCollectionEnds
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: TimeSpan? GetTimeUntilCollectionEnds()
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Function GetTimeUntilCollectionEnds() As TimeSpan?
+  overload: Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_CanRunNowAsync_Meridian_Storage_Services_MaintenanceType_Meridian_Storage_Services_ResourceRequirements_System_Threading_CancellationToken_
+  name: CanRunNowAsync
+  nameWithType: IMaintenanceScheduler.CanRunNowAsync
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.CanRunNowAsync
+- uid: Meridian.Storage.Services.MaintenanceType
+  commentId: T:Meridian.Storage.Services.MaintenanceType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MaintenanceType.html
+  name: MaintenanceType
+  nameWithType: MaintenanceType
+  fullName: Meridian.Storage.Services.MaintenanceType
+- uid: Meridian.Storage.Services.ResourceRequirements
+  commentId: T:Meridian.Storage.Services.ResourceRequirements
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.ResourceRequirements.html
+  name: ResourceRequirements
+  nameWithType: ResourceRequirements
+  fullName: Meridian.Storage.Services.ResourceRequirements
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduleDecision}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduleDecision}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ScheduleDecision>
+  nameWithType: Task<ScheduleDecision>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.ScheduleDecision>
+  nameWithType.vb: Task(Of ScheduleDecision)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.ScheduleDecision)
+  name.vb: Task(Of ScheduleDecision)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.ScheduleDecision
+    name: ScheduleDecision
+    href: Meridian.Storage.Services.ScheduleDecision.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ScheduleDecision
+    name: ScheduleDecision
+    href: Meridian.Storage.Services.ScheduleDecision.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_FindNextWindowAsync_Meridian_Storage_Services_MaintenanceType_System_TimeSpan_Meridian_Storage_Services_ResourceRequirements_System_Threading_CancellationToken_
+  name: FindNextWindowAsync
+  nameWithType: IMaintenanceScheduler.FindNextWindowAsync
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.FindNextWindowAsync
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduleSlot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduleSlot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ScheduleSlot>
+  nameWithType: Task<ScheduleSlot>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.ScheduleSlot>
+  nameWithType.vb: Task(Of ScheduleSlot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.ScheduleSlot)
+  name.vb: Task(Of ScheduleSlot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.ScheduleSlot
+    name: ScheduleSlot
+    href: Meridian.Storage.Services.ScheduleSlot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ScheduleSlot
+    name: ScheduleSlot
+    href: Meridian.Storage.Services.ScheduleSlot.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_ScheduleAsync_Meridian_Storage_Services_MaintenanceJob_Meridian_Storage_Services_ScheduleOptions_System_Threading_CancellationToken_
+  name: ScheduleAsync
+  nameWithType: IMaintenanceScheduler.ScheduleAsync
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.ScheduleAsync
+- uid: Meridian.Storage.Services.MaintenanceJob
+  commentId: T:Meridian.Storage.Services.MaintenanceJob
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MaintenanceJob.html
+  name: MaintenanceJob
+  nameWithType: MaintenanceJob
+  fullName: Meridian.Storage.Services.MaintenanceJob
+- uid: Meridian.Storage.Services.ScheduleOptions
+  commentId: T:Meridian.Storage.Services.ScheduleOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.ScheduleOptions.html
+  name: ScheduleOptions
+  nameWithType: ScheduleOptions
+  fullName: Meridian.Storage.Services.ScheduleOptions
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduledJob}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.ScheduledJob}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ScheduledJob>
+  nameWithType: Task<ScheduledJob>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.ScheduledJob>
+  nameWithType.vb: Task(Of ScheduledJob)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.ScheduledJob)
+  name.vb: Task(Of ScheduledJob)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.ScheduledJob
+    name: ScheduledJob
+    href: Meridian.Storage.Services.ScheduledJob.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ScheduledJob
+    name: ScheduledJob
+    href: Meridian.Storage.Services.ScheduledJob.html
+  - name: )
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_GetStateAsync_System_Threading_CancellationToken_
+  name: GetStateAsync
+  nameWithType: IMaintenanceScheduler.GetStateAsync
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetStateAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.OperationalState}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.OperationalState}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OperationalState>
+  nameWithType: Task<OperationalState>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.OperationalState>
+  nameWithType.vb: Task(Of OperationalState)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.OperationalState)
+  name.vb: Task(Of OperationalState)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.OperationalState
+    name: OperationalState
+    href: Meridian.Storage.Services.OperationalState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.OperationalState
+    name: OperationalState
+    href: Meridian.Storage.Services.OperationalState.html
+  - name: )
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_ExecuteJobAsync_Meridian_Storage_Services_MaintenanceJob_System_Threading_CancellationToken_
+  name: ExecuteJobAsync
+  nameWithType: IMaintenanceScheduler.ExecuteJobAsync
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.ExecuteJobAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.JobExecutionStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.JobExecutionStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<JobExecutionStatus>
+  nameWithType: Task<JobExecutionStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.JobExecutionStatus>
+  nameWithType.vb: Task(Of JobExecutionStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.JobExecutionStatus)
+  name.vb: Task(Of JobExecutionStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.JobExecutionStatus
+    name: JobExecutionStatus
+    href: Meridian.Storage.Services.JobExecutionStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.JobExecutionStatus
+    name: JobExecutionStatus
+    href: Meridian.Storage.Services.JobExecutionStatus.html
+  - name: )
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_GetPendingJobs
+  name: GetPendingJobs
+  nameWithType: IMaintenanceScheduler.GetPendingJobs
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetPendingJobs
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.ScheduledJob}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.ScheduledJob}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ScheduledJob>
+  nameWithType: IReadOnlyList<ScheduledJob>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.ScheduledJob>
+  nameWithType.vb: IReadOnlyList(Of ScheduledJob)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.ScheduledJob)
+  name.vb: IReadOnlyList(Of ScheduledJob)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.ScheduledJob
+    name: ScheduledJob
+    href: Meridian.Storage.Services.ScheduledJob.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ScheduledJob
+    name: ScheduledJob
+    href: Meridian.Storage.Services.ScheduledJob.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_GetRunningJobs
+  name: GetRunningJobs
+  nameWithType: IMaintenanceScheduler.GetRunningJobs
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetRunningJobs
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_GetJobStatus_System_String_
+  name: GetJobStatus
+  nameWithType: IMaintenanceScheduler.GetJobStatus
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetJobStatus
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.JobExecutionStatus
+  commentId: T:Meridian.Storage.Services.JobExecutionStatus
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.JobExecutionStatus.html
+  name: JobExecutionStatus
+  nameWithType: JobExecutionStatus
+  fullName: Meridian.Storage.Services.JobExecutionStatus
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_IsRealTimeCollectionActive
+  name: IsRealTimeCollectionActive
+  nameWithType: IMaintenanceScheduler.IsRealTimeCollectionActive
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.IsRealTimeCollectionActive
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds*
+  commentId: Overload:Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds
+  href: Meridian.Storage.Services.IMaintenanceScheduler.html#Meridian_Storage_Services_IMaintenanceScheduler_GetTimeUntilCollectionEnds
+  name: GetTimeUntilCollectionEnds
+  nameWithType: IMaintenanceScheduler.GetTimeUntilCollectionEnds
+  fullName: Meridian.Storage.Services.IMaintenanceScheduler.GetTimeUntilCollectionEnds
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

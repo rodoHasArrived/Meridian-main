@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.IssueSeverity
+  commentId: T:Meridian.Application.Services.IssueSeverity
+  id: IssueSeverity
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.IssueSeverity.Error
+  - Meridian.Application.Services.IssueSeverity.Info
+  - Meridian.Application.Services.IssueSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Application.Services.IssueSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssueSeverity
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Severity level for quick check issues.
+  example: []
+  syntax:
+    content: 'public enum IssueSeverity : byte'
+    content.vb: Public Enum IssueSeverity As Byte
+- uid: Meridian.Application.Services.IssueSeverity.Info
+  commentId: F:Meridian.Application.Services.IssueSeverity.Info
+  id: Info
+  parent: Meridian.Application.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: IssueSeverity.Info
+  fullName: Meridian.Application.Services.IssueSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Services.IssueSeverity
+- uid: Meridian.Application.Services.IssueSeverity.Warning
+  commentId: F:Meridian.Application.Services.IssueSeverity.Warning
+  id: Warning
+  parent: Meridian.Application.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: IssueSeverity.Warning
+  fullName: Meridian.Application.Services.IssueSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 432
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Services.IssueSeverity
+- uid: Meridian.Application.Services.IssueSeverity.Error
+  commentId: F:Meridian.Application.Services.IssueSeverity.Error
+  id: Error
+  parent: Meridian.Application.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: IssueSeverity.Error
+  fullName: Meridian.Application.Services.IssueSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Application.Services.IssueSeverity
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.IssueSeverity
+  commentId: T:Meridian.Application.Services.IssueSeverity
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IssueSeverity.html
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Application.Services.IssueSeverity

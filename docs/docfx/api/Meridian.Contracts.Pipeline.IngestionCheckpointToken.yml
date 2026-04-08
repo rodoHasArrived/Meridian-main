@@ -1,0 +1,629 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  commentId: T:Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  id: IngestionCheckpointToken
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt
+  - Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart
+  - Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate
+  - Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset
+  - Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol
+  langs:
+  - csharp
+  - vb
+  name: IngestionCheckpointToken
+  nameWithType: IngestionCheckpointToken
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionCheckpointToken
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Checkpoint token enabling safe resume of an interrupted job.
+  example: []
+  syntax:
+    content: public sealed class IngestionCheckpointToken
+    content.vb: Public NotInheritable Class IngestionCheckpointToken
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol
+  commentId: P:Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol
+  id: LastSymbol
+  parent: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  langs:
+  - csharp
+  - vb
+  name: LastSymbol
+  nameWithType: IngestionCheckpointToken.LastSymbol
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSymbol
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The symbol that was last successfully processed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastSymbol")]
+
+      public string? LastSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("lastSymbol")>
+
+      Public Property LastSymbol As String
+  overload: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastSymbol
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate
+  commentId: P:Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate
+  id: LastDate
+  parent: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  langs:
+  - csharp
+  - vb
+  name: LastDate
+  nameWithType: IngestionCheckpointToken.LastDate
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastDate
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The date cursor for the last committed data point.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastDate")]
+
+      public DateTime? LastDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastDate")>
+
+      Public Property LastDate As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastDate
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset
+  commentId: P:Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset
+  id: LastOffset
+  parent: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  langs:
+  - csharp
+  - vb
+  name: LastOffset
+  nameWithType: IngestionCheckpointToken.LastOffset
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastOffset
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The last durable offset (e.g., sequence number or stream position).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastOffset")]
+
+      public long? LastOffset { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: >-
+      <JsonPropertyName("lastOffset")>
+
+      Public Property LastOffset As Long?
+  overload: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastOffset
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart
+  commentId: P:Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart
+  id: GapFillWindowStart
+  parent: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  langs:
+  - csharp
+  - vb
+  name: GapFillWindowStart
+  nameWithType: IngestionCheckpointToken.GapFillWindowStart
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapFillWindowStart
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: 'For realtime: the gap-fill window start (how far back to re-process on resume).'
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("gapFillWindowStart")]
+
+      public DateTime? GapFillWindowStart { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("gapFillWindowStart")>
+
+      Public Property GapFillWindowStart As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: gapFillWindowStart
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt
+  commentId: P:Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt
+  id: CapturedAt
+  parent: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  langs:
+  - csharp
+  - vb
+  name: CapturedAt
+  nameWithType: IngestionCheckpointToken.CapturedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CapturedAt
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: UTC timestamp when this checkpoint was captured.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("capturedAt")]
+
+      public DateTime CapturedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("capturedAt")>
+
+      Public Property CapturedAt As Date
+  overload: Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: capturedAt
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html#Meridian_Contracts_Pipeline_IngestionCheckpointToken_LastSymbol
+  name: LastSymbol
+  nameWithType: IngestionCheckpointToken.LastSymbol
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html#Meridian_Contracts_Pipeline_IngestionCheckpointToken_LastDate
+  name: LastDate
+  nameWithType: IngestionCheckpointToken.LastDate
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html#Meridian_Contracts_Pipeline_IngestionCheckpointToken_LastOffset
+  name: LastOffset
+  nameWithType: IngestionCheckpointToken.LastOffset
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.LastOffset
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html#Meridian_Contracts_Pipeline_IngestionCheckpointToken_GapFillWindowStart
+  name: GapFillWindowStart
+  nameWithType: IngestionCheckpointToken.GapFillWindowStart
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.GapFillWindowStart
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html#Meridian_Contracts_Pipeline_IngestionCheckpointToken_CapturedAt
+  name: CapturedAt
+  nameWithType: IngestionCheckpointToken.CapturedAt
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken.CapturedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date

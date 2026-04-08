@@ -1,0 +1,228 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.RepairScope
+  commentId: T:Meridian.Storage.Services.RepairScope
+  id: RepairScope
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.RepairScope.All
+  - Meridian.Storage.Services.RepairScope.DateRange
+  - Meridian.Storage.Services.RepairScope.Directory
+  - Meridian.Storage.Services.RepairScope.EventType
+  - Meridian.Storage.Services.RepairScope.SingleFile
+  - Meridian.Storage.Services.RepairScope.Symbol
+  langs:
+  - csharp
+  - vb
+  name: RepairScope
+  nameWithType: RepairScope
+  fullName: Meridian.Storage.Services.RepairScope
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairScope
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum RepairScope : byte'
+    content.vb: Public Enum RepairScope As Byte
+- uid: Meridian.Storage.Services.RepairScope.SingleFile
+  commentId: F:Meridian.Storage.Services.RepairScope.SingleFile
+  id: SingleFile
+  parent: Meridian.Storage.Services.RepairScope
+  langs:
+  - csharp
+  - vb
+  name: SingleFile
+  nameWithType: RepairScope.SingleFile
+  fullName: Meridian.Storage.Services.RepairScope.SingleFile
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SingleFile
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: SingleFile = 0
+    return:
+      type: Meridian.Storage.Services.RepairScope
+- uid: Meridian.Storage.Services.RepairScope.Directory
+  commentId: F:Meridian.Storage.Services.RepairScope.Directory
+  id: Directory
+  parent: Meridian.Storage.Services.RepairScope
+  langs:
+  - csharp
+  - vb
+  name: Directory
+  nameWithType: RepairScope.Directory
+  fullName: Meridian.Storage.Services.RepairScope.Directory
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Directory
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Directory = 1
+    return:
+      type: Meridian.Storage.Services.RepairScope
+- uid: Meridian.Storage.Services.RepairScope.Symbol
+  commentId: F:Meridian.Storage.Services.RepairScope.Symbol
+  id: Symbol
+  parent: Meridian.Storage.Services.RepairScope
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: RepairScope.Symbol
+  fullName: Meridian.Storage.Services.RepairScope.Symbol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Symbol = 2
+    return:
+      type: Meridian.Storage.Services.RepairScope
+- uid: Meridian.Storage.Services.RepairScope.DateRange
+  commentId: F:Meridian.Storage.Services.RepairScope.DateRange
+  id: DateRange
+  parent: Meridian.Storage.Services.RepairScope
+  langs:
+  - csharp
+  - vb
+  name: DateRange
+  nameWithType: RepairScope.DateRange
+  fullName: Meridian.Storage.Services.RepairScope.DateRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRange
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: DateRange = 3
+    return:
+      type: Meridian.Storage.Services.RepairScope
+- uid: Meridian.Storage.Services.RepairScope.EventType
+  commentId: F:Meridian.Storage.Services.RepairScope.EventType
+  id: EventType
+  parent: Meridian.Storage.Services.RepairScope
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: RepairScope.EventType
+  fullName: Meridian.Storage.Services.RepairScope.EventType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: EventType = 4
+    return:
+      type: Meridian.Storage.Services.RepairScope
+- uid: Meridian.Storage.Services.RepairScope.All
+  commentId: F:Meridian.Storage.Services.RepairScope.All
+  id: All
+  parent: Meridian.Storage.Services.RepairScope
+  langs:
+  - csharp
+  - vb
+  name: All
+  nameWithType: RepairScope.All
+  fullName: Meridian.Storage.Services.RepairScope.All
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: All
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: All = 5
+    return:
+      type: Meridian.Storage.Services.RepairScope
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.RepairScope
+  commentId: T:Meridian.Storage.Services.RepairScope
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.RepairScope.html
+  name: RepairScope
+  nameWithType: RepairScope
+  fullName: Meridian.Storage.Services.RepairScope

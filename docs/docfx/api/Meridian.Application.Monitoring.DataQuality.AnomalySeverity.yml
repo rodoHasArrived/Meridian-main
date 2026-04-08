@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  id: AnomalySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Critical
+  - Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Error
+  - Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Info
+  - Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: AnomalySeverity
+  nameWithType: AnomalySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalySeverity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Anomaly severity.
+  example: []
+  syntax:
+    content: 'public enum AnomalySeverity : byte'
+    content.vb: Public Enum AnomalySeverity As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Info
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Info
+  id: Info
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: AnomalySeverity.Info
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Warning
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: AnomalySeverity.Warning
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Error
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Error
+  id: Error
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: AnomalySeverity.Error
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: AnomalySeverity.Critical
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.html
+  name: AnomalySeverity
+  nameWithType: AnomalySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity

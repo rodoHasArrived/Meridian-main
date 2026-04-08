@@ -1,0 +1,762 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  commentId: T:Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  id: SymbolRegistryStatistics
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases
+  - Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols
+  langs:
+  - csharp
+  - vb
+  name: SymbolRegistryStatistics
+  nameWithType: SymbolRegistryStatistics
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolRegistryStatistics
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Statistics about the symbol registry.
+  example: []
+  syntax:
+    content: public sealed class SymbolRegistryStatistics
+    content.vb: Public NotInheritable Class SymbolRegistryStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols
+  id: TotalSymbols
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalSymbols
+  nameWithType: SymbolRegistryStatistics.TotalSymbols
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSymbols
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total number of symbols.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalSymbols")]
+
+      public int TotalSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalSymbols")>
+
+      Public Property TotalSymbols As Integer
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalSymbols
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols
+  id: ActiveSymbols
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: ActiveSymbols
+  nameWithType: SymbolRegistryStatistics.ActiveSymbols
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveSymbols
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of active symbols.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("activeSymbols")]
+
+      public int ActiveSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("activeSymbols")>
+
+      Public Property ActiveSymbols As Integer
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: activeSymbols
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols
+  id: DelistedSymbols
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: DelistedSymbols
+  nameWithType: SymbolRegistryStatistics.DelistedSymbols
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DelistedSymbols
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of delisted symbols.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("delistedSymbols")]
+
+      public int DelistedSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("delistedSymbols")>
+
+      Public Property DelistedSymbols As Integer
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: delistedSymbols
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases
+  id: TotalAliases
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalAliases
+  nameWithType: SymbolRegistryStatistics.TotalAliases
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAliases
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total number of aliases.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalAliases")]
+
+      public int TotalAliases { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalAliases")>
+
+      Public Property TotalAliases As Integer
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalAliases
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount
+  id: ProviderCount
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: ProviderCount
+  nameWithType: SymbolRegistryStatistics.ProviderCount
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCount
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 410
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of providers with mappings.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("providerCount")]
+
+      public int ProviderCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("providerCount")>
+
+      Public Property ProviderCount As Integer
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: providerCount
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass
+  id: ByAssetClass
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: ByAssetClass
+  nameWithType: SymbolRegistryStatistics.ByAssetClass
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByAssetClass
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Breakdown by asset class.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("byAssetClass")]
+
+      public Dictionary<string, int> ByAssetClass { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: >-
+      <JsonPropertyName("byAssetClass")>
+
+      Public Property ByAssetClass As Dictionary(Of String, Integer)
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: byAssetClass
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange
+  commentId: P:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange
+  id: ByExchange
+  parent: Meridian.Contracts.Catalog.SymbolRegistryStatistics
+  langs:
+  - csharp
+  - vb
+  name: ByExchange
+  nameWithType: SymbolRegistryStatistics.ByExchange
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByExchange
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Breakdown by exchange.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("byExchange")]
+
+      public Dictionary<string, int> ByExchange { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: >-
+      <JsonPropertyName("byExchange")>
+
+      Public Property ByExchange As Dictionary(Of String, Integer)
+  overload: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: byExchange
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_TotalSymbols
+  name: TotalSymbols
+  nameWithType: SymbolRegistryStatistics.TotalSymbols
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalSymbols
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_ActiveSymbols
+  name: ActiveSymbols
+  nameWithType: SymbolRegistryStatistics.ActiveSymbols
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ActiveSymbols
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_DelistedSymbols
+  name: DelistedSymbols
+  nameWithType: SymbolRegistryStatistics.DelistedSymbols
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.DelistedSymbols
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_TotalAliases
+  name: TotalAliases
+  nameWithType: SymbolRegistryStatistics.TotalAliases
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.TotalAliases
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_ProviderCount
+  name: ProviderCount
+  nameWithType: SymbolRegistryStatistics.ProviderCount
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ProviderCount
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_ByAssetClass
+  name: ByAssetClass
+  nameWithType: SymbolRegistryStatistics.ByAssetClass
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByAssetClass
+- uid: System.Collections.Generic.Dictionary{System.String,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, int>
+  nameWithType: Dictionary<string, int>
+  fullName: System.Collections.Generic.Dictionary<string, int>
+  nameWithType.vb: Dictionary(Of String, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Integer)
+  name.vb: Dictionary(Of String, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange
+  href: Meridian.Contracts.Catalog.SymbolRegistryStatistics.html#Meridian_Contracts_Catalog_SymbolRegistryStatistics_ByExchange
+  name: ByExchange
+  nameWithType: SymbolRegistryStatistics.ByExchange
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryStatistics.ByExchange

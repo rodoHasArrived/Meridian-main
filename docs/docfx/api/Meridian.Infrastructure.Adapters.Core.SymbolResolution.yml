@@ -1,0 +1,84 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  commentId: N:Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  id: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  children:
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  nameWithType: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.html
+  name: ISymbolResolver
+  nameWithType: ISymbolResolver
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution.html
+  name: SymbolResolution
+  nameWithType: SymbolResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html
+  name: SymbolSearchResult
+  nameWithType: SymbolSearchResult
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  commentId: N:Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  nameWithType: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.html

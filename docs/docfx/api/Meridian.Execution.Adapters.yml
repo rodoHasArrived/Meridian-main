@@ -1,0 +1,37 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Adapters
+  commentId: N:Meridian.Execution.Adapters
+  id: Meridian.Execution.Adapters
+  children:
+  - Meridian.Execution.Adapters.BaseBrokerageGateway
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  - Meridian.Execution.Adapters.PaperTradingGateway
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Adapters
+  nameWithType: Meridian.Execution.Adapters
+  fullName: Meridian.Execution.Adapters
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Adapters.BaseBrokerageGateway
+  commentId: T:Meridian.Execution.Adapters.BaseBrokerageGateway
+  href: Meridian.Execution.Adapters.BaseBrokerageGateway.html
+  name: BaseBrokerageGateway
+  nameWithType: BaseBrokerageGateway
+  fullName: Meridian.Execution.Adapters.BaseBrokerageGateway
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  commentId: T:Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html
+  name: BrokerageGatewayAdapter
+  nameWithType: BrokerageGatewayAdapter
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+- uid: Meridian.Execution.Adapters.PaperTradingGateway
+  commentId: T:Meridian.Execution.Adapters.PaperTradingGateway
+  href: Meridian.Execution.Adapters.PaperTradingGateway.html
+  name: PaperTradingGateway
+  nameWithType: PaperTradingGateway
+  fullName: Meridian.Execution.Adapters.PaperTradingGateway

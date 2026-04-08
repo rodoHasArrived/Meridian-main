@@ -1,0 +1,258 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  id: ShortCallExitReason
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.Assigned
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.DividendRiskRoll
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ExpiredWorthless
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ForcedClose
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.RiskRoll
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.TakeProfitRoll
+  langs:
+  - csharp
+  - vb
+  name: ShortCallExitReason
+  nameWithType: ShortCallExitReason
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortCallExitReason
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Outcome of a completed short-call cycle (entry → exit).
+  example: []
+  syntax:
+    content: public enum ShortCallExitReason
+    content.vb: Public Enum ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ExpiredWorthless
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ExpiredWorthless
+  id: ExpiredWorthless
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  langs:
+  - csharp
+  - vb
+  name: ExpiredWorthless
+  nameWithType: ShortCallExitReason.ExpiredWorthless
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ExpiredWorthless
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpiredWorthless
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Option expired worthless.
+  example: []
+  syntax:
+    content: ExpiredWorthless = 0
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.Assigned
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.Assigned
+  id: Assigned
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  langs:
+  - csharp
+  - vb
+  name: Assigned
+  nameWithType: ShortCallExitReason.Assigned
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.Assigned
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Assigned
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Option was exercised (assignment).
+  example: []
+  syntax:
+    content: Assigned = 1
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.TakeProfitRoll
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.TakeProfitRoll
+  id: TakeProfitRoll
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  langs:
+  - csharp
+  - vb
+  name: TakeProfitRoll
+  nameWithType: ShortCallExitReason.TakeProfitRoll
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.TakeProfitRoll
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TakeProfitRoll
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Take-profit trigger reached; position was closed / rolled.
+  example: []
+  syntax:
+    content: TakeProfitRoll = 2
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.RiskRoll
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.RiskRoll
+  id: RiskRoll
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  langs:
+  - csharp
+  - vb
+  name: RiskRoll
+  nameWithType: ShortCallExitReason.RiskRoll
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.RiskRoll
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RiskRoll
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Delta-risk trigger reached; position was rolled.
+  example: []
+  syntax:
+    content: RiskRoll = 3
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.DividendRiskRoll
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.DividendRiskRoll
+  id: DividendRiskRoll
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  langs:
+  - csharp
+  - vb
+  name: DividendRiskRoll
+  nameWithType: ShortCallExitReason.DividendRiskRoll
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.DividendRiskRoll
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendRiskRoll
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Dividend-assignment risk trigger; position was closed / rolled.
+  example: []
+  syntax:
+    content: DividendRiskRoll = 4
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ForcedClose
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ForcedClose
+  id: ForcedClose
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  langs:
+  - csharp
+  - vb
+  name: ForcedClose
+  nameWithType: ShortCallExitReason.ForcedClose
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.ForcedClose
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForcedClose
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Strategy ended while position was still open (backtest ran out of data).
+  example: []
+  syntax:
+    content: ForcedClose = 5
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason.html
+  name: ShortCallExitReason
+  nameWithType: ShortCallExitReason
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason

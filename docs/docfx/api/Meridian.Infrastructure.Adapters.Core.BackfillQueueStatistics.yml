@@ -1,0 +1,789 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  id: BackfillQueueStatistics
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32})
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs
+  - Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs
+  langs:
+  - csharp
+  - vb
+  name: BackfillQueueStatistics
+  nameWithType: BackfillQueueStatistics
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillQueueStatistics
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Statistics about the backfill queue.
+  example: []
+  syntax:
+    content: 'public sealed record BackfillQueueStatistics : IEquatable<BackfillQueueStatistics>'
+    content.vb: Public NotInheritable Class BackfillQueueStatistics Implements IEquatable(Of BackfillQueueStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32})
+  id: '#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32})'
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: BackfillQueueStatistics(int, int, int, int, int, int, Dictionary<BackfillPriority, int>)
+  nameWithType: BackfillQueueStatistics.BackfillQueueStatistics(int, int, int, int, int, int, Dictionary<BackfillPriority, int>)
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.BackfillQueueStatistics(int, int, int, int, int, int, System.Collections.Generic.Dictionary<Meridian.Infrastructure.Adapters.Core.BackfillPriority, int>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Statistics about the backfill queue.
+  example: []
+  syntax:
+    content: public BackfillQueueStatistics(int TotalJobs, int PendingJobs, int RunningJobs, int CompletedJobs, int FailedJobs, int PausedJobs, Dictionary<BackfillPriority, int> JobsByPriority)
+    parameters:
+    - id: TotalJobs
+      type: System.Int32
+    - id: PendingJobs
+      type: System.Int32
+    - id: RunningJobs
+      type: System.Int32
+    - id: CompletedJobs
+      type: System.Int32
+    - id: FailedJobs
+      type: System.Int32
+    - id: PausedJobs
+      type: System.Int32
+    - id: JobsByPriority
+      type: System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32}
+    content.vb: Public Sub New(TotalJobs As Integer, PendingJobs As Integer, RunningJobs As Integer, CompletedJobs As Integer, FailedJobs As Integer, PausedJobs As Integer, JobsByPriority As Dictionary(Of BackfillPriority, Integer))
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.#ctor*
+  nameWithType.vb: BackfillQueueStatistics.New(Integer, Integer, Integer, Integer, Integer, Integer, Dictionary(Of BackfillPriority, Integer))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.New(Integer, Integer, Integer, Integer, Integer, Integer, System.Collections.Generic.Dictionary(Of Meridian.Infrastructure.Adapters.Core.BackfillPriority, Integer))
+  name.vb: New(Integer, Integer, Integer, Integer, Integer, Integer, Dictionary(Of BackfillPriority, Integer))
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs
+  id: TotalJobs
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalJobs
+  nameWithType: BackfillQueueStatistics.TotalJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalJobs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int TotalJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalJobs As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs
+  id: PendingJobs
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: PendingJobs
+  nameWithType: BackfillQueueStatistics.PendingJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingJobs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int PendingJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property PendingJobs As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs
+  id: RunningJobs
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: RunningJobs
+  nameWithType: BackfillQueueStatistics.RunningJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunningJobs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int RunningJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RunningJobs As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs
+  id: CompletedJobs
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: CompletedJobs
+  nameWithType: BackfillQueueStatistics.CompletedJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedJobs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int CompletedJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CompletedJobs As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs
+  id: FailedJobs
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: FailedJobs
+  nameWithType: BackfillQueueStatistics.FailedJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedJobs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int FailedJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedJobs As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs
+  id: PausedJobs
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: PausedJobs
+  nameWithType: BackfillQueueStatistics.PausedJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PausedJobs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int PausedJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property PausedJobs As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority
+  id: JobsByPriority
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+  langs:
+  - csharp
+  - vb
+  name: JobsByPriority
+  nameWithType: BackfillQueueStatistics.JobsByPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobsByPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public Dictionary<BackfillPriority, int> JobsByPriority { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32}
+    content.vb: Public Property JobsByPriority As Dictionary(Of BackfillPriority, Integer)
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackfillQueueStatistics>
+  nameWithType: IEquatable<BackfillQueueStatistics>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics>
+  nameWithType.vb: IEquatable(Of BackfillQueueStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics)
+  name.vb: IEquatable(Of BackfillQueueStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+    name: BackfillQueueStatistics
+    href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics
+    name: BackfillQueueStatistics
+    href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics__ctor_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_System_Collections_Generic_Dictionary_Meridian_Infrastructure_Adapters_Core_BackfillPriority_System_Int32__
+  name: BackfillQueueStatistics
+  nameWithType: BackfillQueueStatistics.BackfillQueueStatistics
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.BackfillQueueStatistics
+  nameWithType.vb: BackfillQueueStatistics.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<BackfillPriority, int>
+  nameWithType: Dictionary<BackfillPriority, int>
+  fullName: System.Collections.Generic.Dictionary<Meridian.Infrastructure.Adapters.Core.BackfillPriority, int>
+  nameWithType.vb: Dictionary(Of BackfillPriority, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of Meridian.Infrastructure.Adapters.Core.BackfillPriority, Integer)
+  name.vb: Dictionary(Of BackfillPriority, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+    name: BackfillPriority
+    href: Meridian.Infrastructure.Adapters.Core.BackfillPriority.html
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+    name: BackfillPriority
+    href: Meridian.Infrastructure.Adapters.Core.BackfillPriority.html
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_TotalJobs
+  name: TotalJobs
+  nameWithType: BackfillQueueStatistics.TotalJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.TotalJobs
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_PendingJobs
+  name: PendingJobs
+  nameWithType: BackfillQueueStatistics.PendingJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PendingJobs
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_RunningJobs
+  name: RunningJobs
+  nameWithType: BackfillQueueStatistics.RunningJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.RunningJobs
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_CompletedJobs
+  name: CompletedJobs
+  nameWithType: BackfillQueueStatistics.CompletedJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.CompletedJobs
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_FailedJobs
+  name: FailedJobs
+  nameWithType: BackfillQueueStatistics.FailedJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.FailedJobs
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_PausedJobs
+  name: PausedJobs
+  nameWithType: BackfillQueueStatistics.PausedJobs
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.PausedJobs
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority
+  href: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.html#Meridian_Infrastructure_Adapters_Core_BackfillQueueStatistics_JobsByPriority
+  name: JobsByPriority
+  nameWithType: BackfillQueueStatistics.JobsByPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillQueueStatistics.JobsByPriority

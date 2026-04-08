@@ -1,0 +1,630 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService
+  commentId: T:Meridian.Application.ProviderRouting.ProviderPresetService
+  id: ProviderPresetService
+  parent: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.ProviderPresetService.#ctor(Meridian.Application.UI.ConfigStore)
+  - Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ProviderPresetService
+  nameWithType: ProviderPresetService
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPresetService
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  summary: Returns built-in and configured provider presets.
+  example: []
+  syntax:
+    content: public sealed class ProviderPresetService
+    content.vb: Public NotInheritable Class ProviderPresetService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService.#ctor(Meridian.Application.UI.ConfigStore)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderPresetService.#ctor(Meridian.Application.UI.ConfigStore)
+  id: '#ctor(Meridian.Application.UI.ConfigStore)'
+  parent: Meridian.Application.ProviderRouting.ProviderPresetService
+  langs:
+  - csharp
+  - vb
+  name: ProviderPresetService(ConfigStore)
+  nameWithType: ProviderPresetService.ProviderPresetService(ConfigStore)
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService.ProviderPresetService(Meridian.Application.UI.ConfigStore)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public ProviderPresetService(ConfigStore store)
+    parameters:
+    - id: store
+      type: Meridian.Application.UI.ConfigStore
+    content.vb: Public Sub New(store As ConfigStore)
+  overload: Meridian.Application.ProviderRouting.ProviderPresetService.#ctor*
+  nameWithType.vb: ProviderPresetService.New(ConfigStore)
+  fullName.vb: Meridian.Application.ProviderRouting.ProviderPresetService.New(Meridian.Application.UI.ConfigStore)
+  name.vb: New(ConfigStore)
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync(System.Threading.CancellationToken)
+  id: GetPresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.ProviderRouting.ProviderPresetService
+  langs:
+  - csharp
+  - vb
+  name: GetPresetsAsync(CancellationToken)
+  nameWithType: ProviderPresetService.GetPresetsAsync(CancellationToken)
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPresetsAsync
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public Task<IReadOnlyList<ProviderPresetDto>> GetPresetsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderPresetDto}}
+    content.vb: Public Function GetPresetsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ProviderPresetDto))
+  overload: Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync*
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync(System.String,System.Threading.CancellationToken)
+  id: ApplyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.ProviderRouting.ProviderPresetService
+  langs:
+  - csharp
+  - vb
+  name: ApplyAsync(string, CancellationToken)
+  nameWithType: ProviderPresetService.ApplyAsync(string, CancellationToken)
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyAsync
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public Task<ProviderPresetDto?> ApplyAsync(string presetId, CancellationToken ct = default)
+    parameters:
+    - id: presetId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.ProviderPresetDto}
+    content.vb: Public Function ApplyAsync(presetId As String, ct As CancellationToken = Nothing) As Task(Of ProviderPresetDto)
+  overload: Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync*
+  nameWithType.vb: ProviderPresetService.ApplyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync(String, System.Threading.CancellationToken)
+  name.vb: ApplyAsync(String, CancellationToken)
+references:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService.#ctor*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderPresetService.#ctor
+  href: Meridian.Application.ProviderRouting.ProviderPresetService.html#Meridian_Application_ProviderRouting_ProviderPresetService__ctor_Meridian_Application_UI_ConfigStore_
+  name: ProviderPresetService
+  nameWithType: ProviderPresetService.ProviderPresetService
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService.ProviderPresetService
+  nameWithType.vb: ProviderPresetService.New
+  fullName.vb: Meridian.Application.ProviderRouting.ProviderPresetService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync
+  href: Meridian.Application.ProviderRouting.ProviderPresetService.html#Meridian_Application_ProviderRouting_ProviderPresetService_GetPresetsAsync_System_Threading_CancellationToken_
+  name: GetPresetsAsync
+  nameWithType: ProviderPresetService.GetPresetsAsync
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService.GetPresetsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderPresetDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderPresetDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ProviderPresetDto>>
+  nameWithType: Task<IReadOnlyList<ProviderPresetDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Api.ProviderPresetDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ProviderPresetDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Api.ProviderPresetDto))
+  name.vb: Task(Of IReadOnlyList(Of ProviderPresetDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderPresetDto
+    name: ProviderPresetDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderPresetDto
+    name: ProviderPresetDto
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync*
+  commentId: Overload:Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync
+  href: Meridian.Application.ProviderRouting.ProviderPresetService.html#Meridian_Application_ProviderRouting_ProviderPresetService_ApplyAsync_System_String_System_Threading_CancellationToken_
+  name: ApplyAsync
+  nameWithType: ProviderPresetService.ApplyAsync
+  fullName: Meridian.Application.ProviderRouting.ProviderPresetService.ApplyAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.ProviderPresetDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.ProviderPresetDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderPresetDto>
+  nameWithType: Task<ProviderPresetDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.ProviderPresetDto>
+  nameWithType.vb: Task(Of ProviderPresetDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.ProviderPresetDto)
+  name.vb: Task(Of ProviderPresetDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderPresetDto
+    name: ProviderPresetDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderPresetDto
+    name: ProviderPresetDto
+  - name: )

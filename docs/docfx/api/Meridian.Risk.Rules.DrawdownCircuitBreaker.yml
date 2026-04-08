@@ -1,0 +1,786 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker
+  commentId: T:Meridian.Risk.Rules.DrawdownCircuitBreaker
+  id: DrawdownCircuitBreaker
+  parent: Meridian.Risk.Rules
+  children:
+  - Meridian.Risk.Rules.DrawdownCircuitBreaker.#ctor(Meridian.Execution.Sdk.IPositionTracker,System.Decimal,System.Decimal,Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker})
+  - Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  - Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName
+  langs:
+  - csharp
+  - vb
+  name: DrawdownCircuitBreaker
+  nameWithType: DrawdownCircuitBreaker
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrawdownCircuitBreaker
+    path: ../../src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Risk
+  namespace: Meridian.Risk.Rules
+  summary: Halts all new orders when portfolio drawdown exceeds a threshold.
+  example: []
+  syntax:
+    content: 'public sealed class DrawdownCircuitBreaker : IRiskRule'
+    content.vb: Public NotInheritable Class DrawdownCircuitBreaker Implements IRiskRule
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Risk.IRiskRule
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker.#ctor(Meridian.Execution.Sdk.IPositionTracker,System.Decimal,System.Decimal,Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker})
+  commentId: M:Meridian.Risk.Rules.DrawdownCircuitBreaker.#ctor(Meridian.Execution.Sdk.IPositionTracker,System.Decimal,System.Decimal,Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker})
+  id: '#ctor(Meridian.Execution.Sdk.IPositionTracker,System.Decimal,System.Decimal,Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker})'
+  parent: Meridian.Risk.Rules.DrawdownCircuitBreaker
+  langs:
+  - csharp
+  - vb
+  name: DrawdownCircuitBreaker(IPositionTracker, decimal, decimal, ILogger<DrawdownCircuitBreaker>)
+  nameWithType: DrawdownCircuitBreaker.DrawdownCircuitBreaker(IPositionTracker, decimal, decimal, ILogger<DrawdownCircuitBreaker>)
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker.DrawdownCircuitBreaker(Meridian.Execution.Sdk.IPositionTracker, decimal, decimal, Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.DrawdownCircuitBreaker>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Risk
+  namespace: Meridian.Risk.Rules
+  syntax:
+    content: public DrawdownCircuitBreaker(IPositionTracker positionTracker, decimal initialCapital, decimal maxDrawdownPercent, ILogger<DrawdownCircuitBreaker> logger)
+    parameters:
+    - id: positionTracker
+      type: Meridian.Execution.Sdk.IPositionTracker
+    - id: initialCapital
+      type: System.Decimal
+    - id: maxDrawdownPercent
+      type: System.Decimal
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker}
+    content.vb: Public Sub New(positionTracker As IPositionTracker, initialCapital As Decimal, maxDrawdownPercent As Decimal, logger As ILogger(Of DrawdownCircuitBreaker))
+  overload: Meridian.Risk.Rules.DrawdownCircuitBreaker.#ctor*
+  nameWithType.vb: DrawdownCircuitBreaker.New(IPositionTracker, Decimal, Decimal, ILogger(Of DrawdownCircuitBreaker))
+  fullName.vb: Meridian.Risk.Rules.DrawdownCircuitBreaker.New(Meridian.Execution.Sdk.IPositionTracker, Decimal, Decimal, Microsoft.Extensions.Logging.ILogger(Of Meridian.Risk.Rules.DrawdownCircuitBreaker))
+  name.vb: New(IPositionTracker, Decimal, Decimal, ILogger(Of DrawdownCircuitBreaker))
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName
+  commentId: P:Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName
+  id: RuleName
+  parent: Meridian.Risk.Rules.DrawdownCircuitBreaker
+  langs:
+  - csharp
+  - vb
+  name: RuleName
+  nameWithType: DrawdownCircuitBreaker.RuleName
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RuleName
+    path: ../../src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Risk
+  namespace: Meridian.Risk.Rules
+  summary: Human-readable name for logging.
+  example: []
+  syntax:
+    content: public string RuleName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property RuleName As String
+  overload: Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName*
+  implements:
+  - Meridian.Risk.IRiskRule.RuleName
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Risk.Rules.DrawdownCircuitBreaker
+  langs:
+  - csharp
+  - vb
+  name: EvaluateAsync(OrderRequest, CancellationToken)
+  nameWithType: DrawdownCircuitBreaker.EvaluateAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EvaluateAsync
+    path: ../../src/Meridian.Risk/Rules/DrawdownCircuitBreaker.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Risk
+  namespace: Meridian.Risk.Rules
+  summary: Evaluates whether the order passes this risk rule.
+  example: []
+  syntax:
+    content: public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.RiskValidationResult}
+    content.vb: Public Function EvaluateAsync(request As OrderRequest, ct As CancellationToken = Nothing) As Task(Of RiskValidationResult)
+  overload: Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync*
+  implements:
+  - Meridian.Risk.IRiskRule.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Risk.Rules
+  commentId: N:Meridian.Risk.Rules
+  href: Meridian.html
+  name: Meridian.Risk.Rules
+  nameWithType: Meridian.Risk.Rules
+  fullName: Meridian.Risk.Rules
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Risk
+    name: Risk
+    href: Meridian.Risk.html
+  - name: .
+  - uid: Meridian.Risk.Rules
+    name: Rules
+    href: Meridian.Risk.Rules.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Risk
+    name: Risk
+    href: Meridian.Risk.html
+  - name: .
+  - uid: Meridian.Risk.Rules
+    name: Rules
+    href: Meridian.Risk.Rules.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Risk.IRiskRule
+  commentId: T:Meridian.Risk.IRiskRule
+  parent: Meridian.Risk
+  href: Meridian.Risk.IRiskRule.html
+  name: IRiskRule
+  nameWithType: IRiskRule
+  fullName: Meridian.Risk.IRiskRule
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Risk
+  commentId: N:Meridian.Risk
+  href: Meridian.html
+  name: Meridian.Risk
+  nameWithType: Meridian.Risk
+  fullName: Meridian.Risk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Risk
+    name: Risk
+    href: Meridian.Risk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Risk
+    name: Risk
+    href: Meridian.Risk.html
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker.#ctor*
+  commentId: Overload:Meridian.Risk.Rules.DrawdownCircuitBreaker.#ctor
+  href: Meridian.Risk.Rules.DrawdownCircuitBreaker.html#Meridian_Risk_Rules_DrawdownCircuitBreaker__ctor_Meridian_Execution_Sdk_IPositionTracker_System_Decimal_System_Decimal_Microsoft_Extensions_Logging_ILogger_Meridian_Risk_Rules_DrawdownCircuitBreaker__
+  name: DrawdownCircuitBreaker
+  nameWithType: DrawdownCircuitBreaker.DrawdownCircuitBreaker
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker.DrawdownCircuitBreaker
+  nameWithType.vb: DrawdownCircuitBreaker.New
+  fullName.vb: Meridian.Risk.Rules.DrawdownCircuitBreaker.New
+  name.vb: New
+- uid: Meridian.Execution.Sdk.IPositionTracker
+  commentId: T:Meridian.Execution.Sdk.IPositionTracker
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPositionTracker.html
+  name: IPositionTracker
+  nameWithType: IPositionTracker
+  fullName: Meridian.Execution.Sdk.IPositionTracker
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Risk.Rules.DrawdownCircuitBreaker}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<DrawdownCircuitBreaker>
+  nameWithType: ILogger<DrawdownCircuitBreaker>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.DrawdownCircuitBreaker>
+  nameWithType.vb: ILogger(Of DrawdownCircuitBreaker)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Risk.Rules.DrawdownCircuitBreaker)
+  name.vb: ILogger(Of DrawdownCircuitBreaker)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Risk.Rules.DrawdownCircuitBreaker
+    name: DrawdownCircuitBreaker
+    href: Meridian.Risk.Rules.DrawdownCircuitBreaker.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Risk.Rules.DrawdownCircuitBreaker
+    name: DrawdownCircuitBreaker
+    href: Meridian.Risk.Rules.DrawdownCircuitBreaker.html
+  - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName*
+  commentId: Overload:Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName
+  href: Meridian.Risk.Rules.DrawdownCircuitBreaker.html#Meridian_Risk_Rules_DrawdownCircuitBreaker_RuleName
+  name: RuleName
+  nameWithType: DrawdownCircuitBreaker.RuleName
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker.RuleName
+- uid: Meridian.Risk.IRiskRule.RuleName
+  commentId: P:Meridian.Risk.IRiskRule.RuleName
+  parent: Meridian.Risk.IRiskRule
+  href: Meridian.Risk.IRiskRule.html#Meridian_Risk_IRiskRule_RuleName
+  name: RuleName
+  nameWithType: IRiskRule.RuleName
+  fullName: Meridian.Risk.IRiskRule.RuleName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync*
+  commentId: Overload:Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync
+  href: Meridian.Risk.Rules.DrawdownCircuitBreaker.html#Meridian_Risk_Rules_DrawdownCircuitBreaker_EvaluateAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: EvaluateAsync
+  nameWithType: DrawdownCircuitBreaker.EvaluateAsync
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker.EvaluateAsync
+- uid: Meridian.Risk.IRiskRule.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Risk.IRiskRule.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Risk.IRiskRule
+  isExternal: true
+  href: Meridian.Risk.IRiskRule.html#Meridian_Risk_IRiskRule_EvaluateAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: EvaluateAsync(OrderRequest, CancellationToken)
+  nameWithType: IRiskRule.EvaluateAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Risk.IRiskRule.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Risk.IRiskRule.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+    name: EvaluateAsync
+    href: Meridian.Risk.IRiskRule.html#Meridian_Risk_IRiskRule_EvaluateAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Risk.IRiskRule.EvaluateAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+    name: EvaluateAsync
+    href: Meridian.Risk.IRiskRule.html#Meridian_Risk_IRiskRule_EvaluateAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Execution.RiskValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.RiskValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RiskValidationResult>
+  nameWithType: Task<RiskValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.RiskValidationResult>
+  nameWithType.vb: Task(Of RiskValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.RiskValidationResult)
+  name.vb: Task(Of RiskValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.RiskValidationResult
+    name: RiskValidationResult
+    href: Meridian.Execution.RiskValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.RiskValidationResult
+    name: RiskValidationResult
+    href: Meridian.Execution.RiskValidationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

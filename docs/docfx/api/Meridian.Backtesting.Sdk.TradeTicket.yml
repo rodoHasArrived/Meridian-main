@@ -1,0 +1,938 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.TradeTicket
+  commentId: T:Meridian.Backtesting.Sdk.TradeTicket
+  id: TradeTicket
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.TradeTicket.#ctor(System.Guid,System.DateTimeOffset,System.String,System.String,System.String,System.Decimal,System.Nullable{System.Int64},System.Nullable{System.Decimal},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})
+  - Meridian.Backtesting.Sdk.TradeTicket.AccountId
+  - Meridian.Backtesting.Sdk.TradeTicket.ActivityType
+  - Meridian.Backtesting.Sdk.TradeTicket.CashImpact
+  - Meridian.Backtesting.Sdk.TradeTicket.FillId
+  - Meridian.Backtesting.Sdk.TradeTicket.Narrative
+  - Meridian.Backtesting.Sdk.TradeTicket.OrderId
+  - Meridian.Backtesting.Sdk.TradeTicket.Quantity
+  - Meridian.Backtesting.Sdk.TradeTicket.Symbol
+  - Meridian.Backtesting.Sdk.TradeTicket.TicketId
+  - Meridian.Backtesting.Sdk.TradeTicket.Timestamp
+  - Meridian.Backtesting.Sdk.TradeTicket.UnitPrice
+  langs:
+  - csharp
+  - vb
+  name: TradeTicket
+  nameWithType: TradeTicket
+  fullName: Meridian.Backtesting.Sdk.TradeTicket
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeTicket
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Human-readable audit ticket that explains why a trading or asset-event cash movement occurred.
+  example: []
+  syntax:
+    content: 'public sealed record TradeTicket : IEquatable<TradeTicket>'
+    content.vb: Public NotInheritable Class TradeTicket Implements IEquatable(Of TradeTicket)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.TradeTicket}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.TradeTicket.#ctor(System.Guid,System.DateTimeOffset,System.String,System.String,System.String,System.Decimal,System.Nullable{System.Int64},System.Nullable{System.Decimal},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})
+  commentId: M:Meridian.Backtesting.Sdk.TradeTicket.#ctor(System.Guid,System.DateTimeOffset,System.String,System.String,System.String,System.Decimal,System.Nullable{System.Int64},System.Nullable{System.Decimal},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})
+  id: '#ctor(System.Guid,System.DateTimeOffset,System.String,System.String,System.String,System.Decimal,System.Nullable{System.Int64},System.Nullable{System.Decimal},System.String,System.Nullable{System.Guid},System.Nullable{System.Guid})'
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: TradeTicket(Guid, DateTimeOffset, string, string?, string, decimal, long?, decimal?, string?, Guid?, Guid?)
+  nameWithType: TradeTicket.TradeTicket(Guid, DateTimeOffset, string, string?, string, decimal, long?, decimal?, string?, Guid?, Guid?)
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.TradeTicket(System.Guid, System.DateTimeOffset, string, string?, string, decimal, long?, decimal?, string?, System.Guid?, System.Guid?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Human-readable audit ticket that explains why a trading or asset-event cash movement occurred.
+  example: []
+  syntax:
+    content: public TradeTicket(Guid TicketId, DateTimeOffset Timestamp, string ActivityType, string? Symbol, string Narrative, decimal CashImpact, long? Quantity = null, decimal? UnitPrice = null, string? AccountId = null, Guid? OrderId = null, Guid? FillId = null)
+    parameters:
+    - id: TicketId
+      type: System.Guid
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: ActivityType
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: Narrative
+      type: System.String
+    - id: CashImpact
+      type: System.Decimal
+    - id: Quantity
+      type: System.Nullable{System.Int64}
+    - id: UnitPrice
+      type: System.Nullable{System.Decimal}
+    - id: AccountId
+      type: System.String
+    - id: OrderId
+      type: System.Nullable{System.Guid}
+    - id: FillId
+      type: System.Nullable{System.Guid}
+    content.vb: Public Sub New(TicketId As Guid, Timestamp As DateTimeOffset, ActivityType As String, Symbol As String, Narrative As String, CashImpact As Decimal, Quantity As Long? = Nothing, UnitPrice As Decimal? = Nothing, AccountId As String = Nothing, OrderId As Guid? = Nothing, FillId As Guid? = Nothing)
+  overload: Meridian.Backtesting.Sdk.TradeTicket.#ctor*
+  nameWithType.vb: TradeTicket.New(Guid, DateTimeOffset, String, String, String, Decimal, Long?, Decimal?, String, Guid?, Guid?)
+  fullName.vb: Meridian.Backtesting.Sdk.TradeTicket.New(System.Guid, System.DateTimeOffset, String, String, String, Decimal, Long?, Decimal?, String, System.Guid?, System.Guid?)
+  name.vb: New(Guid, DateTimeOffset, String, String, String, Decimal, Long?, Decimal?, String, Guid?, Guid?)
+- uid: Meridian.Backtesting.Sdk.TradeTicket.TicketId
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.TicketId
+  id: TicketId
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: TicketId
+  nameWithType: TradeTicket.TicketId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.TicketId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TicketId
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid TicketId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property TicketId As Guid
+  overload: Meridian.Backtesting.Sdk.TradeTicket.TicketId*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Timestamp
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.Timestamp
+  id: Timestamp
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: TradeTicket.Timestamp
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.TradeTicket.Timestamp*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.ActivityType
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.ActivityType
+  id: ActivityType
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: ActivityType
+  nameWithType: TradeTicket.ActivityType
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.ActivityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivityType
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string ActivityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActivityType As String
+  overload: Meridian.Backtesting.Sdk.TradeTicket.ActivityType*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TradeTicket.Symbol
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.TradeTicket.Symbol*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Narrative
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.Narrative
+  id: Narrative
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: Narrative
+  nameWithType: TradeTicket.Narrative
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Narrative
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Narrative
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Narrative { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Narrative As String
+  overload: Meridian.Backtesting.Sdk.TradeTicket.Narrative*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.CashImpact
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.CashImpact
+  id: CashImpact
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: CashImpact
+  nameWithType: TradeTicket.CashImpact
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.CashImpact
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashImpact
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal CashImpact { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CashImpact As Decimal
+  overload: Meridian.Backtesting.Sdk.TradeTicket.CashImpact*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Quantity
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.Quantity
+  id: Quantity
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: TradeTicket.Quantity
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long? Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property Quantity As Long?
+  overload: Meridian.Backtesting.Sdk.TradeTicket.Quantity*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.UnitPrice
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.UnitPrice
+  id: UnitPrice
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: UnitPrice
+  nameWithType: TradeTicket.UnitPrice
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.UnitPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnitPrice
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal? UnitPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property UnitPrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.TradeTicket.UnitPrice*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: TradeTicket.AccountId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.TradeTicket.AccountId*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.OrderId
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.OrderId
+  id: OrderId
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: TradeTicket.OrderId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid? OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property OrderId As Guid?
+  overload: Meridian.Backtesting.Sdk.TradeTicket.OrderId*
+- uid: Meridian.Backtesting.Sdk.TradeTicket.FillId
+  commentId: P:Meridian.Backtesting.Sdk.TradeTicket.FillId
+  id: FillId
+  parent: Meridian.Backtesting.Sdk.TradeTicket
+  langs:
+  - csharp
+  - vb
+  name: FillId
+  nameWithType: TradeTicket.FillId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.FillId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillId
+    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid? FillId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property FillId As Guid?
+  overload: Meridian.Backtesting.Sdk.TradeTicket.FillId*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.TradeTicket}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.TradeTicket}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradeTicket>
+  nameWithType: IEquatable<TradeTicket>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.TradeTicket>
+  nameWithType.vb: IEquatable(Of TradeTicket)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.TradeTicket)
+  name.vb: IEquatable(Of TradeTicket)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.TradeTicket
+    name: TradeTicket
+    href: Meridian.Backtesting.Sdk.TradeTicket.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.TradeTicket
+    name: TradeTicket
+    href: Meridian.Backtesting.Sdk.TradeTicket.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.TradeTicket.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.#ctor
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket__ctor_System_Guid_System_DateTimeOffset_System_String_System_String_System_String_System_Decimal_System_Nullable_System_Int64__System_Nullable_System_Decimal__System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__
+  name: TradeTicket
+  nameWithType: TradeTicket.TradeTicket
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.TradeTicket
+  nameWithType.vb: TradeTicket.New
+  fullName.vb: Meridian.Backtesting.Sdk.TradeTicket.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.TradeTicket.TicketId*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.TicketId
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_TicketId
+  name: TicketId
+  nameWithType: TradeTicket.TicketId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.TicketId
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Timestamp*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.Timestamp
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_Timestamp
+  name: Timestamp
+  nameWithType: TradeTicket.Timestamp
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Timestamp
+- uid: Meridian.Backtesting.Sdk.TradeTicket.ActivityType*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.ActivityType
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_ActivityType
+  name: ActivityType
+  nameWithType: TradeTicket.ActivityType
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.ActivityType
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.Symbol
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_Symbol
+  name: Symbol
+  nameWithType: TradeTicket.Symbol
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Symbol
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Narrative*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.Narrative
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_Narrative
+  name: Narrative
+  nameWithType: TradeTicket.Narrative
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Narrative
+- uid: Meridian.Backtesting.Sdk.TradeTicket.CashImpact*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.CashImpact
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_CashImpact
+  name: CashImpact
+  nameWithType: TradeTicket.CashImpact
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.CashImpact
+- uid: Meridian.Backtesting.Sdk.TradeTicket.Quantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.Quantity
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_Quantity
+  name: Quantity
+  nameWithType: TradeTicket.Quantity
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.Quantity
+- uid: Meridian.Backtesting.Sdk.TradeTicket.UnitPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.UnitPrice
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_UnitPrice
+  name: UnitPrice
+  nameWithType: TradeTicket.UnitPrice
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.UnitPrice
+- uid: Meridian.Backtesting.Sdk.TradeTicket.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.AccountId
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_AccountId
+  name: AccountId
+  nameWithType: TradeTicket.AccountId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.AccountId
+- uid: Meridian.Backtesting.Sdk.TradeTicket.OrderId*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.OrderId
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_OrderId
+  name: OrderId
+  nameWithType: TradeTicket.OrderId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.OrderId
+- uid: Meridian.Backtesting.Sdk.TradeTicket.FillId*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeTicket.FillId
+  href: Meridian.Backtesting.Sdk.TradeTicket.html#Meridian_Backtesting_Sdk_TradeTicket_FillId
+  name: FillId
+  nameWithType: TradeTicket.FillId
+  fullName: Meridian.Backtesting.Sdk.TradeTicket.FillId

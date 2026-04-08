@@ -1,0 +1,673 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QualityReportSummary
+  commentId: T:Meridian.Storage.Services.QualityReportSummary
+  id: QualityReportSummary
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QualityReportSummary.AverageScore
+  - Meridian.Storage.Services.QualityReportSummary.BySource
+  - Meridian.Storage.Services.QualityReportSummary.BySymbol
+  - Meridian.Storage.Services.QualityReportSummary.HighQualityFiles
+  - Meridian.Storage.Services.QualityReportSummary.LowQualityFiles
+  - Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles
+  - Meridian.Storage.Services.QualityReportSummary.TotalFiles
+  langs:
+  - csharp
+  - vb
+  name: QualityReportSummary
+  nameWithType: QualityReportSummary
+  fullName: Meridian.Storage.Services.QualityReportSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityReportSummary
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public sealed class QualityReportSummary
+    content.vb: Public NotInheritable Class QualityReportSummary
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.QualityReportSummary.TotalFiles
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: QualityReportSummary.TotalFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 467
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int TotalFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFiles As Integer
+  overload: Meridian.Storage.Services.QualityReportSummary.TotalFiles*
+- uid: Meridian.Storage.Services.QualityReportSummary.AverageScore
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.AverageScore
+  id: AverageScore
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: AverageScore
+  nameWithType: QualityReportSummary.AverageScore
+  fullName: Meridian.Storage.Services.QualityReportSummary.AverageScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageScore
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 468
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double AverageScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageScore As Double
+  overload: Meridian.Storage.Services.QualityReportSummary.AverageScore*
+- uid: Meridian.Storage.Services.QualityReportSummary.HighQualityFiles
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.HighQualityFiles
+  id: HighQualityFiles
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: HighQualityFiles
+  nameWithType: QualityReportSummary.HighQualityFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.HighQualityFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighQualityFiles
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 469
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int HighQualityFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HighQualityFiles As Integer
+  overload: Meridian.Storage.Services.QualityReportSummary.HighQualityFiles*
+- uid: Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles
+  id: MediumQualityFiles
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: MediumQualityFiles
+  nameWithType: QualityReportSummary.MediumQualityFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MediumQualityFiles
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 470
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int MediumQualityFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MediumQualityFiles As Integer
+  overload: Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles*
+- uid: Meridian.Storage.Services.QualityReportSummary.LowQualityFiles
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.LowQualityFiles
+  id: LowQualityFiles
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: LowQualityFiles
+  nameWithType: QualityReportSummary.LowQualityFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.LowQualityFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowQualityFiles
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 471
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int LowQualityFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LowQualityFiles As Integer
+  overload: Meridian.Storage.Services.QualityReportSummary.LowQualityFiles*
+- uid: Meridian.Storage.Services.QualityReportSummary.BySource
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.BySource
+  id: BySource
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: BySource
+  nameWithType: QualityReportSummary.BySource
+  fullName: Meridian.Storage.Services.QualityReportSummary.BySource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BySource
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 472
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public Dictionary<string, double> BySource { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Double}
+    content.vb: Public Property BySource As Dictionary(Of String, Double)
+  overload: Meridian.Storage.Services.QualityReportSummary.BySource*
+- uid: Meridian.Storage.Services.QualityReportSummary.BySymbol
+  commentId: P:Meridian.Storage.Services.QualityReportSummary.BySymbol
+  id: BySymbol
+  parent: Meridian.Storage.Services.QualityReportSummary
+  langs:
+  - csharp
+  - vb
+  name: BySymbol
+  nameWithType: QualityReportSummary.BySymbol
+  fullName: Meridian.Storage.Services.QualityReportSummary.BySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityScoringService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BySymbol
+    path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
+    startLine: 473
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public Dictionary<string, double> BySymbol { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Double}
+    content.vb: Public Property BySymbol As Dictionary(Of String, Double)
+  overload: Meridian.Storage.Services.QualityReportSummary.BySymbol*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.QualityReportSummary.TotalFiles*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.TotalFiles
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_TotalFiles
+  name: TotalFiles
+  nameWithType: QualityReportSummary.TotalFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.TotalFiles
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Services.QualityReportSummary.AverageScore*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.AverageScore
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_AverageScore
+  name: AverageScore
+  nameWithType: QualityReportSummary.AverageScore
+  fullName: Meridian.Storage.Services.QualityReportSummary.AverageScore
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Services.QualityReportSummary.HighQualityFiles*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.HighQualityFiles
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_HighQualityFiles
+  name: HighQualityFiles
+  nameWithType: QualityReportSummary.HighQualityFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.HighQualityFiles
+- uid: Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_MediumQualityFiles
+  name: MediumQualityFiles
+  nameWithType: QualityReportSummary.MediumQualityFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.MediumQualityFiles
+- uid: Meridian.Storage.Services.QualityReportSummary.LowQualityFiles*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.LowQualityFiles
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_LowQualityFiles
+  name: LowQualityFiles
+  nameWithType: QualityReportSummary.LowQualityFiles
+  fullName: Meridian.Storage.Services.QualityReportSummary.LowQualityFiles
+- uid: Meridian.Storage.Services.QualityReportSummary.BySource*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.BySource
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_BySource
+  name: BySource
+  nameWithType: QualityReportSummary.BySource
+  fullName: Meridian.Storage.Services.QualityReportSummary.BySource
+- uid: System.Collections.Generic.Dictionary{System.String,System.Double}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Double}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, double>
+  nameWithType: Dictionary<string, double>
+  fullName: System.Collections.Generic.Dictionary<string, double>
+  nameWithType.vb: Dictionary(Of String, Double)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Double)
+  name.vb: Dictionary(Of String, Double)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.QualityReportSummary.BySymbol*
+  commentId: Overload:Meridian.Storage.Services.QualityReportSummary.BySymbol
+  href: Meridian.Storage.Services.QualityReportSummary.html#Meridian_Storage_Services_QualityReportSummary_BySymbol
+  name: BySymbol
+  nameWithType: QualityReportSummary.BySymbol
+  fullName: Meridian.Storage.Services.QualityReportSummary.BySymbol

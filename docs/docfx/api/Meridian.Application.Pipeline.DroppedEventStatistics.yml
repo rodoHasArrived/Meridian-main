@@ -1,0 +1,688 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics
+  commentId: T:Meridian.Application.Pipeline.DroppedEventStatistics
+  id: DroppedEventStatistics
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.DroppedEventStatistics.#ctor(System.Int64,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64},System.String,System.DateTimeOffset)
+  - Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath
+  - Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol
+  - Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp
+  - Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped
+  langs:
+  - csharp
+  - vb
+  name: DroppedEventStatistics
+  nameWithType: DroppedEventStatistics
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DroppedEventStatistics
+    path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Statistics about dropped events for API exposure.
+  example: []
+  syntax:
+    content: 'public sealed record DroppedEventStatistics : IEquatable<DroppedEventStatistics>'
+    content.vb: Public NotInheritable Class DroppedEventStatistics Implements IEquatable(Of DroppedEventStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Pipeline.DroppedEventStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.#ctor(System.Int64,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64},System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Pipeline.DroppedEventStatistics.#ctor(System.Int64,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64},System.String,System.DateTimeOffset)
+  id: '#ctor(System.Int64,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64},System.String,System.DateTimeOffset)'
+  parent: Meridian.Application.Pipeline.DroppedEventStatistics
+  langs:
+  - csharp
+  - vb
+  name: DroppedEventStatistics(long, IReadOnlyDictionary<string, long>, string, DateTimeOffset)
+  nameWithType: DroppedEventStatistics.DroppedEventStatistics(long, IReadOnlyDictionary<string, long>, string, DateTimeOffset)
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.DroppedEventStatistics(long, System.Collections.Generic.IReadOnlyDictionary<string, long>, string, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Statistics about dropped events for API exposure.
+  example: []
+  syntax:
+    content: public DroppedEventStatistics(long TotalDropped, IReadOnlyDictionary<string, long> DropsBySymbol, string AuditFilePath, DateTimeOffset Timestamp)
+    parameters:
+    - id: TotalDropped
+      type: System.Int64
+    - id: DropsBySymbol
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    - id: AuditFilePath
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(TotalDropped As Long, DropsBySymbol As IReadOnlyDictionary(Of String, Long), AuditFilePath As String, Timestamp As DateTimeOffset)
+  overload: Meridian.Application.Pipeline.DroppedEventStatistics.#ctor*
+  nameWithType.vb: DroppedEventStatistics.New(Long, IReadOnlyDictionary(Of String, Long), String, DateTimeOffset)
+  fullName.vb: Meridian.Application.Pipeline.DroppedEventStatistics.New(Long, System.Collections.Generic.IReadOnlyDictionary(Of String, Long), String, System.DateTimeOffset)
+  name.vb: New(Long, IReadOnlyDictionary(Of String, Long), String, DateTimeOffset)
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped
+  commentId: P:Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped
+  id: TotalDropped
+  parent: Meridian.Application.Pipeline.DroppedEventStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalDropped
+  nameWithType: DroppedEventStatistics.TotalDropped
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDropped
+    path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public long TotalDropped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalDropped As Long
+  overload: Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped*
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol
+  commentId: P:Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol
+  id: DropsBySymbol
+  parent: Meridian.Application.Pipeline.DroppedEventStatistics
+  langs:
+  - csharp
+  - vb
+  name: DropsBySymbol
+  nameWithType: DroppedEventStatistics.DropsBySymbol
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DropsBySymbol
+    path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public IReadOnlyDictionary<string, long> DropsBySymbol { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public Property DropsBySymbol As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol*
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath
+  commentId: P:Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath
+  id: AuditFilePath
+  parent: Meridian.Application.Pipeline.DroppedEventStatistics
+  langs:
+  - csharp
+  - vb
+  name: AuditFilePath
+  nameWithType: DroppedEventStatistics.AuditFilePath
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditFilePath
+    path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public string AuditFilePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AuditFilePath As String
+  overload: Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath*
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp
+  commentId: P:Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Pipeline.DroppedEventStatistics
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: DroppedEventStatistics.Timestamp
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp*
+references:
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Pipeline.DroppedEventStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Pipeline.DroppedEventStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DroppedEventStatistics>
+  nameWithType: IEquatable<DroppedEventStatistics>
+  fullName: System.IEquatable<Meridian.Application.Pipeline.DroppedEventStatistics>
+  nameWithType.vb: IEquatable(Of DroppedEventStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Pipeline.DroppedEventStatistics)
+  name.vb: IEquatable(Of DroppedEventStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.DroppedEventStatistics
+    name: DroppedEventStatistics
+    href: Meridian.Application.Pipeline.DroppedEventStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.DroppedEventStatistics
+    name: DroppedEventStatistics
+    href: Meridian.Application.Pipeline.DroppedEventStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.DroppedEventStatistics.#ctor
+  href: Meridian.Application.Pipeline.DroppedEventStatistics.html#Meridian_Application_Pipeline_DroppedEventStatistics__ctor_System_Int64_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Int64__System_String_System_DateTimeOffset_
+  name: DroppedEventStatistics
+  nameWithType: DroppedEventStatistics.DroppedEventStatistics
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.DroppedEventStatistics
+  nameWithType.vb: DroppedEventStatistics.New
+  fullName.vb: Meridian.Application.Pipeline.DroppedEventStatistics.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, long>
+  nameWithType: IReadOnlyDictionary<string, long>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, long>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Long)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Long)
+  name.vb: IReadOnlyDictionary(Of String, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped*
+  commentId: Overload:Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped
+  href: Meridian.Application.Pipeline.DroppedEventStatistics.html#Meridian_Application_Pipeline_DroppedEventStatistics_TotalDropped
+  name: TotalDropped
+  nameWithType: DroppedEventStatistics.TotalDropped
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.TotalDropped
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol*
+  commentId: Overload:Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol
+  href: Meridian.Application.Pipeline.DroppedEventStatistics.html#Meridian_Application_Pipeline_DroppedEventStatistics_DropsBySymbol
+  name: DropsBySymbol
+  nameWithType: DroppedEventStatistics.DropsBySymbol
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.DropsBySymbol
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath*
+  commentId: Overload:Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath
+  href: Meridian.Application.Pipeline.DroppedEventStatistics.html#Meridian_Application_Pipeline_DroppedEventStatistics_AuditFilePath
+  name: AuditFilePath
+  nameWithType: DroppedEventStatistics.AuditFilePath
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.AuditFilePath
+- uid: Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp*
+  commentId: Overload:Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp
+  href: Meridian.Application.Pipeline.DroppedEventStatistics.html#Meridian_Application_Pipeline_DroppedEventStatistics_Timestamp
+  name: Timestamp
+  nameWithType: DroppedEventStatistics.Timestamp
+  fullName: Meridian.Application.Pipeline.DroppedEventStatistics.Timestamp

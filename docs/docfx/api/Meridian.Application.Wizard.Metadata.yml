@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Metadata
+  commentId: N:Meridian.Application.Wizard.Metadata
+  id: Meridian.Application.Wizard.Metadata
+  children:
+  - Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  - Meridian.Application.Wizard.Metadata.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Wizard.Metadata
+  nameWithType: Meridian.Application.Wizard.Metadata
+  fullName: Meridian.Application.Wizard.Metadata
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  commentId: T:Meridian.Application.Wizard.Metadata.ProviderDescriptor
+  parent: Meridian.Application.Wizard.Metadata
+  href: Meridian.Application.Wizard.Metadata.ProviderDescriptor.html
+  name: ProviderDescriptor
+  nameWithType: ProviderDescriptor
+  fullName: Meridian.Application.Wizard.Metadata.ProviderDescriptor
+- uid: Meridian.Application.Wizard.Metadata.ProviderRegistry
+  commentId: T:Meridian.Application.Wizard.Metadata.ProviderRegistry
+  href: Meridian.Application.Wizard.Metadata.ProviderRegistry.html
+  name: ProviderRegistry
+  nameWithType: ProviderRegistry
+  fullName: Meridian.Application.Wizard.Metadata.ProviderRegistry
+- uid: Meridian.Application.Wizard.Metadata
+  commentId: N:Meridian.Application.Wizard.Metadata
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Metadata
+  nameWithType: Meridian.Application.Wizard.Metadata
+  fullName: Meridian.Application.Wizard.Metadata
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Metadata
+    name: Metadata
+    href: Meridian.Application.Wizard.Metadata.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Metadata
+    name: Metadata
+    href: Meridian.Application.Wizard.Metadata.html

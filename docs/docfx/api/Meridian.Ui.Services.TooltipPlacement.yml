@@ -1,0 +1,203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TooltipPlacement
+  commentId: T:Meridian.Ui.Services.TooltipPlacement
+  id: TooltipPlacement
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TooltipPlacement.Bottom
+  - Meridian.Ui.Services.TooltipPlacement.Center
+  - Meridian.Ui.Services.TooltipPlacement.Left
+  - Meridian.Ui.Services.TooltipPlacement.Right
+  - Meridian.Ui.Services.TooltipPlacement.Top
+  langs:
+  - csharp
+  - vb
+  name: TooltipPlacement
+  nameWithType: TooltipPlacement
+  fullName: Meridian.Ui.Services.TooltipPlacement
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TooltipPlacement
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 506
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Tooltip placement relative to the target element.
+  example: []
+  syntax:
+    content: 'public enum TooltipPlacement : byte'
+    content.vb: Public Enum TooltipPlacement As Byte
+- uid: Meridian.Ui.Services.TooltipPlacement.Top
+  commentId: F:Meridian.Ui.Services.TooltipPlacement.Top
+  id: Top
+  parent: Meridian.Ui.Services.TooltipPlacement
+  langs:
+  - csharp
+  - vb
+  name: Top
+  nameWithType: TooltipPlacement.Top
+  fullName: Meridian.Ui.Services.TooltipPlacement.Top
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Top
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Top = 0
+    return:
+      type: Meridian.Ui.Services.TooltipPlacement
+- uid: Meridian.Ui.Services.TooltipPlacement.Bottom
+  commentId: F:Meridian.Ui.Services.TooltipPlacement.Bottom
+  id: Bottom
+  parent: Meridian.Ui.Services.TooltipPlacement
+  langs:
+  - csharp
+  - vb
+  name: Bottom
+  nameWithType: TooltipPlacement.Bottom
+  fullName: Meridian.Ui.Services.TooltipPlacement.Bottom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bottom
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Bottom = 1
+    return:
+      type: Meridian.Ui.Services.TooltipPlacement
+- uid: Meridian.Ui.Services.TooltipPlacement.Left
+  commentId: F:Meridian.Ui.Services.TooltipPlacement.Left
+  id: Left
+  parent: Meridian.Ui.Services.TooltipPlacement
+  langs:
+  - csharp
+  - vb
+  name: Left
+  nameWithType: TooltipPlacement.Left
+  fullName: Meridian.Ui.Services.TooltipPlacement.Left
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Left
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Left = 2
+    return:
+      type: Meridian.Ui.Services.TooltipPlacement
+- uid: Meridian.Ui.Services.TooltipPlacement.Right
+  commentId: F:Meridian.Ui.Services.TooltipPlacement.Right
+  id: Right
+  parent: Meridian.Ui.Services.TooltipPlacement
+  langs:
+  - csharp
+  - vb
+  name: Right
+  nameWithType: TooltipPlacement.Right
+  fullName: Meridian.Ui.Services.TooltipPlacement.Right
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Right
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Right = 3
+    return:
+      type: Meridian.Ui.Services.TooltipPlacement
+- uid: Meridian.Ui.Services.TooltipPlacement.Center
+  commentId: F:Meridian.Ui.Services.TooltipPlacement.Center
+  id: Center
+  parent: Meridian.Ui.Services.TooltipPlacement
+  langs:
+  - csharp
+  - vb
+  name: Center
+  nameWithType: TooltipPlacement.Center
+  fullName: Meridian.Ui.Services.TooltipPlacement.Center
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Center
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Center = 4
+    return:
+      type: Meridian.Ui.Services.TooltipPlacement
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.TooltipPlacement
+  commentId: T:Meridian.Ui.Services.TooltipPlacement
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TooltipPlacement.html
+  name: TooltipPlacement
+  nameWithType: TooltipPlacement
+  fullName: Meridian.Ui.Services.TooltipPlacement

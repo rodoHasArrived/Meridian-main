@@ -1,0 +1,147 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportPriority
+  commentId: T:Meridian.Ui.Services.ExportPriority
+  id: ExportPriority
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportPriority.High
+  - Meridian.Ui.Services.ExportPriority.Low
+  - Meridian.Ui.Services.ExportPriority.Normal
+  langs:
+  - csharp
+  - vb
+  name: ExportPriority
+  nameWithType: ExportPriority
+  fullName: Meridian.Ui.Services.ExportPriority
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPriority
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 685
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum ExportPriority : byte'
+    content.vb: Public Enum ExportPriority As Byte
+- uid: Meridian.Ui.Services.ExportPriority.Low
+  commentId: F:Meridian.Ui.Services.ExportPriority.Low
+  id: Low
+  parent: Meridian.Ui.Services.ExportPriority
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: ExportPriority.Low
+  fullName: Meridian.Ui.Services.ExportPriority.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 687
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Low = 0
+    return:
+      type: Meridian.Ui.Services.ExportPriority
+- uid: Meridian.Ui.Services.ExportPriority.Normal
+  commentId: F:Meridian.Ui.Services.ExportPriority.Normal
+  id: Normal
+  parent: Meridian.Ui.Services.ExportPriority
+  langs:
+  - csharp
+  - vb
+  name: Normal
+  nameWithType: ExportPriority.Normal
+  fullName: Meridian.Ui.Services.ExportPriority.Normal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normal
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 688
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Normal = 1
+    return:
+      type: Meridian.Ui.Services.ExportPriority
+- uid: Meridian.Ui.Services.ExportPriority.High
+  commentId: F:Meridian.Ui.Services.ExportPriority.High
+  id: High
+  parent: Meridian.Ui.Services.ExportPriority
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: ExportPriority.High
+  fullName: Meridian.Ui.Services.ExportPriority.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 689
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: High = 2
+    return:
+      type: Meridian.Ui.Services.ExportPriority
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ExportPriority
+  commentId: T:Meridian.Ui.Services.ExportPriority
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportPriority.html
+  name: ExportPriority
+  nameWithType: ExportPriority
+  fullName: Meridian.Ui.Services.ExportPriority

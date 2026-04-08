@@ -1,0 +1,133 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  id: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.AccountKind
+  - Meridian.Execution.Models.ExecutionMode
+  - Meridian.Execution.Models.ExecutionPosition
+  - Meridian.Execution.Models.IMultiAccountPortfolioState
+  - Meridian.Execution.Models.IPortfolioState
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  - Meridian.Execution.Models.OrderAcknowledgement
+  - Meridian.Execution.Models.OrderGatewayCapabilities
+  - Meridian.Execution.Models.OrderStatus
+  - Meridian.Execution.Models.OrderStatusUpdate
+  - Meridian.Execution.Models.OrderValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Models.AccountKind
+  commentId: T:Meridian.Execution.Models.AccountKind
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.AccountKind.html
+  name: AccountKind
+  nameWithType: AccountKind
+  fullName: Meridian.Execution.Models.AccountKind
+- uid: Meridian.Execution.Models.ExecutionMode
+  commentId: T:Meridian.Execution.Models.ExecutionMode
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionMode.html
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Models.ExecutionMode
+- uid: Meridian.Execution.Models.ExecutionPosition
+  commentId: T:Meridian.Execution.Models.ExecutionPosition
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionPosition.html
+  name: ExecutionPosition
+  nameWithType: ExecutionPosition
+  fullName: Meridian.Execution.Models.ExecutionPosition
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+  commentId: T:Meridian.Execution.Models.IMultiAccountPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  name: IMultiAccountPortfolioState
+  nameWithType: IMultiAccountPortfolioState
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  commentId: T:Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html
+  name: MultiAccountPortfolioSnapshot
+  nameWithType: MultiAccountPortfolioSnapshot
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+- uid: Meridian.Execution.Models.IPortfolioState
+  commentId: T:Meridian.Execution.Models.IPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IPortfolioState.html
+  name: IPortfolioState
+  nameWithType: IPortfolioState
+  fullName: Meridian.Execution.Models.IPortfolioState
+- uid: Meridian.Execution.Models.OrderAcknowledgement
+  commentId: T:Meridian.Execution.Models.OrderAcknowledgement
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderAcknowledgement.html
+  name: OrderAcknowledgement
+  nameWithType: OrderAcknowledgement
+  fullName: Meridian.Execution.Models.OrderAcknowledgement
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities
+  commentId: T:Meridian.Execution.Models.OrderGatewayCapabilities
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html
+  name: OrderGatewayCapabilities
+  nameWithType: OrderGatewayCapabilities
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities
+- uid: Meridian.Execution.Models.OrderValidationResult
+  commentId: T:Meridian.Execution.Models.OrderValidationResult
+  href: Meridian.Execution.Models.OrderValidationResult.html
+  name: OrderValidationResult
+  nameWithType: OrderValidationResult
+  fullName: Meridian.Execution.Models.OrderValidationResult
+- uid: Meridian.Execution.Models.OrderStatus
+  commentId: T:Meridian.Execution.Models.OrderStatus
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Models.OrderStatus
+- uid: Meridian.Execution.Models.OrderStatusUpdate
+  commentId: T:Meridian.Execution.Models.OrderStatusUpdate
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderStatusUpdate.html
+  name: OrderStatusUpdate
+  nameWithType: OrderStatusUpdate
+  fullName: Meridian.Execution.Models.OrderStatusUpdate
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html

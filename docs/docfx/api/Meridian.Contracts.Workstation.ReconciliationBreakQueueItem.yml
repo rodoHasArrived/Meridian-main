@@ -1,0 +1,1050 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  id: ReconciliationBreakQueueItem
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.ReconciliationBreakCategory,Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus,System.Decimal,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.String,System.Nullable{System.DateTimeOffset},System.String,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName
+  - Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationBreakQueueItem
+  nameWithType: ReconciliationBreakQueueItem
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationBreakQueueItem
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Work item shown in the reconciliation break queue.
+  example: []
+  syntax:
+    content: 'public sealed record ReconciliationBreakQueueItem : IEquatable<ReconciliationBreakQueueItem>'
+    content.vb: Public NotInheritable Class ReconciliationBreakQueueItem Implements IEquatable(Of ReconciliationBreakQueueItem)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ReconciliationBreakQueueItem}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.ReconciliationBreakCategory,Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus,System.Decimal,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.String,System.Nullable{System.DateTimeOffset},System.String,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.ReconciliationBreakCategory,Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus,System.Decimal,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.String,System.Nullable{System.DateTimeOffset},System.String,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.ReconciliationBreakCategory,Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus,System.Decimal,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.String,System.Nullable{System.DateTimeOffset},System.String,System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationBreakQueueItem(string, string, string, ReconciliationBreakCategory, ReconciliationBreakQueueStatus, decimal, string, string?, DateTimeOffset, DateTimeOffset, string?, DateTimeOffset?, string?, DateTimeOffset?, string?)
+  nameWithType: ReconciliationBreakQueueItem.ReconciliationBreakQueueItem(string, string, string, ReconciliationBreakCategory, ReconciliationBreakQueueStatus, decimal, string, string?, DateTimeOffset, DateTimeOffset, string?, DateTimeOffset?, string?, DateTimeOffset?, string?)
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReconciliationBreakQueueItem(string, string, string, Meridian.Contracts.Workstation.ReconciliationBreakCategory, Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus, decimal, string, string?, System.DateTimeOffset, System.DateTimeOffset, string?, System.DateTimeOffset?, string?, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Work item shown in the reconciliation break queue.
+  example: []
+  syntax:
+    content: public ReconciliationBreakQueueItem(string BreakId, string RunId, string StrategyName, ReconciliationBreakCategory Category, ReconciliationBreakQueueStatus Status, decimal Variance, string Reason, string? AssignedTo, DateTimeOffset DetectedAt, DateTimeOffset LastUpdatedAt, string? ReviewedBy = null, DateTimeOffset? ReviewedAt = null, string? ResolvedBy = null, DateTimeOffset? ResolvedAt = null, string? ResolutionNote = null)
+    parameters:
+    - id: BreakId
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: Category
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+    - id: Status
+      type: Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus
+    - id: Variance
+      type: System.Decimal
+    - id: Reason
+      type: System.String
+    - id: AssignedTo
+      type: System.String
+    - id: DetectedAt
+      type: System.DateTimeOffset
+    - id: LastUpdatedAt
+      type: System.DateTimeOffset
+    - id: ReviewedBy
+      type: System.String
+    - id: ReviewedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ResolvedBy
+      type: System.String
+    - id: ResolvedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ResolutionNote
+      type: System.String
+    content.vb: Public Sub New(BreakId As String, RunId As String, StrategyName As String, Category As ReconciliationBreakCategory, Status As ReconciliationBreakQueueStatus, Variance As Decimal, Reason As String, AssignedTo As String, DetectedAt As DateTimeOffset, LastUpdatedAt As DateTimeOffset, ReviewedBy As String = Nothing, ReviewedAt As DateTimeOffset? = Nothing, ResolvedBy As String = Nothing, ResolvedAt As DateTimeOffset? = Nothing, ResolutionNote As String = Nothing)
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.#ctor*
+  nameWithType.vb: ReconciliationBreakQueueItem.New(String, String, String, ReconciliationBreakCategory, ReconciliationBreakQueueStatus, Decimal, String, String, DateTimeOffset, DateTimeOffset, String, DateTimeOffset?, String, DateTimeOffset?, String)
+  fullName.vb: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.New(String, String, String, Meridian.Contracts.Workstation.ReconciliationBreakCategory, Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus, Decimal, String, String, System.DateTimeOffset, System.DateTimeOffset, String, System.DateTimeOffset?, String, System.DateTimeOffset?, String)
+  name.vb: New(String, String, String, ReconciliationBreakCategory, ReconciliationBreakQueueStatus, Decimal, String, String, DateTimeOffset, DateTimeOffset, String, DateTimeOffset?, String, DateTimeOffset?, String)
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId
+  id: BreakId
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: BreakId
+  nameWithType: ReconciliationBreakQueueItem.BreakId
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BreakId
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string BreakId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BreakId As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ReconciliationBreakQueueItem.RunId
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName
+  id: StrategyName
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: ReconciliationBreakQueueItem.StrategyName
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category
+  id: Category
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: ReconciliationBreakQueueItem.Category
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ReconciliationBreakCategory Category { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+    content.vb: Public Property Category As ReconciliationBreakCategory
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status
+  id: Status
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ReconciliationBreakQueueItem.Status
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ReconciliationBreakQueueStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus
+    content.vb: Public Property Status As ReconciliationBreakQueueStatus
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance
+  id: Variance
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: Variance
+  nameWithType: ReconciliationBreakQueueItem.Variance
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Variance
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Variance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Variance As Decimal
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason
+  id: Reason
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: ReconciliationBreakQueueItem.Reason
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo
+  id: AssignedTo
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: AssignedTo
+  nameWithType: ReconciliationBreakQueueItem.AssignedTo
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssignedTo
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AssignedTo { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssignedTo As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt
+  id: DetectedAt
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: DetectedAt
+  nameWithType: ReconciliationBreakQueueItem.DetectedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedAt
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset DetectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property DetectedAt As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt
+  id: LastUpdatedAt
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: LastUpdatedAt
+  nameWithType: ReconciliationBreakQueueItem.LastUpdatedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdatedAt
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset LastUpdatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdatedAt As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy
+  id: ReviewedBy
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: ReviewedBy
+  nameWithType: ReconciliationBreakQueueItem.ReviewedBy
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewedBy
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ReviewedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReviewedBy As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt
+  id: ReviewedAt
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: ReviewedAt
+  nameWithType: ReconciliationBreakQueueItem.ReviewedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewedAt
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? ReviewedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ReviewedAt As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy
+  id: ResolvedBy
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: ResolvedBy
+  nameWithType: ReconciliationBreakQueueItem.ResolvedBy
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedBy
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ResolvedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ResolvedBy As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt
+  id: ResolvedAt
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: ResolvedAt
+  nameWithType: ReconciliationBreakQueueItem.ResolvedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedAt
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? ResolvedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ResolvedAt As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt*
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote
+  id: ResolutionNote
+  parent: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+  langs:
+  - csharp
+  - vb
+  name: ResolutionNote
+  nameWithType: ReconciliationBreakQueueItem.ResolutionNote
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolutionNote
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ResolutionNote { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ResolutionNote As String
+  overload: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ReconciliationBreakQueueItem}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ReconciliationBreakQueueItem}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconciliationBreakQueueItem>
+  nameWithType: IEquatable<ReconciliationBreakQueueItem>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ReconciliationBreakQueueItem>
+  nameWithType.vb: IEquatable(Of ReconciliationBreakQueueItem)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ReconciliationBreakQueueItem)
+  name.vb: IEquatable(Of ReconciliationBreakQueueItem)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+    name: ReconciliationBreakQueueItem
+    href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem
+    name: ReconciliationBreakQueueItem
+    href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.#ctor
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem__ctor_System_String_System_String_System_String_Meridian_Contracts_Workstation_ReconciliationBreakCategory_Meridian_Contracts_Workstation_ReconciliationBreakQueueStatus_System_Decimal_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_System_String_System_Nullable_System_DateTimeOffset__System_String_System_Nullable_System_DateTimeOffset__System_String_
+  name: ReconciliationBreakQueueItem
+  nameWithType: ReconciliationBreakQueueItem.ReconciliationBreakQueueItem
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReconciliationBreakQueueItem
+  nameWithType.vb: ReconciliationBreakQueueItem.New
+  fullName.vb: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakCategory
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationBreakCategory.html
+  name: ReconciliationBreakCategory
+  nameWithType: ReconciliationBreakCategory
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakCategory
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus.html
+  name: ReconciliationBreakQueueStatus
+  nameWithType: ReconciliationBreakQueueStatus
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_BreakId
+  name: BreakId
+  nameWithType: ReconciliationBreakQueueItem.BreakId
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.BreakId
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_RunId
+  name: RunId
+  nameWithType: ReconciliationBreakQueueItem.RunId
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.RunId
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_StrategyName
+  name: StrategyName
+  nameWithType: ReconciliationBreakQueueItem.StrategyName
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.StrategyName
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_Category
+  name: Category
+  nameWithType: ReconciliationBreakQueueItem.Category
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Category
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_Status
+  name: Status
+  nameWithType: ReconciliationBreakQueueItem.Status
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Status
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_Variance
+  name: Variance
+  nameWithType: ReconciliationBreakQueueItem.Variance
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Variance
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_Reason
+  name: Reason
+  nameWithType: ReconciliationBreakQueueItem.Reason
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.Reason
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_AssignedTo
+  name: AssignedTo
+  nameWithType: ReconciliationBreakQueueItem.AssignedTo
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.AssignedTo
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_DetectedAt
+  name: DetectedAt
+  nameWithType: ReconciliationBreakQueueItem.DetectedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.DetectedAt
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_LastUpdatedAt
+  name: LastUpdatedAt
+  nameWithType: ReconciliationBreakQueueItem.LastUpdatedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.LastUpdatedAt
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_ReviewedBy
+  name: ReviewedBy
+  nameWithType: ReconciliationBreakQueueItem.ReviewedBy
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedBy
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_ReviewedAt
+  name: ReviewedAt
+  nameWithType: ReconciliationBreakQueueItem.ReviewedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ReviewedAt
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_ResolvedBy
+  name: ResolvedBy
+  nameWithType: ReconciliationBreakQueueItem.ResolvedBy
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedBy
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_ResolvedAt
+  name: ResolvedAt
+  nameWithType: ReconciliationBreakQueueItem.ResolvedAt
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolvedAt
+- uid: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote
+  href: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.html#Meridian_Contracts_Workstation_ReconciliationBreakQueueItem_ResolutionNote
+  name: ResolutionNote
+  nameWithType: ReconciliationBreakQueueItem.ResolutionNote
+  fullName: Meridian.Contracts.Workstation.ReconciliationBreakQueueItem.ResolutionNote

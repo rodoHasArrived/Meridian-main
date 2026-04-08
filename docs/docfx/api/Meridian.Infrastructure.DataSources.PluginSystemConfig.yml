@@ -1,0 +1,936 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  commentId: T:Meridian.Infrastructure.DataSources.PluginSystemConfig
+  id: PluginSystemConfig
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions
+  - Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies
+  langs:
+  - csharp
+  - vb
+  name: PluginSystemConfig
+  nameWithType: PluginSystemConfig
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PluginSystemConfig
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Configuration for the plugin system.
+  example: []
+  syntax:
+    content: 'public sealed record PluginSystemConfig : IEquatable<PluginSystemConfig>'
+    content.vb: Public NotInheritable Class PluginSystemConfig Implements IEquatable(Of PluginSystemConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.PluginSystemConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled
+  id: Enabled
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: PluginSystemConfig.Enabled
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether the plugin system is enabled.
+  example: []
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory
+  id: PluginDirectory
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: PluginDirectory
+  nameWithType: PluginSystemConfig.PluginDirectory
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PluginDirectory
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Primary directory for plugins.
+  example: []
+  syntax:
+    content: public string PluginDirectory { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PluginDirectory As String
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories
+  id: AdditionalDirectories
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: AdditionalDirectories
+  nameWithType: PluginSystemConfig.AdditionalDirectories
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdditionalDirectories
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Additional directories to scan for plugins.
+  example: []
+  syntax:
+    content: public string[] AdditionalDirectories { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property AdditionalDirectories As String()
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload
+  id: EnableHotReload
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: EnableHotReload
+  nameWithType: PluginSystemConfig.EnableHotReload
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableHotReload
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether to enable hot reload when plugin files change.
+  example: []
+  syntax:
+    content: public bool EnableHotReload { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableHotReload As Boolean
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching
+  id: EnableDirectoryWatching
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: EnableDirectoryWatching
+  nameWithType: PluginSystemConfig.EnableDirectoryWatching
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableDirectoryWatching
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether to watch directories for new plugins.
+  example: []
+  syntax:
+    content: public bool EnableDirectoryWatching { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableDirectoryWatching As Boolean
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins
+  id: AutoLoadNewPlugins
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: AutoLoadNewPlugins
+  nameWithType: PluginSystemConfig.AutoLoadNewPlugins
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoLoadNewPlugins
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether to automatically load new plugins added to directories.
+  example: []
+  syntax:
+    content: public bool AutoLoadNewPlugins { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AutoLoadNewPlugins As Boolean
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs
+  id: HotReloadDebounceMs
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: HotReloadDebounceMs
+  nameWithType: PluginSystemConfig.HotReloadDebounceMs
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotReloadDebounceMs
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Hot reload debounce time in milliseconds.
+  example: []
+  syntax:
+    content: public int HotReloadDebounceMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HotReloadDebounceMs As Integer
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions
+  id: DefaultPermissions
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultPermissions
+  nameWithType: PluginSystemConfig.DefaultPermissions
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultPermissions
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Default permissions granted to plugins.
+  example: []
+  syntax:
+    content: public string[] DefaultPermissions { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property DefaultPermissions As String()
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions
+  id: RequireExplicitPermissions
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: RequireExplicitPermissions
+  nameWithType: PluginSystemConfig.RequireExplicitPermissions
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequireExplicitPermissions
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether plugins must explicitly request permissions.
+  example: []
+  syntax:
+    content: public bool RequireExplicitPermissions { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property RequireExplicitPermissions As Boolean
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies
+  id: SharedAssemblies
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: SharedAssemblies
+  nameWithType: PluginSystemConfig.SharedAssemblies
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharedAssemblies
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Additional assemblies to share with plugins.
+  example: []
+  syntax:
+    content: public string[] SharedAssemblies { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property SharedAssemblies As String()
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies*
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs
+  commentId: P:Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs
+  id: PluginConfigs
+  parent: Meridian.Infrastructure.DataSources.PluginSystemConfig
+  langs:
+  - csharp
+  - vb
+  name: PluginConfigs
+  nameWithType: PluginSystemConfig.PluginConfigs
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PluginConfigs
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Plugin-specific configurations keyed by plugin ID.
+  example: []
+  syntax:
+    content: public Dictionary<string, PluginInstanceConfig> PluginConfigs { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Infrastructure.DataSources.PluginInstanceConfig}
+    content.vb: Public Property PluginConfigs As Dictionary(Of String, PluginInstanceConfig)
+  overload: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.PluginSystemConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.PluginSystemConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PluginSystemConfig>
+  nameWithType: IEquatable<PluginSystemConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.PluginSystemConfig>
+  nameWithType.vb: IEquatable(Of PluginSystemConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.PluginSystemConfig)
+  name.vb: IEquatable(Of PluginSystemConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.PluginSystemConfig
+    name: PluginSystemConfig
+    href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.PluginSystemConfig
+    name: PluginSystemConfig
+    href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_Enabled
+  name: Enabled
+  nameWithType: PluginSystemConfig.Enabled
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_PluginDirectory
+  name: PluginDirectory
+  nameWithType: PluginSystemConfig.PluginDirectory
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginDirectory
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_AdditionalDirectories
+  name: AdditionalDirectories
+  nameWithType: PluginSystemConfig.AdditionalDirectories
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.AdditionalDirectories
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_EnableHotReload
+  name: EnableHotReload
+  nameWithType: PluginSystemConfig.EnableHotReload
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableHotReload
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_EnableDirectoryWatching
+  name: EnableDirectoryWatching
+  nameWithType: PluginSystemConfig.EnableDirectoryWatching
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.EnableDirectoryWatching
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_AutoLoadNewPlugins
+  name: AutoLoadNewPlugins
+  nameWithType: PluginSystemConfig.AutoLoadNewPlugins
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.AutoLoadNewPlugins
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_HotReloadDebounceMs
+  name: HotReloadDebounceMs
+  nameWithType: PluginSystemConfig.HotReloadDebounceMs
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.HotReloadDebounceMs
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_DefaultPermissions
+  name: DefaultPermissions
+  nameWithType: PluginSystemConfig.DefaultPermissions
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.DefaultPermissions
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_RequireExplicitPermissions
+  name: RequireExplicitPermissions
+  nameWithType: PluginSystemConfig.RequireExplicitPermissions
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.RequireExplicitPermissions
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_SharedAssemblies
+  name: SharedAssemblies
+  nameWithType: PluginSystemConfig.SharedAssemblies
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.SharedAssemblies
+- uid: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs*
+  commentId: Overload:Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs
+  href: Meridian.Infrastructure.DataSources.PluginSystemConfig.html#Meridian_Infrastructure_DataSources_PluginSystemConfig_PluginConfigs
+  name: PluginConfigs
+  nameWithType: PluginSystemConfig.PluginConfigs
+  fullName: Meridian.Infrastructure.DataSources.PluginSystemConfig.PluginConfigs
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Infrastructure.DataSources.PluginInstanceConfig}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Infrastructure.DataSources.PluginInstanceConfig}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, PluginInstanceConfig>
+  nameWithType: Dictionary<string, PluginInstanceConfig>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Infrastructure.DataSources.PluginInstanceConfig>
+  nameWithType.vb: Dictionary(Of String, PluginInstanceConfig)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Infrastructure.DataSources.PluginInstanceConfig)
+  name.vb: Dictionary(Of String, PluginInstanceConfig)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.PluginInstanceConfig
+    name: PluginInstanceConfig
+    href: Meridian.Infrastructure.DataSources.PluginInstanceConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.PluginInstanceConfig
+    name: PluginInstanceConfig
+    href: Meridian.Infrastructure.DataSources.PluginInstanceConfig.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

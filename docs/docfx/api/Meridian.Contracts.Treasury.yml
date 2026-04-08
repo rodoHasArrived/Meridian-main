@@ -1,0 +1,97 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Treasury
+  commentId: N:Meridian.Contracts.Treasury
+  id: Meridian.Contracts.Treasury
+  children:
+  - Meridian.Contracts.Treasury.MmfDetailDto
+  - Meridian.Contracts.Treasury.MmfFundFamilyDto
+  - Meridian.Contracts.Treasury.MmfLiquidityDto
+  - Meridian.Contracts.Treasury.MmfLiquidityState
+  - Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  - Meridian.Contracts.Treasury.MmfSearchQuery
+  - Meridian.Contracts.Treasury.MmfSweepProfileDto
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Treasury
+  nameWithType: Meridian.Contracts.Treasury
+  fullName: Meridian.Contracts.Treasury
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState
+  commentId: T:Meridian.Contracts.Treasury.MmfLiquidityState
+  parent: Meridian.Contracts.Treasury
+  href: Meridian.Contracts.Treasury.MmfLiquidityState.html
+  name: MmfLiquidityState
+  nameWithType: MmfLiquidityState
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState
+- uid: Meridian.Contracts.Treasury.MmfDetailDto
+  commentId: T:Meridian.Contracts.Treasury.MmfDetailDto
+  href: Meridian.Contracts.Treasury.MmfDetailDto.html
+  name: MmfDetailDto
+  nameWithType: MmfDetailDto
+  fullName: Meridian.Contracts.Treasury.MmfDetailDto
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+  commentId: T:Meridian.Contracts.Treasury.MmfLiquidityDto
+  href: Meridian.Contracts.Treasury.MmfLiquidityDto.html
+  name: MmfLiquidityDto
+  nameWithType: MmfLiquidityDto
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto
+- uid: Meridian.Contracts.Treasury.MmfSweepProfileDto
+  commentId: T:Meridian.Contracts.Treasury.MmfSweepProfileDto
+  href: Meridian.Contracts.Treasury.MmfSweepProfileDto.html
+  name: MmfSweepProfileDto
+  nameWithType: MmfSweepProfileDto
+  fullName: Meridian.Contracts.Treasury.MmfSweepProfileDto
+- uid: Meridian.Contracts.Treasury.MmfFundFamilyDto
+  commentId: T:Meridian.Contracts.Treasury.MmfFundFamilyDto
+  href: Meridian.Contracts.Treasury.MmfFundFamilyDto.html
+  name: MmfFundFamilyDto
+  nameWithType: MmfFundFamilyDto
+  fullName: Meridian.Contracts.Treasury.MmfFundFamilyDto
+- uid: Meridian.Contracts.Treasury.MmfSearchQuery
+  commentId: T:Meridian.Contracts.Treasury.MmfSearchQuery
+  parent: Meridian.Contracts.Treasury
+  href: Meridian.Contracts.Treasury.MmfSearchQuery.html
+  name: MmfSearchQuery
+  nameWithType: MmfSearchQuery
+  fullName: Meridian.Contracts.Treasury.MmfSearchQuery
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  commentId: T:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html
+  name: MmfRebuildCheckpointDto
+  nameWithType: MmfRebuildCheckpointDto
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+- uid: Meridian.Contracts.Treasury
+  commentId: N:Meridian.Contracts.Treasury
+  href: Meridian.html
+  name: Meridian.Contracts.Treasury
+  nameWithType: Meridian.Contracts.Treasury
+  fullName: Meridian.Contracts.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html

@@ -1,0 +1,122 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  id: Meridian.Application.Backfill
+  children:
+  - Meridian.Application.Backfill.BackfillCostEstimate
+  - Meridian.Application.Backfill.BackfillCostEstimator
+  - Meridian.Application.Backfill.BackfillCostRequest
+  - Meridian.Application.Backfill.BackfillRequest
+  - Meridian.Application.Backfill.BackfillResult
+  - Meridian.Application.Backfill.BackfillStatusStore
+  - Meridian.Application.Backfill.GapBackfillService
+  - Meridian.Application.Backfill.HistoricalBackfillService
+  - Meridian.Application.Backfill.ProviderCostEstimate
+  - Meridian.Application.Backfill.SymbolValidationSignal
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Backfill.BackfillCostEstimator
+  commentId: T:Meridian.Application.Backfill.BackfillCostEstimator
+  href: Meridian.Application.Backfill.BackfillCostEstimator.html
+  name: BackfillCostEstimator
+  nameWithType: BackfillCostEstimator
+  fullName: Meridian.Application.Backfill.BackfillCostEstimator
+- uid: Meridian.Application.Backfill.BackfillCostRequest
+  commentId: T:Meridian.Application.Backfill.BackfillCostRequest
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillCostRequest.html
+  name: BackfillCostRequest
+  nameWithType: BackfillCostRequest
+  fullName: Meridian.Application.Backfill.BackfillCostRequest
+- uid: Meridian.Application.Backfill.BackfillCostEstimate
+  commentId: T:Meridian.Application.Backfill.BackfillCostEstimate
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html
+  name: BackfillCostEstimate
+  nameWithType: BackfillCostEstimate
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate
+- uid: Meridian.Application.Backfill.ProviderCostEstimate
+  commentId: T:Meridian.Application.Backfill.ProviderCostEstimate
+  href: Meridian.Application.Backfill.ProviderCostEstimate.html
+  name: ProviderCostEstimate
+  nameWithType: ProviderCostEstimate
+  fullName: Meridian.Application.Backfill.ProviderCostEstimate
+- uid: Meridian.Application.Backfill.BackfillRequest
+  commentId: T:Meridian.Application.Backfill.BackfillRequest
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillRequest.html
+  name: BackfillRequest
+  nameWithType: BackfillRequest
+  fullName: Meridian.Application.Backfill.BackfillRequest
+- uid: Meridian.Application.Backfill.BackfillResult
+  commentId: T:Meridian.Application.Backfill.BackfillResult
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillResult.html
+  name: BackfillResult
+  nameWithType: BackfillResult
+  fullName: Meridian.Application.Backfill.BackfillResult
+- uid: Meridian.Application.Backfill.BackfillStatusStore
+  commentId: T:Meridian.Application.Backfill.BackfillStatusStore
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillStatusStore.html
+  name: BackfillStatusStore
+  nameWithType: BackfillStatusStore
+  fullName: Meridian.Application.Backfill.BackfillStatusStore
+- uid: Meridian.Application.Backfill.GapBackfillService
+  commentId: T:Meridian.Application.Backfill.GapBackfillService
+  href: Meridian.Application.Backfill.GapBackfillService.html
+  name: GapBackfillService
+  nameWithType: GapBackfillService
+  fullName: Meridian.Application.Backfill.GapBackfillService
+- uid: Meridian.Application.Backfill.HistoricalBackfillService
+  commentId: T:Meridian.Application.Backfill.HistoricalBackfillService
+  href: Meridian.Application.Backfill.HistoricalBackfillService.html
+  name: HistoricalBackfillService
+  nameWithType: HistoricalBackfillService
+  fullName: Meridian.Application.Backfill.HistoricalBackfillService
+- uid: Meridian.Application.Backfill.SymbolValidationSignal
+  commentId: T:Meridian.Application.Backfill.SymbolValidationSignal
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.SymbolValidationSignal.html
+  name: SymbolValidationSignal
+  nameWithType: SymbolValidationSignal
+  fullName: Meridian.Application.Backfill.SymbolValidationSignal
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  href: Meridian.html
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html

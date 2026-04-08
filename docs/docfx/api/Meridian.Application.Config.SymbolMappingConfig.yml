@@ -1,0 +1,665 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.SymbolMappingConfig
+  commentId: T:Meridian.Application.Config.SymbolMappingConfig
+  id: SymbolMappingConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.SymbolMappingConfig.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol
+  - Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol
+  - Meridian.Application.Config.SymbolMappingConfig.Figi
+  - Meridian.Application.Config.SymbolMappingConfig.IbSymbol
+  - Meridian.Application.Config.SymbolMappingConfig.Name
+  - Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol
+  - Meridian.Application.Config.SymbolMappingConfig.YahooSymbol
+  langs:
+  - csharp
+  - vb
+  name: SymbolMappingConfig
+  nameWithType: SymbolMappingConfig
+  fullName: Meridian.Application.Config.SymbolMappingConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolMappingConfig
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for a single symbol mapping.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolMappingConfig : IEquatable<SymbolMappingConfig>'
+    content.vb: Public NotInheritable Class SymbolMappingConfig Implements IEquatable(Of SymbolMappingConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.SymbolMappingConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.SymbolMappingConfig.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Config.SymbolMappingConfig.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: SymbolMappingConfig(string, string?, string?, string?, string?, string?, string?)
+  nameWithType: SymbolMappingConfig.SymbolMappingConfig(string, string?, string?, string?, string?, string?, string?)
+  fullName: Meridian.Application.Config.SymbolMappingConfig.SymbolMappingConfig(string, string?, string?, string?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for a single symbol mapping.
+  example: []
+  syntax:
+    content: public SymbolMappingConfig(string CanonicalSymbol, string? IbSymbol = null, string? AlpacaSymbol = null, string? PolygonSymbol = null, string? YahooSymbol = null, string? Name = null, string? Figi = null)
+    parameters:
+    - id: CanonicalSymbol
+      type: System.String
+    - id: IbSymbol
+      type: System.String
+    - id: AlpacaSymbol
+      type: System.String
+    - id: PolygonSymbol
+      type: System.String
+    - id: YahooSymbol
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Figi
+      type: System.String
+    content.vb: Public Sub New(CanonicalSymbol As String, IbSymbol As String = Nothing, AlpacaSymbol As String = Nothing, PolygonSymbol As String = Nothing, YahooSymbol As String = Nothing, Name As String = Nothing, Figi As String = Nothing)
+  overload: Meridian.Application.Config.SymbolMappingConfig.#ctor*
+  nameWithType.vb: SymbolMappingConfig.New(String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Application.Config.SymbolMappingConfig.New(String, String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String, String)
+- uid: Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol
+  id: CanonicalSymbol
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: CanonicalSymbol
+  nameWithType: SymbolMappingConfig.CanonicalSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalSymbol
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string CanonicalSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CanonicalSymbol As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol*
+- uid: Meridian.Application.Config.SymbolMappingConfig.IbSymbol
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.IbSymbol
+  id: IbSymbol
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: IbSymbol
+  nameWithType: SymbolMappingConfig.IbSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.IbSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IbSymbol
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? IbSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IbSymbol As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.IbSymbol*
+- uid: Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol
+  id: AlpacaSymbol
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: AlpacaSymbol
+  nameWithType: SymbolMappingConfig.AlpacaSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaSymbol
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? AlpacaSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AlpacaSymbol As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol*
+- uid: Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol
+  id: PolygonSymbol
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: PolygonSymbol
+  nameWithType: SymbolMappingConfig.PolygonSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonSymbol
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? PolygonSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PolygonSymbol As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol*
+- uid: Meridian.Application.Config.SymbolMappingConfig.YahooSymbol
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.YahooSymbol
+  id: YahooSymbol
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: YahooSymbol
+  nameWithType: SymbolMappingConfig.YahooSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.YahooSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: YahooSymbol
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? YahooSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property YahooSymbol As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.YahooSymbol*
+- uid: Meridian.Application.Config.SymbolMappingConfig.Name
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.Name
+  id: Name
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SymbolMappingConfig.Name
+  fullName: Meridian.Application.Config.SymbolMappingConfig.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.Name*
+- uid: Meridian.Application.Config.SymbolMappingConfig.Figi
+  commentId: P:Meridian.Application.Config.SymbolMappingConfig.Figi
+  id: Figi
+  parent: Meridian.Application.Config.SymbolMappingConfig
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: SymbolMappingConfig.Figi
+  fullName: Meridian.Application.Config.SymbolMappingConfig.Figi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 309
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? Figi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Figi As String
+  overload: Meridian.Application.Config.SymbolMappingConfig.Figi*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.SymbolMappingConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.SymbolMappingConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolMappingConfig>
+  nameWithType: IEquatable<SymbolMappingConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.SymbolMappingConfig>
+  nameWithType.vb: IEquatable(Of SymbolMappingConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.SymbolMappingConfig)
+  name.vb: IEquatable(Of SymbolMappingConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.SymbolMappingConfig
+    name: SymbolMappingConfig
+    href: Meridian.Application.Config.SymbolMappingConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.SymbolMappingConfig
+    name: SymbolMappingConfig
+    href: Meridian.Application.Config.SymbolMappingConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.SymbolMappingConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.#ctor
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: SymbolMappingConfig
+  nameWithType: SymbolMappingConfig.SymbolMappingConfig
+  fullName: Meridian.Application.Config.SymbolMappingConfig.SymbolMappingConfig
+  nameWithType.vb: SymbolMappingConfig.New
+  fullName.vb: Meridian.Application.Config.SymbolMappingConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_CanonicalSymbol
+  name: CanonicalSymbol
+  nameWithType: SymbolMappingConfig.CanonicalSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.CanonicalSymbol
+- uid: Meridian.Application.Config.SymbolMappingConfig.IbSymbol*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.IbSymbol
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_IbSymbol
+  name: IbSymbol
+  nameWithType: SymbolMappingConfig.IbSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.IbSymbol
+- uid: Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_AlpacaSymbol
+  name: AlpacaSymbol
+  nameWithType: SymbolMappingConfig.AlpacaSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.AlpacaSymbol
+- uid: Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_PolygonSymbol
+  name: PolygonSymbol
+  nameWithType: SymbolMappingConfig.PolygonSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.PolygonSymbol
+- uid: Meridian.Application.Config.SymbolMappingConfig.YahooSymbol*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.YahooSymbol
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_YahooSymbol
+  name: YahooSymbol
+  nameWithType: SymbolMappingConfig.YahooSymbol
+  fullName: Meridian.Application.Config.SymbolMappingConfig.YahooSymbol
+- uid: Meridian.Application.Config.SymbolMappingConfig.Name*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.Name
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_Name
+  name: Name
+  nameWithType: SymbolMappingConfig.Name
+  fullName: Meridian.Application.Config.SymbolMappingConfig.Name
+- uid: Meridian.Application.Config.SymbolMappingConfig.Figi*
+  commentId: Overload:Meridian.Application.Config.SymbolMappingConfig.Figi
+  href: Meridian.Application.Config.SymbolMappingConfig.html#Meridian_Application_Config_SymbolMappingConfig_Figi
+  name: Figi
+  nameWithType: SymbolMappingConfig.Figi
+  fullName: Meridian.Application.Config.SymbolMappingConfig.Figi

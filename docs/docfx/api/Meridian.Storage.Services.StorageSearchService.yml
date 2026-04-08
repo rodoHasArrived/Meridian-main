@@ -1,0 +1,1396 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.StorageSearchService
+  commentId: T:Meridian.Storage.Services.StorageSearchService
+  id: StorageSearchService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.StorageSearchService.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Policies.JsonlStoragePolicy)
+  - Meridian.Storage.Services.StorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery(System.String)
+  - Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.StorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.StorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StorageSearchService
+  nameWithType: StorageSearchService
+  fullName: Meridian.Storage.Services.StorageSearchService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageSearchService
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Service for searching and discovering data across storage.
+
+    Provides multi-level indexing and faceted search capabilities.
+  example: []
+  syntax:
+    content: 'public sealed class StorageSearchService : IStorageSearchService'
+    content.vb: Public NotInheritable Class StorageSearchService Implements IStorageSearchService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.StorageSearchService.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Policies.JsonlStoragePolicy)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Policies.JsonlStoragePolicy)
+  id: '#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry,Meridian.Storage.Policies.JsonlStoragePolicy)'
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: StorageSearchService(StorageOptions, ISourceRegistry?, JsonlStoragePolicy?)
+  nameWithType: StorageSearchService.StorageSearchService(StorageOptions, ISourceRegistry?, JsonlStoragePolicy?)
+  fullName: Meridian.Storage.Services.StorageSearchService.StorageSearchService(Meridian.Storage.StorageOptions, Meridian.Storage.Interfaces.ISourceRegistry?, Meridian.Storage.Policies.JsonlStoragePolicy?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public StorageSearchService(StorageOptions options, ISourceRegistry? sourceRegistry = null, JsonlStoragePolicy? pathParser = null)
+    parameters:
+    - id: options
+      type: Meridian.Storage.StorageOptions
+    - id: sourceRegistry
+      type: Meridian.Storage.Interfaces.ISourceRegistry
+    - id: pathParser
+      type: Meridian.Storage.Policies.JsonlStoragePolicy
+    content.vb: Public Sub New(options As StorageOptions, sourceRegistry As ISourceRegistry = Nothing, pathParser As JsonlStoragePolicy = Nothing)
+  overload: Meridian.Storage.Services.StorageSearchService.#ctor*
+  nameWithType.vb: StorageSearchService.New(StorageOptions, ISourceRegistry, JsonlStoragePolicy)
+  fullName.vb: Meridian.Storage.Services.StorageSearchService.New(Meridian.Storage.StorageOptions, Meridian.Storage.Interfaces.ISourceRegistry, Meridian.Storage.Policies.JsonlStoragePolicy)
+  name.vb: New(StorageOptions, ISourceRegistry, JsonlStoragePolicy)
+- uid: Meridian.Storage.Services.StorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+  id: SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: SearchFilesAsync(FileSearchQuery, CancellationToken)
+  nameWithType: StorageSearchService.SearchFilesAsync(FileSearchQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.StorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchFilesAsync
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<SearchResult<FileSearchResult>> SearchFilesAsync(FileSearchQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Storage.Services.FileSearchQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.SearchResult{Meridian.Storage.Services.FileSearchResult}}
+    content.vb: Public Function SearchFilesAsync(query As FileSearchQuery, ct As CancellationToken = Nothing) As Task(Of SearchResult(Of FileSearchResult))
+  overload: Meridian.Storage.Services.StorageSearchService.SearchFilesAsync*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Services.StorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+  id: SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: SearchEventsAsync(EventSearchQuery, CancellationToken)
+  nameWithType: StorageSearchService.SearchEventsAsync(EventSearchQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.StorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchEventsAsync
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<SearchResult<EventSearchResult>> SearchEventsAsync(EventSearchQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Storage.Services.EventSearchQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.SearchResult{Meridian.Storage.Services.EventSearchResult}}
+    content.vb: Public Function SearchEventsAsync(query As EventSearchQuery, ct As CancellationToken = Nothing) As Task(Of SearchResult(Of EventSearchResult))
+  overload: Meridian.Storage.Services.StorageSearchService.SearchEventsAsync*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Services.StorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+  id: DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: DiscoverAsync(DiscoveryQuery, CancellationToken)
+  nameWithType: StorageSearchService.DiscoverAsync(DiscoveryQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.StorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscoverAsync
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<DataCatalog> DiscoverAsync(DiscoveryQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Storage.Services.DiscoveryQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.DataCatalog}
+    content.vb: Public Function DiscoverAsync(query As DiscoveryQuery, ct As CancellationToken = Nothing) As Task(Of DataCatalog)
+  overload: Meridian.Storage.Services.StorageSearchService.DiscoverAsync*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+  id: SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: SearchWithFacetsAsync(FacetedSearchQuery, CancellationToken)
+  nameWithType: StorageSearchService.SearchWithFacetsAsync(FacetedSearchQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchWithFacetsAsync
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<FacetedSearchResult> SearchWithFacetsAsync(FacetedSearchQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Storage.Services.FacetedSearchQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.FacetedSearchResult}
+    content.vb: Public Function SearchWithFacetsAsync(query As FacetedSearchQuery, ct As CancellationToken = Nothing) As Task(Of FacetedSearchResult)
+  overload: Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery(System.String)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery(System.String)
+  id: ParseNaturalLanguageQuery(System.String)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: ParseNaturalLanguageQuery(string)
+  nameWithType: StorageSearchService.ParseNaturalLanguageQuery(string)
+  fullName: Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseNaturalLanguageQuery
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public StorageQuery? ParseNaturalLanguageQuery(string naturalQuery)
+    parameters:
+    - id: naturalQuery
+      type: System.String
+    return:
+      type: Meridian.Storage.Services.StorageQuery
+    content.vb: Public Function ParseNaturalLanguageQuery(naturalQuery As String) As StorageQuery
+  overload: Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(System.String)
+  nameWithType.vb: StorageSearchService.ParseNaturalLanguageQuery(String)
+  fullName.vb: Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery(String)
+  name.vb: ParseNaturalLanguageQuery(String)
+- uid: Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  id: UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: UpdateIndexAsync(string, IndexUpdateType, CancellationToken)
+  nameWithType: StorageSearchService.UpdateIndexAsync(string, IndexUpdateType, CancellationToken)
+  fullName: Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync(string, Meridian.Storage.Services.IndexUpdateType, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateIndexAsync
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: updateType
+      type: Meridian.Storage.Services.IndexUpdateType
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateIndexAsync(filePath As String, updateType As IndexUpdateType, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  nameWithType.vb: StorageSearchService.UpdateIndexAsync(String, IndexUpdateType, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync(String, Meridian.Storage.Services.IndexUpdateType, System.Threading.CancellationToken)
+  name.vb: UpdateIndexAsync(String, IndexUpdateType, CancellationToken)
+- uid: Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  id: RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.StorageSearchService
+  langs:
+  - csharp
+  - vb
+  name: RebuildIndexAsync(string[], RebuildOptions, CancellationToken)
+  nameWithType: StorageSearchService.RebuildIndexAsync(string[], RebuildOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync(string[], Meridian.Storage.Services.RebuildOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildIndexAsync
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 387
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default)
+    parameters:
+    - id: paths
+      type: System.String[]
+    - id: options
+      type: Meridian.Storage.Services.RebuildOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RebuildIndexAsync(paths As String(), options As RebuildOptions, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync*
+  implements:
+  - Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  nameWithType.vb: StorageSearchService.RebuildIndexAsync(String(), RebuildOptions, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync(String(), Meridian.Storage.Services.RebuildOptions, System.Threading.CancellationToken)
+  name.vb: RebuildIndexAsync(String(), RebuildOptions, CancellationToken)
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Services.IStorageSearchService
+  commentId: T:Meridian.Storage.Services.IStorageSearchService
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IStorageSearchService.html
+  name: IStorageSearchService
+  nameWithType: IStorageSearchService
+  fullName: Meridian.Storage.Services.IStorageSearchService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.StorageSearchService.#ctor*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.#ctor
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService__ctor_Meridian_Storage_StorageOptions_Meridian_Storage_Interfaces_ISourceRegistry_Meridian_Storage_Policies_JsonlStoragePolicy_
+  name: StorageSearchService
+  nameWithType: StorageSearchService.StorageSearchService
+  fullName: Meridian.Storage.Services.StorageSearchService.StorageSearchService
+  nameWithType.vb: StorageSearchService.New
+  fullName.vb: Meridian.Storage.Services.StorageSearchService.New
+  name.vb: New
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Meridian.Storage.Interfaces.ISourceRegistry
+  commentId: T:Meridian.Storage.Interfaces.ISourceRegistry
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html
+  name: ISourceRegistry
+  nameWithType: ISourceRegistry
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry
+- uid: Meridian.Storage.Policies.JsonlStoragePolicy
+  commentId: T:Meridian.Storage.Policies.JsonlStoragePolicy
+  parent: Meridian.Storage.Policies
+  href: Meridian.Storage.Policies.JsonlStoragePolicy.html
+  name: JsonlStoragePolicy
+  nameWithType: JsonlStoragePolicy
+  fullName: Meridian.Storage.Policies.JsonlStoragePolicy
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Policies
+  commentId: N:Meridian.Storage.Policies
+  href: Meridian.html
+  name: Meridian.Storage.Policies
+  nameWithType: Meridian.Storage.Policies
+  fullName: Meridian.Storage.Policies
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Policies
+    name: Policies
+    href: Meridian.Storage.Policies.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Policies
+    name: Policies
+    href: Meridian.Storage.Policies.html
+- uid: Meridian.Storage.Services.StorageSearchService.SearchFilesAsync*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.SearchFilesAsync
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_SearchFilesAsync_Meridian_Storage_Services_FileSearchQuery_System_Threading_CancellationToken_
+  name: SearchFilesAsync
+  nameWithType: StorageSearchService.SearchFilesAsync
+  fullName: Meridian.Storage.Services.StorageSearchService.SearchFilesAsync
+- uid: Meridian.Storage.Services.IStorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchFilesAsync_Meridian_Storage_Services_FileSearchQuery_System_Threading_CancellationToken_
+  name: SearchFilesAsync(FileSearchQuery, CancellationToken)
+  nameWithType: IStorageSearchService.SearchFilesAsync(FileSearchQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.IStorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+    name: SearchFilesAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchFilesAsync_Meridian_Storage_Services_FileSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.FileSearchQuery
+    name: FileSearchQuery
+    href: Meridian.Storage.Services.FileSearchQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.SearchFilesAsync(Meridian.Storage.Services.FileSearchQuery,System.Threading.CancellationToken)
+    name: SearchFilesAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchFilesAsync_Meridian_Storage_Services_FileSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.FileSearchQuery
+    name: FileSearchQuery
+    href: Meridian.Storage.Services.FileSearchQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Storage.Services.FileSearchQuery
+  commentId: T:Meridian.Storage.Services.FileSearchQuery
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.FileSearchQuery.html
+  name: FileSearchQuery
+  nameWithType: FileSearchQuery
+  fullName: Meridian.Storage.Services.FileSearchQuery
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.SearchResult{Meridian.Storage.Services.FileSearchResult}}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.SearchResult{Meridian.Storage.Services.FileSearchResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SearchResult<FileSearchResult>>
+  nameWithType: Task<SearchResult<FileSearchResult>>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.SearchResult<Meridian.Storage.Services.FileSearchResult>>
+  nameWithType.vb: Task(Of SearchResult(Of FileSearchResult))
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.SearchResult(Of Meridian.Storage.Services.FileSearchResult))
+  name.vb: Task(Of SearchResult(Of FileSearchResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.SearchResult`1
+    name: SearchResult
+    href: Meridian.Storage.Services.SearchResult-1.html
+  - name: <
+  - uid: Meridian.Storage.Services.FileSearchResult
+    name: FileSearchResult
+    href: Meridian.Storage.Services.FileSearchResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.SearchResult`1
+    name: SearchResult
+    href: Meridian.Storage.Services.SearchResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.FileSearchResult
+    name: FileSearchResult
+    href: Meridian.Storage.Services.FileSearchResult.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.StorageSearchService.SearchEventsAsync*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.SearchEventsAsync
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_SearchEventsAsync_Meridian_Storage_Services_EventSearchQuery_System_Threading_CancellationToken_
+  name: SearchEventsAsync
+  nameWithType: StorageSearchService.SearchEventsAsync
+  fullName: Meridian.Storage.Services.StorageSearchService.SearchEventsAsync
+- uid: Meridian.Storage.Services.IStorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchEventsAsync_Meridian_Storage_Services_EventSearchQuery_System_Threading_CancellationToken_
+  name: SearchEventsAsync(EventSearchQuery, CancellationToken)
+  nameWithType: IStorageSearchService.SearchEventsAsync(EventSearchQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.IStorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+    name: SearchEventsAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchEventsAsync_Meridian_Storage_Services_EventSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.EventSearchQuery
+    name: EventSearchQuery
+    href: Meridian.Storage.Services.EventSearchQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.SearchEventsAsync(Meridian.Storage.Services.EventSearchQuery,System.Threading.CancellationToken)
+    name: SearchEventsAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchEventsAsync_Meridian_Storage_Services_EventSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.EventSearchQuery
+    name: EventSearchQuery
+    href: Meridian.Storage.Services.EventSearchQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Storage.Services.EventSearchQuery
+  commentId: T:Meridian.Storage.Services.EventSearchQuery
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.EventSearchQuery.html
+  name: EventSearchQuery
+  nameWithType: EventSearchQuery
+  fullName: Meridian.Storage.Services.EventSearchQuery
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.SearchResult{Meridian.Storage.Services.EventSearchResult}}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.SearchResult{Meridian.Storage.Services.EventSearchResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SearchResult<EventSearchResult>>
+  nameWithType: Task<SearchResult<EventSearchResult>>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.SearchResult<Meridian.Storage.Services.EventSearchResult>>
+  nameWithType.vb: Task(Of SearchResult(Of EventSearchResult))
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.SearchResult(Of Meridian.Storage.Services.EventSearchResult))
+  name.vb: Task(Of SearchResult(Of EventSearchResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.SearchResult`1
+    name: SearchResult
+    href: Meridian.Storage.Services.SearchResult-1.html
+  - name: <
+  - uid: Meridian.Storage.Services.EventSearchResult
+    name: EventSearchResult
+    href: Meridian.Storage.Services.EventSearchResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.SearchResult`1
+    name: SearchResult
+    href: Meridian.Storage.Services.SearchResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.EventSearchResult
+    name: EventSearchResult
+    href: Meridian.Storage.Services.EventSearchResult.html
+  - name: )
+  - name: )
+- uid: Meridian.Storage.Services.StorageSearchService.DiscoverAsync*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.DiscoverAsync
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_DiscoverAsync_Meridian_Storage_Services_DiscoveryQuery_System_Threading_CancellationToken_
+  name: DiscoverAsync
+  nameWithType: StorageSearchService.DiscoverAsync
+  fullName: Meridian.Storage.Services.StorageSearchService.DiscoverAsync
+- uid: Meridian.Storage.Services.IStorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_DiscoverAsync_Meridian_Storage_Services_DiscoveryQuery_System_Threading_CancellationToken_
+  name: DiscoverAsync(DiscoveryQuery, CancellationToken)
+  nameWithType: IStorageSearchService.DiscoverAsync(DiscoveryQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.IStorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+    name: DiscoverAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_DiscoverAsync_Meridian_Storage_Services_DiscoveryQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.DiscoveryQuery
+    name: DiscoveryQuery
+    href: Meridian.Storage.Services.DiscoveryQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.DiscoverAsync(Meridian.Storage.Services.DiscoveryQuery,System.Threading.CancellationToken)
+    name: DiscoverAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_DiscoverAsync_Meridian_Storage_Services_DiscoveryQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.DiscoveryQuery
+    name: DiscoveryQuery
+    href: Meridian.Storage.Services.DiscoveryQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Storage.Services.DiscoveryQuery
+  commentId: T:Meridian.Storage.Services.DiscoveryQuery
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.DiscoveryQuery.html
+  name: DiscoveryQuery
+  nameWithType: DiscoveryQuery
+  fullName: Meridian.Storage.Services.DiscoveryQuery
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.DataCatalog}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.DataCatalog}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataCatalog>
+  nameWithType: Task<DataCatalog>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.DataCatalog>
+  nameWithType.vb: Task(Of DataCatalog)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.DataCatalog)
+  name.vb: Task(Of DataCatalog)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataCatalog
+    name: DataCatalog
+    href: Meridian.Storage.Services.DataCatalog.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataCatalog
+    name: DataCatalog
+    href: Meridian.Storage.Services.DataCatalog.html
+  - name: )
+- uid: Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_SearchWithFacetsAsync_Meridian_Storage_Services_FacetedSearchQuery_System_Threading_CancellationToken_
+  name: SearchWithFacetsAsync
+  nameWithType: StorageSearchService.SearchWithFacetsAsync
+  fullName: Meridian.Storage.Services.StorageSearchService.SearchWithFacetsAsync
+- uid: Meridian.Storage.Services.IStorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchWithFacetsAsync_Meridian_Storage_Services_FacetedSearchQuery_System_Threading_CancellationToken_
+  name: SearchWithFacetsAsync(FacetedSearchQuery, CancellationToken)
+  nameWithType: IStorageSearchService.SearchWithFacetsAsync(FacetedSearchQuery, CancellationToken)
+  fullName: Meridian.Storage.Services.IStorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+    name: SearchWithFacetsAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchWithFacetsAsync_Meridian_Storage_Services_FacetedSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.FacetedSearchQuery
+    name: FacetedSearchQuery
+    href: Meridian.Storage.Services.FacetedSearchQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.SearchWithFacetsAsync(Meridian.Storage.Services.FacetedSearchQuery,System.Threading.CancellationToken)
+    name: SearchWithFacetsAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_SearchWithFacetsAsync_Meridian_Storage_Services_FacetedSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Storage.Services.FacetedSearchQuery
+    name: FacetedSearchQuery
+    href: Meridian.Storage.Services.FacetedSearchQuery.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Storage.Services.FacetedSearchQuery
+  commentId: T:Meridian.Storage.Services.FacetedSearchQuery
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.FacetedSearchQuery.html
+  name: FacetedSearchQuery
+  nameWithType: FacetedSearchQuery
+  fullName: Meridian.Storage.Services.FacetedSearchQuery
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.FacetedSearchResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.FacetedSearchResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FacetedSearchResult>
+  nameWithType: Task<FacetedSearchResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.FacetedSearchResult>
+  nameWithType.vb: Task(Of FacetedSearchResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.FacetedSearchResult)
+  name.vb: Task(Of FacetedSearchResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.FacetedSearchResult
+    name: FacetedSearchResult
+    href: Meridian.Storage.Services.FacetedSearchResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.FacetedSearchResult
+    name: FacetedSearchResult
+    href: Meridian.Storage.Services.FacetedSearchResult.html
+  - name: )
+- uid: Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_ParseNaturalLanguageQuery_System_String_
+  name: ParseNaturalLanguageQuery
+  nameWithType: StorageSearchService.ParseNaturalLanguageQuery
+  fullName: Meridian.Storage.Services.StorageSearchService.ParseNaturalLanguageQuery
+- uid: Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(System.String)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(System.String)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_ParseNaturalLanguageQuery_System_String_
+  name: ParseNaturalLanguageQuery(string)
+  nameWithType: IStorageSearchService.ParseNaturalLanguageQuery(string)
+  fullName: Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(string)
+  nameWithType.vb: IStorageSearchService.ParseNaturalLanguageQuery(String)
+  fullName.vb: Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(String)
+  name.vb: ParseNaturalLanguageQuery(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(System.String)
+    name: ParseNaturalLanguageQuery
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_ParseNaturalLanguageQuery_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.ParseNaturalLanguageQuery(System.String)
+    name: ParseNaturalLanguageQuery
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_ParseNaturalLanguageQuery_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.StorageQuery
+  commentId: T:Meridian.Storage.Services.StorageQuery
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.StorageQuery.html
+  name: StorageQuery
+  nameWithType: StorageQuery
+  fullName: Meridian.Storage.Services.StorageQuery
+- uid: Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_UpdateIndexAsync_System_String_Meridian_Storage_Services_IndexUpdateType_System_Threading_CancellationToken_
+  name: UpdateIndexAsync
+  nameWithType: StorageSearchService.UpdateIndexAsync
+  fullName: Meridian.Storage.Services.StorageSearchService.UpdateIndexAsync
+- uid: Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_UpdateIndexAsync_System_String_Meridian_Storage_Services_IndexUpdateType_System_Threading_CancellationToken_
+  name: UpdateIndexAsync(string, IndexUpdateType, CancellationToken)
+  nameWithType: IStorageSearchService.UpdateIndexAsync(string, IndexUpdateType, CancellationToken)
+  fullName: Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(string, Meridian.Storage.Services.IndexUpdateType, System.Threading.CancellationToken)
+  nameWithType.vb: IStorageSearchService.UpdateIndexAsync(String, IndexUpdateType, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(String, Meridian.Storage.Services.IndexUpdateType, System.Threading.CancellationToken)
+  name.vb: UpdateIndexAsync(String, IndexUpdateType, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+    name: UpdateIndexAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_UpdateIndexAsync_System_String_Meridian_Storage_Services_IndexUpdateType_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.IndexUpdateType
+    name: IndexUpdateType
+    href: Meridian.Storage.Services.IndexUpdateType.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.UpdateIndexAsync(System.String,Meridian.Storage.Services.IndexUpdateType,System.Threading.CancellationToken)
+    name: UpdateIndexAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_UpdateIndexAsync_System_String_Meridian_Storage_Services_IndexUpdateType_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.IndexUpdateType
+    name: IndexUpdateType
+    href: Meridian.Storage.Services.IndexUpdateType.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Storage.Services.IndexUpdateType
+  commentId: T:Meridian.Storage.Services.IndexUpdateType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IndexUpdateType.html
+  name: IndexUpdateType
+  nameWithType: IndexUpdateType
+  fullName: Meridian.Storage.Services.IndexUpdateType
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync*
+  commentId: Overload:Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync
+  href: Meridian.Storage.Services.StorageSearchService.html#Meridian_Storage_Services_StorageSearchService_RebuildIndexAsync_System_String___Meridian_Storage_Services_RebuildOptions_System_Threading_CancellationToken_
+  name: RebuildIndexAsync
+  nameWithType: StorageSearchService.RebuildIndexAsync
+  fullName: Meridian.Storage.Services.StorageSearchService.RebuildIndexAsync
+- uid: Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IStorageSearchService
+  isExternal: true
+  href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_RebuildIndexAsync_System_String___Meridian_Storage_Services_RebuildOptions_System_Threading_CancellationToken_
+  name: RebuildIndexAsync(string[], RebuildOptions, CancellationToken)
+  nameWithType: IStorageSearchService.RebuildIndexAsync(string[], RebuildOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(string[], Meridian.Storage.Services.RebuildOptions, System.Threading.CancellationToken)
+  nameWithType.vb: IStorageSearchService.RebuildIndexAsync(String(), RebuildOptions, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(String(), Meridian.Storage.Services.RebuildOptions, System.Threading.CancellationToken)
+  name.vb: RebuildIndexAsync(String(), RebuildOptions, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+    name: RebuildIndexAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_RebuildIndexAsync_System_String___Meridian_Storage_Services_RebuildOptions_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.RebuildOptions
+    name: RebuildOptions
+    href: Meridian.Storage.Services.RebuildOptions.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.IStorageSearchService.RebuildIndexAsync(System.String[],Meridian.Storage.Services.RebuildOptions,System.Threading.CancellationToken)
+    name: RebuildIndexAsync
+    href: Meridian.Storage.Services.IStorageSearchService.html#Meridian_Storage_Services_IStorageSearchService_RebuildIndexAsync_System_String___Meridian_Storage_Services_RebuildOptions_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.RebuildOptions
+    name: RebuildOptions
+    href: Meridian.Storage.Services.RebuildOptions.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.RebuildOptions
+  commentId: T:Meridian.Storage.Services.RebuildOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.RebuildOptions.html
+  name: RebuildOptions
+  nameWithType: RebuildOptions
+  fullName: Meridian.Storage.Services.RebuildOptions

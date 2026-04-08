@@ -1,0 +1,221 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  id: ConnectionState
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  children:
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connected
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connecting
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Disconnected
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Error
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Reconnecting
+  langs:
+  - csharp
+  - vb
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionState
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1301
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Connection state for the StockSharp client (Hydra-inspired pattern).
+  example: []
+  syntax:
+    content: 'public enum ConnectionState : byte'
+    content.vb: Public Enum ConnectionState As Byte
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Disconnected
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Disconnected
+  id: Disconnected
+  parent: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Disconnected
+  nameWithType: ConnectionState.Disconnected
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Disconnected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disconnected
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1304
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Client is disconnected.
+  example: []
+  syntax:
+    content: Disconnected = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connecting
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connecting
+  id: Connecting
+  parent: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Connecting
+  nameWithType: ConnectionState.Connecting
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connecting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connecting
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1307
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Client is connecting.
+  example: []
+  syntax:
+    content: Connecting = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connected
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connected
+  id: Connected
+  parent: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Connected
+  nameWithType: ConnectionState.Connected
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Connected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connected
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1310
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Client is connected and receiving data.
+  example: []
+  syntax:
+    content: Connected = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Reconnecting
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Reconnecting
+  id: Reconnecting
+  parent: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Reconnecting
+  nameWithType: ConnectionState.Reconnecting
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Reconnecting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconnecting
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1313
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Client is reconnecting after a connection loss.
+  example: []
+  syntax:
+    content: Reconnecting = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Error
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Error
+  id: Error
+  parent: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ConnectionState.Error
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1316
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Client encountered an error.
+  example: []
+  syntax:
+    content: Error = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+references:
+- uid: Meridian.Infrastructure.Adapters.StockSharp
+  commentId: N:Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.StockSharp
+  nameWithType: Meridian.Infrastructure.Adapters.StockSharp
+  fullName: Meridian.Infrastructure.Adapters.StockSharp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.StockSharp
+    name: StockSharp
+    href: Meridian.Infrastructure.Adapters.StockSharp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.StockSharp
+    name: StockSharp
+    href: Meridian.Infrastructure.Adapters.StockSharp.html
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.html
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState

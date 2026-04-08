@@ -1,0 +1,918 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.FormValidationRules
+  commentId: T:Meridian.Ui.Services.Services.FormValidationRules
+  id: FormValidationRules
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey(System.String)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.String)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath(System.String)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange(System.Nullable{System.Double},System.Double,System.Double,System.String)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidatePort(System.Nullable{System.Int32})
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired(System.String,System.String)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol(System.String)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList(System.String,System.Int32)
+  - Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl(System.String,System.String)
+  langs:
+  - csharp
+  - vb
+  name: FormValidationRules
+  nameWithType: FormValidationRules
+  fullName: Meridian.Ui.Services.Services.FormValidationRules
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormValidationRules
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Shared validation rules for form validation across desktop applications.
+
+    Extracted from FormValidationService implementations to eliminate duplicate validation logic.
+  example: []
+  syntax:
+    content: public static class FormValidationRules
+    content.vb: Public Module FormValidationRules
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired(System.String,System.String)
+  id: ValidateRequired(System.String,System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateRequired(string?, string)
+  nameWithType: FormValidationRules.ValidateRequired(string?, string)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired(string?, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateRequired
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates that a field is not empty.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateRequired(string? value, string fieldName = "This field")
+    parameters:
+    - id: value
+      type: System.String
+      description: The value to validate.
+    - id: fieldName
+      type: System.String
+      description: 'The name of the field for error messages (default: "This field").'
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateRequired(value As String, fieldName As String = "This field") As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired*
+  nameWithType.vb: FormValidationRules.ValidateRequired(String, String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired(String, String)
+  name.vb: ValidateRequired(String, String)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol(System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol(System.String)
+  id: ValidateSymbol(System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateSymbol(string?)
+  nameWithType: FormValidationRules.ValidateSymbol(string?)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateSymbol
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Validates a stock symbol format.
+
+    Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateSymbol(string? value)
+    parameters:
+    - id: value
+      type: System.String
+      description: The symbol to validate.
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateSymbol(value As String) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol*
+  nameWithType.vb: FormValidationRules.ValidateSymbol(String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol(String)
+  name.vb: ValidateSymbol(String)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList(System.String,System.Int32)
+  id: ValidateSymbolList(System.String,System.Int32)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateSymbolList(string?, int)
+  nameWithType: FormValidationRules.ValidateSymbolList(string?, int)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList(string?, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateSymbolList
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates a comma-separated list of symbols.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100)
+    parameters:
+    - id: value
+      type: System.String
+      description: The comma-separated symbol list.
+    - id: maxSymbols
+      type: System.Int32
+      description: 'Maximum number of symbols allowed (default: 100).'
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateSymbolList(value As String, maxSymbols As Integer = 100) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList*
+  nameWithType.vb: FormValidationRules.ValidateSymbolList(String, Integer)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList(String, Integer)
+  name.vb: ValidateSymbolList(String, Integer)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  id: ValidateDateRange(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateDateRange(DateTimeOffset?, DateTimeOffset?)
+  nameWithType: FormValidationRules.ValidateDateRange(DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.DateTimeOffset?, System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateDateRange
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates a date range for data collection or backfill.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate)
+    parameters:
+    - id: fromDate
+      type: System.Nullable{System.DateTimeOffset}
+      description: Start date.
+    - id: toDate
+      type: System.Nullable{System.DateTimeOffset}
+      description: End date.
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateDateRange(fromDate As DateTimeOffset?, toDate As DateTimeOffset?) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange*
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(System.String)
+  id: ValidateDateRange(System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateDateRange(string?)
+  nameWithType: FormValidationRules.ValidateDateRange(string?)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateDateRange
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates a date string in ISO format (YYYY-MM-DD).
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateDateRange(string? dateStr)
+    parameters:
+    - id: dateStr
+      type: System.String
+      description: The date string to validate.
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateDateRange(dateStr As String) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange*
+  nameWithType.vb: FormValidationRules.ValidateDateRange(String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange(String)
+  name.vb: ValidateDateRange(String)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey(System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey(System.String)
+  id: ValidateApiKey(System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateApiKey(string?)
+  nameWithType: FormValidationRules.ValidateApiKey(string?)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateApiKey
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates an API key format.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateApiKey(string? value)
+    parameters:
+    - id: value
+      type: System.String
+      description: The API key to validate.
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateApiKey(value As String) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey*
+  nameWithType.vb: FormValidationRules.ValidateApiKey(String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey(String)
+  name.vb: ValidateApiKey(String)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl(System.String,System.String)
+  id: ValidateUrl(System.String,System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateUrl(string?, string)
+  nameWithType: FormValidationRules.ValidateUrl(string?, string)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl(string?, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateUrl
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates a URL format.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateUrl(string? value, string fieldName = "URL")
+    parameters:
+    - id: value
+      type: System.String
+      description: The URL to validate.
+    - id: fieldName
+      type: System.String
+      description: 'The name of the field for error messages (default: "URL").'
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateUrl(value As String, fieldName As String = "URL") As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl*
+  nameWithType.vb: FormValidationRules.ValidateUrl(String, String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl(String, String)
+  name.vb: ValidateUrl(String, String)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidatePort(System.Nullable{System.Int32})
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidatePort(System.Nullable{System.Int32})
+  id: ValidatePort(System.Nullable{System.Int32})
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidatePort(int?)
+  nameWithType: FormValidationRules.ValidatePort(int?)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidatePort(int?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidatePort
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates a network port number.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidatePort(int? value)
+    parameters:
+    - id: value
+      type: System.Nullable{System.Int32}
+      description: The port number to validate.
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidatePort(value As Integer?) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidatePort*
+  nameWithType.vb: FormValidationRules.ValidatePort(Integer?)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidatePort(Integer?)
+  name.vb: ValidatePort(Integer?)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath(System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath(System.String)
+  id: ValidateFilePath(System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateFilePath(string?)
+  nameWithType: FormValidationRules.ValidateFilePath(string?)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateFilePath
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates a file path format.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateFilePath(string? value)
+    parameters:
+    - id: value
+      type: System.String
+      description: The file path to validate.
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateFilePath(value As String) As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath*
+  nameWithType.vb: FormValidationRules.ValidateFilePath(String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath(String)
+  name.vb: ValidateFilePath(String)
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange(System.Nullable{System.Double},System.Double,System.Double,System.String)
+  commentId: M:Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange(System.Nullable{System.Double},System.Double,System.Double,System.String)
+  id: ValidateNumericRange(System.Nullable{System.Double},System.Double,System.Double,System.String)
+  parent: Meridian.Ui.Services.Services.FormValidationRules
+  langs:
+  - csharp
+  - vb
+  name: ValidateNumericRange(double?, double, double, string)
+  nameWithType: FormValidationRules.ValidateNumericRange(double?, double, double, string)
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange(double?, double, double, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateNumericRange
+    path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates that a numeric value is within a specified range.
+  example: []
+  syntax:
+    content: public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = "Value")
+    parameters:
+    - id: value
+      type: System.Nullable{System.Double}
+      description: The numeric value to validate.
+    - id: min
+      type: System.Double
+      description: Minimum allowed value.
+    - id: max
+      type: System.Double
+      description: Maximum allowed value.
+    - id: fieldName
+      type: System.String
+      description: 'The name of the field for error messages (default: "Value").'
+    return:
+      type: Meridian.Ui.Services.Services.ValidationResult
+      description: Validation result.
+    content.vb: Public Shared Function ValidateNumericRange(value As Double?, min As Double, max As Double, fieldName As String = "Value") As ValidationResult
+  overload: Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange*
+  nameWithType.vb: FormValidationRules.ValidateNumericRange(Double?, Double, Double, String)
+  fullName.vb: Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange(Double?, Double, Double, String)
+  name.vb: ValidateNumericRange(Double?, Double, Double, String)
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateRequired_System_String_System_String_
+  name: ValidateRequired
+  nameWithType: FormValidationRules.ValidateRequired
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateRequired
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.ValidationResult
+  commentId: T:Meridian.Ui.Services.Services.ValidationResult
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.ValidationResult.html
+  name: ValidationResult
+  nameWithType: ValidationResult
+  fullName: Meridian.Ui.Services.Services.ValidationResult
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateSymbol_System_String_
+  name: ValidateSymbol
+  nameWithType: FormValidationRules.ValidateSymbol
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbol
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateSymbolList_System_String_System_Int32_
+  name: ValidateSymbolList
+  nameWithType: FormValidationRules.ValidateSymbolList
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateSymbolList
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateDateRange_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: ValidateDateRange
+  nameWithType: FormValidationRules.ValidateDateRange
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateDateRange
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateApiKey_System_String_
+  name: ValidateApiKey
+  nameWithType: FormValidationRules.ValidateApiKey
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateApiKey
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateUrl_System_String_System_String_
+  name: ValidateUrl
+  nameWithType: FormValidationRules.ValidateUrl
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateUrl
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidatePort*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidatePort
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidatePort_System_Nullable_System_Int32__
+  name: ValidatePort
+  nameWithType: FormValidationRules.ValidatePort
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidatePort
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateFilePath_System_String_
+  name: ValidateFilePath
+  nameWithType: FormValidationRules.ValidateFilePath
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateFilePath
+- uid: Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange*
+  commentId: Overload:Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange
+  href: Meridian.Ui.Services.Services.FormValidationRules.html#Meridian_Ui_Services_Services_FormValidationRules_ValidateNumericRange_System_Nullable_System_Double__System_Double_System_Double_System_String_
+  name: ValidateNumericRange
+  nameWithType: FormValidationRules.ValidateNumericRange
+  fullName: Meridian.Ui.Services.Services.FormValidationRules.ValidateNumericRange
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.GovernanceExceptionStatus
+  commentId: T:Meridian.Application.Services.GovernanceExceptionStatus
+  id: GovernanceExceptionStatus
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+  - Meridian.Application.Services.GovernanceExceptionStatus.Open
+  - Meridian.Application.Services.GovernanceExceptionStatus.Resolved
+  langs:
+  - csharp
+  - vb
+  name: GovernanceExceptionStatus
+  nameWithType: GovernanceExceptionStatus
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceExceptionStatus
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Workflow status for a governance exception.
+  example: []
+  syntax:
+    content: public enum GovernanceExceptionStatus
+    content.vb: Public Enum GovernanceExceptionStatus
+- uid: Meridian.Application.Services.GovernanceExceptionStatus.Open
+  commentId: F:Meridian.Application.Services.GovernanceExceptionStatus.Open
+  id: Open
+  parent: Meridian.Application.Services.GovernanceExceptionStatus
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: GovernanceExceptionStatus.Open
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Open = 0
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionStatus
+- uid: Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+  commentId: F:Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+  id: Investigating
+  parent: Meridian.Application.Services.GovernanceExceptionStatus
+  langs:
+  - csharp
+  - vb
+  name: Investigating
+  nameWithType: GovernanceExceptionStatus.Investigating
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Investigating
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Investigating = 1
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionStatus
+- uid: Meridian.Application.Services.GovernanceExceptionStatus.Resolved
+  commentId: F:Meridian.Application.Services.GovernanceExceptionStatus.Resolved
+  id: Resolved
+  parent: Meridian.Application.Services.GovernanceExceptionStatus
+  langs:
+  - csharp
+  - vb
+  name: Resolved
+  nameWithType: GovernanceExceptionStatus.Resolved
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus.Resolved
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resolved
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Resolved = 2
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionStatus
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.GovernanceExceptionStatus
+  commentId: T:Meridian.Application.Services.GovernanceExceptionStatus
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GovernanceExceptionStatus.html
+  name: GovernanceExceptionStatus
+  nameWithType: GovernanceExceptionStatus
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus

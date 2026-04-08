@@ -1,0 +1,92 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics
+  commentId: N:Meridian.Infrastructure.CppTrader.Diagnostics
+  id: Meridian.Infrastructure.CppTrader.Diagnostics
+  children:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnosticsService
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  - Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderSessionDiagnosticsService
+  - Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Diagnostics
+  nameWithType: Meridian.Infrastructure.CppTrader.Diagnostics
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html
+  name: CppTraderSessionDiagnostic
+  nameWithType: CppTraderSessionDiagnostic
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnosticsService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnosticsService
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnosticsService.html
+  name: CppTraderSessionDiagnosticsService
+  nameWithType: CppTraderSessionDiagnosticsService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnosticsService
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.html
+  name: CppTraderStatusService
+  nameWithType: CppTraderStatusService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderSessionDiagnosticsService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderSessionDiagnosticsService
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderSessionDiagnosticsService.html
+  name: ICppTraderSessionDiagnosticsService
+  nameWithType: ICppTraderSessionDiagnosticsService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderSessionDiagnosticsService
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.html
+  name: ICppTraderStatusService
+  nameWithType: ICppTraderStatusService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics
+  commentId: N:Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Diagnostics
+  nameWithType: Meridian.Infrastructure.CppTrader.Diagnostics
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html

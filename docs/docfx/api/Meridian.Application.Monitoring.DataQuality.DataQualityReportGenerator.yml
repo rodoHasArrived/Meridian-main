@@ -1,0 +1,817 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  id: DataQualityReportGenerator
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator,Meridian.Application.Monitoring.DataQuality.GapAnalyzer,Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker,Meridian.Application.Monitoring.DataQuality.AnomalyDetector,Meridian.Application.Monitoring.DataQuality.LatencyHistogram,Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService,System.String)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync(Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: DataQualityReportGenerator
+  nameWithType: DataQualityReportGenerator
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityReportGenerator
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Generates comprehensive daily and weekly data quality reports with export functionality.
+  example: []
+  syntax:
+    content: public sealed class DataQualityReportGenerator
+    content.vb: Public NotInheritable Class DataQualityReportGenerator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator,Meridian.Application.Monitoring.DataQuality.GapAnalyzer,Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker,Meridian.Application.Monitoring.DataQuality.AnomalyDetector,Meridian.Application.Monitoring.DataQuality.LatencyHistogram,Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator,Meridian.Application.Monitoring.DataQuality.GapAnalyzer,Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker,Meridian.Application.Monitoring.DataQuality.AnomalyDetector,Meridian.Application.Monitoring.DataQuality.LatencyHistogram,Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService,System.String)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator,Meridian.Application.Monitoring.DataQuality.GapAnalyzer,Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker,Meridian.Application.Monitoring.DataQuality.AnomalyDetector,Meridian.Application.Monitoring.DataQuality.LatencyHistogram,Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService,System.String)'
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  langs:
+  - csharp
+  - vb
+  name: DataQualityReportGenerator(CompletenessScoreCalculator, GapAnalyzer, SequenceErrorTracker, AnomalyDetector, LatencyHistogram, CrossProviderComparisonService?, string?)
+  nameWithType: DataQualityReportGenerator.DataQualityReportGenerator(CompletenessScoreCalculator, GapAnalyzer, SequenceErrorTracker, AnomalyDetector, LatencyHistogram, CrossProviderComparisonService?, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.DataQualityReportGenerator(Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator, Meridian.Application.Monitoring.DataQuality.GapAnalyzer, Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker, Meridian.Application.Monitoring.DataQuality.AnomalyDetector, Meridian.Application.Monitoring.DataQuality.LatencyHistogram, Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DataQualityReportGenerator(CompletenessScoreCalculator completeness, GapAnalyzer gapAnalyzer, SequenceErrorTracker sequenceTracker, AnomalyDetector anomalyDetector, LatencyHistogram latencyHistogram, CrossProviderComparisonService? crossProvider = null, string? outputDirectory = null)
+    parameters:
+    - id: completeness
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+    - id: gapAnalyzer
+      type: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+    - id: sequenceTracker
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+    - id: anomalyDetector
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+    - id: latencyHistogram
+      type: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+    - id: crossProvider
+      type: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+    - id: outputDirectory
+      type: System.String
+    content.vb: Public Sub New(completeness As CompletenessScoreCalculator, gapAnalyzer As GapAnalyzer, sequenceTracker As SequenceErrorTracker, anomalyDetector As AnomalyDetector, latencyHistogram As LatencyHistogram, crossProvider As CrossProviderComparisonService = Nothing, outputDirectory As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.#ctor*
+  nameWithType.vb: DataQualityReportGenerator.New(CompletenessScoreCalculator, GapAnalyzer, SequenceErrorTracker, AnomalyDetector, LatencyHistogram, CrossProviderComparisonService, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.New(Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator, Meridian.Application.Monitoring.DataQuality.GapAnalyzer, Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker, Meridian.Application.Monitoring.DataQuality.AnomalyDetector, Meridian.Application.Monitoring.DataQuality.LatencyHistogram, Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService, String)
+  name.vb: New(CompletenessScoreCalculator, GapAnalyzer, SequenceErrorTracker, AnomalyDetector, LatencyHistogram, CrossProviderComparisonService, String)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  id: GenerateDailyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateDailyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  nameWithType: DataQualityReportGenerator.GenerateDailyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateDailyReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Generates a daily quality report.
+  example: []
+  syntax:
+    content: public Task<DailyQualityReport> GenerateDailyReportAsync(DateOnly date, ReportGenerationOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    - id: options
+      type: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.DailyQualityReport}
+    content.vb: Public Function GenerateDailyReportAsync([date] As DateOnly, options As ReportGenerationOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of DailyQualityReport)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync*
+  nameWithType.vb: DataQualityReportGenerator.GenerateDailyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions, System.Threading.CancellationToken)
+  name.vb: GenerateDailyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  id: GenerateWeeklyReportAsync(System.DateOnly,Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  nameWithType: DataQualityReportGenerator.GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateWeeklyReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Generates a weekly quality report.
+  example: []
+  syntax:
+    content: public Task<WeeklyQualityReport> GenerateWeeklyReportAsync(DateOnly weekStart, ReportGenerationOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: weekStart
+      type: System.DateOnly
+    - id: options
+      type: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport}
+    content.vb: Public Function GenerateWeeklyReportAsync(weekStart As DateOnly, options As ReportGenerationOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of WeeklyQualityReport)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync*
+  nameWithType.vb: DataQualityReportGenerator.GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync(System.DateOnly, Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions, System.Threading.CancellationToken)
+  name.vb: GenerateWeeklyReportAsync(DateOnly, ReportGenerationOptions, CancellationToken)
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  id: ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  langs:
+  - csharp
+  - vb
+  name: ExportReportAsync(DailyQualityReport, ReportExportFormat, CancellationToken)
+  nameWithType: DataQualityReportGenerator.ExportReportAsync(DailyQualityReport, ReportExportFormat, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync(Meridian.Application.Monitoring.DataQuality.DailyQualityReport, Meridian.Application.Monitoring.DataQuality.ReportExportFormat, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Exports a report to the specified format.
+  example: []
+  syntax:
+    content: public Task<string> ExportReportAsync(DailyQualityReport report, ReportExportFormat format, CancellationToken ct = default)
+    parameters:
+    - id: report
+      type: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+    - id: format
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function ExportReportAsync(report As DailyQualityReport, format As ReportExportFormat, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync*
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync(Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync(Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  id: ExportWeeklyReportAsync(Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport,Meridian.Application.Monitoring.DataQuality.ReportExportFormat,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator
+  langs:
+  - csharp
+  - vb
+  name: ExportWeeklyReportAsync(WeeklyQualityReport, ReportExportFormat, CancellationToken)
+  nameWithType: DataQualityReportGenerator.ExportWeeklyReportAsync(WeeklyQualityReport, ReportExportFormat, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync(Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport, Meridian.Application.Monitoring.DataQuality.ReportExportFormat, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportWeeklyReportAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Exports a weekly report to the specified format.
+  example: []
+  syntax:
+    content: public Task<string> ExportWeeklyReportAsync(WeeklyQualityReport report, ReportExportFormat format, CancellationToken ct = default)
+    parameters:
+    - id: report
+      type: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+    - id: format
+      type: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function ExportWeeklyReportAsync(report As WeeklyQualityReport, format As ReportExportFormat, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.html#Meridian_Application_Monitoring_DataQuality_DataQualityReportGenerator__ctor_Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_Meridian_Application_Monitoring_DataQuality_GapAnalyzer_Meridian_Application_Monitoring_DataQuality_SequenceErrorTracker_Meridian_Application_Monitoring_DataQuality_AnomalyDetector_Meridian_Application_Monitoring_DataQuality_LatencyHistogram_Meridian_Application_Monitoring_DataQuality_CrossProviderComparisonService_System_String_
+  name: DataQualityReportGenerator
+  nameWithType: DataQualityReportGenerator.DataQualityReportGenerator
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.DataQualityReportGenerator
+  nameWithType.vb: DataQualityReportGenerator.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html
+  name: CompletenessScoreCalculator
+  nameWithType: CompletenessScoreCalculator
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+- uid: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapAnalyzer.html
+  name: GapAnalyzer
+  nameWithType: GapAnalyzer
+  fullName: Meridian.Application.Monitoring.DataQuality.GapAnalyzer
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker.html
+  name: SequenceErrorTracker
+  nameWithType: SequenceErrorTracker
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorTracker
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html
+  name: AnomalyDetector
+  nameWithType: AnomalyDetector
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html
+  name: LatencyHistogram
+  nameWithType: LatencyHistogram
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService.html
+  name: CrossProviderComparisonService
+  nameWithType: CrossProviderComparisonService
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparisonService
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.html#Meridian_Application_Monitoring_DataQuality_DataQualityReportGenerator_GenerateDailyReportAsync_System_DateOnly_Meridian_Application_Monitoring_DataQuality_ReportGenerationOptions_System_Threading_CancellationToken_
+  name: GenerateDailyReportAsync
+  nameWithType: DataQualityReportGenerator.GenerateDailyReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateDailyReportAsync
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions.html
+  name: ReportGenerationOptions
+  nameWithType: ReportGenerationOptions
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportGenerationOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.DailyQualityReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.DailyQualityReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DailyQualityReport>
+  nameWithType: Task<DailyQualityReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.DataQuality.DailyQualityReport>
+  nameWithType.vb: Task(Of DailyQualityReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DataQuality.DailyQualityReport)
+  name.vb: Task(Of DailyQualityReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+    name: DailyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.DailyQualityReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+    name: DailyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.DailyQualityReport.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.html#Meridian_Application_Monitoring_DataQuality_DataQualityReportGenerator_GenerateWeeklyReportAsync_System_DateOnly_Meridian_Application_Monitoring_DataQuality_ReportGenerationOptions_System_Threading_CancellationToken_
+  name: GenerateWeeklyReportAsync
+  nameWithType: DataQualityReportGenerator.GenerateWeeklyReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.GenerateWeeklyReportAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WeeklyQualityReport>
+  nameWithType: Task<WeeklyQualityReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport>
+  nameWithType.vb: Task(Of WeeklyQualityReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport)
+  name.vb: Task(Of WeeklyQualityReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+    name: WeeklyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+    name: WeeklyQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport.html
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.html#Meridian_Application_Monitoring_DataQuality_DataQualityReportGenerator_ExportReportAsync_Meridian_Application_Monitoring_DataQuality_DailyQualityReport_Meridian_Application_Monitoring_DataQuality_ReportExportFormat_System_Threading_CancellationToken_
+  name: ExportReportAsync
+  nameWithType: DataQualityReportGenerator.ExportReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportReportAsync
+- uid: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DailyQualityReport.html
+  name: DailyQualityReport
+  nameWithType: DailyQualityReport
+  fullName: Meridian.Application.Monitoring.DataQuality.DailyQualityReport
+- uid: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.ReportExportFormat.html
+  name: ReportExportFormat
+  nameWithType: ReportExportFormat
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportExportFormat
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync
+  href: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.html#Meridian_Application_Monitoring_DataQuality_DataQualityReportGenerator_ExportWeeklyReportAsync_Meridian_Application_Monitoring_DataQuality_WeeklyQualityReport_Meridian_Application_Monitoring_DataQuality_ReportExportFormat_System_Threading_CancellationToken_
+  name: ExportWeeklyReportAsync
+  nameWithType: DataQualityReportGenerator.ExportWeeklyReportAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.DataQualityReportGenerator.ExportWeeklyReportAsync
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+  commentId: T:Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport.html
+  name: WeeklyQualityReport
+  nameWithType: WeeklyQualityReport
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyQualityReport

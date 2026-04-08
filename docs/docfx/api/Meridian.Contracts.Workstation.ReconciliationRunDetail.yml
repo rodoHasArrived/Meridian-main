@@ -1,0 +1,899 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationRunDetail
+  id: ReconciliationRunDetail
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.#ctor(Meridian.Contracts.Workstation.ReconciliationRunSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto})
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues
+  - Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRunDetail
+  nameWithType: ReconciliationRunDetail
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationRunDetail
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Full detail payload for a single reconciliation run.
+  example: []
+  syntax:
+    content: 'public sealed record ReconciliationRunDetail : IEquatable<ReconciliationRunDetail>'
+    content.vb: Public NotInheritable Class ReconciliationRunDetail Implements IEquatable(Of ReconciliationRunDetail)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.#ctor(Meridian.Contracts.Workstation.ReconciliationRunSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto})
+  commentId: M:Meridian.Contracts.Workstation.ReconciliationRunDetail.#ctor(Meridian.Contracts.Workstation.ReconciliationRunSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto})
+  id: '#ctor(Meridian.Contracts.Workstation.ReconciliationRunSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto},System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto})'
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRunDetail(ReconciliationRunSummary, IReadOnlyList<ReconciliationMatchDto>, IReadOnlyList<ReconciliationBreakDto>, IReadOnlyList<ReconciliationSecurityCoverageIssueDto>?, IReadOnlyList<BankTransactionDto>?, IReadOnlyDictionary<string, SecurityClassificationSummaryDto>?)
+  nameWithType: ReconciliationRunDetail.ReconciliationRunDetail(ReconciliationRunSummary, IReadOnlyList<ReconciliationMatchDto>, IReadOnlyList<ReconciliationBreakDto>, IReadOnlyList<ReconciliationSecurityCoverageIssueDto>?, IReadOnlyList<BankTransactionDto>?, IReadOnlyDictionary<string, SecurityClassificationSummaryDto>?)
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.ReconciliationRunDetail(Meridian.Contracts.Workstation.ReconciliationRunSummary, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationMatchDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationBreakDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto>?, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.BankTransactionDto>?, System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Contracts.Workstation.SecurityClassificationSummaryDto>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Full detail payload for a single reconciliation run.
+  example: []
+  syntax:
+    content: public ReconciliationRunDetail(ReconciliationRunSummary Summary, IReadOnlyList<ReconciliationMatchDto> Matches, IReadOnlyList<ReconciliationBreakDto> Breaks, IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null, IReadOnlyList<BankTransactionDto>? BankTransactions = null, IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null)
+    parameters:
+    - id: Summary
+      type: Meridian.Contracts.Workstation.ReconciliationRunSummary
+    - id: Matches
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto}
+    - id: Breaks
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto}
+    - id: SecurityCoverageIssues
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto}
+    - id: BankTransactions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+    - id: SecurityClassifications
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto}
+    content.vb: Public Sub New(Summary As ReconciliationRunSummary, Matches As IReadOnlyList(Of ReconciliationMatchDto), Breaks As IReadOnlyList(Of ReconciliationBreakDto), SecurityCoverageIssues As IReadOnlyList(Of ReconciliationSecurityCoverageIssueDto) = Nothing, BankTransactions As IReadOnlyList(Of BankTransactionDto) = Nothing, SecurityClassifications As IReadOnlyDictionary(Of String, SecurityClassificationSummaryDto) = Nothing)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.#ctor*
+  nameWithType.vb: ReconciliationRunDetail.New(ReconciliationRunSummary, IReadOnlyList(Of ReconciliationMatchDto), IReadOnlyList(Of ReconciliationBreakDto), IReadOnlyList(Of ReconciliationSecurityCoverageIssueDto), IReadOnlyList(Of BankTransactionDto), IReadOnlyDictionary(Of String, SecurityClassificationSummaryDto))
+  fullName.vb: Meridian.Contracts.Workstation.ReconciliationRunDetail.New(Meridian.Contracts.Workstation.ReconciliationRunSummary, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationMatchDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationBreakDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.BankTransactionDto), System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Contracts.Workstation.SecurityClassificationSummaryDto))
+  name.vb: New(ReconciliationRunSummary, IReadOnlyList(Of ReconciliationMatchDto), IReadOnlyList(Of ReconciliationBreakDto), IReadOnlyList(Of ReconciliationSecurityCoverageIssueDto), IReadOnlyList(Of BankTransactionDto), IReadOnlyDictionary(Of String, SecurityClassificationSummaryDto))
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary
+  id: Summary
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: ReconciliationRunDetail.Summary
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ReconciliationRunSummary Summary { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationRunSummary
+    content.vb: Public Property Summary As ReconciliationRunSummary
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches
+  id: Matches
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: Matches
+  nameWithType: ReconciliationRunDetail.Matches
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Matches
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ReconciliationMatchDto> Matches { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto}
+    content.vb: Public Property Matches As IReadOnlyList(Of ReconciliationMatchDto)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks
+  id: Breaks
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: Breaks
+  nameWithType: ReconciliationRunDetail.Breaks
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Breaks
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ReconciliationBreakDto> Breaks { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto}
+    content.vb: Public Property Breaks As IReadOnlyList(Of ReconciliationBreakDto)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues
+  id: SecurityCoverageIssues
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: SecurityCoverageIssues
+  nameWithType: ReconciliationRunDetail.SecurityCoverageIssues
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityCoverageIssues
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto}
+    content.vb: Public Property SecurityCoverageIssues As IReadOnlyList(Of ReconciliationSecurityCoverageIssueDto)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions
+  id: BankTransactions
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: BankTransactions
+  nameWithType: ReconciliationRunDetail.BankTransactions
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankTransactions
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<BankTransactionDto>? BankTransactions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+    content.vb: Public Property BankTransactions As IReadOnlyList(Of BankTransactionDto)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications
+  id: SecurityClassifications
+  parent: Meridian.Contracts.Workstation.ReconciliationRunDetail
+  langs:
+  - csharp
+  - vb
+  name: SecurityClassifications
+  nameWithType: ReconciliationRunDetail.SecurityClassifications
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityClassifications
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto}
+    content.vb: Public Property SecurityClassifications As IReadOnlyDictionary(Of String, SecurityClassificationSummaryDto)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconciliationRunDetail>
+  nameWithType: IEquatable<ReconciliationRunDetail>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ReconciliationRunDetail>
+  nameWithType.vb: IEquatable(Of ReconciliationRunDetail)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ReconciliationRunDetail)
+  name.vb: IEquatable(Of ReconciliationRunDetail)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunDetail
+    name: ReconciliationRunDetail
+    href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunDetail
+    name: ReconciliationRunDetail
+    href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.#ctor
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail__ctor_Meridian_Contracts_Workstation_ReconciliationRunSummary_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ReconciliationMatchDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ReconciliationBreakDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ReconciliationSecurityCoverageIssueDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Banking_BankTransactionDto__System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Contracts_Workstation_SecurityClassificationSummaryDto__
+  name: ReconciliationRunDetail
+  nameWithType: ReconciliationRunDetail.ReconciliationRunDetail
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.ReconciliationRunDetail
+  nameWithType.vb: ReconciliationRunDetail.New
+  fullName.vb: Meridian.Contracts.Workstation.ReconciliationRunDetail.New
+  name.vb: New
+- uid: Meridian.Contracts.Workstation.ReconciliationRunSummary
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationRunSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationRunSummary.html
+  name: ReconciliationRunSummary
+  nameWithType: ReconciliationRunSummary
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunSummary
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationMatchDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ReconciliationMatchDto>
+  nameWithType: IReadOnlyList<ReconciliationMatchDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationMatchDto>
+  nameWithType.vb: IReadOnlyList(Of ReconciliationMatchDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationMatchDto)
+  name.vb: IReadOnlyList(Of ReconciliationMatchDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationMatchDto
+    name: ReconciliationMatchDto
+    href: Meridian.Contracts.Workstation.ReconciliationMatchDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationMatchDto
+    name: ReconciliationMatchDto
+    href: Meridian.Contracts.Workstation.ReconciliationMatchDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationBreakDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ReconciliationBreakDto>
+  nameWithType: IReadOnlyList<ReconciliationBreakDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationBreakDto>
+  nameWithType.vb: IReadOnlyList(Of ReconciliationBreakDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationBreakDto)
+  name.vb: IReadOnlyList(Of ReconciliationBreakDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationBreakDto
+    name: ReconciliationBreakDto
+    href: Meridian.Contracts.Workstation.ReconciliationBreakDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationBreakDto
+    name: ReconciliationBreakDto
+    href: Meridian.Contracts.Workstation.ReconciliationBreakDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ReconciliationSecurityCoverageIssueDto>
+  nameWithType: IReadOnlyList<ReconciliationSecurityCoverageIssueDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto>
+  nameWithType.vb: IReadOnlyList(Of ReconciliationSecurityCoverageIssueDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto)
+  name.vb: IReadOnlyList(Of ReconciliationSecurityCoverageIssueDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto
+    name: ReconciliationSecurityCoverageIssueDto
+    href: Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto
+    name: ReconciliationSecurityCoverageIssueDto
+    href: Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<BankTransactionDto>
+  nameWithType: IReadOnlyList<BankTransactionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.BankTransactionDto>
+  nameWithType.vb: IReadOnlyList(Of BankTransactionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.BankTransactionDto)
+  name.vb: IReadOnlyList(Of BankTransactionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Workstation.SecurityClassificationSummaryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, SecurityClassificationSummaryDto>
+  nameWithType: IReadOnlyDictionary<string, SecurityClassificationSummaryDto>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Contracts.Workstation.SecurityClassificationSummaryDto>
+  nameWithType.vb: IReadOnlyDictionary(Of String, SecurityClassificationSummaryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Contracts.Workstation.SecurityClassificationSummaryDto)
+  name.vb: IReadOnlyDictionary(Of String, SecurityClassificationSummaryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.SecurityClassificationSummaryDto
+    name: SecurityClassificationSummaryDto
+    href: Meridian.Contracts.Workstation.SecurityClassificationSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.SecurityClassificationSummaryDto
+    name: SecurityClassificationSummaryDto
+    href: Meridian.Contracts.Workstation.SecurityClassificationSummaryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail_Summary
+  name: Summary
+  nameWithType: ReconciliationRunDetail.Summary
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.Summary
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail_Matches
+  name: Matches
+  nameWithType: ReconciliationRunDetail.Matches
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.Matches
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail_Breaks
+  name: Breaks
+  nameWithType: ReconciliationRunDetail.Breaks
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.Breaks
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail_SecurityCoverageIssues
+  name: SecurityCoverageIssues
+  nameWithType: ReconciliationRunDetail.SecurityCoverageIssues
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityCoverageIssues
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail_BankTransactions
+  name: BankTransactions
+  nameWithType: ReconciliationRunDetail.BankTransactions
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.BankTransactions
+- uid: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications
+  href: Meridian.Contracts.Workstation.ReconciliationRunDetail.html#Meridian_Contracts_Workstation_ReconciliationRunDetail_SecurityClassifications
+  name: SecurityClassifications
+  nameWithType: ReconciliationRunDetail.SecurityClassifications
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunDetail.SecurityClassifications

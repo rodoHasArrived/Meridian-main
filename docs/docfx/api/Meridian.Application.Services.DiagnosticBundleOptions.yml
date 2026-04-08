@@ -1,0 +1,676 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.DiagnosticBundleOptions
+  commentId: T:Meridian.Application.Services.DiagnosticBundleOptions
+  id: DiagnosticBundleOptions
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.DiagnosticBundleOptions.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)
+  - Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration
+  - Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables
+  - Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs
+  - Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics
+  - Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo
+  - Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo
+  - Meridian.Application.Services.DiagnosticBundleOptions.LogDays
+  langs:
+  - csharp
+  - vb
+  name: DiagnosticBundleOptions
+  nameWithType: DiagnosticBundleOptions
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiagnosticBundleOptions
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Options for diagnostic bundle generation.
+  example: []
+  syntax:
+    content: 'public sealed record DiagnosticBundleOptions : IEquatable<DiagnosticBundleOptions>'
+    content.vb: Public NotInheritable Class DiagnosticBundleOptions Implements IEquatable(Of DiagnosticBundleOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.DiagnosticBundleOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)
+  commentId: M:Meridian.Application.Services.DiagnosticBundleOptions.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)
+  id: '#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Int32)'
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: DiagnosticBundleOptions(bool, bool, bool, bool, bool, bool, int)
+  nameWithType: DiagnosticBundleOptions.DiagnosticBundleOptions(bool, bool, bool, bool, bool, bool, int)
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.DiagnosticBundleOptions(bool, bool, bool, bool, bool, bool, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Options for diagnostic bundle generation.
+  example: []
+  syntax:
+    content: public DiagnosticBundleOptions(bool IncludeSystemInfo = true, bool IncludeConfiguration = true, bool IncludeMetrics = true, bool IncludeLogs = true, bool IncludeStorageInfo = true, bool IncludeEnvironmentVariables = true, int LogDays = 3)
+    parameters:
+    - id: IncludeSystemInfo
+      type: System.Boolean
+    - id: IncludeConfiguration
+      type: System.Boolean
+    - id: IncludeMetrics
+      type: System.Boolean
+    - id: IncludeLogs
+      type: System.Boolean
+    - id: IncludeStorageInfo
+      type: System.Boolean
+    - id: IncludeEnvironmentVariables
+      type: System.Boolean
+    - id: LogDays
+      type: System.Int32
+    content.vb: Public Sub New(IncludeSystemInfo As Boolean = True, IncludeConfiguration As Boolean = True, IncludeMetrics As Boolean = True, IncludeLogs As Boolean = True, IncludeStorageInfo As Boolean = True, IncludeEnvironmentVariables As Boolean = True, LogDays As Integer = 3)
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.#ctor*
+  nameWithType.vb: DiagnosticBundleOptions.New(Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Integer)
+  fullName.vb: Meridian.Application.Services.DiagnosticBundleOptions.New(Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Integer)
+  name.vb: New(Boolean, Boolean, Boolean, Boolean, Boolean, Boolean, Integer)
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo
+  id: IncludeSystemInfo
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeSystemInfo
+  nameWithType: DiagnosticBundleOptions.IncludeSystemInfo
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeSystemInfo
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 443
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IncludeSystemInfo { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeSystemInfo As Boolean
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo*
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration
+  id: IncludeConfiguration
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeConfiguration
+  nameWithType: DiagnosticBundleOptions.IncludeConfiguration
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeConfiguration
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 444
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IncludeConfiguration { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeConfiguration As Boolean
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration*
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics
+  id: IncludeMetrics
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeMetrics
+  nameWithType: DiagnosticBundleOptions.IncludeMetrics
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeMetrics
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IncludeMetrics { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeMetrics As Boolean
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics*
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs
+  id: IncludeLogs
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeLogs
+  nameWithType: DiagnosticBundleOptions.IncludeLogs
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeLogs
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 446
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IncludeLogs { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeLogs As Boolean
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs*
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo
+  id: IncludeStorageInfo
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeStorageInfo
+  nameWithType: DiagnosticBundleOptions.IncludeStorageInfo
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeStorageInfo
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IncludeStorageInfo { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeStorageInfo As Boolean
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo*
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables
+  id: IncludeEnvironmentVariables
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeEnvironmentVariables
+  nameWithType: DiagnosticBundleOptions.IncludeEnvironmentVariables
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeEnvironmentVariables
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IncludeEnvironmentVariables { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeEnvironmentVariables As Boolean
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables*
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.LogDays
+  commentId: P:Meridian.Application.Services.DiagnosticBundleOptions.LogDays
+  id: LogDays
+  parent: Meridian.Application.Services.DiagnosticBundleOptions
+  langs:
+  - csharp
+  - vb
+  name: LogDays
+  nameWithType: DiagnosticBundleOptions.LogDays
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.LogDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DiagnosticBundleService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogDays
+    path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
+    startLine: 449
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int LogDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LogDays As Integer
+  overload: Meridian.Application.Services.DiagnosticBundleOptions.LogDays*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.DiagnosticBundleOptions}
+  commentId: T:System.IEquatable{Meridian.Application.Services.DiagnosticBundleOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DiagnosticBundleOptions>
+  nameWithType: IEquatable<DiagnosticBundleOptions>
+  fullName: System.IEquatable<Meridian.Application.Services.DiagnosticBundleOptions>
+  nameWithType.vb: IEquatable(Of DiagnosticBundleOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.DiagnosticBundleOptions)
+  name.vb: IEquatable(Of DiagnosticBundleOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.DiagnosticBundleOptions
+    name: DiagnosticBundleOptions
+    href: Meridian.Application.Services.DiagnosticBundleOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.DiagnosticBundleOptions
+    name: DiagnosticBundleOptions
+    href: Meridian.Application.Services.DiagnosticBundleOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.#ctor*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.#ctor
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions__ctor_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Int32_
+  name: DiagnosticBundleOptions
+  nameWithType: DiagnosticBundleOptions.DiagnosticBundleOptions
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.DiagnosticBundleOptions
+  nameWithType.vb: DiagnosticBundleOptions.New
+  fullName.vb: Meridian.Application.Services.DiagnosticBundleOptions.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_IncludeSystemInfo
+  name: IncludeSystemInfo
+  nameWithType: DiagnosticBundleOptions.IncludeSystemInfo
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeSystemInfo
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_IncludeConfiguration
+  name: IncludeConfiguration
+  nameWithType: DiagnosticBundleOptions.IncludeConfiguration
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeConfiguration
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_IncludeMetrics
+  name: IncludeMetrics
+  nameWithType: DiagnosticBundleOptions.IncludeMetrics
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeMetrics
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_IncludeLogs
+  name: IncludeLogs
+  nameWithType: DiagnosticBundleOptions.IncludeLogs
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeLogs
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_IncludeStorageInfo
+  name: IncludeStorageInfo
+  nameWithType: DiagnosticBundleOptions.IncludeStorageInfo
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeStorageInfo
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_IncludeEnvironmentVariables
+  name: IncludeEnvironmentVariables
+  nameWithType: DiagnosticBundleOptions.IncludeEnvironmentVariables
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.IncludeEnvironmentVariables
+- uid: Meridian.Application.Services.DiagnosticBundleOptions.LogDays*
+  commentId: Overload:Meridian.Application.Services.DiagnosticBundleOptions.LogDays
+  href: Meridian.Application.Services.DiagnosticBundleOptions.html#Meridian_Application_Services_DiagnosticBundleOptions_LogDays
+  name: LogDays
+  nameWithType: DiagnosticBundleOptions.LogDays
+  fullName: Meridian.Application.Services.DiagnosticBundleOptions.LogDays

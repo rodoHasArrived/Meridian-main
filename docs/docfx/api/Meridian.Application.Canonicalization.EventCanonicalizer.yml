@@ -1,0 +1,642 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.EventCanonicalizer
+  commentId: T:Meridian.Application.Canonicalization.EventCanonicalizer
+  id: EventCanonicalizer
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.EventCanonicalizer.#ctor(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry,Meridian.Application.Canonicalization.ConditionCodeMapper,Meridian.Application.Canonicalization.VenueMicMapper,System.Byte,Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService)
+  - Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: EventCanonicalizer
+  nameWithType: EventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.EventCanonicalizer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCanonicalizer
+    path: ../../src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: >-
+    Default canonicalization implementation that resolves symbols, maps condition codes,
+
+    and normalizes venue identifiers using in-memory lookup tables.
+
+    Follows the <code>with</code> expression pattern established by <xref href="Meridian.Domain.Events.MarketEvent.StampReceiveTime(System.Nullable%7bSystem.DateTimeOffset%7d)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed class EventCanonicalizer : IEventCanonicalizer'
+    content.vb: Public NotInheritable Class EventCanonicalizer Implements IEventCanonicalizer
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Canonicalization.IEventCanonicalizer
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Canonicalization.EventCanonicalizer.#ctor(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry,Meridian.Application.Canonicalization.ConditionCodeMapper,Meridian.Application.Canonicalization.VenueMicMapper,System.Byte,Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService)
+  commentId: M:Meridian.Application.Canonicalization.EventCanonicalizer.#ctor(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry,Meridian.Application.Canonicalization.ConditionCodeMapper,Meridian.Application.Canonicalization.VenueMicMapper,System.Byte,Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService)
+  id: '#ctor(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry,Meridian.Application.Canonicalization.ConditionCodeMapper,Meridian.Application.Canonicalization.VenueMicMapper,System.Byte,Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService)'
+  parent: Meridian.Application.Canonicalization.EventCanonicalizer
+  langs:
+  - csharp
+  - vb
+  name: EventCanonicalizer(ICanonicalSymbolRegistry, ConditionCodeMapper, VenueMicMapper, byte, SecurityMasterCanonicalSymbolSeedService?)
+  nameWithType: EventCanonicalizer.EventCanonicalizer(ICanonicalSymbolRegistry, ConditionCodeMapper, VenueMicMapper, byte, SecurityMasterCanonicalSymbolSeedService?)
+  fullName: Meridian.Application.Canonicalization.EventCanonicalizer.EventCanonicalizer(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry, Meridian.Application.Canonicalization.ConditionCodeMapper, Meridian.Application.Canonicalization.VenueMicMapper, byte, Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public EventCanonicalizer(ICanonicalSymbolRegistry symbols, ConditionCodeMapper conditions, VenueMicMapper venues, byte version = 1, SecurityMasterCanonicalSymbolSeedService? seedService = null)
+    parameters:
+    - id: symbols
+      type: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+    - id: conditions
+      type: Meridian.Application.Canonicalization.ConditionCodeMapper
+    - id: venues
+      type: Meridian.Application.Canonicalization.VenueMicMapper
+    - id: version
+      type: System.Byte
+    - id: seedService
+      type: Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService
+    content.vb: Public Sub New(symbols As ICanonicalSymbolRegistry, conditions As ConditionCodeMapper, venues As VenueMicMapper, version As Byte = 1, seedService As SecurityMasterCanonicalSymbolSeedService = Nothing)
+  overload: Meridian.Application.Canonicalization.EventCanonicalizer.#ctor*
+  nameWithType.vb: EventCanonicalizer.New(ICanonicalSymbolRegistry, ConditionCodeMapper, VenueMicMapper, Byte, SecurityMasterCanonicalSymbolSeedService)
+  fullName.vb: Meridian.Application.Canonicalization.EventCanonicalizer.New(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry, Meridian.Application.Canonicalization.ConditionCodeMapper, Meridian.Application.Canonicalization.VenueMicMapper, Byte, Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService)
+  name.vb: New(ICanonicalSymbolRegistry, ConditionCodeMapper, VenueMicMapper, Byte, SecurityMasterCanonicalSymbolSeedService)
+- uid: Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Application.Canonicalization.EventCanonicalizer
+  langs:
+  - csharp
+  - vb
+  name: Canonicalize(MarketEvent, CancellationToken)
+  nameWithType: EventCanonicalizer.Canonicalize(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Canonicalize
+    path: ../../src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: >-
+    Canonicalizes a raw market event. Returns the enriched event with canonical fields populated.
+
+    The original <xref href="Meridian.Domain.Events.MarketEvent.Symbol" data-throw-if-not-resolved="false"></xref> is never mutated.
+  example: []
+  syntax:
+    content: public MarketEvent Canonicalize(MarketEvent raw, CancellationToken ct = default)
+    parameters:
+    - id: raw
+      type: Meridian.Domain.Events.MarketEvent
+      description: The raw event from a provider adapter.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: Meridian.Domain.Events.MarketEvent
+      description: The canonicalized event with <xref href="Meridian.Domain.Events.MarketEvent.Tier" data-throw-if-not-resolved="false"></xref> set to <code>Enriched</code>.
+    content.vb: Public Function Canonicalize(raw As MarketEvent, ct As CancellationToken = Nothing) As MarketEvent
+  overload: Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize*
+  implements:
+  - Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Domain.Events.MarketEvent.StampReceiveTime(System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Domain.Events.MarketEvent.StampReceiveTime(System.Nullable{System.DateTimeOffset})
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: StampReceiveTime(DateTimeOffset?)
+  nameWithType: MarketEvent.StampReceiveTime(DateTimeOffset?)
+  fullName: Meridian.Domain.Events.MarketEvent.StampReceiveTime(System.DateTimeOffset?)
+  spec.csharp:
+  - uid: Meridian.Domain.Events.MarketEvent.StampReceiveTime(System.Nullable{System.DateTimeOffset})
+    name: StampReceiveTime
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Events.MarketEvent.StampReceiveTime(System.Nullable{System.DateTimeOffset})
+    name: StampReceiveTime
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: )
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer
+  commentId: T:Meridian.Application.Canonicalization.IEventCanonicalizer
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.IEventCanonicalizer.html
+  name: IEventCanonicalizer
+  nameWithType: IEventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Canonicalization.EventCanonicalizer.#ctor*
+  commentId: Overload:Meridian.Application.Canonicalization.EventCanonicalizer.#ctor
+  href: Meridian.Application.Canonicalization.EventCanonicalizer.html#Meridian_Application_Canonicalization_EventCanonicalizer__ctor_Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_Meridian_Application_Canonicalization_ConditionCodeMapper_Meridian_Application_Canonicalization_VenueMicMapper_System_Byte_Meridian_Application_SecurityMaster_SecurityMasterCanonicalSymbolSeedService_
+  name: EventCanonicalizer
+  nameWithType: EventCanonicalizer.EventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.EventCanonicalizer.EventCanonicalizer
+  nameWithType.vb: EventCanonicalizer.New
+  fullName.vb: Meridian.Application.Canonicalization.EventCanonicalizer.New
+  name.vb: New
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  commentId: T:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html
+  name: ICanonicalSymbolRegistry
+  nameWithType: ICanonicalSymbolRegistry
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+- uid: Meridian.Application.Canonicalization.ConditionCodeMapper
+  commentId: T:Meridian.Application.Canonicalization.ConditionCodeMapper
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.ConditionCodeMapper.html
+  name: ConditionCodeMapper
+  nameWithType: ConditionCodeMapper
+  fullName: Meridian.Application.Canonicalization.ConditionCodeMapper
+- uid: Meridian.Application.Canonicalization.VenueMicMapper
+  commentId: T:Meridian.Application.Canonicalization.VenueMicMapper
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.VenueMicMapper.html
+  name: VenueMicMapper
+  nameWithType: VenueMicMapper
+  fullName: Meridian.Application.Canonicalization.VenueMicMapper
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService.html
+  name: SecurityMasterCanonicalSymbolSeedService
+  nameWithType: SecurityMasterCanonicalSymbolSeedService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: Meridian.Domain.Events.MarketEvent.Symbol
+  commentId: P:Meridian.Domain.Events.MarketEvent.Symbol
+  href: Meridian.Domain.Events.MarketEvent.html#Meridian_Domain_Events_MarketEvent_Symbol
+  name: Symbol
+  nameWithType: MarketEvent.Symbol
+  fullName: Meridian.Domain.Events.MarketEvent.Symbol
+- uid: Meridian.Domain.Events.MarketEvent.Tier
+  commentId: P:Meridian.Domain.Events.MarketEvent.Tier
+  name: Tier
+  nameWithType: MarketEvent.Tier
+  fullName: Meridian.Domain.Events.MarketEvent.Tier
+- uid: Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize*
+  commentId: Overload:Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize
+  href: Meridian.Application.Canonicalization.EventCanonicalizer.html#Meridian_Application_Canonicalization_EventCanonicalizer_Canonicalize_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: Canonicalize
+  nameWithType: EventCanonicalizer.Canonicalize
+  fullName: Meridian.Application.Canonicalization.EventCanonicalizer.Canonicalize
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Application.Canonicalization.IEventCanonicalizer
+  isExternal: true
+  href: Meridian.Application.Canonicalization.IEventCanonicalizer.html#Meridian_Application_Canonicalization_IEventCanonicalizer_Canonicalize_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: Canonicalize(MarketEvent, CancellationToken)
+  nameWithType: IEventCanonicalizer.Canonicalize(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: Canonicalize
+    href: Meridian.Application.Canonicalization.IEventCanonicalizer.html#Meridian_Application_Canonicalization_IEventCanonicalizer_Canonicalize_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: Canonicalize
+    href: Meridian.Application.Canonicalization.IEventCanonicalizer.html#Meridian_Application_Canonicalization_IEventCanonicalizer_Canonicalize_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading

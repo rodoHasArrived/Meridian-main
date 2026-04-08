@@ -1,0 +1,746 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.PortfolioRegistry
+  commentId: T:Meridian.Execution.Services.PortfolioRegistry
+  id: PortfolioRegistry
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.PortfolioRegistry.Count
+  - Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+  - Meridian.Execution.Services.PortfolioRegistry.GetAll
+  - Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+  - Meridian.Execution.Services.PortfolioRegistry.TryGet(System.String)
+  langs:
+  - csharp
+  - vb
+  name: PortfolioRegistry
+  nameWithType: PortfolioRegistry
+  fullName: Meridian.Execution.Services.PortfolioRegistry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PortfolioRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioRegistry
+    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Thread-safe registry that tracks all live <xref href="Meridian.Execution.Models.IMultiAccountPortfolioState" data-throw-if-not-resolved="false"></xref> instances
+
+    by their strategy run ID.  Strategies call <xref href="Meridian.Execution.Services.PortfolioRegistry.Register(System.String%2cMeridian.Execution.Models.IMultiAccountPortfolioState)" data-throw-if-not-resolved="false"></xref> on start and
+
+    <xref href="Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)" data-throw-if-not-resolved="false"></xref> on stop so that cross-strategy aggregation and the REST API can
+
+    discover all currently active portfolios.
+  example: []
+  syntax:
+    content: public sealed class PortfolioRegistry
+    content.vb: Public NotInheritable Class PortfolioRegistry
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+  commentId: M:Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+  id: Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+  parent: Meridian.Execution.Services.PortfolioRegistry
+  langs:
+  - csharp
+  - vb
+  name: Register(string, IMultiAccountPortfolioState)
+  nameWithType: PortfolioRegistry.Register(string, IMultiAccountPortfolioState)
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Register(string, Meridian.Execution.Models.IMultiAccountPortfolioState)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PortfolioRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Registers <code class="paramref">portfolio</code> under <code class="paramref">runId</code>.
+
+    If an entry already exists for the same run ID it is silently replaced.
+  example: []
+  syntax:
+    content: public void Register(string runId, IMultiAccountPortfolioState portfolio)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: portfolio
+      type: Meridian.Execution.Models.IMultiAccountPortfolioState
+    content.vb: Public Sub Register(runId As String, portfolio As IMultiAccountPortfolioState)
+  overload: Meridian.Execution.Services.PortfolioRegistry.Register*
+  nameWithType.vb: PortfolioRegistry.Register(String, IMultiAccountPortfolioState)
+  fullName.vb: Meridian.Execution.Services.PortfolioRegistry.Register(String, Meridian.Execution.Models.IMultiAccountPortfolioState)
+  name.vb: Register(String, IMultiAccountPortfolioState)
+- uid: Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+  commentId: M:Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+  id: Deregister(System.String)
+  parent: Meridian.Execution.Services.PortfolioRegistry
+  langs:
+  - csharp
+  - vb
+  name: Deregister(string)
+  nameWithType: PortfolioRegistry.Deregister(string)
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Deregister(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PortfolioRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deregister
+    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Removes the portfolio registered under <code class="paramref">runId</code>.
+
+    No-op when no entry exists for that run ID.
+  example: []
+  syntax:
+    content: public void Deregister(string runId)
+    parameters:
+    - id: runId
+      type: System.String
+    content.vb: Public Sub Deregister(runId As String)
+  overload: Meridian.Execution.Services.PortfolioRegistry.Deregister*
+  nameWithType.vb: PortfolioRegistry.Deregister(String)
+  fullName.vb: Meridian.Execution.Services.PortfolioRegistry.Deregister(String)
+  name.vb: Deregister(String)
+- uid: Meridian.Execution.Services.PortfolioRegistry.GetAll
+  commentId: M:Meridian.Execution.Services.PortfolioRegistry.GetAll
+  id: GetAll
+  parent: Meridian.Execution.Services.PortfolioRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAll()
+  nameWithType: PortfolioRegistry.GetAll()
+  fullName: Meridian.Execution.Services.PortfolioRegistry.GetAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PortfolioRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAll
+    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns a snapshot of all currently registered portfolios keyed by run ID.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, IMultiAccountPortfolioState> GetAll()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.IMultiAccountPortfolioState}
+    content.vb: Public Function GetAll() As IReadOnlyDictionary(Of String, IMultiAccountPortfolioState)
+  overload: Meridian.Execution.Services.PortfolioRegistry.GetAll*
+- uid: Meridian.Execution.Services.PortfolioRegistry.TryGet(System.String)
+  commentId: M:Meridian.Execution.Services.PortfolioRegistry.TryGet(System.String)
+  id: TryGet(System.String)
+  parent: Meridian.Execution.Services.PortfolioRegistry
+  langs:
+  - csharp
+  - vb
+  name: TryGet(string)
+  nameWithType: PortfolioRegistry.TryGet(string)
+  fullName: Meridian.Execution.Services.PortfolioRegistry.TryGet(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PortfolioRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGet
+    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Returns the portfolio registered under <code class="paramref">runId</code>, or
+
+    <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no entry exists.
+  example: []
+  syntax:
+    content: public IMultiAccountPortfolioState? TryGet(string runId)
+    parameters:
+    - id: runId
+      type: System.String
+    return:
+      type: Meridian.Execution.Models.IMultiAccountPortfolioState
+    content.vb: Public Function TryGet(runId As String) As IMultiAccountPortfolioState
+  overload: Meridian.Execution.Services.PortfolioRegistry.TryGet*
+  nameWithType.vb: PortfolioRegistry.TryGet(String)
+  fullName.vb: Meridian.Execution.Services.PortfolioRegistry.TryGet(String)
+  name.vb: TryGet(String)
+- uid: Meridian.Execution.Services.PortfolioRegistry.Count
+  commentId: P:Meridian.Execution.Services.PortfolioRegistry.Count
+  id: Count
+  parent: Meridian.Execution.Services.PortfolioRegistry
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: PortfolioRegistry.Count
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PortfolioRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Count of currently registered portfolios.
+  example: []
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Execution.Services.PortfolioRegistry.Count*
+references:
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+  commentId: T:Meridian.Execution.Models.IMultiAccountPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  name: IMultiAccountPortfolioState
+  nameWithType: IMultiAccountPortfolioState
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState
+- uid: Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+  commentId: M:Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+  isExternal: true
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Register_System_String_Meridian_Execution_Models_IMultiAccountPortfolioState_
+  name: Register(string, IMultiAccountPortfolioState)
+  nameWithType: PortfolioRegistry.Register(string, IMultiAccountPortfolioState)
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Register(string, Meridian.Execution.Models.IMultiAccountPortfolioState)
+  nameWithType.vb: PortfolioRegistry.Register(String, IMultiAccountPortfolioState)
+  fullName.vb: Meridian.Execution.Services.PortfolioRegistry.Register(String, Meridian.Execution.Models.IMultiAccountPortfolioState)
+  name.vb: Register(String, IMultiAccountPortfolioState)
+  spec.csharp:
+  - uid: Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+    name: Register
+    href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Register_System_String_Meridian_Execution_Models_IMultiAccountPortfolioState_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+    name: IMultiAccountPortfolioState
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Services.PortfolioRegistry.Register(System.String,Meridian.Execution.Models.IMultiAccountPortfolioState)
+    name: Register
+    href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Register_System_String_Meridian_Execution_Models_IMultiAccountPortfolioState_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+    name: IMultiAccountPortfolioState
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  - name: )
+- uid: Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+  commentId: M:Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+  isExternal: true
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Deregister_System_String_
+  name: Deregister(string)
+  nameWithType: PortfolioRegistry.Deregister(string)
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Deregister(string)
+  nameWithType.vb: PortfolioRegistry.Deregister(String)
+  fullName.vb: Meridian.Execution.Services.PortfolioRegistry.Deregister(String)
+  name.vb: Deregister(String)
+  spec.csharp:
+  - uid: Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+    name: Deregister
+    href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Deregister_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Services.PortfolioRegistry.Deregister(System.String)
+    name: Deregister
+    href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Deregister_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Services.PortfolioRegistry.Register*
+  commentId: Overload:Meridian.Execution.Services.PortfolioRegistry.Register
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Register_System_String_Meridian_Execution_Models_IMultiAccountPortfolioState_
+  name: Register
+  nameWithType: PortfolioRegistry.Register
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Register
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Services.PortfolioRegistry.Deregister*
+  commentId: Overload:Meridian.Execution.Services.PortfolioRegistry.Deregister
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Deregister_System_String_
+  name: Deregister
+  nameWithType: PortfolioRegistry.Deregister
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Deregister
+- uid: Meridian.Execution.Services.PortfolioRegistry.GetAll*
+  commentId: Overload:Meridian.Execution.Services.PortfolioRegistry.GetAll
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_GetAll
+  name: GetAll
+  nameWithType: PortfolioRegistry.GetAll
+  fullName: Meridian.Execution.Services.PortfolioRegistry.GetAll
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.IMultiAccountPortfolioState}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.IMultiAccountPortfolioState}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, IMultiAccountPortfolioState>
+  nameWithType: IReadOnlyDictionary<string, IMultiAccountPortfolioState>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.IMultiAccountPortfolioState>
+  nameWithType.vb: IReadOnlyDictionary(Of String, IMultiAccountPortfolioState)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.IMultiAccountPortfolioState)
+  name.vb: IReadOnlyDictionary(Of String, IMultiAccountPortfolioState)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+    name: IMultiAccountPortfolioState
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+    name: IMultiAccountPortfolioState
+    href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Services.PortfolioRegistry.TryGet*
+  commentId: Overload:Meridian.Execution.Services.PortfolioRegistry.TryGet
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_TryGet_System_String_
+  name: TryGet
+  nameWithType: PortfolioRegistry.TryGet
+  fullName: Meridian.Execution.Services.PortfolioRegistry.TryGet
+- uid: Meridian.Execution.Services.PortfolioRegistry.Count*
+  commentId: Overload:Meridian.Execution.Services.PortfolioRegistry.Count
+  href: Meridian.Execution.Services.PortfolioRegistry.html#Meridian_Execution_Services_PortfolioRegistry_Count
+  name: Count
+  nameWithType: PortfolioRegistry.Count
+  fullName: Meridian.Execution.Services.PortfolioRegistry.Count
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlFlowDirection
+  commentId: T:Meridian.Contracts.Etl.EtlFlowDirection
+  id: EtlFlowDirection
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlFlowDirection.Export
+  - Meridian.Contracts.Etl.EtlFlowDirection.Import
+  - Meridian.Contracts.Etl.EtlFlowDirection.RoundTrip
+  langs:
+  - csharp
+  - vb
+  name: EtlFlowDirection
+  nameWithType: EtlFlowDirection
+  fullName: Meridian.Contracts.Etl.EtlFlowDirection
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlFlowDirection
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum EtlFlowDirection : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum EtlFlowDirection As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Etl.EtlFlowDirection.Import
+  commentId: F:Meridian.Contracts.Etl.EtlFlowDirection.Import
+  id: Import
+  parent: Meridian.Contracts.Etl.EtlFlowDirection
+  langs:
+  - csharp
+  - vb
+  name: Import
+  nameWithType: EtlFlowDirection.Import
+  fullName: Meridian.Contracts.Etl.EtlFlowDirection.Import
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Import
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Import = 0
+    return:
+      type: Meridian.Contracts.Etl.EtlFlowDirection
+- uid: Meridian.Contracts.Etl.EtlFlowDirection.Export
+  commentId: F:Meridian.Contracts.Etl.EtlFlowDirection.Export
+  id: Export
+  parent: Meridian.Contracts.Etl.EtlFlowDirection
+  langs:
+  - csharp
+  - vb
+  name: Export
+  nameWithType: EtlFlowDirection.Export
+  fullName: Meridian.Contracts.Etl.EtlFlowDirection.Export
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Export
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Export = 1
+    return:
+      type: Meridian.Contracts.Etl.EtlFlowDirection
+- uid: Meridian.Contracts.Etl.EtlFlowDirection.RoundTrip
+  commentId: F:Meridian.Contracts.Etl.EtlFlowDirection.RoundTrip
+  id: RoundTrip
+  parent: Meridian.Contracts.Etl.EtlFlowDirection
+  langs:
+  - csharp
+  - vb
+  name: RoundTrip
+  nameWithType: EtlFlowDirection.RoundTrip
+  fullName: Meridian.Contracts.Etl.EtlFlowDirection.RoundTrip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RoundTrip
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: RoundTrip = 2
+    return:
+      type: Meridian.Contracts.Etl.EtlFlowDirection
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.EtlFlowDirection
+  commentId: T:Meridian.Contracts.Etl.EtlFlowDirection
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlFlowDirection.html
+  name: EtlFlowDirection
+  nameWithType: EtlFlowDirection
+  fullName: Meridian.Contracts.Etl.EtlFlowDirection

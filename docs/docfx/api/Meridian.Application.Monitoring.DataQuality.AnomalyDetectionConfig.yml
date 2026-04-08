@@ -1,0 +1,934 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  id: AnomalyDetectionConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold
+  langs:
+  - csharp
+  - vb
+  name: AnomalyDetectionConfig
+  nameWithType: AnomalyDetectionConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyDetectionConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Anomaly detection configuration.
+  example: []
+  syntax:
+    content: 'public sealed record AnomalyDetectionConfig : IEquatable<AnomalyDetectionConfig>'
+    content.vb: Public NotInheritable Class AnomalyDetectionConfig Implements IEquatable(Of AnomalyDetectionConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  id: PriceSpikeThresholdPercent
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: PriceSpikeThresholdPercent
+  nameWithType: AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceSpikeThresholdPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double PriceSpikeThresholdPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property PriceSpikeThresholdPercent As Double
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  id: VolumeSpikeThresholdMultiplier
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: VolumeSpikeThresholdMultiplier
+  nameWithType: AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeSpikeThresholdMultiplier
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double VolumeSpikeThresholdMultiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property VolumeSpikeThresholdMultiplier As Double
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  id: VolumeDropThresholdMultiplier
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: VolumeDropThresholdMultiplier
+  nameWithType: AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeDropThresholdMultiplier
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 287
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double VolumeDropThresholdMultiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property VolumeDropThresholdMultiplier As Double
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent
+  id: SpreadThresholdPercent
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: SpreadThresholdPercent
+  nameWithType: AnomalyDetectionConfig.SpreadThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadThresholdPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double SpreadThresholdPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SpreadThresholdPercent As Double
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds
+  id: StaleDataThresholdSeconds
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: StaleDataThresholdSeconds
+  nameWithType: AnomalyDetectionConfig.StaleDataThresholdSeconds
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StaleDataThresholdSeconds
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int StaleDataThresholdSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property StaleDataThresholdSeconds As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent
+  id: RapidChangeThresholdPercent
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: RapidChangeThresholdPercent
+  nameWithType: AnomalyDetectionConfig.RapidChangeThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RapidChangeThresholdPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double RapidChangeThresholdPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property RapidChangeThresholdPercent As Double
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds
+  id: RapidChangeWindowSeconds
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: RapidChangeWindowSeconds
+  nameWithType: AnomalyDetectionConfig.RapidChangeWindowSeconds
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RapidChangeWindowSeconds
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int RapidChangeWindowSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RapidChangeWindowSeconds As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold
+  id: ZScoreThreshold
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ZScoreThreshold
+  nameWithType: AnomalyDetectionConfig.ZScoreThreshold
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ZScoreThreshold
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double ZScoreThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ZScoreThreshold As Double
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics
+  id: MinSamplesForStatistics
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: MinSamplesForStatistics
+  nameWithType: AnomalyDetectionConfig.MinSamplesForStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSamplesForStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 293
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int MinSamplesForStatistics { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MinSamplesForStatistics As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies
+  id: EnablePriceAnomalies
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: EnablePriceAnomalies
+  nameWithType: AnomalyDetectionConfig.EnablePriceAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnablePriceAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public bool EnablePriceAnomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnablePriceAnomalies As Boolean
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies
+  id: EnableVolumeAnomalies
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: EnableVolumeAnomalies
+  nameWithType: AnomalyDetectionConfig.EnableVolumeAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableVolumeAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public bool EnableVolumeAnomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableVolumeAnomalies As Boolean
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies
+  id: EnableSpreadAnomalies
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: EnableSpreadAnomalies
+  nameWithType: AnomalyDetectionConfig.EnableSpreadAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableSpreadAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public bool EnableSpreadAnomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableSpreadAnomalies As Boolean
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection
+  id: EnableStaleDataDetection
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: EnableStaleDataDetection
+  nameWithType: AnomalyDetectionConfig.EnableStaleDataDetection
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableStaleDataDetection
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public bool EnableStaleDataDetection { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableStaleDataDetection As Boolean
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds
+  id: AlertCooldownSeconds
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: AlertCooldownSeconds
+  nameWithType: AnomalyDetectionConfig.AlertCooldownSeconds
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertCooldownSeconds
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 298
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int AlertCooldownSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AlertCooldownSeconds As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default
+  id: Default
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: AnomalyDetectionConfig.Default
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public static AnomalyDetectionConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+    content.vb: Public Shared ReadOnly Property [Default] As AnomalyDetectionConfig
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AnomalyDetectionConfig>
+  nameWithType: IEquatable<AnomalyDetectionConfig>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig>
+  nameWithType.vb: IEquatable(Of AnomalyDetectionConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig)
+  name.vb: IEquatable(Of AnomalyDetectionConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+    name: AnomalyDetectionConfig
+    href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+    name: AnomalyDetectionConfig
+    href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_PriceSpikeThresholdPercent
+  name: PriceSpikeThresholdPercent
+  nameWithType: AnomalyDetectionConfig.PriceSpikeThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.PriceSpikeThresholdPercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_VolumeSpikeThresholdMultiplier
+  name: VolumeSpikeThresholdMultiplier
+  nameWithType: AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeSpikeThresholdMultiplier
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_VolumeDropThresholdMultiplier
+  name: VolumeDropThresholdMultiplier
+  nameWithType: AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.VolumeDropThresholdMultiplier
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_SpreadThresholdPercent
+  name: SpreadThresholdPercent
+  nameWithType: AnomalyDetectionConfig.SpreadThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.SpreadThresholdPercent
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_StaleDataThresholdSeconds
+  name: StaleDataThresholdSeconds
+  nameWithType: AnomalyDetectionConfig.StaleDataThresholdSeconds
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.StaleDataThresholdSeconds
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_RapidChangeThresholdPercent
+  name: RapidChangeThresholdPercent
+  nameWithType: AnomalyDetectionConfig.RapidChangeThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeThresholdPercent
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_RapidChangeWindowSeconds
+  name: RapidChangeWindowSeconds
+  nameWithType: AnomalyDetectionConfig.RapidChangeWindowSeconds
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.RapidChangeWindowSeconds
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_ZScoreThreshold
+  name: ZScoreThreshold
+  nameWithType: AnomalyDetectionConfig.ZScoreThreshold
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.ZScoreThreshold
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_MinSamplesForStatistics
+  name: MinSamplesForStatistics
+  nameWithType: AnomalyDetectionConfig.MinSamplesForStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.MinSamplesForStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_EnablePriceAnomalies
+  name: EnablePriceAnomalies
+  nameWithType: AnomalyDetectionConfig.EnablePriceAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnablePriceAnomalies
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_EnableVolumeAnomalies
+  name: EnableVolumeAnomalies
+  nameWithType: AnomalyDetectionConfig.EnableVolumeAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableVolumeAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_EnableSpreadAnomalies
+  name: EnableSpreadAnomalies
+  nameWithType: AnomalyDetectionConfig.EnableSpreadAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableSpreadAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_EnableStaleDataDetection
+  name: EnableStaleDataDetection
+  nameWithType: AnomalyDetectionConfig.EnableStaleDataDetection
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.EnableStaleDataDetection
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_AlertCooldownSeconds
+  name: AlertCooldownSeconds
+  nameWithType: AnomalyDetectionConfig.AlertCooldownSeconds
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.AlertCooldownSeconds
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_Default
+  name: Default
+  nameWithType: AnomalyDetectionConfig.Default
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.Default
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html
+  name: AnomalyDetectionConfig
+  nameWithType: AnomalyDetectionConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig

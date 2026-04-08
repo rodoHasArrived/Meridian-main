@@ -1,0 +1,775 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  id: ProviderDiscrepancy
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity)
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1
+  - Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2
+  langs:
+  - csharp
+  - vb
+  name: ProviderDiscrepancy
+  nameWithType: ProviderDiscrepancy
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDiscrepancy
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Discrepancy found between providers.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderDiscrepancy : IEquatable<ProviderDiscrepancy>'
+    content.vb: Public NotInheritable Class ProviderDiscrepancy Implements IEquatable(Of ProviderDiscrepancy)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity)
+  id: '#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity)'
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: ProviderDiscrepancy(DateTimeOffset, string, string, string, string, string, string, double, DiscrepancySeverity)
+  nameWithType: ProviderDiscrepancy.ProviderDiscrepancy(DateTimeOffset, string, string, string, string, string, string, double, DiscrepancySeverity)
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.ProviderDiscrepancy(System.DateTimeOffset, string, string, string, string, string, string, double, Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Discrepancy found between providers.
+  example: []
+  syntax:
+    content: public ProviderDiscrepancy(DateTimeOffset Timestamp, string DiscrepancyType, string Provider1, string Provider2, string Field, string Value1, string Value2, double Difference, DiscrepancySeverity Severity)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: DiscrepancyType
+      type: System.String
+    - id: Provider1
+      type: System.String
+    - id: Provider2
+      type: System.String
+    - id: Field
+      type: System.String
+    - id: Value1
+      type: System.String
+    - id: Value2
+      type: System.String
+    - id: Difference
+      type: System.Double
+    - id: Severity
+      type: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, DiscrepancyType As String, Provider1 As String, Provider2 As String, Field As String, Value1 As String, Value2 As String, Difference As Double, Severity As DiscrepancySeverity)
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.#ctor*
+  nameWithType.vb: ProviderDiscrepancy.New(DateTimeOffset, String, String, String, String, String, String, Double, DiscrepancySeverity)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.New(System.DateTimeOffset, String, String, String, String, String, String, Double, Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity)
+  name.vb: New(DateTimeOffset, String, String, String, String, String, String, Double, DiscrepancySeverity)
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ProviderDiscrepancy.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType
+  id: DiscrepancyType
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: DiscrepancyType
+  nameWithType: ProviderDiscrepancy.DiscrepancyType
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscrepancyType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string DiscrepancyType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DiscrepancyType As String
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1
+  id: Provider1
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Provider1
+  nameWithType: ProviderDiscrepancy.Provider1
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider1
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Provider1 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider1 As String
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2
+  id: Provider2
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Provider2
+  nameWithType: ProviderDiscrepancy.Provider2
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider2
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Provider2 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider2 As String
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field
+  id: Field
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Field
+  nameWithType: ProviderDiscrepancy.Field
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Field
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Field { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Field As String
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1
+  id: Value1
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Value1
+  nameWithType: ProviderDiscrepancy.Value1
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value1
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Value1 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Value1 As String
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2
+  id: Value2
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Value2
+  nameWithType: ProviderDiscrepancy.Value2
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value2
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Value2 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Value2 As String
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference
+  id: Difference
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Difference
+  nameWithType: ProviderDiscrepancy.Difference
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Difference
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double Difference { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Difference As Double
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference*
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity
+  id: Severity
+  parent: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: ProviderDiscrepancy.Severity
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DiscrepancySeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+    content.vb: Public Property Severity As DiscrepancySeverity
+  overload: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderDiscrepancy>
+  nameWithType: IEquatable<ProviderDiscrepancy>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy>
+  nameWithType.vb: IEquatable(Of ProviderDiscrepancy)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy)
+  name.vb: IEquatable(Of ProviderDiscrepancy)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+    name: ProviderDiscrepancy
+    href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+    name: ProviderDiscrepancy
+    href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy__ctor_System_DateTimeOffset_System_String_System_String_System_String_System_String_System_String_System_String_System_Double_Meridian_Application_Monitoring_DataQuality_DiscrepancySeverity_
+  name: ProviderDiscrepancy
+  nameWithType: ProviderDiscrepancy.ProviderDiscrepancy
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.ProviderDiscrepancy
+  nameWithType.vb: ProviderDiscrepancy.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.html
+  name: DiscrepancySeverity
+  nameWithType: DiscrepancySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Timestamp
+  name: Timestamp
+  nameWithType: ProviderDiscrepancy.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Timestamp
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_DiscrepancyType
+  name: DiscrepancyType
+  nameWithType: ProviderDiscrepancy.DiscrepancyType
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.DiscrepancyType
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Provider1
+  name: Provider1
+  nameWithType: ProviderDiscrepancy.Provider1
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider1
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Provider2
+  name: Provider2
+  nameWithType: ProviderDiscrepancy.Provider2
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Provider2
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Field
+  name: Field
+  nameWithType: ProviderDiscrepancy.Field
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Field
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Value1
+  name: Value1
+  nameWithType: ProviderDiscrepancy.Value1
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value1
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Value2
+  name: Value2
+  nameWithType: ProviderDiscrepancy.Value2
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Value2
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Difference
+  name: Difference
+  nameWithType: ProviderDiscrepancy.Difference
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Difference
+- uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity
+  href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html#Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy_Severity
+  name: Severity
+  nameWithType: ProviderDiscrepancy.Severity
+  fullName: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.Severity

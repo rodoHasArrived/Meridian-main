@@ -1,0 +1,649 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution
+  commentId: T:Meridian.Backtesting.Sdk.SymbolAttribution
+  id: SymbolAttribution
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.SymbolAttribution.#ctor(System.String,System.Decimal,System.Decimal,System.Int32,System.Decimal,System.Decimal)
+  - Meridian.Backtesting.Sdk.SymbolAttribution.Commissions
+  - Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated
+  - Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl
+  - Meridian.Backtesting.Sdk.SymbolAttribution.Symbol
+  - Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount
+  - Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: SymbolAttribution
+  nameWithType: SymbolAttribution
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolAttribution
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Per-symbol trade attribution.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolAttribution : IEquatable<SymbolAttribution>'
+    content.vb: Public NotInheritable Class SymbolAttribution Implements IEquatable(Of SymbolAttribution)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.SymbolAttribution}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.#ctor(System.String,System.Decimal,System.Decimal,System.Int32,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.SymbolAttribution.#ctor(System.String,System.Decimal,System.Decimal,System.Int32,System.Decimal,System.Decimal)
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Int32,System.Decimal,System.Decimal)'
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: SymbolAttribution(string, decimal, decimal, int, decimal, decimal)
+  nameWithType: SymbolAttribution.SymbolAttribution(string, decimal, decimal, int, decimal, decimal)
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.SymbolAttribution(string, decimal, decimal, int, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Per-symbol trade attribution.
+  example: []
+  syntax:
+    content: public SymbolAttribution(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: RealizedPnl
+      type: System.Decimal
+    - id: UnrealizedPnl
+      type: System.Decimal
+    - id: TradeCount
+      type: System.Int32
+    - id: Commissions
+      type: System.Decimal
+    - id: MarginInterestAllocated
+      type: System.Decimal
+    content.vb: Public Sub New(Symbol As String, RealizedPnl As Decimal, UnrealizedPnl As Decimal, TradeCount As Integer, Commissions As Decimal, MarginInterestAllocated As Decimal)
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.#ctor*
+  nameWithType.vb: SymbolAttribution.New(String, Decimal, Decimal, Integer, Decimal, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.SymbolAttribution.New(String, Decimal, Decimal, Integer, Decimal, Decimal)
+  name.vb: New(String, Decimal, Decimal, Integer, Decimal, Decimal)
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.SymbolAttribution.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolAttribution.Symbol
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.Symbol*
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl
+  commentId: P:Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: SymbolAttribution.RealizedPnl
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal RealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedPnl As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl*
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl
+  commentId: P:Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: SymbolAttribution.UnrealizedPnl
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal UnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealizedPnl As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl*
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount
+  commentId: P:Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount
+  id: TradeCount
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: TradeCount
+  nameWithType: SymbolAttribution.TradeCount
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCount
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int TradeCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradeCount As Integer
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount*
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.Commissions
+  commentId: P:Meridian.Backtesting.Sdk.SymbolAttribution.Commissions
+  id: Commissions
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: Commissions
+  nameWithType: SymbolAttribution.Commissions
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.Commissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Commissions
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal Commissions { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Commissions As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.Commissions*
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated
+  commentId: P:Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated
+  id: MarginInterestAllocated
+  parent: Meridian.Backtesting.Sdk.SymbolAttribution
+  langs:
+  - csharp
+  - vb
+  name: MarginInterestAllocated
+  nameWithType: SymbolAttribution.MarginInterestAllocated
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginInterestAllocated
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal MarginInterestAllocated { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarginInterestAllocated As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.SymbolAttribution}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.SymbolAttribution}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolAttribution>
+  nameWithType: IEquatable<SymbolAttribution>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.SymbolAttribution>
+  nameWithType.vb: IEquatable(Of SymbolAttribution)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.SymbolAttribution)
+  name.vb: IEquatable(Of SymbolAttribution)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.SymbolAttribution
+    name: SymbolAttribution
+    href: Meridian.Backtesting.Sdk.SymbolAttribution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.SymbolAttribution
+    name: SymbolAttribution
+    href: Meridian.Backtesting.Sdk.SymbolAttribution.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.#ctor
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution__ctor_System_String_System_Decimal_System_Decimal_System_Int32_System_Decimal_System_Decimal_
+  name: SymbolAttribution
+  nameWithType: SymbolAttribution.SymbolAttribution
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.SymbolAttribution
+  nameWithType.vb: SymbolAttribution.New
+  fullName.vb: Meridian.Backtesting.Sdk.SymbolAttribution.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.Symbol
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution_Symbol
+  name: Symbol
+  nameWithType: SymbolAttribution.Symbol
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.Symbol
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution_RealizedPnl
+  name: RealizedPnl
+  nameWithType: SymbolAttribution.RealizedPnl
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.RealizedPnl
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: SymbolAttribution.UnrealizedPnl
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.UnrealizedPnl
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution_TradeCount
+  name: TradeCount
+  nameWithType: SymbolAttribution.TradeCount
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.TradeCount
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.Commissions*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.Commissions
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution_Commissions
+  name: Commissions
+  nameWithType: SymbolAttribution.Commissions
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.Commissions
+- uid: Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated
+  href: Meridian.Backtesting.Sdk.SymbolAttribution.html#Meridian_Backtesting_Sdk_SymbolAttribution_MarginInterestAllocated
+  name: MarginInterestAllocated
+  nameWithType: SymbolAttribution.MarginInterestAllocated
+  fullName: Meridian.Backtesting.Sdk.SymbolAttribution.MarginInterestAllocated

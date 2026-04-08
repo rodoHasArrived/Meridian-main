@@ -1,0 +1,1076 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger
+  commentId: T:Meridian.Application.Pipeline.PersistentDedupLedger
+  id: PersistentDedupLedger
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.PersistentDedupLedger.#ctor(System.String,System.Nullable{System.TimeSpan},System.Int32)
+  - Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync
+  - Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked
+  - Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates
+  langs:
+  - csharp
+  - vb
+  name: PersistentDedupLedger
+  nameWithType: PersistentDedupLedger
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PersistentDedupLedger
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Persistent deduplication ledger that survives restarts.
+
+    Uses a JSONL-backed rolling log with in-memory bloom-filter-like cache.
+
+    Keyed by (provider, symbol, eventIdentity) with configurable TTL.
+  example: []
+  syntax:
+    content: 'public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable'
+    content.vb: Public NotInheritable Class PersistentDedupLedger Implements IDedupStore, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked
+  commentId: P:Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked
+  id: TotalChecked
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: TotalChecked
+  nameWithType: PersistentDedupLedger.TotalChecked
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalChecked
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Total events checked for duplicates.
+  example: []
+  syntax:
+    content: public long TotalChecked { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalChecked As Long
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked*
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore.TotalChecked
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates
+  commentId: P:Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates
+  id: TotalDuplicates
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: TotalDuplicates
+  nameWithType: PersistentDedupLedger.TotalDuplicates
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDuplicates
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Total duplicates detected.
+  example: []
+  syntax:
+    content: public long TotalDuplicates { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalDuplicates As Long
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates*
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore.TotalDuplicates
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.#ctor(System.String,System.Nullable{System.TimeSpan},System.Int32)
+  commentId: M:Meridian.Application.Pipeline.PersistentDedupLedger.#ctor(System.String,System.Nullable{System.TimeSpan},System.Int32)
+  id: '#ctor(System.String,System.Nullable{System.TimeSpan},System.Int32)'
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: PersistentDedupLedger(string, TimeSpan?, int)
+  nameWithType: PersistentDedupLedger.PersistentDedupLedger(string, TimeSpan?, int)
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.PersistentDedupLedger(string, System.TimeSpan?, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public PersistentDedupLedger(string ledgerDirectory, TimeSpan? entryTtl = null, int maxInMemoryEntries = 500000)
+    parameters:
+    - id: ledgerDirectory
+      type: System.String
+    - id: entryTtl
+      type: System.Nullable{System.TimeSpan}
+    - id: maxInMemoryEntries
+      type: System.Int32
+    content.vb: Public Sub New(ledgerDirectory As String, entryTtl As TimeSpan? = Nothing, maxInMemoryEntries As Integer = 500000)
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.#ctor*
+  nameWithType.vb: PersistentDedupLedger.New(String, TimeSpan?, Integer)
+  fullName.vb: Meridian.Application.Pipeline.PersistentDedupLedger.New(String, System.TimeSpan?, Integer)
+  name.vb: New(String, TimeSpan?, Integer)
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: PersistentDedupLedger.InitializeAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Loads persisted dedup state from disk on startup.
+  example: []
+  syntax:
+    content: public Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync*
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore.InitializeAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: IsDuplicateAsync(MarketEvent, CancellationToken)
+  nameWithType: PersistentDedupLedger.IsDuplicateAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsDuplicateAsync
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Checks whether an event is a duplicate and records it if new.
+
+    Returns true if the event is a DUPLICATE (should be skipped).
+  example: []
+  syntax:
+    content: public ValueTask<bool> IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask{System.Boolean}
+    content.vb: Public Function IsDuplicateAsync(evt As MarketEvent, ct As CancellationToken = Nothing) As ValueTask(Of Boolean)
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync*
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: PersistentDedupLedger.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Flushes the ledger to disk.
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync*
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore.FlushAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync(System.Threading.CancellationToken)
+  id: CompactAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: CompactAsync(CancellationToken)
+  nameWithType: PersistentDedupLedger.CompactAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompactAsync
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Compacts the ledger file by rewriting only non-expired entries.
+
+    Call periodically (e.g., daily) to prevent unbounded file growth.
+  example: []
+  syntax:
+    content: public Task CompactAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function CompactAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync*
+  implements:
+  - Meridian.Application.Pipeline.IDedupStore.CompactAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync
+  commentId: M:Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Pipeline.PersistentDedupLedger
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: PersistentDedupLedger.DisposeAsync()
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
+    startLine: 533
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Pipeline.IDedupStore
+  commentId: T:Meridian.Application.Pipeline.IDedupStore
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IDedupStore.html
+  name: IDedupStore
+  nameWithType: IDedupStore
+  fullName: Meridian.Application.Pipeline.IDedupStore
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_TotalChecked
+  name: TotalChecked
+  nameWithType: PersistentDedupLedger.TotalChecked
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.TotalChecked
+- uid: Meridian.Application.Pipeline.IDedupStore.TotalChecked
+  commentId: P:Meridian.Application.Pipeline.IDedupStore.TotalChecked
+  parent: Meridian.Application.Pipeline.IDedupStore
+  href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_TotalChecked
+  name: TotalChecked
+  nameWithType: IDedupStore.TotalChecked
+  fullName: Meridian.Application.Pipeline.IDedupStore.TotalChecked
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_TotalDuplicates
+  name: TotalDuplicates
+  nameWithType: PersistentDedupLedger.TotalDuplicates
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.TotalDuplicates
+- uid: Meridian.Application.Pipeline.IDedupStore.TotalDuplicates
+  commentId: P:Meridian.Application.Pipeline.IDedupStore.TotalDuplicates
+  parent: Meridian.Application.Pipeline.IDedupStore
+  href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_TotalDuplicates
+  name: TotalDuplicates
+  nameWithType: IDedupStore.TotalDuplicates
+  fullName: Meridian.Application.Pipeline.IDedupStore.TotalDuplicates
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.#ctor
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger__ctor_System_String_System_Nullable_System_TimeSpan__System_Int32_
+  name: PersistentDedupLedger
+  nameWithType: PersistentDedupLedger.PersistentDedupLedger
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.PersistentDedupLedger
+  nameWithType.vb: PersistentDedupLedger.New
+  fullName.vb: Meridian.Application.Pipeline.PersistentDedupLedger.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: PersistentDedupLedger.InitializeAsync
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.InitializeAsync
+- uid: Meridian.Application.Pipeline.IDedupStore.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IDedupStore.InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IDedupStore
+  isExternal: true
+  href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync(CancellationToken)
+  nameWithType: IDedupStore.InitializeAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.IDedupStore.InitializeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.IDedupStore.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.IDedupStore.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_IsDuplicateAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: IsDuplicateAsync
+  nameWithType: PersistentDedupLedger.IsDuplicateAsync
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.IsDuplicateAsync
+- uid: Meridian.Application.Pipeline.IDedupStore.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IDedupStore.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IDedupStore
+  isExternal: true
+  href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_IsDuplicateAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: IsDuplicateAsync(MarketEvent, CancellationToken)
+  nameWithType: IDedupStore.IsDuplicateAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Pipeline.IDedupStore.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.IDedupStore.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: IsDuplicateAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_IsDuplicateAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.IDedupStore.IsDuplicateAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: IsDuplicateAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_IsDuplicateAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Threading.Tasks.ValueTask{System.Boolean}
+  commentId: T:System.Threading.Tasks.ValueTask{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.ValueTask`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<bool>
+  nameWithType: ValueTask<bool>
+  fullName: System.Threading.Tasks.ValueTask<bool>
+  nameWithType.vb: ValueTask(Of Boolean)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of Boolean)
+  name.vb: ValueTask(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Threading.Tasks.ValueTask`1
+  commentId: T:System.Threading.Tasks.ValueTask`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<TResult>
+  nameWithType: ValueTask<TResult>
+  fullName: System.Threading.Tasks.ValueTask<TResult>
+  nameWithType.vb: ValueTask(Of TResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of TResult)
+  name.vb: ValueTask(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: PersistentDedupLedger.FlushAsync
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.FlushAsync
+- uid: Meridian.Application.Pipeline.IDedupStore.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IDedupStore.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IDedupStore
+  isExternal: true
+  href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync(CancellationToken)
+  nameWithType: IDedupStore.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.IDedupStore.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.IDedupStore.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.IDedupStore.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_CompactAsync_System_Threading_CancellationToken_
+  name: CompactAsync
+  nameWithType: PersistentDedupLedger.CompactAsync
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.CompactAsync
+- uid: Meridian.Application.Pipeline.IDedupStore.CompactAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IDedupStore.CompactAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IDedupStore
+  isExternal: true
+  href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_CompactAsync_System_Threading_CancellationToken_
+  name: CompactAsync(CancellationToken)
+  nameWithType: IDedupStore.CompactAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.IDedupStore.CompactAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.IDedupStore.CompactAsync(System.Threading.CancellationToken)
+    name: CompactAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_CompactAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.IDedupStore.CompactAsync(System.Threading.CancellationToken)
+    name: CompactAsync
+    href: Meridian.Application.Pipeline.IDedupStore.html#Meridian_Application_Pipeline_IDedupStore_CompactAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync*
+  commentId: Overload:Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html#Meridian_Application_Pipeline_PersistentDedupLedger_DisposeAsync
+  name: DisposeAsync
+  nameWithType: PersistentDedupLedger.DisposeAsync
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

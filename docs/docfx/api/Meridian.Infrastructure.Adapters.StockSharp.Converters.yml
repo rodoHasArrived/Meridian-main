@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.StockSharp.Converters
+  commentId: N:Meridian.Infrastructure.Adapters.StockSharp.Converters
+  id: Meridian.Infrastructure.Adapters.StockSharp.Converters
+  children:
+  - Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter
+  - Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.StockSharp.Converters
+  nameWithType: Meridian.Infrastructure.Adapters.StockSharp.Converters
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.Converters
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter
+  href: Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter.html
+  name: MessageConverter
+  nameWithType: MessageConverter
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter
+- uid: Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter
+  href: Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter.html
+  name: SecurityConverter
+  nameWithType: SecurityConverter
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter

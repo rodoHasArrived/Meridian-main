@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ReportKind
+  commentId: T:Meridian.Application.Services.ReportKind
+  id: ReportKind
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ReportKind.AssetAllocation
+  - Meridian.Application.Services.ReportKind.NavSummary
+  - Meridian.Application.Services.ReportKind.ReconciliationPack
+  - Meridian.Application.Services.ReportKind.TrialBalance
+  langs:
+  - csharp
+  - vb
+  name: ReportKind
+  nameWithType: ReportKind
+  fullName: Meridian.Application.Services.ReportKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportKind
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Type of governance report to generate.
+  example: []
+  syntax:
+    content: public enum ReportKind
+    content.vb: Public Enum ReportKind
+- uid: Meridian.Application.Services.ReportKind.TrialBalance
+  commentId: F:Meridian.Application.Services.ReportKind.TrialBalance
+  id: TrialBalance
+  parent: Meridian.Application.Services.ReportKind
+  langs:
+  - csharp
+  - vb
+  name: TrialBalance
+  nameWithType: ReportKind.TrialBalance
+  fullName: Meridian.Application.Services.ReportKind.TrialBalance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrialBalance
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: TrialBalance = 0
+    return:
+      type: Meridian.Application.Services.ReportKind
+- uid: Meridian.Application.Services.ReportKind.NavSummary
+  commentId: F:Meridian.Application.Services.ReportKind.NavSummary
+  id: NavSummary
+  parent: Meridian.Application.Services.ReportKind
+  langs:
+  - csharp
+  - vb
+  name: NavSummary
+  nameWithType: ReportKind.NavSummary
+  fullName: Meridian.Application.Services.ReportKind.NavSummary
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavSummary
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: NavSummary = 1
+    return:
+      type: Meridian.Application.Services.ReportKind
+- uid: Meridian.Application.Services.ReportKind.AssetAllocation
+  commentId: F:Meridian.Application.Services.ReportKind.AssetAllocation
+  id: AssetAllocation
+  parent: Meridian.Application.Services.ReportKind
+  langs:
+  - csharp
+  - vb
+  name: AssetAllocation
+  nameWithType: ReportKind.AssetAllocation
+  fullName: Meridian.Application.Services.ReportKind.AssetAllocation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetAllocation
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: AssetAllocation = 2
+    return:
+      type: Meridian.Application.Services.ReportKind
+- uid: Meridian.Application.Services.ReportKind.ReconciliationPack
+  commentId: F:Meridian.Application.Services.ReportKind.ReconciliationPack
+  id: ReconciliationPack
+  parent: Meridian.Application.Services.ReportKind
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationPack
+  nameWithType: ReportKind.ReconciliationPack
+  fullName: Meridian.Application.Services.ReportKind.ReconciliationPack
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationPack
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: ReconciliationPack = 3
+    return:
+      type: Meridian.Application.Services.ReportKind
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.ReportKind
+  commentId: T:Meridian.Application.Services.ReportKind
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ReportKind.html
+  name: ReportKind
+  nameWithType: ReportKind
+  fullName: Meridian.Application.Services.ReportKind

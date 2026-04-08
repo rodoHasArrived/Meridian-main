@@ -1,0 +1,1068 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.SchemaVersionManager
+  commentId: T:Meridian.Storage.Archival.SchemaVersionManager
+  id: SchemaVersionManager
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.SchemaVersionManager.#ctor(System.String)
+  - Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync(Meridian.Storage.Archival.SchemaDefinition,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema(System.String)
+  - Meridian.Storage.Archival.SchemaVersionManager.GetSchema(System.String,System.String)
+  - Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory(System.String)
+  - Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync(System.IO.Stream,System.IO.Stream,System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration(Meridian.Storage.Archival.SchemaMigration)
+  - Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema(Meridian.Storage.Archival.SchemaDefinition)
+  - Meridian.Storage.Archival.SchemaVersionManager.Validate(System.Text.Json.JsonDocument,Meridian.Storage.Archival.SchemaDefinition)
+  langs:
+  - csharp
+  - vb
+  name: SchemaVersionManager
+  nameWithType: SchemaVersionManager
+  fullName: Meridian.Storage.Archival.SchemaVersionManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaVersionManager
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Manages schema versions for long-term format preservation.
+
+    Ensures backward compatibility and supports schema migration.
+  example: []
+  syntax:
+    content: public sealed class SchemaVersionManager
+    content.vb: Public NotInheritable Class SchemaVersionManager
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.SchemaVersionManager.#ctor(System.String)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: SchemaVersionManager(string)
+  nameWithType: SchemaVersionManager.SchemaVersionManager(string)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.SchemaVersionManager(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public SchemaVersionManager(string schemaDirectory)
+    parameters:
+    - id: schemaDirectory
+      type: System.String
+    content.vb: Public Sub New(schemaDirectory As String)
+  overload: Meridian.Storage.Archival.SchemaVersionManager.#ctor*
+  nameWithType.vb: SchemaVersionManager.New(String)
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema(Meridian.Storage.Archival.SchemaDefinition)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema(Meridian.Storage.Archival.SchemaDefinition)
+  id: RegisterSchema(Meridian.Storage.Archival.SchemaDefinition)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: RegisterSchema(SchemaDefinition)
+  nameWithType: SchemaVersionManager.RegisterSchema(SchemaDefinition)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema(Meridian.Storage.Archival.SchemaDefinition)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSchema
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Register a new schema version.
+  example: []
+  syntax:
+    content: public void RegisterSchema(SchemaDefinition schema)
+    parameters:
+    - id: schema
+      type: Meridian.Storage.Archival.SchemaDefinition
+    content.vb: Public Sub RegisterSchema(schema As SchemaDefinition)
+  overload: Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema*
+- uid: Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration(Meridian.Storage.Archival.SchemaMigration)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration(Meridian.Storage.Archival.SchemaMigration)
+  id: RegisterMigration(Meridian.Storage.Archival.SchemaMigration)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: RegisterMigration(SchemaMigration)
+  nameWithType: SchemaVersionManager.RegisterMigration(SchemaMigration)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration(Meridian.Storage.Archival.SchemaMigration)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterMigration
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Register a migration between schema versions.
+  example: []
+  syntax:
+    content: public void RegisterMigration(SchemaMigration migration)
+    parameters:
+    - id: migration
+      type: Meridian.Storage.Archival.SchemaMigration
+    content.vb: Public Sub RegisterMigration(migration As SchemaMigration)
+  overload: Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration*
+- uid: Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema(System.String)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema(System.String)
+  id: GetCurrentSchema(System.String)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentSchema(string)
+  nameWithType: SchemaVersionManager.GetCurrentSchema(string)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentSchema
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get the current (latest) schema for an event type.
+  example: []
+  syntax:
+    content: public SchemaDefinition? GetCurrentSchema(string eventType)
+    parameters:
+    - id: eventType
+      type: System.String
+    return:
+      type: Meridian.Storage.Archival.SchemaDefinition
+    content.vb: Public Function GetCurrentSchema(eventType As String) As SchemaDefinition
+  overload: Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema*
+  nameWithType.vb: SchemaVersionManager.GetCurrentSchema(String)
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema(String)
+  name.vb: GetCurrentSchema(String)
+- uid: Meridian.Storage.Archival.SchemaVersionManager.GetSchema(System.String,System.String)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.GetSchema(System.String,System.String)
+  id: GetSchema(System.String,System.String)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: GetSchema(string, string)
+  nameWithType: SchemaVersionManager.GetSchema(string, string)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.GetSchema(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSchema
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get a specific schema version.
+  example: []
+  syntax:
+    content: public SchemaDefinition? GetSchema(string eventType, string version)
+    parameters:
+    - id: eventType
+      type: System.String
+    - id: version
+      type: System.String
+    return:
+      type: Meridian.Storage.Archival.SchemaDefinition
+    content.vb: Public Function GetSchema(eventType As String, version As String) As SchemaDefinition
+  overload: Meridian.Storage.Archival.SchemaVersionManager.GetSchema*
+  nameWithType.vb: SchemaVersionManager.GetSchema(String, String)
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.GetSchema(String, String)
+  name.vb: GetSchema(String, String)
+- uid: Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory(System.String)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory(System.String)
+  id: GetSchemaHistory(System.String)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: GetSchemaHistory(string)
+  nameWithType: SchemaVersionManager.GetSchemaHistory(string)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSchemaHistory
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get all versions of a schema.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SchemaDefinition> GetSchemaHistory(string eventType)
+    parameters:
+    - id: eventType
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.SchemaDefinition}
+    content.vb: Public Function GetSchemaHistory(eventType As String) As IReadOnlyList(Of SchemaDefinition)
+  overload: Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory*
+  nameWithType.vb: SchemaVersionManager.GetSchemaHistory(String)
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory(String)
+  name.vb: GetSchemaHistory(String)
+- uid: Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync(System.IO.Stream,System.IO.Stream,System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync(System.IO.Stream,System.IO.Stream,System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: MigrateAsync(System.IO.Stream,System.IO.Stream,System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: MigrateAsync(Stream, Stream, string, string, string, CancellationToken)
+  nameWithType: SchemaVersionManager.MigrateAsync(Stream, Stream, string, string, string, CancellationToken)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync(System.IO.Stream, System.IO.Stream, string, string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MigrateAsync
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Migrate data from one schema version to another.
+  example: []
+  syntax:
+    content: public Task<MigrationResult> MigrateAsync(Stream input, Stream output, string eventType, string fromVersion, string toVersion, CancellationToken ct = default)
+    parameters:
+    - id: input
+      type: System.IO.Stream
+    - id: output
+      type: System.IO.Stream
+    - id: eventType
+      type: System.String
+    - id: fromVersion
+      type: System.String
+    - id: toVersion
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Archival.MigrationResult}
+    content.vb: Public Function MigrateAsync(input As Stream, output As Stream, eventType As String, fromVersion As String, toVersion As String, ct As CancellationToken = Nothing) As Task(Of MigrationResult)
+  overload: Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync*
+  nameWithType.vb: SchemaVersionManager.MigrateAsync(Stream, Stream, String, String, String, CancellationToken)
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync(System.IO.Stream, System.IO.Stream, String, String, String, System.Threading.CancellationToken)
+  name.vb: MigrateAsync(Stream, Stream, String, String, String, CancellationToken)
+- uid: Meridian.Storage.Archival.SchemaVersionManager.Validate(System.Text.Json.JsonDocument,Meridian.Storage.Archival.SchemaDefinition)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.Validate(System.Text.Json.JsonDocument,Meridian.Storage.Archival.SchemaDefinition)
+  id: Validate(System.Text.Json.JsonDocument,Meridian.Storage.Archival.SchemaDefinition)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: Validate(JsonDocument, SchemaDefinition)
+  nameWithType: SchemaVersionManager.Validate(JsonDocument, SchemaDefinition)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.Validate(System.Text.Json.JsonDocument, Meridian.Storage.Archival.SchemaDefinition)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validate
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Validate data against a schema.
+  example: []
+  syntax:
+    content: public SchemaValidationResult Validate(JsonDocument document, SchemaDefinition schema)
+    parameters:
+    - id: document
+      type: System.Text.Json.JsonDocument
+    - id: schema
+      type: Meridian.Storage.Archival.SchemaDefinition
+    return:
+      type: Meridian.Storage.Archival.SchemaValidationResult
+    content.vb: Public Function Validate(document As JsonDocument, schema As SchemaDefinition) As SchemaValidationResult
+  overload: Meridian.Storage.Archival.SchemaVersionManager.Validate*
+- uid: Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync(Meridian.Storage.Archival.SchemaDefinition,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync(Meridian.Storage.Archival.SchemaDefinition,System.String,System.Threading.CancellationToken)
+  id: ExportSchemaAsync(Meridian.Storage.Archival.SchemaDefinition,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: ExportSchemaAsync(SchemaDefinition, string, CancellationToken)
+  nameWithType: SchemaVersionManager.ExportSchemaAsync(SchemaDefinition, string, CancellationToken)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync(Meridian.Storage.Archival.SchemaDefinition, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportSchemaAsync
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Export schema to JSON Schema format.
+  example: []
+  syntax:
+    content: public Task ExportSchemaAsync(SchemaDefinition schema, string outputPath, CancellationToken ct = default)
+    parameters:
+    - id: schema
+      type: Meridian.Storage.Archival.SchemaDefinition
+    - id: outputPath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ExportSchemaAsync(schema As SchemaDefinition, outputPath As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync*
+  nameWithType.vb: SchemaVersionManager.ExportSchemaAsync(SchemaDefinition, String, CancellationToken)
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync(Meridian.Storage.Archival.SchemaDefinition, String, System.Threading.CancellationToken)
+  name.vb: ExportSchemaAsync(SchemaDefinition, String, CancellationToken)
+- uid: Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync(System.Threading.CancellationToken)
+  id: ExportAllSchemasAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.SchemaVersionManager
+  langs:
+  - csharp
+  - vb
+  name: ExportAllSchemasAsync(CancellationToken)
+  nameWithType: SchemaVersionManager.ExportAllSchemasAsync(CancellationToken)
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportAllSchemasAsync
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Export all schemas to the schema directory.
+  example: []
+  syntax:
+    content: public Task ExportAllSchemasAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ExportAllSchemasAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync*
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.SchemaVersionManager.#ctor*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.#ctor
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager__ctor_System_String_
+  name: SchemaVersionManager
+  nameWithType: SchemaVersionManager.SchemaVersionManager
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.SchemaVersionManager
+  nameWithType.vb: SchemaVersionManager.New
+  fullName.vb: Meridian.Storage.Archival.SchemaVersionManager.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_RegisterSchema_Meridian_Storage_Archival_SchemaDefinition_
+  name: RegisterSchema
+  nameWithType: SchemaVersionManager.RegisterSchema
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.RegisterSchema
+- uid: Meridian.Storage.Archival.SchemaDefinition
+  commentId: T:Meridian.Storage.Archival.SchemaDefinition
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.SchemaDefinition.html
+  name: SchemaDefinition
+  nameWithType: SchemaDefinition
+  fullName: Meridian.Storage.Archival.SchemaDefinition
+- uid: Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_RegisterMigration_Meridian_Storage_Archival_SchemaMigration_
+  name: RegisterMigration
+  nameWithType: SchemaVersionManager.RegisterMigration
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.RegisterMigration
+- uid: Meridian.Storage.Archival.SchemaMigration
+  commentId: T:Meridian.Storage.Archival.SchemaMigration
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.SchemaMigration.html
+  name: SchemaMigration
+  nameWithType: SchemaMigration
+  fullName: Meridian.Storage.Archival.SchemaMigration
+- uid: Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_GetCurrentSchema_System_String_
+  name: GetCurrentSchema
+  nameWithType: SchemaVersionManager.GetCurrentSchema
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.GetCurrentSchema
+- uid: Meridian.Storage.Archival.SchemaVersionManager.GetSchema*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.GetSchema
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_GetSchema_System_String_System_String_
+  name: GetSchema
+  nameWithType: SchemaVersionManager.GetSchema
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.GetSchema
+- uid: Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_GetSchemaHistory_System_String_
+  name: GetSchemaHistory
+  nameWithType: SchemaVersionManager.GetSchemaHistory
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.GetSchemaHistory
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.SchemaDefinition}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.SchemaDefinition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SchemaDefinition>
+  nameWithType: IReadOnlyList<SchemaDefinition>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Archival.SchemaDefinition>
+  nameWithType.vb: IReadOnlyList(Of SchemaDefinition)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Archival.SchemaDefinition)
+  name.vb: IReadOnlyList(Of SchemaDefinition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Archival.SchemaDefinition
+    name: SchemaDefinition
+    href: Meridian.Storage.Archival.SchemaDefinition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.SchemaDefinition
+    name: SchemaDefinition
+    href: Meridian.Storage.Archival.SchemaDefinition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_MigrateAsync_System_IO_Stream_System_IO_Stream_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: MigrateAsync
+  nameWithType: SchemaVersionManager.MigrateAsync
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.MigrateAsync
+- uid: System.IO.Stream
+  commentId: T:System.IO.Stream
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.stream
+  name: Stream
+  nameWithType: Stream
+  fullName: System.IO.Stream
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Archival.MigrationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Archival.MigrationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MigrationResult>
+  nameWithType: Task<MigrationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Archival.MigrationResult>
+  nameWithType.vb: Task(Of MigrationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Archival.MigrationResult)
+  name.vb: Task(Of MigrationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Archival.MigrationResult
+    name: MigrationResult
+    href: Meridian.Storage.Archival.MigrationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.MigrationResult
+    name: MigrationResult
+    href: Meridian.Storage.Archival.MigrationResult.html
+  - name: )
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Archival.SchemaVersionManager.Validate*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.Validate
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_Validate_System_Text_Json_JsonDocument_Meridian_Storage_Archival_SchemaDefinition_
+  name: Validate
+  nameWithType: SchemaVersionManager.Validate
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.Validate
+- uid: System.Text.Json.JsonDocument
+  commentId: T:System.Text.Json.JsonDocument
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsondocument
+  name: JsonDocument
+  nameWithType: JsonDocument
+  fullName: System.Text.Json.JsonDocument
+- uid: Meridian.Storage.Archival.SchemaValidationResult
+  commentId: T:Meridian.Storage.Archival.SchemaValidationResult
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.SchemaValidationResult.html
+  name: SchemaValidationResult
+  nameWithType: SchemaValidationResult
+  fullName: Meridian.Storage.Archival.SchemaValidationResult
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_ExportSchemaAsync_Meridian_Storage_Archival_SchemaDefinition_System_String_System_Threading_CancellationToken_
+  name: ExportSchemaAsync
+  nameWithType: SchemaVersionManager.ExportSchemaAsync
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.ExportSchemaAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync*
+  commentId: Overload:Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync
+  href: Meridian.Storage.Archival.SchemaVersionManager.html#Meridian_Storage_Archival_SchemaVersionManager_ExportAllSchemasAsync_System_Threading_CancellationToken_
+  name: ExportAllSchemasAsync
+  nameWithType: SchemaVersionManager.ExportAllSchemasAsync
+  fullName: Meridian.Storage.Archival.SchemaVersionManager.ExportAllSchemasAsync

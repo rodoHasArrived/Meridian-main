@@ -1,0 +1,363 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TimeSeriesInterval
+  commentId: T:Meridian.Ui.Services.TimeSeriesInterval
+  id: TimeSeriesInterval
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TimeSeriesInterval.Daily
+  - Meridian.Ui.Services.TimeSeriesInterval.Hour1
+  - Meridian.Ui.Services.TimeSeriesInterval.Hour4
+  - Meridian.Ui.Services.TimeSeriesInterval.Minute1
+  - Meridian.Ui.Services.TimeSeriesInterval.Minute15
+  - Meridian.Ui.Services.TimeSeriesInterval.Minute30
+  - Meridian.Ui.Services.TimeSeriesInterval.Minute5
+  - Meridian.Ui.Services.TimeSeriesInterval.Second1
+  - Meridian.Ui.Services.TimeSeriesInterval.Second10
+  - Meridian.Ui.Services.TimeSeriesInterval.Second30
+  - Meridian.Ui.Services.TimeSeriesInterval.Second5
+  langs:
+  - csharp
+  - vb
+  name: TimeSeriesInterval
+  nameWithType: TimeSeriesInterval
+  fullName: Meridian.Ui.Services.TimeSeriesInterval
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeSeriesInterval
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum TimeSeriesInterval : byte'
+    content.vb: Public Enum TimeSeriesInterval As Byte
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Second1
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Second1
+  id: Second1
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Second1
+  nameWithType: TimeSeriesInterval.Second1
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Second1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second1
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Second1 = 0
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Second5
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Second5
+  id: Second5
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Second5
+  nameWithType: TimeSeriesInterval.Second5
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Second5
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second5
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 430
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Second5 = 1
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Second10
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Second10
+  id: Second10
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Second10
+  nameWithType: TimeSeriesInterval.Second10
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Second10
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second10
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Second10 = 2
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Second30
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Second30
+  id: Second30
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Second30
+  nameWithType: TimeSeriesInterval.Second30
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Second30
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second30
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 432
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Second30 = 3
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Minute1
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Minute1
+  id: Minute1
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Minute1
+  nameWithType: TimeSeriesInterval.Minute1
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Minute1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute1
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute1 = 4
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Minute5
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Minute5
+  id: Minute5
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Minute5
+  nameWithType: TimeSeriesInterval.Minute5
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Minute5
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute5
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 434
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute5 = 5
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Minute15
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Minute15
+  id: Minute15
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Minute15
+  nameWithType: TimeSeriesInterval.Minute15
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Minute15
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute15
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 435
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute15 = 6
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Minute30
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Minute30
+  id: Minute30
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Minute30
+  nameWithType: TimeSeriesInterval.Minute30
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Minute30
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute30
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 436
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute30 = 7
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Hour1
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Hour1
+  id: Hour1
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Hour1
+  nameWithType: TimeSeriesInterval.Hour1
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Hour1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour1
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 437
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Hour1 = 8
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Hour4
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Hour4
+  id: Hour4
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Hour4
+  nameWithType: TimeSeriesInterval.Hour4
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Hour4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour4
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Hour4 = 9
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+- uid: Meridian.Ui.Services.TimeSeriesInterval.Daily
+  commentId: F:Meridian.Ui.Services.TimeSeriesInterval.Daily
+  id: Daily
+  parent: Meridian.Ui.Services.TimeSeriesInterval
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: TimeSeriesInterval.Daily
+  fullName: Meridian.Ui.Services.TimeSeriesInterval.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 439
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Daily = 10
+    return:
+      type: Meridian.Ui.Services.TimeSeriesInterval
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.TimeSeriesInterval
+  commentId: T:Meridian.Ui.Services.TimeSeriesInterval
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TimeSeriesInterval.html
+  name: TimeSeriesInterval
+  nameWithType: TimeSeriesInterval
+  fullName: Meridian.Ui.Services.TimeSeriesInterval

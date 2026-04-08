@@ -1,0 +1,282 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IThemeService
+  commentId: T:Meridian.Ui.Services.Contracts.IThemeService
+  id: IThemeService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme
+  - Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme
+  - Meridian.Ui.Services.Contracts.IThemeService.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  - Meridian.Ui.Services.Contracts.IThemeService.ThemeChanged
+  langs:
+  - csharp
+  - vb
+  name: IThemeService
+  nameWithType: IThemeService
+  fullName: Meridian.Ui.Services.Contracts.IThemeService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IThemeService
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for managing application themes.
+
+    Shared between WPF desktop applications.
+  example: []
+  syntax:
+    content: public interface IThemeService
+    content.vb: Public Interface IThemeService
+- uid: Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme
+  commentId: P:Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme
+  id: CurrentTheme
+  parent: Meridian.Ui.Services.Contracts.IThemeService
+  langs:
+  - csharp
+  - vb
+  name: CurrentTheme
+  nameWithType: IThemeService.CurrentTheme
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentTheme
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: AppTheme CurrentTheme { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: ReadOnly Property CurrentTheme As AppTheme
+  overload: Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme*
+- uid: Meridian.Ui.Services.Contracts.IThemeService.ThemeChanged
+  commentId: E:Meridian.Ui.Services.Contracts.IThemeService.ThemeChanged
+  id: ThemeChanged
+  parent: Meridian.Ui.Services.Contracts.IThemeService
+  langs:
+  - csharp
+  - vb
+  name: ThemeChanged
+  nameWithType: IThemeService.ThemeChanged
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.ThemeChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThemeChanged
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: event EventHandler<AppTheme>? ThemeChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.AppTheme}
+    content.vb: Event ThemeChanged As EventHandler(Of AppTheme)
+- uid: Meridian.Ui.Services.Contracts.IThemeService.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  commentId: M:Meridian.Ui.Services.Contracts.IThemeService.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  id: SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  parent: Meridian.Ui.Services.Contracts.IThemeService
+  langs:
+  - csharp
+  - vb
+  name: SetTheme(AppTheme)
+  nameWithType: IThemeService.SetTheme(AppTheme)
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetTheme
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: void SetTheme(AppTheme theme)
+    parameters:
+    - id: theme
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Sub SetTheme(theme As AppTheme)
+  overload: Meridian.Ui.Services.Contracts.IThemeService.SetTheme*
+- uid: Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme
+  commentId: M:Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme
+  id: GetSystemTheme
+  parent: Meridian.Ui.Services.Contracts.IThemeService
+  langs:
+  - csharp
+  - vb
+  name: GetSystemTheme()
+  nameWithType: IThemeService.GetSystemTheme()
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSystemTheme
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: AppTheme GetSystemTheme()
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Function GetSystemTheme() As AppTheme
+  overload: Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme
+  href: Meridian.Ui.Services.Contracts.IThemeService.html#Meridian_Ui_Services_Contracts_IThemeService_CurrentTheme
+  name: CurrentTheme
+  nameWithType: IThemeService.CurrentTheme
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.CurrentTheme
+- uid: Meridian.Ui.Services.Contracts.AppTheme
+  commentId: T:Meridian.Ui.Services.Contracts.AppTheme
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.AppTheme.html
+  name: AppTheme
+  nameWithType: AppTheme
+  fullName: Meridian.Ui.Services.Contracts.AppTheme
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.AppTheme}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.AppTheme}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<AppTheme>
+  nameWithType: EventHandler<AppTheme>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.AppTheme>
+  nameWithType.vb: EventHandler(Of AppTheme)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.AppTheme)
+  name.vb: EventHandler(Of AppTheme)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.AppTheme
+    name: AppTheme
+    href: Meridian.Ui.Services.Contracts.AppTheme.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.AppTheme
+    name: AppTheme
+    href: Meridian.Ui.Services.Contracts.AppTheme.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.IThemeService.SetTheme*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IThemeService.SetTheme
+  href: Meridian.Ui.Services.Contracts.IThemeService.html#Meridian_Ui_Services_Contracts_IThemeService_SetTheme_Meridian_Ui_Services_Contracts_AppTheme_
+  name: SetTheme
+  nameWithType: IThemeService.SetTheme
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.SetTheme
+- uid: Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme
+  href: Meridian.Ui.Services.Contracts.IThemeService.html#Meridian_Ui_Services_Contracts_IThemeService_GetSystemTheme
+  name: GetSystemTheme
+  nameWithType: IThemeService.GetSystemTheme
+  fullName: Meridian.Ui.Services.Contracts.IThemeService.GetSystemTheme

@@ -1,0 +1,1273 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  commentId: T:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  id: AdjustedHistoricalBar
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int64,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar(System.Boolean)
+  - Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume
+  langs:
+  - csharp
+  - vb
+  name: AdjustedHistoricalBar
+  nameWithType: AdjustedHistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedHistoricalBar
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Extended historical bar with adjustment factors and corporate action data.
+  example: []
+  syntax:
+    content: 'public sealed record AdjustedHistoricalBar : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<AdjustedHistoricalBar>'
+    content.vb: Public NotInheritable Class AdjustedHistoricalBar Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of AdjustedHistoricalBar)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int64,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  commentId: M:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int64,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  id: '#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int64,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal})'
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: AdjustedHistoricalBar(string, DateOnly, decimal, decimal, decimal, decimal, long, string, long, decimal?, decimal?, decimal?, decimal?, long?, decimal?, decimal?)
+  nameWithType: AdjustedHistoricalBar.AdjustedHistoricalBar(string, DateOnly, decimal, decimal, decimal, decimal, long, string, long, decimal?, decimal?, decimal?, decimal?, long?, decimal?, decimal?)
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHistoricalBar(string, System.DateOnly, decimal, decimal, decimal, decimal, long, string, long, decimal?, decimal?, decimal?, decimal?, long?, decimal?, decimal?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Extended historical bar with adjustment factors and corporate action data.
+  example: []
+  syntax:
+    content: public AdjustedHistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = "unknown", long SequenceNumber = 0, decimal? AdjustedOpen = null, decimal? AdjustedHigh = null, decimal? AdjustedLow = null, decimal? AdjustedClose = null, long? AdjustedVolume = null, decimal? SplitFactor = null, decimal? DividendAmount = null)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: SessionDate
+      type: System.DateOnly
+    - id: Open
+      type: System.Decimal
+    - id: High
+      type: System.Decimal
+    - id: Low
+      type: System.Decimal
+    - id: Close
+      type: System.Decimal
+    - id: Volume
+      type: System.Int64
+    - id: Source
+      type: System.String
+    - id: SequenceNumber
+      type: System.Int64
+    - id: AdjustedOpen
+      type: System.Nullable{System.Decimal}
+    - id: AdjustedHigh
+      type: System.Nullable{System.Decimal}
+    - id: AdjustedLow
+      type: System.Nullable{System.Decimal}
+    - id: AdjustedClose
+      type: System.Nullable{System.Decimal}
+    - id: AdjustedVolume
+      type: System.Nullable{System.Int64}
+    - id: SplitFactor
+      type: System.Nullable{System.Decimal}
+    - id: DividendAmount
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub New(Symbol As String, SessionDate As DateOnly, Open As Decimal, High As Decimal, Low As Decimal, Close As Decimal, Volume As Long, Source As String = "unknown", SequenceNumber As Long = 0, AdjustedOpen As Decimal? = Nothing, AdjustedHigh As Decimal? = Nothing, AdjustedLow As Decimal? = Nothing, AdjustedClose As Decimal? = Nothing, AdjustedVolume As Long? = Nothing, SplitFactor As Decimal? = Nothing, DividendAmount As Decimal? = Nothing)
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.#ctor*
+  nameWithType.vb: AdjustedHistoricalBar.New(String, DateOnly, Decimal, Decimal, Decimal, Decimal, Long, String, Long, Decimal?, Decimal?, Decimal?, Decimal?, Long?, Decimal?, Decimal?)
+  fullName.vb: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.New(String, System.DateOnly, Decimal, Decimal, Decimal, Decimal, Long, String, Long, Decimal?, Decimal?, Decimal?, Decimal?, Long?, Decimal?, Decimal?)
+  name.vb: New(String, DateOnly, Decimal, Decimal, Decimal, Decimal, Long, String, Long, Decimal?, Decimal?, Decimal?, Decimal?, Long?, Decimal?, Decimal?)
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: AdjustedHistoricalBar.Symbol
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate
+  id: SessionDate
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: SessionDate
+  nameWithType: AdjustedHistoricalBar.SessionDate
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionDate
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public DateOnly SessionDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property SessionDate As DateOnly
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open
+  id: Open
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: AdjustedHistoricalBar.Open
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal Open { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Open As Decimal
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High
+  id: High
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: AdjustedHistoricalBar.High
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal High { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property High As Decimal
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low
+  id: Low
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: AdjustedHistoricalBar.Low
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal Low { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Low As Decimal
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close
+  id: Close
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: Close
+  nameWithType: AdjustedHistoricalBar.Close
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Close
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal Close { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Close As Decimal
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume
+  id: Volume
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: AdjustedHistoricalBar.Volume
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long Volume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Volume As Long
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: AdjustedHistoricalBar.Source
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: AdjustedHistoricalBar.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen
+  id: AdjustedOpen
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: AdjustedOpen
+  nameWithType: AdjustedHistoricalBar.AdjustedOpen
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedOpen
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? AdjustedOpen { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property AdjustedOpen As Decimal?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh
+  id: AdjustedHigh
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: AdjustedHigh
+  nameWithType: AdjustedHistoricalBar.AdjustedHigh
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedHigh
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? AdjustedHigh { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property AdjustedHigh As Decimal?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow
+  id: AdjustedLow
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: AdjustedLow
+  nameWithType: AdjustedHistoricalBar.AdjustedLow
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedLow
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? AdjustedLow { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property AdjustedLow As Decimal?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose
+  id: AdjustedClose
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: AdjustedClose
+  nameWithType: AdjustedHistoricalBar.AdjustedClose
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedClose
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? AdjustedClose { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property AdjustedClose As Decimal?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume
+  id: AdjustedVolume
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: AdjustedVolume
+  nameWithType: AdjustedHistoricalBar.AdjustedVolume
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long? AdjustedVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property AdjustedVolume As Long?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor
+  id: SplitFactor
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: SplitFactor
+  nameWithType: AdjustedHistoricalBar.SplitFactor
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitFactor
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? SplitFactor { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property SplitFactor As Decimal?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount
+  commentId: P:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount
+  id: DividendAmount
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: DividendAmount
+  nameWithType: AdjustedHistoricalBar.DividendAmount
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendAmount
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? DividendAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property DividendAmount As Decimal?
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount*
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar(System.Boolean)
+  commentId: M:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar(System.Boolean)
+  id: ToHistoricalBar(System.Boolean)
+  parent: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+  langs:
+  - csharp
+  - vb
+  name: ToHistoricalBar(bool)
+  nameWithType: AdjustedHistoricalBar.ToHistoricalBar(bool)
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToHistoricalBar
+    path: ../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Convert to standard HistoricalBar (uses adjusted values if available).
+
+    When using adjusted values, ensures OHLC relationships are maintained by clamping
+
+    values to valid ranges. This handles rounding errors in split/dividend adjustments.
+  example: []
+  syntax:
+    content: public HistoricalBar ToHistoricalBar(bool preferAdjusted = true)
+    parameters:
+    - id: preferAdjusted
+      type: System.Boolean
+    return:
+      type: Meridian.Contracts.Domain.Models.HistoricalBar
+    content.vb: Public Function ToHistoricalBar(preferAdjusted As Boolean = True) As HistoricalBar
+  overload: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar*
+  nameWithType.vb: AdjustedHistoricalBar.ToHistoricalBar(Boolean)
+  fullName.vb: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar(Boolean)
+  name.vb: ToHistoricalBar(Boolean)
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AdjustedHistoricalBar>
+  nameWithType: IEquatable<AdjustedHistoricalBar>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.AdjustedHistoricalBar>
+  nameWithType.vb: IEquatable(Of AdjustedHistoricalBar)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.AdjustedHistoricalBar)
+  name.vb: IEquatable(Of AdjustedHistoricalBar)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+    href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+    href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.#ctor
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar__ctor_System_String_System_DateOnly_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Int64_System_String_System_Int64_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Int64__System_Nullable_System_Decimal__System_Nullable_System_Decimal__
+  name: AdjustedHistoricalBar
+  nameWithType: AdjustedHistoricalBar.AdjustedHistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHistoricalBar
+  nameWithType.vb: AdjustedHistoricalBar.New
+  fullName.vb: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_Symbol
+  name: Symbol
+  nameWithType: AdjustedHistoricalBar.Symbol
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Symbol
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_SessionDate
+  name: SessionDate
+  nameWithType: AdjustedHistoricalBar.SessionDate
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SessionDate
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_Open
+  name: Open
+  nameWithType: AdjustedHistoricalBar.Open
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Open
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_High
+  name: High
+  nameWithType: AdjustedHistoricalBar.High
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.High
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_Low
+  name: Low
+  nameWithType: AdjustedHistoricalBar.Low
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Low
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_Close
+  name: Close
+  nameWithType: AdjustedHistoricalBar.Close
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Close
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_Volume
+  name: Volume
+  nameWithType: AdjustedHistoricalBar.Volume
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Volume
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_Source
+  name: Source
+  nameWithType: AdjustedHistoricalBar.Source
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.Source
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_SequenceNumber
+  name: SequenceNumber
+  nameWithType: AdjustedHistoricalBar.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SequenceNumber
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_AdjustedOpen
+  name: AdjustedOpen
+  nameWithType: AdjustedHistoricalBar.AdjustedOpen
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedOpen
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_AdjustedHigh
+  name: AdjustedHigh
+  nameWithType: AdjustedHistoricalBar.AdjustedHigh
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedHigh
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_AdjustedLow
+  name: AdjustedLow
+  nameWithType: AdjustedHistoricalBar.AdjustedLow
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedLow
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_AdjustedClose
+  name: AdjustedClose
+  nameWithType: AdjustedHistoricalBar.AdjustedClose
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedClose
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_AdjustedVolume
+  name: AdjustedVolume
+  nameWithType: AdjustedHistoricalBar.AdjustedVolume
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.AdjustedVolume
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_SplitFactor
+  name: SplitFactor
+  nameWithType: AdjustedHistoricalBar.SplitFactor
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.SplitFactor
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_DividendAmount
+  name: DividendAmount
+  nameWithType: AdjustedHistoricalBar.DividendAmount
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.DividendAmount
+- uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar*
+  commentId: Overload:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar
+  href: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.html#Meridian_Contracts_Domain_Models_AdjustedHistoricalBar_ToHistoricalBar_System_Boolean_
+  name: ToHistoricalBar
+  nameWithType: AdjustedHistoricalBar.ToHistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar.ToHistoricalBar
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Domain.Models.HistoricalBar
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalBar
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalBar.html
+  name: HistoricalBar
+  nameWithType: HistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.HistoricalBar

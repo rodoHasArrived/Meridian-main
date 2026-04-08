@@ -1,0 +1,1246 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  id: IBApiLimits
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.BidAskRequestWeight
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.DefaultMarketDataLines
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorCompetingLiveSession
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorDelayedDataNotSubscribed
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorHistoricalDataService
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorMarketDataNotSubscribed
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorNoSecurityDefinition
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorPacingViolation
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.FreeSnapshotsPerMonth
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayLivePort
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayPaperPort
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.HistoricalRequestWindow
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxClientsPerTWS
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxConcurrentHistoricalRequests
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxDepthSubscriptions
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalRequestsPer10Min
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalTicksPerRequest
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxMessagesPerSecond
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxSameContractRequestsPer2Sec
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxTickByTickSubscriptions
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinAccountBalanceForMarketData
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinDepthSubscriptions
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenIdenticalRequests
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenTickByTickSameInstrument
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SameContractWindow
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SmallBarMaxAgeMonths
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SnapshotCostUSD
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsLivePort
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsPaperPort
+  langs:
+  - csharp
+  - vb
+  name: IBApiLimits
+  nameWithType: IBApiLimits
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBApiLimits
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Constants defining Interactive Brokers API limits and constraints.
+
+    Based on official TWS API documentation for free equity data access.
+  remarks: >-
+    Free Data Availability for US Equities:
+
+    - Real-time streaming from Cboe One + IEX (non-consolidated, not NBBO)
+
+    - Up to 100 free snapshot quotes per month ($0.01 per additional)
+
+    - Historical data requires active streaming subscription
+
+    - No delayed data available for US equities
+
+    - Level 2 / Market Depth requires paid subscription
+  example: []
+  syntax:
+    content: public static class IBApiLimits
+    content.vb: Public Module IBApiLimits
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxClientsPerTWS
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxClientsPerTWS
+  id: MaxClientsPerTWS
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxClientsPerTWS
+  nameWithType: IBApiLimits.MaxClientsPerTWS
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxClientsPerTWS
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxClientsPerTWS
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Maximum number of API clients that can connect to a single TWS/Gateway instance.
+  example: []
+  syntax:
+    content: public const int MaxClientsPerTWS = 32
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxClientsPerTWS As Integer = 32
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxMessagesPerSecond
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxMessagesPerSecond
+  id: MaxMessagesPerSecond
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxMessagesPerSecond
+  nameWithType: IBApiLimits.MaxMessagesPerSecond
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxMessagesPerSecond
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMessagesPerSecond
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Maximum messages per second that TWS accepts from all connected clients combined.
+  example: []
+  syntax:
+    content: public const int MaxMessagesPerSecond = 50
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxMessagesPerSecond As Integer = 50
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.DefaultMarketDataLines
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.DefaultMarketDataLines
+  id: DefaultMarketDataLines
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: DefaultMarketDataLines
+  nameWithType: IBApiLimits.DefaultMarketDataLines
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.DefaultMarketDataLines
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultMarketDataLines
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Default maximum number of simultaneous market data subscriptions (Level 1).
+
+    Users can request increased limits based on commissions.
+  example: []
+  syntax:
+    content: public const int DefaultMarketDataLines = 100
+    return:
+      type: System.Int32
+    content.vb: Public Const DefaultMarketDataLines As Integer = 100
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinDepthSubscriptions
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinDepthSubscriptions
+  id: MinDepthSubscriptions
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MinDepthSubscriptions
+  nameWithType: IBApiLimits.MinDepthSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinDepthSubscriptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinDepthSubscriptions
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Minimum number of market depth (L2) subscriptions allowed.
+  example: []
+  syntax:
+    content: public const int MinDepthSubscriptions = 3
+    return:
+      type: System.Int32
+    content.vb: Public Const MinDepthSubscriptions As Integer = 3
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxDepthSubscriptions
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxDepthSubscriptions
+  id: MaxDepthSubscriptions
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxDepthSubscriptions
+  nameWithType: IBApiLimits.MaxDepthSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxDepthSubscriptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDepthSubscriptions
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Maximum number of market depth (L2) subscriptions allowed.
+
+    Based on formula tied to account activity.
+  example: []
+  syntax:
+    content: public const int MaxDepthSubscriptions = 60
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxDepthSubscriptions As Integer = 60
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxConcurrentHistoricalRequests
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxConcurrentHistoricalRequests
+  id: MaxConcurrentHistoricalRequests
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxConcurrentHistoricalRequests
+  nameWithType: IBApiLimits.MaxConcurrentHistoricalRequests
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxConcurrentHistoricalRequests
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxConcurrentHistoricalRequests
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Maximum number of simultaneous open historical data requests.
+  example: []
+  syntax:
+    content: public const int MaxConcurrentHistoricalRequests = 50
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxConcurrentHistoricalRequests As Integer = 50
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalRequestsPer10Min
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalRequestsPer10Min
+  id: MaxHistoricalRequestsPer10Min
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxHistoricalRequestsPer10Min
+  nameWithType: IBApiLimits.MaxHistoricalRequestsPer10Min
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalRequestsPer10Min
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxHistoricalRequestsPer10Min
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Maximum historical data requests allowed within a 10-minute window.
+  example: []
+  syntax:
+    content: public const int MaxHistoricalRequestsPer10Min = 60
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxHistoricalRequestsPer10Min As Integer = 60
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.HistoricalRequestWindow
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.HistoricalRequestWindow
+  id: HistoricalRequestWindow
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: HistoricalRequestWindow
+  nameWithType: IBApiLimits.HistoricalRequestWindow
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.HistoricalRequestWindow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalRequestWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: 10-minute window for historical request rate limiting.
+  example: []
+  syntax:
+    content: public static readonly TimeSpan HistoricalRequestWindow
+    return:
+      type: System.TimeSpan
+    content.vb: Public Shared ReadOnly HistoricalRequestWindow As TimeSpan
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenIdenticalRequests
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenIdenticalRequests
+  id: MinSecondsBetweenIdenticalRequests
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MinSecondsBetweenIdenticalRequests
+  nameWithType: IBApiLimits.MinSecondsBetweenIdenticalRequests
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenIdenticalRequests
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSecondsBetweenIdenticalRequests
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Minimum seconds between identical historical data requests.
+
+    Making identical requests within this window causes pacing violation.
+  example: []
+  syntax:
+    content: public const int MinSecondsBetweenIdenticalRequests = 15
+    return:
+      type: System.Int32
+    content.vb: Public Const MinSecondsBetweenIdenticalRequests As Integer = 15
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxSameContractRequestsPer2Sec
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxSameContractRequestsPer2Sec
+  id: MaxSameContractRequestsPer2Sec
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxSameContractRequestsPer2Sec
+  nameWithType: IBApiLimits.MaxSameContractRequestsPer2Sec
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxSameContractRequestsPer2Sec
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSameContractRequestsPer2Sec
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Maximum requests for the same Contract/Exchange/TickType within 2 seconds.
+
+    Exceeding this causes pacing violation.
+  example: []
+  syntax:
+    content: public const int MaxSameContractRequestsPer2Sec = 6
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxSameContractRequestsPer2Sec As Integer = 6
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SameContractWindow
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SameContractWindow
+  id: SameContractWindow
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: SameContractWindow
+  nameWithType: IBApiLimits.SameContractWindow
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SameContractWindow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SameContractWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: 2-second window for same-contract rate limiting.
+  example: []
+  syntax:
+    content: public static readonly TimeSpan SameContractWindow
+    return:
+      type: System.TimeSpan
+    content.vb: Public Shared ReadOnly SameContractWindow As TimeSpan
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalTicksPerRequest
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalTicksPerRequest
+  id: MaxHistoricalTicksPerRequest
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxHistoricalTicksPerRequest
+  nameWithType: IBApiLimits.MaxHistoricalTicksPerRequest
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxHistoricalTicksPerRequest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxHistoricalTicksPerRequest
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Maximum ticks returned per reqHistoricalTicks request.
+  example: []
+  syntax:
+    content: public const int MaxHistoricalTicksPerRequest = 1000
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxHistoricalTicksPerRequest As Integer = 1000
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SmallBarMaxAgeMonths
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SmallBarMaxAgeMonths
+  id: SmallBarMaxAgeMonths
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: SmallBarMaxAgeMonths
+  nameWithType: IBApiLimits.SmallBarMaxAgeMonths
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SmallBarMaxAgeMonths
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SmallBarMaxAgeMonths
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Maximum age in months for historical bars with size &lt;= 30 seconds.
+
+    Data older than this is not available.
+  example: []
+  syntax:
+    content: public const int SmallBarMaxAgeMonths = 6
+    return:
+      type: System.Int32
+    content.vb: Public Const SmallBarMaxAgeMonths As Integer = 6
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.BidAskRequestWeight
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.BidAskRequestWeight
+  id: BidAskRequestWeight
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: BidAskRequestWeight
+  nameWithType: IBApiLimits.BidAskRequestWeight
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.BidAskRequestWeight
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidAskRequestWeight
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: BID_ASK historical requests count as two requests toward rate limits.
+  example: []
+  syntax:
+    content: public const int BidAskRequestWeight = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const BidAskRequestWeight As Integer = 2
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenTickByTickSameInstrument
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenTickByTickSameInstrument
+  id: MinSecondsBetweenTickByTickSameInstrument
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MinSecondsBetweenTickByTickSameInstrument
+  nameWithType: IBApiLimits.MinSecondsBetweenTickByTickSameInstrument
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinSecondsBetweenTickByTickSameInstrument
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSecondsBetweenTickByTickSameInstrument
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Minimum seconds between tick-by-tick requests for the same instrument.
+  example: []
+  syntax:
+    content: public const int MinSecondsBetweenTickByTickSameInstrument = 15
+    return:
+      type: System.Int32
+    content.vb: Public Const MinSecondsBetweenTickByTickSameInstrument As Integer = 15
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxTickByTickSubscriptions
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxTickByTickSubscriptions
+  id: MaxTickByTickSubscriptions
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MaxTickByTickSubscriptions
+  nameWithType: IBApiLimits.MaxTickByTickSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MaxTickByTickSubscriptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxTickByTickSubscriptions
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Maximum tick-by-tick subscriptions (uses same formula as depth).
+  example: []
+  syntax:
+    content: public const int MaxTickByTickSubscriptions = 60
+    return:
+      type: System.Int32
+    content.vb: Public Const MaxTickByTickSubscriptions As Integer = 60
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.FreeSnapshotsPerMonth
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.FreeSnapshotsPerMonth
+  id: FreeSnapshotsPerMonth
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: FreeSnapshotsPerMonth
+  nameWithType: IBApiLimits.FreeSnapshotsPerMonth
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.FreeSnapshotsPerMonth
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FreeSnapshotsPerMonth
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Free snapshot quotes per month ($1.00 value).
+  example: []
+  syntax:
+    content: public const int FreeSnapshotsPerMonth = 100
+    return:
+      type: System.Int32
+    content.vb: Public Const FreeSnapshotsPerMonth As Integer = 100
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SnapshotCostUSD
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SnapshotCostUSD
+  id: SnapshotCostUSD
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: SnapshotCostUSD
+  nameWithType: IBApiLimits.SnapshotCostUSD
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.SnapshotCostUSD
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnapshotCostUSD
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Cost per snapshot quote beyond the free allowance.
+  example: []
+  syntax:
+    content: public const decimal SnapshotCostUSD = 0.01
+    return:
+      type: System.Decimal
+    content.vb: Public Const SnapshotCostUSD As Decimal = 0.01
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinAccountBalanceForMarketData
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinAccountBalanceForMarketData
+  id: MinAccountBalanceForMarketData
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: MinAccountBalanceForMarketData
+  nameWithType: IBApiLimits.MinAccountBalanceForMarketData
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.MinAccountBalanceForMarketData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinAccountBalanceForMarketData
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Minimum account balance required for market data subscriptions.
+  example: []
+  syntax:
+    content: public const decimal MinAccountBalanceForMarketData = 500
+    return:
+      type: System.Decimal
+    content.vb: Public Const MinAccountBalanceForMarketData As Decimal = 500
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsPaperPort
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsPaperPort
+  id: TwsPaperPort
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: TwsPaperPort
+  nameWithType: IBApiLimits.TwsPaperPort
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsPaperPort
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TwsPaperPort
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: TWS Paper Trading connection port.
+  example: []
+  syntax:
+    content: public const int TwsPaperPort = 7497
+    return:
+      type: System.Int32
+    content.vb: Public Const TwsPaperPort As Integer = 7497
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsLivePort
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsLivePort
+  id: TwsLivePort
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: TwsLivePort
+  nameWithType: IBApiLimits.TwsLivePort
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.TwsLivePort
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TwsLivePort
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: TWS Live Trading connection port.
+  example: []
+  syntax:
+    content: public const int TwsLivePort = 7496
+    return:
+      type: System.Int32
+    content.vb: Public Const TwsLivePort As Integer = 7496
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayPaperPort
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayPaperPort
+  id: GatewayPaperPort
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: GatewayPaperPort
+  nameWithType: IBApiLimits.GatewayPaperPort
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayPaperPort
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GatewayPaperPort
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: IB Gateway Paper Trading connection port.
+  example: []
+  syntax:
+    content: public const int GatewayPaperPort = 4002
+    return:
+      type: System.Int32
+    content.vb: Public Const GatewayPaperPort As Integer = 4002
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayLivePort
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayLivePort
+  id: GatewayLivePort
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: GatewayLivePort
+  nameWithType: IBApiLimits.GatewayLivePort
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.GatewayLivePort
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GatewayLivePort
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: IB Gateway Live Trading connection port.
+  example: []
+  syntax:
+    content: public const int GatewayLivePort = 4001
+    return:
+      type: System.Int32
+    content.vb: Public Const GatewayLivePort As Integer = 4001
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorHistoricalDataService
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorHistoricalDataService
+  id: ErrorHistoricalDataService
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: ErrorHistoricalDataService
+  nameWithType: IBApiLimits.ErrorHistoricalDataService
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorHistoricalDataService
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorHistoricalDataService
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Historical market data service error.
+  example: []
+  syntax:
+    content: public const int ErrorHistoricalDataService = 162
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorHistoricalDataService As Integer = 162
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorNoSecurityDefinition
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorNoSecurityDefinition
+  id: ErrorNoSecurityDefinition
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: ErrorNoSecurityDefinition
+  nameWithType: IBApiLimits.ErrorNoSecurityDefinition
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorNoSecurityDefinition
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorNoSecurityDefinition
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: No security definition found for the contract.
+  example: []
+  syntax:
+    content: public const int ErrorNoSecurityDefinition = 200
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorNoSecurityDefinition As Integer = 200
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorMarketDataNotSubscribed
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorMarketDataNotSubscribed
+  id: ErrorMarketDataNotSubscribed
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: ErrorMarketDataNotSubscribed
+  nameWithType: IBApiLimits.ErrorMarketDataNotSubscribed
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorMarketDataNotSubscribed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMarketDataNotSubscribed
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Market data not subscribed (need subscription).
+  example: []
+  syntax:
+    content: public const int ErrorMarketDataNotSubscribed = 354
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorMarketDataNotSubscribed As Integer = 354
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorDelayedDataNotSubscribed
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorDelayedDataNotSubscribed
+  id: ErrorDelayedDataNotSubscribed
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: ErrorDelayedDataNotSubscribed
+  nameWithType: IBApiLimits.ErrorDelayedDataNotSubscribed
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorDelayedDataNotSubscribed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorDelayedDataNotSubscribed
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Delayed market data not subscribed.
+  example: []
+  syntax:
+    content: public const int ErrorDelayedDataNotSubscribed = 10167
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorDelayedDataNotSubscribed As Integer = 10167
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorCompetingLiveSession
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorCompetingLiveSession
+  id: ErrorCompetingLiveSession
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: ErrorCompetingLiveSession
+  nameWithType: IBApiLimits.ErrorCompetingLiveSession
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorCompetingLiveSession
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCompetingLiveSession
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: No market data during competing live session.
+  example: []
+  syntax:
+    content: public const int ErrorCompetingLiveSession = 10197
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorCompetingLiveSession As Integer = 10197
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorPacingViolation
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorPacingViolation
+  id: ErrorPacingViolation
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
+  langs:
+  - csharp
+  - vb
+  name: ErrorPacingViolation
+  nameWithType: IBApiLimits.ErrorPacingViolation
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.ErrorPacingViolation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorPacingViolation
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Pacing violation - too many requests.
+  example: []
+  syntax:
+    content: public const int ErrorPacingViolation = 162
+    return:
+      type: System.Int32
+    content.vb: Public Const ErrorPacingViolation As Integer = 162
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal

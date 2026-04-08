@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Replay
+  commentId: N:Meridian.Infrastructure.CppTrader.Replay
+  id: Meridian.Infrastructure.CppTrader.Replay
+  children:
+  - Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  - Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Replay
+  nameWithType: Meridian.Infrastructure.CppTrader.Replay
+  fullName: Meridian.Infrastructure.CppTrader.Replay
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  commentId: T:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  href: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.html
+  name: CppTraderReplayService
+  nameWithType: CppTraderReplayService
+  fullName: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+- uid: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  commentId: T:Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  parent: Meridian.Infrastructure.CppTrader.Replay
+  href: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.html
+  name: ICppTraderReplayService
+  nameWithType: ICppTraderReplayService
+  fullName: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+- uid: Meridian.Infrastructure.CppTrader.Replay
+  commentId: N:Meridian.Infrastructure.CppTrader.Replay
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Replay
+  nameWithType: Meridian.Infrastructure.CppTrader.Replay
+  fullName: Meridian.Infrastructure.CppTrader.Replay
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Replay
+    name: Replay
+    href: Meridian.Infrastructure.CppTrader.Replay.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Replay
+    name: Replay
+    href: Meridian.Infrastructure.CppTrader.Replay.html

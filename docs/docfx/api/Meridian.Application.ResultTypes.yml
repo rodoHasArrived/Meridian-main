@@ -1,0 +1,137 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  id: Meridian.Application.ResultTypes
+  children:
+  - Meridian.Application.ResultTypes.ErrorCode
+  - Meridian.Application.ResultTypes.ErrorCodeExtensions
+  - Meridian.Application.ResultTypes.OperationError
+  - Meridian.Application.ResultTypes.Result
+  - Meridian.Application.ResultTypes.Result`1
+  - Meridian.Application.ResultTypes.Result`2
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.ResultTypes.ErrorCode
+  commentId: T:Meridian.Application.ResultTypes.ErrorCode
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.ErrorCode.html
+  name: ErrorCode
+  nameWithType: ErrorCode
+  fullName: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCodeExtensions
+  commentId: T:Meridian.Application.ResultTypes.ErrorCodeExtensions
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html
+  name: ErrorCodeExtensions
+  nameWithType: ErrorCodeExtensions
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions
+- uid: Meridian.Application.ResultTypes.OperationError
+  commentId: T:Meridian.Application.ResultTypes.OperationError
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.OperationError.html
+  name: OperationError
+  nameWithType: OperationError
+  fullName: Meridian.Application.ResultTypes.OperationError
+- uid: Meridian.Application.ResultTypes.Result`2
+  commentId: T:Meridian.Application.ResultTypes.Result`2
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.Result-2.html
+  name: Result<TValue, TError>
+  nameWithType: Result<TValue, TError>
+  fullName: Meridian.Application.ResultTypes.Result<TValue, TError>
+  nameWithType.vb: Result(Of TValue, TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TValue, TError)
+  name.vb: Result(Of TValue, TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result`1
+  commentId: T:Meridian.Application.ResultTypes.Result`1
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.Result-1.html
+  name: Result<TError>
+  nameWithType: Result<TError>
+  fullName: Meridian.Application.ResultTypes.Result<TError>
+  nameWithType.vb: Result(Of TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError)
+  name.vb: Result(Of TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: <
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TError
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result
+  commentId: T:Meridian.Application.ResultTypes.Result
+  href: Meridian.Application.ResultTypes.Result.html
+  name: Result
+  nameWithType: Result
+  fullName: Meridian.Application.ResultTypes.Result
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  href: Meridian.html
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html

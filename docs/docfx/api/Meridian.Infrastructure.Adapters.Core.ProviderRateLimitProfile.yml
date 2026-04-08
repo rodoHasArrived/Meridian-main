@@ -1,0 +1,577 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  id: ProviderRateLimitProfile
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay
+  - Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window
+  langs:
+  - csharp
+  - vb
+  name: ProviderRateLimitProfile
+  nameWithType: ProviderRateLimitProfile
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRateLimitProfile
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Standardized rate limit profile for provider metadata.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderRateLimitProfile : IEquatable<ProviderRateLimitProfile>'
+    content.vb: Public NotInheritable Class ProviderRateLimitProfile Implements IEquatable(Of ProviderRateLimitProfile)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan})
+  id: '#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan})'
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  langs:
+  - csharp
+  - vb
+  name: ProviderRateLimitProfile(int, TimeSpan, TimeSpan?)
+  nameWithType: ProviderRateLimitProfile.ProviderRateLimitProfile(int, TimeSpan, TimeSpan?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.ProviderRateLimitProfile(int, System.TimeSpan, System.TimeSpan?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Standardized rate limit profile for provider metadata.
+  example: []
+  syntax:
+    content: public ProviderRateLimitProfile(int MaxRequestsPerWindow, TimeSpan Window, TimeSpan? MinDelay = null)
+    parameters:
+    - id: MaxRequestsPerWindow
+      type: System.Int32
+    - id: Window
+      type: System.TimeSpan
+    - id: MinDelay
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub New(MaxRequestsPerWindow As Integer, Window As TimeSpan, MinDelay As TimeSpan? = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.#ctor*
+  nameWithType.vb: ProviderRateLimitProfile.New(Integer, TimeSpan, TimeSpan?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.New(Integer, System.TimeSpan, System.TimeSpan?)
+  name.vb: New(Integer, TimeSpan, TimeSpan?)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: ProviderRateLimitProfile.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int MaxRequestsPerWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRequestsPerWindow As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window
+  id: Window
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  langs:
+  - csharp
+  - vb
+  name: Window
+  nameWithType: ProviderRateLimitProfile.Window
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Window
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public TimeSpan Window { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Window As TimeSpan
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay
+  id: MinDelay
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  langs:
+  - csharp
+  - vb
+  name: MinDelay
+  nameWithType: ProviderRateLimitProfile.MinDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinDelay
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public TimeSpan? MinDelay { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property MinDelay As TimeSpan?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderRateLimitProfile>
+  nameWithType: IEquatable<ProviderRateLimitProfile>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile>
+  nameWithType.vb: IEquatable(Of ProviderRateLimitProfile)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile)
+  name.vb: IEquatable(Of ProviderRateLimitProfile)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+    name: ProviderRateLimitProfile
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+    name: ProviderRateLimitProfile
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitProfile__ctor_System_Int32_System_TimeSpan_System_Nullable_System_TimeSpan__
+  name: ProviderRateLimitProfile
+  nameWithType: ProviderRateLimitProfile.ProviderRateLimitProfile
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.ProviderRateLimitProfile
+  nameWithType.vb: ProviderRateLimitProfile.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitProfile_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: ProviderRateLimitProfile.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitProfile_Window
+  name: Window
+  nameWithType: ProviderRateLimitProfile.Window
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.Window
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html#Meridian_Infrastructure_Adapters_Core_ProviderRateLimitProfile_MinDelay
+  name: MinDelay
+  nameWithType: ProviderRateLimitProfile.MinDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.MinDelay

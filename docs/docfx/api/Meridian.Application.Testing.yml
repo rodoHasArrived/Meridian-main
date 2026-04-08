@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Testing
+  commentId: N:Meridian.Application.Testing
+  id: Meridian.Application.Testing
+  children:
+  - Meridian.Application.Testing.DepthBufferSelfTests
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Testing
+  nameWithType: Meridian.Application.Testing
+  fullName: Meridian.Application.Testing
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Testing.DepthBufferSelfTests
+  commentId: T:Meridian.Application.Testing.DepthBufferSelfTests
+  href: Meridian.Application.Testing.DepthBufferSelfTests.html
+  name: DepthBufferSelfTests
+  nameWithType: DepthBufferSelfTests
+  fullName: Meridian.Application.Testing.DepthBufferSelfTests

@@ -1,0 +1,467 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TourSession
+  commentId: T:Meridian.Ui.Services.TourSession
+  id: TourSession
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TourSession.CurrentStepIndex
+  - Meridian.Ui.Services.TourSession.StartedAt
+  - Meridian.Ui.Services.TourSession.Tour
+  - Meridian.Ui.Services.TourSession.TourId
+  langs:
+  - csharp
+  - vb
+  name: TourSession
+  nameWithType: TourSession
+  fullName: Meridian.Ui.Services.TourSession
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TourSession
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Active tour session state.
+  example: []
+  syntax:
+    content: public sealed class TourSession
+    content.vb: Public NotInheritable Class TourSession
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.TourSession.TourId
+  commentId: P:Meridian.Ui.Services.TourSession.TourId
+  id: TourId
+  parent: Meridian.Ui.Services.TourSession
+  langs:
+  - csharp
+  - vb
+  name: TourId
+  nameWithType: TourSession.TourId
+  fullName: Meridian.Ui.Services.TourSession.TourId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TourId
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string TourId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TourId As String
+  overload: Meridian.Ui.Services.TourSession.TourId*
+- uid: Meridian.Ui.Services.TourSession.Tour
+  commentId: P:Meridian.Ui.Services.TourSession.Tour
+  id: Tour
+  parent: Meridian.Ui.Services.TourSession
+  langs:
+  - csharp
+  - vb
+  name: Tour
+  nameWithType: TourSession.Tour
+  fullName: Meridian.Ui.Services.TourSession.Tour
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tour
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public TourDefinition Tour { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.TourDefinition
+    content.vb: Public Property Tour As TourDefinition
+  overload: Meridian.Ui.Services.TourSession.Tour*
+- uid: Meridian.Ui.Services.TourSession.CurrentStepIndex
+  commentId: P:Meridian.Ui.Services.TourSession.CurrentStepIndex
+  id: CurrentStepIndex
+  parent: Meridian.Ui.Services.TourSession
+  langs:
+  - csharp
+  - vb
+  name: CurrentStepIndex
+  nameWithType: TourSession.CurrentStepIndex
+  fullName: Meridian.Ui.Services.TourSession.CurrentStepIndex
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentStepIndex
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 522
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int CurrentStepIndex { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CurrentStepIndex As Integer
+  overload: Meridian.Ui.Services.TourSession.CurrentStepIndex*
+- uid: Meridian.Ui.Services.TourSession.StartedAt
+  commentId: P:Meridian.Ui.Services.TourSession.StartedAt
+  id: StartedAt
+  parent: Meridian.Ui.Services.TourSession
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: TourSession.StartedAt
+  fullName: Meridian.Ui.Services.TourSession.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime StartedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property StartedAt As Date
+  overload: Meridian.Ui.Services.TourSession.StartedAt*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.TourSession.TourId*
+  commentId: Overload:Meridian.Ui.Services.TourSession.TourId
+  href: Meridian.Ui.Services.TourSession.html#Meridian_Ui_Services_TourSession_TourId
+  name: TourId
+  nameWithType: TourSession.TourId
+  fullName: Meridian.Ui.Services.TourSession.TourId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.TourSession.Tour*
+  commentId: Overload:Meridian.Ui.Services.TourSession.Tour
+  href: Meridian.Ui.Services.TourSession.html#Meridian_Ui_Services_TourSession_Tour
+  name: Tour
+  nameWithType: TourSession.Tour
+  fullName: Meridian.Ui.Services.TourSession.Tour
+- uid: Meridian.Ui.Services.TourDefinition
+  commentId: T:Meridian.Ui.Services.TourDefinition
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TourDefinition.html
+  name: TourDefinition
+  nameWithType: TourDefinition
+  fullName: Meridian.Ui.Services.TourDefinition
+- uid: Meridian.Ui.Services.TourSession.CurrentStepIndex*
+  commentId: Overload:Meridian.Ui.Services.TourSession.CurrentStepIndex
+  href: Meridian.Ui.Services.TourSession.html#Meridian_Ui_Services_TourSession_CurrentStepIndex
+  name: CurrentStepIndex
+  nameWithType: TourSession.CurrentStepIndex
+  fullName: Meridian.Ui.Services.TourSession.CurrentStepIndex
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.TourSession.StartedAt*
+  commentId: Overload:Meridian.Ui.Services.TourSession.StartedAt
+  href: Meridian.Ui.Services.TourSession.html#Meridian_Ui_Services_TourSession_StartedAt
+  name: StartedAt
+  nameWithType: TourSession.StartedAt
+  fullName: Meridian.Ui.Services.TourSession.StartedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date

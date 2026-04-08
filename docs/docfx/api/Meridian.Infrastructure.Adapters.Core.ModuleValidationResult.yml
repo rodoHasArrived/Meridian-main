@@ -1,0 +1,580 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  id: ModuleValidationResult
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.#ctor(System.Boolean,System.String)
+  - Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason
+  - Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid
+  - Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+  langs:
+  - csharp
+  - vb
+  name: ModuleValidationResult
+  nameWithType: ModuleValidationResult
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModuleValidationResult
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 64
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Result of a module's self-validation step.
+  example: []
+  syntax:
+    content: 'public sealed record ModuleValidationResult : IEquatable<ModuleValidationResult>'
+    content.vb: Public NotInheritable Class ModuleValidationResult Implements IEquatable(Of ModuleValidationResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.ModuleValidationResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.#ctor(System.Boolean,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.#ctor(System.Boolean,System.String)
+  id: '#ctor(System.Boolean,System.String)'
+  parent: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  langs:
+  - csharp
+  - vb
+  name: ModuleValidationResult(bool, string?)
+  nameWithType: ModuleValidationResult.ModuleValidationResult(bool, string?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.ModuleValidationResult(bool, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 64
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Result of a module's self-validation step.
+  example: []
+  syntax:
+    content: public ModuleValidationResult(bool IsValid, string? FailureReason = null)
+    parameters:
+    - id: IsValid
+      type: System.Boolean
+      description: Whether the module passed validation and may proceed to registration.
+    - id: FailureReason
+      type: System.String
+      description: Human-readable explanation when <code class="paramref">IsValid</code> is false.
+    content.vb: Public Sub New(IsValid As Boolean, FailureReason As String = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.#ctor*
+  nameWithType.vb: ModuleValidationResult.New(Boolean, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.New(Boolean, String)
+  name.vb: New(Boolean, String)
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid
+  id: IsValid
+  parent: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  langs:
+  - csharp
+  - vb
+  name: IsValid
+  nameWithType: ModuleValidationResult.IsValid
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 64
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Whether the module passed validation and may proceed to registration.
+  example: []
+  syntax:
+    content: public bool IsValid { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsValid As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid*
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason
+  id: FailureReason
+  parent: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  langs:
+  - csharp
+  - vb
+  name: FailureReason
+  nameWithType: ModuleValidationResult.FailureReason
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailureReason
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 64
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Human-readable explanation when <code class="paramref">IsValid</code> is false.
+  example: []
+  syntax:
+    content: public string? FailureReason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FailureReason As String
+  overload: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason*
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+  commentId: F:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+  id: Valid
+  parent: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Valid
+  nameWithType: ModuleValidationResult.Valid
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Valid
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 67
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Singleton valid result — avoids repeated allocations on the happy path.
+  example: []
+  syntax:
+    content: public static readonly ModuleValidationResult Valid
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+    content.vb: Public Shared ReadOnly Valid As ModuleValidationResult
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure(System.String)
+  id: Failure(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Failure(string)
+  nameWithType: ModuleValidationResult.Failure(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failure
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 70
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Creates a failure result with the specified reason.
+  example: []
+  syntax:
+    content: public static ModuleValidationResult Failure(string reason)
+    parameters:
+    - id: reason
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+    content.vb: Public Shared Function Failure(reason As String) As ModuleValidationResult
+  overload: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure*
+  nameWithType.vb: ModuleValidationResult.Failure(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure(String)
+  name.vb: Failure(String)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.ModuleValidationResult}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.ModuleValidationResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ModuleValidationResult>
+  nameWithType: IEquatable<ModuleValidationResult>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.ModuleValidationResult>
+  nameWithType.vb: IEquatable(Of ModuleValidationResult)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.ModuleValidationResult)
+  name.vb: IEquatable(Of ModuleValidationResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+    name: ModuleValidationResult
+    href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+    name: ModuleValidationResult
+    href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html#Meridian_Infrastructure_Adapters_Core_ModuleValidationResult__ctor_System_Boolean_System_String_
+  name: ModuleValidationResult
+  nameWithType: ModuleValidationResult.ModuleValidationResult
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.ModuleValidationResult
+  nameWithType.vb: ModuleValidationResult.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid
+  href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html#Meridian_Infrastructure_Adapters_Core_ModuleValidationResult_IsValid
+  name: IsValid
+  nameWithType: ModuleValidationResult.IsValid
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.IsValid
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason
+  href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html#Meridian_Infrastructure_Adapters_Core_ModuleValidationResult_FailureReason
+  name: FailureReason
+  nameWithType: ModuleValidationResult.FailureReason
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.FailureReason
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html
+  name: ModuleValidationResult
+  nameWithType: ModuleValidationResult
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure
+  href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html#Meridian_Infrastructure_Adapters_Core_ModuleValidationResult_Failure_System_String_
+  name: Failure
+  nameWithType: ModuleValidationResult.Failure
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Failure

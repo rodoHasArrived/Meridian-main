@@ -1,0 +1,851 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  id: SymbolQualitySummary
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.#ctor(System.String,System.Double,System.Double,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.String,System.String[])
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents
+  - Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration
+  langs:
+  - csharp
+  - vb
+  name: SymbolQualitySummary
+  nameWithType: SymbolQualitySummary
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolQualitySummary
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Symbol-level quality summary.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolQualitySummary : IEquatable<SymbolQualitySummary>'
+    content.vb: Public NotInheritable Class SymbolQualitySummary Implements IEquatable(Of SymbolQualitySummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.#ctor(System.String,System.Double,System.Double,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.String,System.String[])
+  commentId: M:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.#ctor(System.String,System.Double,System.Double,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.String,System.String[])
+  id: '#ctor(System.String,System.Double,System.Double,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.String,System.String[])'
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: SymbolQualitySummary(string, double, double, long, int, TimeSpan, int, int, string, string[])
+  nameWithType: SymbolQualitySummary.SymbolQualitySummary(string, double, double, long, int, TimeSpan, int, int, string, string[])
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SymbolQualitySummary(string, double, double, long, int, System.TimeSpan, int, int, string, string[])
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Symbol-level quality summary.
+  example: []
+  syntax:
+    content: public SymbolQualitySummary(string Symbol, double OverallScore, double CompletenessScore, long TotalEvents, int GapCount, TimeSpan TotalGapDuration, int SequenceErrors, int Anomalies, string Grade, string[] Issues)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: OverallScore
+      type: System.Double
+    - id: CompletenessScore
+      type: System.Double
+    - id: TotalEvents
+      type: System.Int64
+    - id: GapCount
+      type: System.Int32
+    - id: TotalGapDuration
+      type: System.TimeSpan
+    - id: SequenceErrors
+      type: System.Int32
+    - id: Anomalies
+      type: System.Int32
+    - id: Grade
+      type: System.String
+    - id: Issues
+      type: System.String[]
+    content.vb: Public Sub New(Symbol As String, OverallScore As Double, CompletenessScore As Double, TotalEvents As Long, GapCount As Integer, TotalGapDuration As TimeSpan, SequenceErrors As Integer, Anomalies As Integer, Grade As String, Issues As String())
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.#ctor*
+  nameWithType.vb: SymbolQualitySummary.New(String, Double, Double, Long, Integer, TimeSpan, Integer, Integer, String, String())
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.New(String, Double, Double, Long, Integer, System.TimeSpan, Integer, Integer, String, String())
+  name.vb: New(String, Double, Double, Long, Integer, TimeSpan, Integer, Integer, String, String())
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolQualitySummary.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore
+  id: OverallScore
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: OverallScore
+  nameWithType: SymbolQualitySummary.OverallScore
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double OverallScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property OverallScore As Double
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore
+  id: CompletenessScore
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: CompletenessScore
+  nameWithType: SymbolQualitySummary.CompletenessScore
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double CompletenessScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CompletenessScore As Double
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: SymbolQualitySummary.TotalEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long TotalEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEvents As Long
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount
+  id: GapCount
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: GapCount
+  nameWithType: SymbolQualitySummary.GapCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapCount
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int GapCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapCount As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration
+  id: TotalGapDuration
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: TotalGapDuration
+  nameWithType: SymbolQualitySummary.TotalGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGapDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan TotalGapDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalGapDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors
+  id: SequenceErrors
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: SequenceErrors
+  nameWithType: SymbolQualitySummary.SequenceErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceErrors
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int SequenceErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SequenceErrors As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies
+  id: Anomalies
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: Anomalies
+  nameWithType: SymbolQualitySummary.Anomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Anomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int Anomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Anomalies As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade
+  id: Grade
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: Grade
+  nameWithType: SymbolQualitySummary.Grade
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Grade
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Grade { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Grade As String
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues
+  id: Issues
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: SymbolQualitySummary.Issues
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string[] Issues { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Issues As String()
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolQualitySummary>
+  nameWithType: IEquatable<SymbolQualitySummary>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary>
+  nameWithType.vb: IEquatable(Of SymbolQualitySummary)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary)
+  name.vb: IEquatable(Of SymbolQualitySummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+    name: SymbolQualitySummary
+    href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary
+    name: SymbolQualitySummary
+    href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary__ctor_System_String_System_Double_System_Double_System_Int64_System_Int32_System_TimeSpan_System_Int32_System_Int32_System_String_System_String___
+  name: SymbolQualitySummary
+  nameWithType: SymbolQualitySummary.SymbolQualitySummary
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SymbolQualitySummary
+  nameWithType.vb: SymbolQualitySummary.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_Symbol
+  name: Symbol
+  nameWithType: SymbolQualitySummary.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Symbol
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_OverallScore
+  name: OverallScore
+  nameWithType: SymbolQualitySummary.OverallScore
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.OverallScore
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_CompletenessScore
+  name: CompletenessScore
+  nameWithType: SymbolQualitySummary.CompletenessScore
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.CompletenessScore
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_TotalEvents
+  name: TotalEvents
+  nameWithType: SymbolQualitySummary.TotalEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalEvents
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_GapCount
+  name: GapCount
+  nameWithType: SymbolQualitySummary.GapCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.GapCount
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_TotalGapDuration
+  name: TotalGapDuration
+  nameWithType: SymbolQualitySummary.TotalGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.TotalGapDuration
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_SequenceErrors
+  name: SequenceErrors
+  nameWithType: SymbolQualitySummary.SequenceErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.SequenceErrors
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_Anomalies
+  name: Anomalies
+  nameWithType: SymbolQualitySummary.Anomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Anomalies
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_Grade
+  name: Grade
+  nameWithType: SymbolQualitySummary.Grade
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Grade
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues
+  href: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.html#Meridian_Application_Monitoring_DataQuality_SymbolQualitySummary_Issues
+  name: Issues
+  nameWithType: SymbolQualitySummary.Issues
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolQualitySummary.Issues

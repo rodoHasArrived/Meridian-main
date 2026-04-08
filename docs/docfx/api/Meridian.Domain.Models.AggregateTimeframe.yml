@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Models.AggregateTimeframe
+  commentId: T:Meridian.Domain.Models.AggregateTimeframe
+  id: AggregateTimeframe
+  parent: Meridian.Domain.Models
+  children:
+  - Meridian.Domain.Models.AggregateTimeframe.Day
+  - Meridian.Domain.Models.AggregateTimeframe.Hour
+  - Meridian.Domain.Models.AggregateTimeframe.Minute
+  - Meridian.Domain.Models.AggregateTimeframe.Second
+  langs:
+  - csharp
+  - vb
+  name: AggregateTimeframe
+  nameWithType: AggregateTimeframe
+  fullName: Meridian.Domain.Models.AggregateTimeframe
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/AggregateBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregateTimeframe
+    path: ../../src/Meridian.Domain/Models/AggregateBar.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: Timeframe for aggregate bars.
+  example: []
+  syntax:
+    content: 'public enum AggregateTimeframe : byte'
+    content.vb: Public Enum AggregateTimeframe As Byte
+- uid: Meridian.Domain.Models.AggregateTimeframe.Second
+  commentId: F:Meridian.Domain.Models.AggregateTimeframe.Second
+  id: Second
+  parent: Meridian.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Second
+  nameWithType: AggregateTimeframe.Second
+  fullName: Meridian.Domain.Models.AggregateTimeframe.Second
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/AggregateBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second
+    path: ../../src/Meridian.Domain/Models/AggregateBar.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: Per-second aggregate (Polygon "A" event).
+  example: []
+  syntax:
+    content: Second = 0
+    return:
+      type: Meridian.Domain.Models.AggregateTimeframe
+- uid: Meridian.Domain.Models.AggregateTimeframe.Minute
+  commentId: F:Meridian.Domain.Models.AggregateTimeframe.Minute
+  id: Minute
+  parent: Meridian.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Minute
+  nameWithType: AggregateTimeframe.Minute
+  fullName: Meridian.Domain.Models.AggregateTimeframe.Minute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/AggregateBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute
+    path: ../../src/Meridian.Domain/Models/AggregateBar.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: Per-minute aggregate (Polygon "AM" event).
+  example: []
+  syntax:
+    content: Minute = 1
+    return:
+      type: Meridian.Domain.Models.AggregateTimeframe
+- uid: Meridian.Domain.Models.AggregateTimeframe.Hour
+  commentId: F:Meridian.Domain.Models.AggregateTimeframe.Hour
+  id: Hour
+  parent: Meridian.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Hour
+  nameWithType: AggregateTimeframe.Hour
+  fullName: Meridian.Domain.Models.AggregateTimeframe.Hour
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/AggregateBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour
+    path: ../../src/Meridian.Domain/Models/AggregateBar.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: Hourly aggregate.
+  example: []
+  syntax:
+    content: Hour = 2
+    return:
+      type: Meridian.Domain.Models.AggregateTimeframe
+- uid: Meridian.Domain.Models.AggregateTimeframe.Day
+  commentId: F:Meridian.Domain.Models.AggregateTimeframe.Day
+  id: Day
+  parent: Meridian.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Day
+  nameWithType: AggregateTimeframe.Day
+  fullName: Meridian.Domain.Models.AggregateTimeframe.Day
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Models/AggregateBar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Day
+    path: ../../src/Meridian.Domain/Models/AggregateBar.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Models
+  summary: Daily aggregate.
+  example: []
+  syntax:
+    content: Day = 3
+    return:
+      type: Meridian.Domain.Models.AggregateTimeframe
+references:
+- uid: Meridian.Domain.Models
+  commentId: N:Meridian.Domain.Models
+  href: Meridian.html
+  name: Meridian.Domain.Models
+  nameWithType: Meridian.Domain.Models
+  fullName: Meridian.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+- uid: Meridian.Domain.Models.AggregateTimeframe
+  commentId: T:Meridian.Domain.Models.AggregateTimeframe
+  parent: Meridian.Domain.Models
+  href: Meridian.Domain.Models.AggregateTimeframe.html
+  name: AggregateTimeframe
+  nameWithType: AggregateTimeframe
+  fullName: Meridian.Domain.Models.AggregateTimeframe

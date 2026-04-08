@@ -1,0 +1,437 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Etl.IEtlJobService
+  commentId: T:Meridian.Application.Etl.IEtlJobService
+  id: IEtlJobService
+  parent: Meridian.Application.Etl
+  children:
+  - Meridian.Application.Etl.IEtlJobService.CreateJobAsync(Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  - Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Etl.IEtlJobService.RunAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IEtlJobService
+  nameWithType: IEtlJobService
+  fullName: Meridian.Application.Etl.IEtlJobService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IEtlJobService
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public interface IEtlJobService
+    content.vb: Public Interface IEtlJobService
+  derivedClasses:
+  - Meridian.Application.Etl.EtlJobService
+- uid: Meridian.Application.Etl.IEtlJobService.CreateJobAsync(Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Etl.IEtlJobService.CreateJobAsync(Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  id: CreateJobAsync(Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  parent: Meridian.Application.Etl.IEtlJobService
+  langs:
+  - csharp
+  - vb
+  name: CreateJobAsync(EtlJobDefinition, CancellationToken)
+  nameWithType: IEtlJobService.CreateJobAsync(EtlJobDefinition, CancellationToken)
+  fullName: Meridian.Application.Etl.IEtlJobService.CreateJobAsync(Meridian.Contracts.Etl.EtlJobDefinition, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateJobAsync
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: Task<IngestionJob> CreateJobAsync(EtlJobDefinition definition, CancellationToken ct = default)
+    parameters:
+    - id: definition
+      type: Meridian.Contracts.Etl.EtlJobDefinition
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Pipeline.IngestionJob}
+    content.vb: Function CreateJobAsync(definition As EtlJobDefinition, ct As CancellationToken = Nothing) As Task(Of IngestionJob)
+  overload: Meridian.Application.Etl.IEtlJobService.CreateJobAsync*
+- uid: Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync(System.String,System.Threading.CancellationToken)
+  id: GetDefinitionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Etl.IEtlJobService
+  langs:
+  - csharp
+  - vb
+  name: GetDefinitionAsync(string, CancellationToken)
+  nameWithType: IEtlJobService.GetDefinitionAsync(string, CancellationToken)
+  fullName: Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDefinitionAsync
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: Task<EtlJobDefinition?> GetDefinitionAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlJobDefinition}
+    content.vb: Function GetDefinitionAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of EtlJobDefinition)
+  overload: Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync*
+  nameWithType.vb: IEtlJobService.GetDefinitionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync(String, System.Threading.CancellationToken)
+  name.vb: GetDefinitionAsync(String, CancellationToken)
+- uid: Meridian.Application.Etl.IEtlJobService.RunAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Etl.IEtlJobService.RunAsync(System.String,System.Threading.CancellationToken)
+  id: RunAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Etl.IEtlJobService
+  langs:
+  - csharp
+  - vb
+  name: RunAsync(string, CancellationToken)
+  nameWithType: IEtlJobService.RunAsync(string, CancellationToken)
+  fullName: Meridian.Application.Etl.IEtlJobService.RunAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAsync
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: Task<EtlRunResult> RunAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Etl.EtlRunResult}
+    content.vb: Function RunAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of EtlRunResult)
+  overload: Meridian.Application.Etl.IEtlJobService.RunAsync*
+  nameWithType.vb: IEtlJobService.RunAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Etl.IEtlJobService.RunAsync(String, System.Threading.CancellationToken)
+  name.vb: RunAsync(String, CancellationToken)
+references:
+- uid: Meridian.Application.Etl
+  commentId: N:Meridian.Application.Etl
+  href: Meridian.html
+  name: Meridian.Application.Etl
+  nameWithType: Meridian.Application.Etl
+  fullName: Meridian.Application.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+- uid: Meridian.Application.Etl.IEtlJobService.CreateJobAsync*
+  commentId: Overload:Meridian.Application.Etl.IEtlJobService.CreateJobAsync
+  href: Meridian.Application.Etl.IEtlJobService.html#Meridian_Application_Etl_IEtlJobService_CreateJobAsync_Meridian_Contracts_Etl_EtlJobDefinition_System_Threading_CancellationToken_
+  name: CreateJobAsync
+  nameWithType: IEtlJobService.CreateJobAsync
+  fullName: Meridian.Application.Etl.IEtlJobService.CreateJobAsync
+- uid: Meridian.Contracts.Etl.EtlJobDefinition
+  commentId: T:Meridian.Contracts.Etl.EtlJobDefinition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlJobDefinition.html
+  name: EtlJobDefinition
+  nameWithType: EtlJobDefinition
+  fullName: Meridian.Contracts.Etl.EtlJobDefinition
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Pipeline.IngestionJob}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Pipeline.IngestionJob}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IngestionJob>
+  nameWithType: Task<IngestionJob>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Pipeline.IngestionJob>
+  nameWithType.vb: Task(Of IngestionJob)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Pipeline.IngestionJob)
+  name.vb: Task(Of IngestionJob)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: )
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync*
+  commentId: Overload:Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync
+  href: Meridian.Application.Etl.IEtlJobService.html#Meridian_Application_Etl_IEtlJobService_GetDefinitionAsync_System_String_System_Threading_CancellationToken_
+  name: GetDefinitionAsync
+  nameWithType: IEtlJobService.GetDefinitionAsync
+  fullName: Meridian.Application.Etl.IEtlJobService.GetDefinitionAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlJobDefinition}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlJobDefinition}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EtlJobDefinition>
+  nameWithType: Task<EtlJobDefinition>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Etl.EtlJobDefinition>
+  nameWithType.vb: Task(Of EtlJobDefinition)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Etl.EtlJobDefinition)
+  name.vb: Task(Of EtlJobDefinition)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Etl.EtlJobDefinition
+    name: EtlJobDefinition
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlJobDefinition
+    name: EtlJobDefinition
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Etl.IEtlJobService.RunAsync*
+  commentId: Overload:Meridian.Application.Etl.IEtlJobService.RunAsync
+  href: Meridian.Application.Etl.IEtlJobService.html#Meridian_Application_Etl_IEtlJobService_RunAsync_System_String_System_Threading_CancellationToken_
+  name: RunAsync
+  nameWithType: IEtlJobService.RunAsync
+  fullName: Meridian.Application.Etl.IEtlJobService.RunAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Etl.EtlRunResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Etl.EtlRunResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EtlRunResult>
+  nameWithType: Task<EtlRunResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Etl.EtlRunResult>
+  nameWithType.vb: Task(Of EtlRunResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Etl.EtlRunResult)
+  name.vb: Task(Of EtlRunResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Etl.EtlRunResult
+    name: EtlRunResult
+    href: Meridian.Application.Etl.EtlRunResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Etl.EtlRunResult
+    name: EtlRunResult
+    href: Meridian.Application.Etl.EtlRunResult.html
+  - name: )

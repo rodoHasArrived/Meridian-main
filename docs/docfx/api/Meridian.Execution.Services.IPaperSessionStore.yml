@@ -1,0 +1,891 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.IPaperSessionStore
+  commentId: T:Meridian.Execution.Services.IPaperSessionStore
+  id: IPaperSessionStore
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync(System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync(System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto},System.Threading.CancellationToken)
+  - Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync(Meridian.Execution.Services.PersistedSessionRecord,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IPaperSessionStore
+  nameWithType: IPaperSessionStore
+  fullName: Meridian.Execution.Services.IPaperSessionStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPaperSessionStore
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Storage abstraction for paper trading session persistence.
+
+    Implementations may store session data in-memory, on the local file system,
+
+    or in any other durable backend.
+  example: []
+  syntax:
+    content: public interface IPaperSessionStore
+    content.vb: Public Interface IPaperSessionStore
+  derivedClasses:
+  - Meridian.Execution.Services.JsonlFilePaperSessionStore
+- uid: Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync(Meridian.Execution.Services.PersistedSessionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync(Meridian.Execution.Services.PersistedSessionRecord,System.Threading.CancellationToken)
+  id: SaveSessionMetadataAsync(Meridian.Execution.Services.PersistedSessionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: SaveSessionMetadataAsync(PersistedSessionRecord, CancellationToken)
+  nameWithType: IPaperSessionStore.SaveSessionMetadataAsync(PersistedSessionRecord, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync(Meridian.Execution.Services.PersistedSessionRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveSessionMetadataAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Creates or replaces the session metadata record.
+  example: []
+  syntax:
+    content: Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
+    parameters:
+    - id: record
+      type: Meridian.Execution.Services.PersistedSessionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveSessionMetadataAsync(record As PersistedSessionRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync*
+- uid: Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  id: AppendFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: AppendFillAsync(string, ExecutionReport, CancellationToken)
+  nameWithType: IPaperSessionStore.AppendFillAsync(string, ExecutionReport, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync(string, Meridian.Execution.Sdk.ExecutionReport, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendFillAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Appends a single fill event to the session's immutable fill log.
+  example: []
+  syntax:
+    content: Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: fill
+      type: Meridian.Execution.Sdk.ExecutionReport
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AppendFillAsync(sessionId As String, fill As ExecutionReport, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync*
+  nameWithType.vb: IPaperSessionStore.AppendFillAsync(String, ExecutionReport, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync(String, Meridian.Execution.Sdk.ExecutionReport, System.Threading.CancellationToken)
+  name.vb: AppendFillAsync(String, ExecutionReport, CancellationToken)
+- uid: Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
+  id: AppendOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: AppendOrderUpdateAsync(string, OrderState, CancellationToken)
+  nameWithType: IPaperSessionStore.AppendOrderUpdateAsync(string, OrderState, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync(string, Meridian.Execution.Sdk.OrderState, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendOrderUpdateAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Appends an order-state snapshot to the session's order history log.
+  example: []
+  syntax:
+    content: Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: order
+      type: Meridian.Execution.Sdk.OrderState
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AppendOrderUpdateAsync(sessionId As String, order As OrderState, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync*
+  nameWithType.vb: IPaperSessionStore.AppendOrderUpdateAsync(String, OrderState, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync(String, Meridian.Execution.Sdk.OrderState, System.Threading.CancellationToken)
+  name.vb: AppendOrderUpdateAsync(String, OrderState, CancellationToken)
+- uid: Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync(System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync(System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto},System.Threading.CancellationToken)
+  id: SaveLedgerJournalAsync(System.String,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto},System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: SaveLedgerJournalAsync(string, IReadOnlyList<PersistedJournalEntryDto>, CancellationToken)
+  nameWithType: IPaperSessionStore.SaveLedgerJournalAsync(string, IReadOnlyList<PersistedJournalEntryDto>, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync(string, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PersistedJournalEntryDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveLedgerJournalAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Writes the complete ledger journal for <code class="paramref">sessionId</code> to a JSONL sidecar
+
+    file (<code>ledger.jsonl</code>).  Replaces any previously-written ledger for the same session.
+  example: []
+  syntax:
+    content: Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList<PersistedJournalEntryDto> entries, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: entries
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveLedgerJournalAsync(sessionId As String, entries As IReadOnlyList(Of PersistedJournalEntryDto), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync*
+  nameWithType.vb: IPaperSessionStore.SaveLedgerJournalAsync(String, IReadOnlyList(Of PersistedJournalEntryDto), CancellationToken)
+  fullName.vb: Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync(String, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PersistedJournalEntryDto), System.Threading.CancellationToken)
+  name.vb: SaveLedgerJournalAsync(String, IReadOnlyList(Of PersistedJournalEntryDto), CancellationToken)
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync(System.Threading.CancellationToken)
+  id: LoadAllSessionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAllSessionsAsync(CancellationToken)
+  nameWithType: IPaperSessionStore.LoadAllSessionsAsync(CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAllSessionsAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns metadata records for every persisted session.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedSessionRecord}}
+    content.vb: Function LoadAllSessionsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of PersistedSessionRecord))
+  overload: Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync*
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync(System.String,System.Threading.CancellationToken)
+  id: LoadFillsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: LoadFillsAsync(string, CancellationToken)
+  nameWithType: IPaperSessionStore.LoadFillsAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadFillsAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns all recorded fill events for <code class="paramref">sessionId</code>, in order.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.ExecutionReport}}
+    content.vb: Function LoadFillsAsync(sessionId As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ExecutionReport))
+  overload: Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync*
+  nameWithType.vb: IPaperSessionStore.LoadFillsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadFillsAsync(String, CancellationToken)
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync(System.String,System.Threading.CancellationToken)
+  id: LoadOrderHistoryAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: LoadOrderHistoryAsync(string, CancellationToken)
+  nameWithType: IPaperSessionStore.LoadOrderHistoryAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadOrderHistoryAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns the order-state history for <code class="paramref">sessionId</code>, in order.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState}}
+    content.vb: Function LoadOrderHistoryAsync(sessionId As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of OrderState))
+  overload: Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync*
+  nameWithType.vb: IPaperSessionStore.LoadOrderHistoryAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadOrderHistoryAsync(String, CancellationToken)
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync(System.String,System.Threading.CancellationToken)
+  id: LoadLedgerJournalAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.IPaperSessionStore
+  langs:
+  - csharp
+  - vb
+  name: LoadLedgerJournalAsync(string, CancellationToken)
+  nameWithType: IPaperSessionStore.LoadLedgerJournalAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadLedgerJournalAsync
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Returns the persisted ledger journal entries for <code class="paramref">sessionId</code>.
+
+    Returns an empty list when no ledger has been saved for this session.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto}}
+    content.vb: Function LoadLedgerJournalAsync(sessionId As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of PersistedJournalEntryDto))
+  overload: Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync*
+  nameWithType.vb: IPaperSessionStore.LoadLedgerJournalAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadLedgerJournalAsync(String, CancellationToken)
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_SaveSessionMetadataAsync_Meridian_Execution_Services_PersistedSessionRecord_System_Threading_CancellationToken_
+  name: SaveSessionMetadataAsync
+  nameWithType: IPaperSessionStore.SaveSessionMetadataAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.SaveSessionMetadataAsync
+- uid: Meridian.Execution.Services.PersistedSessionRecord
+  commentId: T:Meridian.Execution.Services.PersistedSessionRecord
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PersistedSessionRecord.html
+  name: PersistedSessionRecord
+  nameWithType: PersistedSessionRecord
+  fullName: Meridian.Execution.Services.PersistedSessionRecord
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_AppendFillAsync_System_String_Meridian_Execution_Sdk_ExecutionReport_System_Threading_CancellationToken_
+  name: AppendFillAsync
+  nameWithType: IPaperSessionStore.AppendFillAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.AppendFillAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.ExecutionReport
+  commentId: T:Meridian.Execution.Sdk.ExecutionReport
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionReport.html
+  name: ExecutionReport
+  nameWithType: ExecutionReport
+  fullName: Meridian.Execution.Sdk.ExecutionReport
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_AppendOrderUpdateAsync_System_String_Meridian_Execution_Sdk_OrderState_System_Threading_CancellationToken_
+  name: AppendOrderUpdateAsync
+  nameWithType: IPaperSessionStore.AppendOrderUpdateAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.AppendOrderUpdateAsync
+- uid: Meridian.Execution.Sdk.OrderState
+  commentId: T:Meridian.Execution.Sdk.OrderState
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderState.html
+  name: OrderState
+  nameWithType: OrderState
+  fullName: Meridian.Execution.Sdk.OrderState
+- uid: Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_SaveLedgerJournalAsync_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Services_PersistedJournalEntryDto__System_Threading_CancellationToken_
+  name: SaveLedgerJournalAsync
+  nameWithType: IPaperSessionStore.SaveLedgerJournalAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.SaveLedgerJournalAsync
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PersistedJournalEntryDto>
+  nameWithType: IReadOnlyList<PersistedJournalEntryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PersistedJournalEntryDto>
+  nameWithType.vb: IReadOnlyList(Of PersistedJournalEntryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PersistedJournalEntryDto)
+  name.vb: IReadOnlyList(Of PersistedJournalEntryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.PersistedJournalEntryDto
+    name: PersistedJournalEntryDto
+    href: Meridian.Execution.Services.PersistedJournalEntryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PersistedJournalEntryDto
+    name: PersistedJournalEntryDto
+    href: Meridian.Execution.Services.PersistedJournalEntryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_LoadAllSessionsAsync_System_Threading_CancellationToken_
+  name: LoadAllSessionsAsync
+  nameWithType: IPaperSessionStore.LoadAllSessionsAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadAllSessionsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedSessionRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedSessionRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<PersistedSessionRecord>>
+  nameWithType: Task<IReadOnlyList<PersistedSessionRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PersistedSessionRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of PersistedSessionRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PersistedSessionRecord))
+  name.vb: Task(Of IReadOnlyList(Of PersistedSessionRecord))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.PersistedSessionRecord
+    name: PersistedSessionRecord
+    href: Meridian.Execution.Services.PersistedSessionRecord.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PersistedSessionRecord
+    name: PersistedSessionRecord
+    href: Meridian.Execution.Services.PersistedSessionRecord.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_LoadFillsAsync_System_String_System_Threading_CancellationToken_
+  name: LoadFillsAsync
+  nameWithType: IPaperSessionStore.LoadFillsAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadFillsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.ExecutionReport}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.ExecutionReport}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ExecutionReport>>
+  nameWithType: Task<IReadOnlyList<ExecutionReport>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.ExecutionReport>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ExecutionReport))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.ExecutionReport))
+  name.vb: Task(Of IReadOnlyList(Of ExecutionReport))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.ExecutionReport
+    name: ExecutionReport
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.ExecutionReport
+    name: ExecutionReport
+  - name: )
+  - name: )
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_LoadOrderHistoryAsync_System_String_System_Threading_CancellationToken_
+  name: LoadOrderHistoryAsync
+  nameWithType: IPaperSessionStore.LoadOrderHistoryAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadOrderHistoryAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<OrderState>>
+  nameWithType: Task<IReadOnlyList<OrderState>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.OrderState>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of OrderState))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.OrderState))
+  name.vb: Task(Of IReadOnlyList(Of OrderState))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.OrderState
+    name: OrderState
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.OrderState
+    name: OrderState
+  - name: )
+  - name: )
+- uid: Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync*
+  commentId: Overload:Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync
+  href: Meridian.Execution.Services.IPaperSessionStore.html#Meridian_Execution_Services_IPaperSessionStore_LoadLedgerJournalAsync_System_String_System_Threading_CancellationToken_
+  name: LoadLedgerJournalAsync
+  nameWithType: IPaperSessionStore.LoadLedgerJournalAsync
+  fullName: Meridian.Execution.Services.IPaperSessionStore.LoadLedgerJournalAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PersistedJournalEntryDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<PersistedJournalEntryDto>>
+  nameWithType: Task<IReadOnlyList<PersistedJournalEntryDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PersistedJournalEntryDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of PersistedJournalEntryDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PersistedJournalEntryDto))
+  name.vb: Task(Of IReadOnlyList(Of PersistedJournalEntryDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.PersistedJournalEntryDto
+    name: PersistedJournalEntryDto
+    href: Meridian.Execution.Services.PersistedJournalEntryDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PersistedJournalEntryDto
+    name: PersistedJournalEntryDto
+    href: Meridian.Execution.Services.PersistedJournalEntryDto.html
+  - name: )
+  - name: )

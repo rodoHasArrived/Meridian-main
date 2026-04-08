@@ -1,0 +1,657 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  commentId: T:Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  id: WatchlistDefaults
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth
+  - Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades
+  langs:
+  - csharp
+  - vb
+  name: WatchlistDefaults
+  nameWithType: WatchlistDefaults
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WatchlistDefaults
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Default subscription settings for a watchlist.
+  example: []
+  syntax:
+    content: 'public sealed record WatchlistDefaults : IEquatable<WatchlistDefaults>'
+    content.vb: Public NotInheritable Class WatchlistDefaults Implements IEquatable(Of WatchlistDefaults)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.WatchlistDefaults}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Models.WatchlistDefaults.#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)
+  id: '#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)'
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: WatchlistDefaults(bool, bool, int, string, string, string)
+  nameWithType: WatchlistDefaults.WatchlistDefaults(bool, bool, int, string, string, string)
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.WatchlistDefaults(bool, bool, int, string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Default subscription settings for a watchlist.
+  example: []
+  syntax:
+    content: public WatchlistDefaults(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD")
+    parameters:
+    - id: SubscribeTrades
+      type: System.Boolean
+    - id: SubscribeDepth
+      type: System.Boolean
+    - id: DepthLevels
+      type: System.Int32
+    - id: SecurityType
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: Currency
+      type: System.String
+    content.vb: Public Sub New(SubscribeTrades As Boolean = True, SubscribeDepth As Boolean = True, DepthLevels As Integer = 10, SecurityType As String = "STK", Exchange As String = "SMART", Currency As String = "USD")
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.#ctor*
+  nameWithType.vb: WatchlistDefaults.New(Boolean, Boolean, Integer, String, String, String)
+  fullName.vb: Meridian.Application.Subscriptions.Models.WatchlistDefaults.New(Boolean, Boolean, Integer, String, String, String)
+  name.vb: New(Boolean, Boolean, Integer, String, String, String)
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades
+  commentId: P:Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades
+  id: SubscribeTrades
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades
+  nameWithType: WatchlistDefaults.SubscribeTrades
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public bool SubscribeTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SubscribeTrades As Boolean
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades*
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth
+  commentId: P:Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth
+  id: SubscribeDepth
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: SubscribeDepth
+  nameWithType: WatchlistDefaults.SubscribeDepth
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeDepth
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public bool SubscribeDepth { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SubscribeDepth As Boolean
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth*
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels
+  commentId: P:Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels
+  id: DepthLevels
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: DepthLevels
+  nameWithType: WatchlistDefaults.DepthLevels
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthLevels
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public int DepthLevels { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthLevels As Integer
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels*
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType
+  commentId: P:Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType
+  id: SecurityType
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: WatchlistDefaults.SecurityType
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string SecurityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityType As String
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType*
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange
+  commentId: P:Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange
+  id: Exchange
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: WatchlistDefaults.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange*
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency
+  commentId: P:Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency
+  id: Currency
+  parent: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: WatchlistDefaults.Currency
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.WatchlistDefaults}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.WatchlistDefaults}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<WatchlistDefaults>
+  nameWithType: IEquatable<WatchlistDefaults>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.WatchlistDefaults>
+  nameWithType.vb: IEquatable(Of WatchlistDefaults)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.WatchlistDefaults)
+  name.vb: IEquatable(Of WatchlistDefaults)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+    name: WatchlistDefaults
+    href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults
+    name: WatchlistDefaults
+    href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.#ctor
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults__ctor_System_Boolean_System_Boolean_System_Int32_System_String_System_String_System_String_
+  name: WatchlistDefaults
+  nameWithType: WatchlistDefaults.WatchlistDefaults
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.WatchlistDefaults
+  nameWithType.vb: WatchlistDefaults.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.WatchlistDefaults.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults_SubscribeTrades
+  name: SubscribeTrades
+  nameWithType: WatchlistDefaults.SubscribeTrades
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeTrades
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults_SubscribeDepth
+  name: SubscribeDepth
+  nameWithType: WatchlistDefaults.SubscribeDepth
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SubscribeDepth
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults_DepthLevels
+  name: DepthLevels
+  nameWithType: WatchlistDefaults.DepthLevels
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.DepthLevels
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults_SecurityType
+  name: SecurityType
+  nameWithType: WatchlistDefaults.SecurityType
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.SecurityType
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults_Exchange
+  name: Exchange
+  nameWithType: WatchlistDefaults.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Exchange
+- uid: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency
+  href: Meridian.Application.Subscriptions.Models.WatchlistDefaults.html#Meridian_Application_Subscriptions_Models_WatchlistDefaults_Currency
+  name: Currency
+  nameWithType: WatchlistDefaults.Currency
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistDefaults.Currency

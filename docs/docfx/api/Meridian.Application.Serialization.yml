@@ -1,0 +1,99 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Serialization
+  commentId: N:Meridian.Application.Serialization
+  id: Meridian.Application.Serialization
+  children:
+  - Meridian.Application.Serialization.AlpacaJsonContext
+  - Meridian.Application.Serialization.AlpacaMessage
+  - Meridian.Application.Serialization.AlpacaQuoteMessage
+  - Meridian.Application.Serialization.AlpacaTradeMessage
+  - Meridian.Application.Serialization.HighPerformanceJson
+  - Meridian.Application.Serialization.JsonBenchmarkUtilities
+  - Meridian.Application.Serialization.MarketDataJsonContext
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Serialization
+  nameWithType: Meridian.Application.Serialization
+  fullName: Meridian.Application.Serialization
+  type: Namespace
+  assemblies:
+  - Meridian.Core
+references:
+- uid: Meridian.Application.Serialization.MarketDataJsonContext
+  commentId: T:Meridian.Application.Serialization.MarketDataJsonContext
+  parent: Meridian.Application.Serialization
+  href: Meridian.Application.Serialization.MarketDataJsonContext.html
+  name: MarketDataJsonContext
+  nameWithType: MarketDataJsonContext
+  fullName: Meridian.Application.Serialization.MarketDataJsonContext
+- uid: Meridian.Application.Serialization.AlpacaJsonContext
+  commentId: T:Meridian.Application.Serialization.AlpacaJsonContext
+  parent: Meridian.Application.Serialization
+  href: Meridian.Application.Serialization.AlpacaJsonContext.html
+  name: AlpacaJsonContext
+  nameWithType: AlpacaJsonContext
+  fullName: Meridian.Application.Serialization.AlpacaJsonContext
+- uid: Meridian.Application.Serialization.AlpacaTradeMessage
+  commentId: T:Meridian.Application.Serialization.AlpacaTradeMessage
+  parent: Meridian.Application.Serialization
+  href: Meridian.Application.Serialization.AlpacaTradeMessage.html
+  name: AlpacaTradeMessage
+  nameWithType: AlpacaTradeMessage
+  fullName: Meridian.Application.Serialization.AlpacaTradeMessage
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage
+  commentId: T:Meridian.Application.Serialization.AlpacaQuoteMessage
+  parent: Meridian.Application.Serialization
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html
+  name: AlpacaQuoteMessage
+  nameWithType: AlpacaQuoteMessage
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage
+- uid: Meridian.Application.Serialization.AlpacaMessage
+  commentId: T:Meridian.Application.Serialization.AlpacaMessage
+  href: Meridian.Application.Serialization.AlpacaMessage.html
+  name: AlpacaMessage
+  nameWithType: AlpacaMessage
+  fullName: Meridian.Application.Serialization.AlpacaMessage
+- uid: Meridian.Application.Serialization.HighPerformanceJson
+  commentId: T:Meridian.Application.Serialization.HighPerformanceJson
+  href: Meridian.Application.Serialization.HighPerformanceJson.html
+  name: HighPerformanceJson
+  nameWithType: HighPerformanceJson
+  fullName: Meridian.Application.Serialization.HighPerformanceJson
+- uid: Meridian.Application.Serialization.JsonBenchmarkUtilities
+  commentId: T:Meridian.Application.Serialization.JsonBenchmarkUtilities
+  href: Meridian.Application.Serialization.JsonBenchmarkUtilities.html
+  name: JsonBenchmarkUtilities
+  nameWithType: JsonBenchmarkUtilities
+  fullName: Meridian.Application.Serialization.JsonBenchmarkUtilities
+- uid: Meridian.Application.Serialization
+  commentId: N:Meridian.Application.Serialization
+  href: Meridian.html
+  name: Meridian.Application.Serialization
+  nameWithType: Meridian.Application.Serialization
+  fullName: Meridian.Application.Serialization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Serialization
+    name: Serialization
+    href: Meridian.Application.Serialization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Serialization
+    name: Serialization
+    href: Meridian.Application.Serialization.html

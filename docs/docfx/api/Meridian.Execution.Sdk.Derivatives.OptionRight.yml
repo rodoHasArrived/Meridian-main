@@ -1,0 +1,134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.Derivatives.OptionRight
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionRight
+  id: OptionRight
+  parent: Meridian.Execution.Sdk.Derivatives
+  children:
+  - Meridian.Execution.Sdk.Derivatives.OptionRight.Call
+  - Meridian.Execution.Sdk.Derivatives.OptionRight.Put
+  langs:
+  - csharp
+  - vb
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionRight
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionRight
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Specifies which side of the options market a contract grants access to.
+  example: []
+  syntax:
+    content: public enum OptionRight
+    content.vb: Public Enum OptionRight
+- uid: Meridian.Execution.Sdk.Derivatives.OptionRight.Call
+  commentId: F:Meridian.Execution.Sdk.Derivatives.OptionRight.Call
+  id: Call
+  parent: Meridian.Execution.Sdk.Derivatives.OptionRight
+  langs:
+  - csharp
+  - vb
+  name: Call
+  nameWithType: OptionRight.Call
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionRight.Call
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Call
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: The holder may buy the underlying.
+  example: []
+  syntax:
+    content: Call = 0
+    return:
+      type: Meridian.Execution.Sdk.Derivatives.OptionRight
+- uid: Meridian.Execution.Sdk.Derivatives.OptionRight.Put
+  commentId: F:Meridian.Execution.Sdk.Derivatives.OptionRight.Put
+  id: Put
+  parent: Meridian.Execution.Sdk.Derivatives.OptionRight
+  langs:
+  - csharp
+  - vb
+  name: Put
+  nameWithType: OptionRight.Put
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionRight.Put
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Put
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: The holder may sell the underlying.
+  example: []
+  syntax:
+    content: Put = 1
+    return:
+      type: Meridian.Execution.Sdk.Derivatives.OptionRight
+references:
+- uid: Meridian.Execution.Sdk.Derivatives
+  commentId: N:Meridian.Execution.Sdk.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Sdk.Derivatives
+  nameWithType: Meridian.Execution.Sdk.Derivatives
+  fullName: Meridian.Execution.Sdk.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+- uid: Meridian.Execution.Sdk.Derivatives.OptionRight
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionRight
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.OptionRight.html
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionRight

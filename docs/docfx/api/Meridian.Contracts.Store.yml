@@ -1,0 +1,54 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Store
+  commentId: N:Meridian.Contracts.Store
+  id: Meridian.Contracts.Store
+  children:
+  - Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Store
+  nameWithType: Meridian.Contracts.Store
+  fullName: Meridian.Contracts.Store
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Store.MarketDataQuery
+  commentId: T:Meridian.Contracts.Store.MarketDataQuery
+  parent: Meridian.Contracts.Store
+  href: Meridian.Contracts.Store.MarketDataQuery.html
+  name: MarketDataQuery
+  nameWithType: MarketDataQuery
+  fullName: Meridian.Contracts.Store.MarketDataQuery
+- uid: Meridian.Contracts.Store
+  commentId: N:Meridian.Contracts.Store
+  href: Meridian.html
+  name: Meridian.Contracts.Store
+  nameWithType: Meridian.Contracts.Store
+  fullName: Meridian.Contracts.Store
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html

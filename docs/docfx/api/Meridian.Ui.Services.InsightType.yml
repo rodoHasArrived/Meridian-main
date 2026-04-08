@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.InsightType
+  commentId: T:Meridian.Ui.Services.InsightType
+  id: InsightType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.InsightType.Info
+  - Meridian.Ui.Services.InsightType.Success
+  - Meridian.Ui.Services.InsightType.Tip
+  - Meridian.Ui.Services.InsightType.Warning
+  langs:
+  - csharp
+  - vb
+  name: InsightType
+  nameWithType: InsightType
+  fullName: Meridian.Ui.Services.InsightType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsightType
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Insight message types.
+  example: []
+  syntax:
+    content: 'public enum InsightType : byte'
+    content.vb: Public Enum InsightType As Byte
+- uid: Meridian.Ui.Services.InsightType.Info
+  commentId: F:Meridian.Ui.Services.InsightType.Info
+  id: Info
+  parent: Meridian.Ui.Services.InsightType
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: InsightType.Info
+  fullName: Meridian.Ui.Services.InsightType.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 651
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Ui.Services.InsightType
+- uid: Meridian.Ui.Services.InsightType.Success
+  commentId: F:Meridian.Ui.Services.InsightType.Success
+  id: Success
+  parent: Meridian.Ui.Services.InsightType
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: InsightType.Success
+  fullName: Meridian.Ui.Services.InsightType.Success
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 652
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Success = 1
+    return:
+      type: Meridian.Ui.Services.InsightType
+- uid: Meridian.Ui.Services.InsightType.Warning
+  commentId: F:Meridian.Ui.Services.InsightType.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.InsightType
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: InsightType.Warning
+  fullName: Meridian.Ui.Services.InsightType.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 653
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Warning = 2
+    return:
+      type: Meridian.Ui.Services.InsightType
+- uid: Meridian.Ui.Services.InsightType.Tip
+  commentId: F:Meridian.Ui.Services.InsightType.Tip
+  id: Tip
+  parent: Meridian.Ui.Services.InsightType
+  langs:
+  - csharp
+  - vb
+  name: Tip
+  nameWithType: InsightType.Tip
+  fullName: Meridian.Ui.Services.InsightType.Tip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tip
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 654
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Tip = 3
+    return:
+      type: Meridian.Ui.Services.InsightType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.InsightType
+  commentId: T:Meridian.Ui.Services.InsightType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.InsightType.html
+  name: InsightType
+  nameWithType: InsightType
+  fullName: Meridian.Ui.Services.InsightType

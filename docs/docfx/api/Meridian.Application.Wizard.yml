@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard
+  commentId: N:Meridian.Application.Wizard
+  id: Meridian.Application.Wizard
+  children:
+  - Meridian.Application.Wizard.WizardWorkflowFactory
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Wizard
+  nameWithType: Meridian.Application.Wizard
+  fullName: Meridian.Application.Wizard
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Wizard.WizardWorkflowFactory
+  commentId: T:Meridian.Application.Wizard.WizardWorkflowFactory
+  href: Meridian.Application.Wizard.WizardWorkflowFactory.html
+  name: WizardWorkflowFactory
+  nameWithType: WizardWorkflowFactory
+  fullName: Meridian.Application.Wizard.WizardWorkflowFactory

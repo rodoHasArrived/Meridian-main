@@ -1,0 +1,113 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  id: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.CatalogSyncSink
+  - Meridian.Storage.Sinks.CompositeSink
+  - Meridian.Storage.Sinks.FailurePolicy
+  - Meridian.Storage.Sinks.JsonlBatchOptions
+  - Meridian.Storage.Sinks.JsonlStorageSink
+  - Meridian.Storage.Sinks.ParquetStorageOptions
+  - Meridian.Storage.Sinks.ParquetStorageSink
+  - Meridian.Storage.Sinks.SinkHealth
+  - Meridian.Storage.Sinks.SinkHealthState
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Sinks.CatalogSyncSink
+  commentId: T:Meridian.Storage.Sinks.CatalogSyncSink
+  href: Meridian.Storage.Sinks.CatalogSyncSink.html
+  name: CatalogSyncSink
+  nameWithType: CatalogSyncSink
+  fullName: Meridian.Storage.Sinks.CatalogSyncSink
+- uid: Meridian.Storage.Sinks.SinkHealthState
+  commentId: T:Meridian.Storage.Sinks.SinkHealthState
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.SinkHealthState.html
+  name: SinkHealthState
+  nameWithType: SinkHealthState
+  fullName: Meridian.Storage.Sinks.SinkHealthState
+- uid: Meridian.Storage.Sinks.SinkHealth
+  commentId: T:Meridian.Storage.Sinks.SinkHealth
+  href: Meridian.Storage.Sinks.SinkHealth.html
+  name: SinkHealth
+  nameWithType: SinkHealth
+  fullName: Meridian.Storage.Sinks.SinkHealth
+- uid: Meridian.Storage.Sinks.FailurePolicy
+  commentId: T:Meridian.Storage.Sinks.FailurePolicy
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.FailurePolicy.html
+  name: FailurePolicy
+  nameWithType: FailurePolicy
+  fullName: Meridian.Storage.Sinks.FailurePolicy
+- uid: Meridian.Storage.Sinks.CompositeSink
+  commentId: T:Meridian.Storage.Sinks.CompositeSink
+  href: Meridian.Storage.Sinks.CompositeSink.html
+  name: CompositeSink
+  nameWithType: CompositeSink
+  fullName: Meridian.Storage.Sinks.CompositeSink
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions
+  commentId: T:Meridian.Storage.Sinks.JsonlBatchOptions
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html
+  name: JsonlBatchOptions
+  nameWithType: JsonlBatchOptions
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions
+- uid: Meridian.Storage.Sinks.JsonlStorageSink
+  commentId: T:Meridian.Storage.Sinks.JsonlStorageSink
+  href: Meridian.Storage.Sinks.JsonlStorageSink.html
+  name: JsonlStorageSink
+  nameWithType: JsonlStorageSink
+  fullName: Meridian.Storage.Sinks.JsonlStorageSink
+- uid: Meridian.Storage.Sinks.ParquetStorageSink
+  commentId: T:Meridian.Storage.Sinks.ParquetStorageSink
+  href: Meridian.Storage.Sinks.ParquetStorageSink.html
+  name: ParquetStorageSink
+  nameWithType: ParquetStorageSink
+  fullName: Meridian.Storage.Sinks.ParquetStorageSink
+- uid: Meridian.Storage.Sinks.ParquetStorageOptions
+  commentId: T:Meridian.Storage.Sinks.ParquetStorageOptions
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.ParquetStorageOptions.html
+  name: ParquetStorageOptions
+  nameWithType: ParquetStorageOptions
+  fullName: Meridian.Storage.Sinks.ParquetStorageOptions
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html

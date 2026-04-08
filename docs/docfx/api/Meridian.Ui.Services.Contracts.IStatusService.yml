@@ -1,0 +1,495 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IStatusService
+  commentId: T:Meridian.Ui.Services.Contracts.IStatusService
+  id: IStatusService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl
+  langs:
+  - csharp
+  - vb
+  name: IStatusService
+  nameWithType: IStatusService
+  fullName: Meridian.Ui.Services.Contracts.IStatusService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IStatusService
+    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for retrieving system status from the collector.
+
+    Enables testability and dependency injection.
+  example: []
+  syntax:
+    content: public interface IStatusService
+    content.vb: Public Interface IStatusService
+- uid: Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl
+  commentId: P:Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl
+  id: ServiceUrl
+  parent: Meridian.Ui.Services.Contracts.IStatusService
+  langs:
+  - csharp
+  - vb
+  name: ServiceUrl
+  nameWithType: IStatusService.ServiceUrl
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceUrl
+    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the current service URL.
+  example: []
+  syntax:
+    content: string ServiceUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ServiceUrl As String
+  overload: Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl*
+- uid: Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync(System.Threading.CancellationToken)
+  id: GetStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IStatusService
+  langs:
+  - csharp
+  - vb
+  name: GetStatusAsync(CancellationToken)
+  nameWithType: IStatusService.GetStatusAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the status of the market data collector service.
+  example: []
+  syntax:
+    content: Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.StatusResponse}
+    content.vb: Function GetStatusAsync(ct As CancellationToken = Nothing) As Task(Of StatusResponse)
+  overload: Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync*
+- uid: Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync(System.Threading.CancellationToken)
+  id: GetStatusWithResponseAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IStatusService
+  langs:
+  - csharp
+  - vb
+  name: GetStatusWithResponseAsync(CancellationToken)
+  nameWithType: IStatusService.GetStatusWithResponseAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusWithResponseAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the status with full response details.
+  example: []
+  syntax:
+    content: Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{Meridian.Contracts.Api.StatusResponse}}
+    content.vb: Function GetStatusWithResponseAsync(ct As CancellationToken = Nothing) As Task(Of ApiResponse(Of StatusResponse))
+  overload: Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync*
+- uid: Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync(System.Threading.CancellationToken)
+  id: CheckHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IStatusService
+  langs:
+  - csharp
+  - vb
+  name: CheckHealthAsync(CancellationToken)
+  nameWithType: IStatusService.CheckHealthAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckHealthAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Checks if the service is healthy and reachable.
+  remarks: >-
+    ServiceHealthResult and ApiResponse&lt;T&gt; are now defined in
+
+    Meridian.Contracts.Api.ClientModels.cs
+  example: []
+  syntax:
+    content: Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.ServiceHealthResult}
+      description: A <xref href="Meridian.Contracts.Api.ServiceHealthResult" data-throw-if-not-resolved="false"></xref> containing health status information.
+    content.vb: Function CheckHealthAsync(ct As CancellationToken = Nothing) As Task(Of ServiceHealthResult)
+  overload: Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl
+  href: Meridian.Ui.Services.Contracts.IStatusService.html#Meridian_Ui_Services_Contracts_IStatusService_ServiceUrl
+  name: ServiceUrl
+  nameWithType: IStatusService.ServiceUrl
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.ServiceUrl
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync
+  href: Meridian.Ui.Services.Contracts.IStatusService.html#Meridian_Ui_Services_Contracts_IStatusService_GetStatusAsync_System_Threading_CancellationToken_
+  name: GetStatusAsync
+  nameWithType: IStatusService.GetStatusAsync
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.GetStatusAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.StatusResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.StatusResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StatusResponse>
+  nameWithType: Task<StatusResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.StatusResponse>
+  nameWithType.vb: Task(Of StatusResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.StatusResponse)
+  name.vb: Task(Of StatusResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.StatusResponse
+    name: StatusResponse
+    href: Meridian.Contracts.Api.StatusResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.StatusResponse
+    name: StatusResponse
+    href: Meridian.Contracts.Api.StatusResponse.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync
+  href: Meridian.Ui.Services.Contracts.IStatusService.html#Meridian_Ui_Services_Contracts_IStatusService_GetStatusWithResponseAsync_System_Threading_CancellationToken_
+  name: GetStatusWithResponseAsync
+  nameWithType: IStatusService.GetStatusWithResponseAsync
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.GetStatusWithResponseAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{Meridian.Contracts.Api.StatusResponse}}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.ApiResponse{Meridian.Contracts.Api.StatusResponse}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ApiResponse<StatusResponse>>
+  nameWithType: Task<ApiResponse<StatusResponse>>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.ApiResponse<Meridian.Contracts.Api.StatusResponse>>
+  nameWithType.vb: Task(Of ApiResponse(Of StatusResponse))
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.ApiResponse(Of Meridian.Contracts.Api.StatusResponse))
+  name.vb: Task(Of ApiResponse(Of StatusResponse))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ApiResponse`1
+    name: ApiResponse
+  - name: <
+  - uid: Meridian.Contracts.Api.StatusResponse
+    name: StatusResponse
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ApiResponse`1
+    name: ApiResponse
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.StatusResponse
+    name: StatusResponse
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Api.ServiceHealthResult
+  commentId: T:Meridian.Contracts.Api.ServiceHealthResult
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ServiceHealthResult.html
+  name: ServiceHealthResult
+  nameWithType: ServiceHealthResult
+  fullName: Meridian.Contracts.Api.ServiceHealthResult
+- uid: Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync
+  href: Meridian.Ui.Services.Contracts.IStatusService.html#Meridian_Ui_Services_Contracts_IStatusService_CheckHealthAsync_System_Threading_CancellationToken_
+  name: CheckHealthAsync
+  nameWithType: IStatusService.CheckHealthAsync
+  fullName: Meridian.Ui.Services.Contracts.IStatusService.CheckHealthAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.ServiceHealthResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.ServiceHealthResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ServiceHealthResult>
+  nameWithType: Task<ServiceHealthResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.ServiceHealthResult>
+  nameWithType.vb: Task(Of ServiceHealthResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.ServiceHealthResult)
+  name.vb: Task(Of ServiceHealthResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ServiceHealthResult
+    name: ServiceHealthResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ServiceHealthResult
+    name: ServiceHealthResult
+  - name: )
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html

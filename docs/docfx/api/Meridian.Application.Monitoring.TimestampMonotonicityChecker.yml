@@ -1,0 +1,1089 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  commentId: T:Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  id: TimestampMonotonicityChecker
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.#ctor(Meridian.Application.Monitoring.TimestampMonotonicityConfig)
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(System.String,System.String,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(System.String,System.String,System.Int64)
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations(System.Int32)
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnTimeGap
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnViolation
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations
+  - Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate
+  langs:
+  - csharp
+  - vb
+  name: TimestampMonotonicityChecker
+  nameWithType: TimestampMonotonicityChecker
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampMonotonicityChecker
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Monitors event timestamps for monotonicity violations (out-of-order events).
+
+    Detects when events arrive with timestamps earlier than previously received events,
+
+    which can indicate data quality issues, clock drift, or provider problems.
+  example: []
+  syntax:
+    content: 'public sealed class TimestampMonotonicityChecker : IDisposable'
+    content.vb: Public NotInheritable Class TimestampMonotonicityChecker Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnViolation
+  commentId: E:Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnViolation
+  id: OnViolation
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: OnViolation
+  nameWithType: TimestampMonotonicityChecker.OnViolation
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnViolation
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnViolation
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a monotonicity violation is detected (timestamp going backwards).
+  example: []
+  syntax:
+    content: public event Action<MonotonicityViolation>? OnViolation
+    return:
+      type: System.Action{Meridian.Application.Monitoring.MonotonicityViolation}
+    content.vb: Public Event OnViolation As Action(Of MonotonicityViolation)
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnTimeGap
+  commentId: E:Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnTimeGap
+  id: OnTimeGap
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: OnTimeGap
+  nameWithType: TimestampMonotonicityChecker.OnTimeGap
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.OnTimeGap
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnTimeGap
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a significant time gap is detected between events.
+  example: []
+  syntax:
+    content: public event Action<TimestampGapAlert>? OnTimeGap
+    return:
+      type: System.Action{Meridian.Application.Monitoring.TimestampGapAlert}
+    content.vb: Public Event OnTimeGap As Action(Of TimestampGapAlert)
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.#ctor(Meridian.Application.Monitoring.TimestampMonotonicityConfig)
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.#ctor(Meridian.Application.Monitoring.TimestampMonotonicityConfig)
+  id: '#ctor(Meridian.Application.Monitoring.TimestampMonotonicityConfig)'
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: TimestampMonotonicityChecker(TimestampMonotonicityConfig?)
+  nameWithType: TimestampMonotonicityChecker.TimestampMonotonicityChecker(TimestampMonotonicityConfig?)
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TimestampMonotonicityChecker(Meridian.Application.Monitoring.TimestampMonotonicityConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public TimestampMonotonicityChecker(TimestampMonotonicityConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.TimestampMonotonicityConfig
+    content.vb: Public Sub New(config As TimestampMonotonicityConfig = Nothing)
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.#ctor*
+  nameWithType.vb: TimestampMonotonicityChecker.New(TimestampMonotonicityConfig)
+  fullName.vb: Meridian.Application.Monitoring.TimestampMonotonicityChecker.New(Meridian.Application.Monitoring.TimestampMonotonicityConfig)
+  name.vb: New(TimestampMonotonicityConfig)
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(System.String,System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(System.String,System.String,System.DateTimeOffset)
+  id: CheckTimestamp(System.String,System.String,System.DateTimeOffset)
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: CheckTimestamp(string, string, DateTimeOffset)
+  nameWithType: TimestampMonotonicityChecker.CheckTimestamp(string, string, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(string, string, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckTimestamp
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Checks an event timestamp for monotonicity. Call this for every event received.
+  example: []
+  syntax:
+    content: public bool CheckTimestamp(string symbol, string eventType, DateTimeOffset timestamp)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: The symbol ticker.
+    - id: eventType
+      type: System.String
+      description: Type of event (trade, quote, depth, etc.).
+    - id: timestamp
+      type: System.DateTimeOffset
+      description: The event timestamp from the data provider.
+    return:
+      type: System.Boolean
+      description: True if a violation or warning was detected.
+    content.vb: Public Function CheckTimestamp(symbol As String, eventType As String, timestamp As DateTimeOffset) As Boolean
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp*
+  nameWithType.vb: TimestampMonotonicityChecker.CheckTimestamp(String, String, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(String, String, System.DateTimeOffset)
+  name.vb: CheckTimestamp(String, String, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(System.String,System.String,System.Int64)
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(System.String,System.String,System.Int64)
+  id: CheckTimestamp(System.String,System.String,System.Int64)
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: CheckTimestamp(string, string, long)
+  nameWithType: TimestampMonotonicityChecker.CheckTimestamp(string, string, long)
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(string, string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckTimestamp
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Checks an event timestamp using a Unix timestamp in milliseconds.
+  example: []
+  syntax:
+    content: public bool CheckTimestamp(string symbol, string eventType, long timestampMs)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: eventType
+      type: System.String
+    - id: timestampMs
+      type: System.Int64
+    return:
+      type: System.Boolean
+    content.vb: Public Function CheckTimestamp(symbol As String, eventType As String, timestampMs As Long) As Boolean
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp*
+  nameWithType.vb: TimestampMonotonicityChecker.CheckTimestamp(String, String, Long)
+  fullName.vb: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp(String, String, Long)
+  name.vb: CheckTimestamp(String, String, Long)
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats
+  id: GetStats
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: GetStats()
+  nameWithType: TimestampMonotonicityChecker.GetStats()
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStats
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets statistics about monotonicity checking.
+  example: []
+  syntax:
+    content: public MonotonicityStats GetStats()
+    return:
+      type: Meridian.Application.Monitoring.MonotonicityStats
+    content.vb: Public Function GetStats() As MonotonicityStats
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats*
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations
+  commentId: P:Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations
+  id: TotalViolations
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: TotalViolations
+  nameWithType: TimestampMonotonicityChecker.TotalViolations
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalViolations
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the total number of violations detected.
+  example: []
+  syntax:
+    content: public long TotalViolations { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalViolations As Long
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations*
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps
+  commentId: P:Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: TimestampMonotonicityChecker.TotalGaps
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the total number of time gaps detected.
+  example: []
+  syntax:
+    content: public long TotalGaps { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalGaps As Long
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps*
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked
+  commentId: P:Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked
+  id: TotalEventsChecked
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: TotalEventsChecked
+  nameWithType: TimestampMonotonicityChecker.TotalEventsChecked
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEventsChecked
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the total number of events checked.
+  example: []
+  syntax:
+    content: public long TotalEventsChecked { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalEventsChecked As Long
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked*
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate
+  commentId: P:Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate
+  id: ViolationRate
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: ViolationRate
+  nameWithType: TimestampMonotonicityChecker.ViolationRate
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViolationRate
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the violation rate as a percentage.
+  example: []
+  syntax:
+    content: public double ViolationRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property ViolationRate As Double
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate*
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations(System.Int32)
+  id: GetSymbolsWithViolations(System.Int32)
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolsWithViolations(int)
+  nameWithType: TimestampMonotonicityChecker.GetSymbolsWithViolations(int)
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolsWithViolations
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets symbols with recent violations.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetSymbolsWithViolations(int minutesBack = 60)
+    parameters:
+    - id: minutesBack
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetSymbolsWithViolations(minutesBack As Integer = 60) As IReadOnlyList(Of String)
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations*
+  nameWithType.vb: TimestampMonotonicityChecker.GetSymbolsWithViolations(Integer)
+  fullName.vb: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations(Integer)
+  name.vb: GetSymbolsWithViolations(Integer)
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats
+  id: ResetStats
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: ResetStats()
+  nameWithType: TimestampMonotonicityChecker.ResetStats()
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetStats
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Resets statistics for all symbols.
+  example: []
+  syntax:
+    content: public void ResetStats()
+    content.vb: Public Sub ResetStats()
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats*
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose
+  commentId: M:Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.TimestampMonotonicityChecker
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: TimestampMonotonicityChecker.Dispose()
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.MonotonicityViolation}
+  commentId: T:System.Action{Meridian.Application.Monitoring.MonotonicityViolation}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<MonotonicityViolation>
+  nameWithType: Action<MonotonicityViolation>
+  fullName: System.Action<Meridian.Application.Monitoring.MonotonicityViolation>
+  nameWithType.vb: Action(Of MonotonicityViolation)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.MonotonicityViolation)
+  name.vb: Action(Of MonotonicityViolation)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.MonotonicityViolation
+    name: MonotonicityViolation
+    href: Meridian.Application.Monitoring.MonotonicityViolation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.MonotonicityViolation
+    name: MonotonicityViolation
+    href: Meridian.Application.Monitoring.MonotonicityViolation.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{Meridian.Application.Monitoring.TimestampGapAlert}
+  commentId: T:System.Action{Meridian.Application.Monitoring.TimestampGapAlert}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<TimestampGapAlert>
+  nameWithType: Action<TimestampGapAlert>
+  fullName: System.Action<Meridian.Application.Monitoring.TimestampGapAlert>
+  nameWithType.vb: Action(Of TimestampGapAlert)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.TimestampGapAlert)
+  name.vb: Action(Of TimestampGapAlert)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.TimestampGapAlert
+    name: TimestampGapAlert
+    href: Meridian.Application.Monitoring.TimestampGapAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.TimestampGapAlert
+    name: TimestampGapAlert
+    href: Meridian.Application.Monitoring.TimestampGapAlert.html
+  - name: )
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.#ctor
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker__ctor_Meridian_Application_Monitoring_TimestampMonotonicityConfig_
+  name: TimestampMonotonicityChecker
+  nameWithType: TimestampMonotonicityChecker.TimestampMonotonicityChecker
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TimestampMonotonicityChecker
+  nameWithType.vb: TimestampMonotonicityChecker.New
+  fullName.vb: Meridian.Application.Monitoring.TimestampMonotonicityChecker.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityConfig
+  commentId: T:Meridian.Application.Monitoring.TimestampMonotonicityConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.TimestampMonotonicityConfig.html
+  name: TimestampMonotonicityConfig
+  nameWithType: TimestampMonotonicityConfig
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityConfig
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_CheckTimestamp_System_String_System_String_System_DateTimeOffset_
+  name: CheckTimestamp
+  nameWithType: TimestampMonotonicityChecker.CheckTimestamp
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.CheckTimestamp
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_GetStats
+  name: GetStats
+  nameWithType: TimestampMonotonicityChecker.GetStats
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetStats
+- uid: Meridian.Application.Monitoring.MonotonicityStats
+  commentId: T:Meridian.Application.Monitoring.MonotonicityStats
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.MonotonicityStats.html
+  name: MonotonicityStats
+  nameWithType: MonotonicityStats
+  fullName: Meridian.Application.Monitoring.MonotonicityStats
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_TotalViolations
+  name: TotalViolations
+  nameWithType: TimestampMonotonicityChecker.TotalViolations
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalViolations
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_TotalGaps
+  name: TotalGaps
+  nameWithType: TimestampMonotonicityChecker.TotalGaps
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalGaps
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_TotalEventsChecked
+  name: TotalEventsChecked
+  nameWithType: TimestampMonotonicityChecker.TotalEventsChecked
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.TotalEventsChecked
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_ViolationRate
+  name: ViolationRate
+  nameWithType: TimestampMonotonicityChecker.ViolationRate
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ViolationRate
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_GetSymbolsWithViolations_System_Int32_
+  name: GetSymbolsWithViolations
+  nameWithType: TimestampMonotonicityChecker.GetSymbolsWithViolations
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.GetSymbolsWithViolations
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_ResetStats
+  name: ResetStats
+  nameWithType: TimestampMonotonicityChecker.ResetStats
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.ResetStats
+- uid: Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose
+  href: Meridian.Application.Monitoring.TimestampMonotonicityChecker.html#Meridian_Application_Monitoring_TimestampMonotonicityChecker_Dispose
+  name: Dispose
+  nameWithType: TimestampMonotonicityChecker.Dispose
+  fullName: Meridian.Application.Monitoring.TimestampMonotonicityChecker.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

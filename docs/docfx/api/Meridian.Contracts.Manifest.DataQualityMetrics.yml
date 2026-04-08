@@ -1,0 +1,839 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics
+  commentId: T:Meridian.Contracts.Manifest.DataQualityMetrics
+  id: DataQualityMetrics
+  parent: Meridian.Contracts.Manifest
+  children:
+  - Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents
+  - Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore
+  - Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound
+  - Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents
+  - Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected
+  - Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore
+  - Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays
+  - Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected
+  - Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore
+  - Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors
+  langs:
+  - csharp
+  - vb
+  name: DataQualityMetrics
+  nameWithType: DataQualityMetrics
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityMetrics
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Data quality metrics for manifests and sessions.
+  example: []
+  syntax:
+    content: public sealed class DataQualityMetrics
+    content.vb: Public NotInheritable Class DataQualityMetrics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore
+  id: CompletenessScore
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: CompletenessScore
+  nameWithType: DataQualityMetrics.CompletenessScore
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessScore
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the completeness score (0.0 to 1.0).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("completenessScore")]
+
+      public float CompletenessScore { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("completenessScore")>
+
+      Public Property CompletenessScore As Single
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: completenessScore
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore
+  id: IntegrityScore
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: IntegrityScore
+  nameWithType: DataQualityMetrics.IntegrityScore
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityScore
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the data integrity score (0.0 to 1.0).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("integrityScore")]
+
+      public float IntegrityScore { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("integrityScore")>
+
+      Public Property IntegrityScore As Single
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: integrityScore
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore
+  id: OverallScore
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: OverallScore
+  nameWithType: DataQualityMetrics.OverallScore
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallScore
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the overall quality score (0.0 to 1.0).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("overallScore")]
+
+      public float OverallScore { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("overallScore")>
+
+      Public Property OverallScore As Single
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: overallScore
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected
+  id: GapsDetected
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: GapsDetected
+  nameWithType: DataQualityMetrics.GapsDetected
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsDetected
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the number of data gaps detected.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("gapsDetected")]
+
+      public int GapsDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("gapsDetected")>
+
+      Public Property GapsDetected As Integer
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: gapsDetected
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors
+  id: SequenceErrors
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: SequenceErrors
+  nameWithType: DataQualityMetrics.SequenceErrors
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceErrors
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the number of sequence errors found.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sequenceErrors")]
+
+      public int SequenceErrors { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("sequenceErrors")>
+
+      Public Property SequenceErrors As Integer
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sequenceErrors
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound
+  id: DuplicatesFound
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: DuplicatesFound
+  nameWithType: DataQualityMetrics.DuplicatesFound
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicatesFound
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the number of duplicate records found.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("duplicatesFound")]
+
+      public int DuplicatesFound { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("duplicatesFound")>
+
+      Public Property DuplicatesFound As Integer
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: duplicatesFound
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents
+  id: ExpectedEvents
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: ExpectedEvents
+  nameWithType: DataQualityMetrics.ExpectedEvents
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedEvents
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the expected number of events.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("expectedEvents")]
+
+      public long ExpectedEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("expectedEvents")>
+
+      Public Property ExpectedEvents As Long
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: expectedEvents
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents
+  id: ActualEvents
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: ActualEvents
+  nameWithType: DataQualityMetrics.ActualEvents
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualEvents
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the actual number of events recorded.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("actualEvents")]
+
+      public long ActualEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("actualEvents")>
+
+      Public Property ActualEvents As Long
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: actualEvents
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays
+  id: MissingTradingDays
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: MissingTradingDays
+  nameWithType: DataQualityMetrics.MissingTradingDays
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingTradingDays
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 303
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the array of missing trading day dates.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("missingTradingDays")]
+
+      public string[]? MissingTradingDays { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("missingTradingDays")>
+
+      Public Property MissingTradingDays As String()
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: missingTradingDays
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected
+  commentId: P:Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected
+  id: OutliersDetected
+  parent: Meridian.Contracts.Manifest.DataQualityMetrics
+  langs:
+  - csharp
+  - vb
+  name: OutliersDetected
+  nameWithType: DataQualityMetrics.OutliersDetected
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutliersDetected
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 309
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the number of outliers detected.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("outliersDetected")]
+
+      public int OutliersDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("outliersDetected")>
+
+      Public Property OutliersDetected As Integer
+  overload: Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: outliersDetected
+references:
+- uid: Meridian.Contracts.Manifest
+  commentId: N:Meridian.Contracts.Manifest
+  href: Meridian.html
+  name: Meridian.Contracts.Manifest
+  nameWithType: Meridian.Contracts.Manifest
+  fullName: Meridian.Contracts.Manifest
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_CompletenessScore
+  name: CompletenessScore
+  nameWithType: DataQualityMetrics.CompletenessScore
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.CompletenessScore
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_IntegrityScore
+  name: IntegrityScore
+  nameWithType: DataQualityMetrics.IntegrityScore
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.IntegrityScore
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_OverallScore
+  name: OverallScore
+  nameWithType: DataQualityMetrics.OverallScore
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.OverallScore
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_GapsDetected
+  name: GapsDetected
+  nameWithType: DataQualityMetrics.GapsDetected
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.GapsDetected
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_SequenceErrors
+  name: SequenceErrors
+  nameWithType: DataQualityMetrics.SequenceErrors
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.SequenceErrors
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_DuplicatesFound
+  name: DuplicatesFound
+  nameWithType: DataQualityMetrics.DuplicatesFound
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.DuplicatesFound
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_ExpectedEvents
+  name: ExpectedEvents
+  nameWithType: DataQualityMetrics.ExpectedEvents
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.ExpectedEvents
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_ActualEvents
+  name: ActualEvents
+  nameWithType: DataQualityMetrics.ActualEvents
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.ActualEvents
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_MissingTradingDays
+  name: MissingTradingDays
+  nameWithType: DataQualityMetrics.MissingTradingDays
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.MissingTradingDays
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected*
+  commentId: Overload:Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html#Meridian_Contracts_Manifest_DataQualityMetrics_OutliersDetected
+  name: OutliersDetected
+  nameWithType: DataQualityMetrics.OutliersDetected
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics.OutliersDetected

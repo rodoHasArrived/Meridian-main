@@ -1,0 +1,273 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService
+  commentId: T:Meridian.Ui.Services.DataQuality.IDataQualityRefreshService
+  id: IDataQualityRefreshService
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})
+  - Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop
+  langs:
+  - csharp
+  - vb
+  name: IDataQualityRefreshService
+  nameWithType: IDataQualityRefreshService
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityRefreshService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDataQualityRefreshService
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityRefreshService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  summary: Shared refresh loop abstraction so viewmodels do not own timer setup directly.
+  example: []
+  syntax:
+    content: 'public interface IDataQualityRefreshService : IDisposable'
+    content.vb: Public Interface IDataQualityRefreshService Inherits IDisposable
+  derivedClasses:
+  - Meridian.Ui.Services.DataQuality.DataQualityRefreshService
+  inheritedMembers:
+  - System.IDisposable.Dispose
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})
+  id: Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService
+  langs:
+  - csharp
+  - vb
+  name: Start(TimeSpan, Func<CancellationToken, Task>)
+  nameWithType: IDataQualityRefreshService.Start(TimeSpan, Func<CancellationToken, Task>)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start(System.TimeSpan, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityRefreshService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityRefreshService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: void Start(TimeSpan interval, Func<CancellationToken, Task> onRefresh)
+    parameters:
+    - id: interval
+      type: System.TimeSpan
+    - id: onRefresh
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+    content.vb: Sub Start(interval As TimeSpan, onRefresh As Func(Of CancellationToken, Task))
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start*
+  nameWithType.vb: IDataQualityRefreshService.Start(TimeSpan, Func(Of CancellationToken, Task))
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start(System.TimeSpan, System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task))
+  name.vb: Start(TimeSpan, Func(Of CancellationToken, Task))
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop
+  id: Stop
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService
+  langs:
+  - csharp
+  - vb
+  name: Stop()
+  nameWithType: IDataQualityRefreshService.Stop()
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityRefreshService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stop
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityRefreshService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: void Stop()
+    content.vb: Sub [Stop]()
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop*
+references:
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start
+  href: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.html#Meridian_Ui_Services_DataQuality_IDataQualityRefreshService_Start_System_TimeSpan_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task__
+  name: Start
+  nameWithType: IDataQualityRefreshService.Start
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Start
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task>
+  nameWithType: Func<CancellationToken, Task>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of CancellationToken, Task)
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task)
+  name.vb: Func(Of CancellationToken, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop
+  href: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.html#Meridian_Ui_Services_DataQuality_IDataQualityRefreshService_Stop
+  name: Stop
+  nameWithType: IDataQualityRefreshService.Stop
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityRefreshService.Stop

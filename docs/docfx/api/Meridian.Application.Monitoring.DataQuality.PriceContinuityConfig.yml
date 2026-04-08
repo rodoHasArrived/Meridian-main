@@ -1,0 +1,530 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  id: PriceContinuityConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge
+  langs:
+  - csharp
+  - vb
+  name: PriceContinuityConfig
+  nameWithType: PriceContinuityConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceContinuityConfig
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 399
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Configuration for price continuity checking.
+  example: []
+  syntax:
+    content: 'public sealed record PriceContinuityConfig : IEquatable<PriceContinuityConfig>'
+    content.vb: Public NotInheritable Class PriceContinuityConfig Implements IEquatable(Of PriceContinuityConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent
+  id: GapThresholdPercent
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  langs:
+  - csharp
+  - vb
+  name: GapThresholdPercent
+  nameWithType: PriceContinuityConfig.GapThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapThresholdPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Percentage change threshold to flag as a gap (default 5%).
+  example: []
+  syntax:
+    content: public decimal GapThresholdPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property GapThresholdPercent As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent
+  id: LargeGapThresholdPercent
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  langs:
+  - csharp
+  - vb
+  name: LargeGapThresholdPercent
+  nameWithType: PriceContinuityConfig.LargeGapThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LargeGapThresholdPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 409
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Percentage change threshold to flag as a large gap (default 15%).
+  example: []
+  syntax:
+    content: public decimal LargeGapThresholdPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LargeGapThresholdPercent As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge
+  id: MaxPriceAge
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxPriceAge
+  nameWithType: PriceContinuityConfig.MaxPriceAge
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxPriceAge
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Maximum time between prices before resetting baseline (default 24 hours).
+  example: []
+  syntax:
+    content: public TimeSpan MaxPriceAge { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MaxPriceAge As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default
+  id: Default
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: PriceContinuityConfig.Default
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public static PriceContinuityConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+    content.vb: Public Shared ReadOnly Property [Default] As PriceContinuityConfig
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PriceContinuityConfig>
+  nameWithType: IEquatable<PriceContinuityConfig>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig>
+  nameWithType.vb: IEquatable(Of PriceContinuityConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig)
+  name.vb: IEquatable(Of PriceContinuityConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+    name: PriceContinuityConfig
+    href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+    name: PriceContinuityConfig
+    href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityConfig_GapThresholdPercent
+  name: GapThresholdPercent
+  nameWithType: PriceContinuityConfig.GapThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.GapThresholdPercent
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityConfig_LargeGapThresholdPercent
+  name: LargeGapThresholdPercent
+  nameWithType: PriceContinuityConfig.LargeGapThresholdPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.LargeGapThresholdPercent
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityConfig_MaxPriceAge
+  name: MaxPriceAge
+  nameWithType: PriceContinuityConfig.MaxPriceAge
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.MaxPriceAge
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityConfig_Default
+  name: Default
+  nameWithType: PriceContinuityConfig.Default
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.Default
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html
+  name: PriceContinuityConfig
+  nameWithType: PriceContinuityConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig

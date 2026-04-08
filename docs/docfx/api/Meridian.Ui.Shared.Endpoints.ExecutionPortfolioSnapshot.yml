@@ -1,0 +1,741 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  commentId: T:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  id: ExecutionPortfolioSnapshot
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl
+  - Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: ExecutionPortfolioSnapshot
+  nameWithType: ExecutionPortfolioSnapshot
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionPortfolioSnapshot
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 766
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Full portfolio snapshot including all positions.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionPortfolioSnapshot : IEquatable<ExecutionPortfolioSnapshot>'
+    content.vb: Public NotInheritable Class ExecutionPortfolioSnapshot Implements IEquatable(Of ExecutionPortfolioSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)
+  commentId: M:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)
+  id: '#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)'
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ExecutionPortfolioSnapshot(decimal, decimal, decimal, decimal, IReadOnlyList<ExecutionPosition>, DateTimeOffset)
+  nameWithType: ExecutionPortfolioSnapshot.ExecutionPortfolioSnapshot(decimal, decimal, decimal, decimal, IReadOnlyList<ExecutionPosition>, DateTimeOffset)
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.ExecutionPortfolioSnapshot(decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Models.ExecutionPosition>, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 766
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Full portfolio snapshot including all positions.
+  example: []
+  syntax:
+    content: public ExecutionPortfolioSnapshot(decimal Cash, decimal PortfolioValue, decimal UnrealisedPnl, decimal RealisedPnl, IReadOnlyList<ExecutionPosition> Positions, DateTimeOffset AsOf)
+    parameters:
+    - id: Cash
+      type: System.Decimal
+    - id: PortfolioValue
+      type: System.Decimal
+    - id: UnrealisedPnl
+      type: System.Decimal
+    - id: RealisedPnl
+      type: System.Decimal
+    - id: Positions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition}
+    - id: AsOf
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Cash As Decimal, PortfolioValue As Decimal, UnrealisedPnl As Decimal, RealisedPnl As Decimal, Positions As IReadOnlyList(Of ExecutionPosition), AsOf As DateTimeOffset)
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.#ctor*
+  nameWithType.vb: ExecutionPortfolioSnapshot.New(Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of ExecutionPosition), DateTimeOffset)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.New(Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Models.ExecutionPosition), System.DateTimeOffset)
+  name.vb: New(Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of ExecutionPosition), DateTimeOffset)
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash
+  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash
+  id: Cash
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: ExecutionPortfolioSnapshot.Cash
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 767
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal Cash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Cash As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash*
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue
+  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue
+  id: PortfolioValue
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: PortfolioValue
+  nameWithType: ExecutionPortfolioSnapshot.PortfolioValue
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioValue
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 768
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal PortfolioValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PortfolioValue As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue*
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl
+  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: ExecutionPortfolioSnapshot.UnrealisedPnl
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 769
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal UnrealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealisedPnl As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl*
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl
+  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl
+  id: RealisedPnl
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: RealisedPnl
+  nameWithType: ExecutionPortfolioSnapshot.RealisedPnl
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealisedPnl
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 770
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal RealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealisedPnl As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl*
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions
+  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions
+  id: Positions
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: ExecutionPortfolioSnapshot.Positions
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 771
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public IReadOnlyList<ExecutionPosition> Positions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition}
+    content.vb: Public Property Positions As IReadOnlyList(Of ExecutionPosition)
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions*
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf
+  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf
+  id: AsOf
+  parent: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: ExecutionPortfolioSnapshot.AsOf
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 772
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionPortfolioSnapshot>
+  nameWithType: IEquatable<ExecutionPortfolioSnapshot>
+  fullName: System.IEquatable<Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot>
+  nameWithType.vb: IEquatable(Of ExecutionPortfolioSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot)
+  name.vb: IEquatable(Of ExecutionPortfolioSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+    name: ExecutionPortfolioSnapshot
+    href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot
+    name: ExecutionPortfolioSnapshot
+    href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.#ctor
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot__ctor_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Models_ExecutionPosition__System_DateTimeOffset_
+  name: ExecutionPortfolioSnapshot
+  nameWithType: ExecutionPortfolioSnapshot.ExecutionPortfolioSnapshot
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.ExecutionPortfolioSnapshot
+  nameWithType.vb: ExecutionPortfolioSnapshot.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExecutionPosition>
+  nameWithType: IReadOnlyList<ExecutionPosition>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Models.ExecutionPosition>
+  nameWithType.vb: IReadOnlyList(Of ExecutionPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Models.ExecutionPosition)
+  name.vb: IReadOnlyList(Of ExecutionPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionPosition
+    name: ExecutionPosition
+    href: Meridian.Execution.Models.ExecutionPosition.html
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot_Cash
+  name: Cash
+  nameWithType: ExecutionPortfolioSnapshot.Cash
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Cash
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot_PortfolioValue
+  name: PortfolioValue
+  nameWithType: ExecutionPortfolioSnapshot.PortfolioValue
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.PortfolioValue
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: ExecutionPortfolioSnapshot.UnrealisedPnl
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.UnrealisedPnl
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot_RealisedPnl
+  name: RealisedPnl
+  nameWithType: ExecutionPortfolioSnapshot.RealisedPnl
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.RealisedPnl
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot_Positions
+  name: Positions
+  nameWithType: ExecutionPortfolioSnapshot.Positions
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.Positions
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf
+  href: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.html#Meridian_Ui_Shared_Endpoints_ExecutionPortfolioSnapshot_AsOf
+  name: AsOf
+  nameWithType: ExecutionPortfolioSnapshot.AsOf
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot.AsOf

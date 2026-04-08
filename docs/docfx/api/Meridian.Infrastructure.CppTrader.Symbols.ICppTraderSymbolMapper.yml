@@ -1,0 +1,410 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  commentId: T:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  id: ICppTraderSymbolMapper
+  parent: Meridian.Infrastructure.CppTrader.Symbols
+  children:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ICppTraderSymbolMapper
+  nameWithType: ICppTraderSymbolMapper
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICppTraderSymbolMapper
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: public interface ICppTraderSymbolMapper
+    content.vb: Public Interface ICppTraderSymbolMapper
+  derivedClasses:
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+  id: GetSymbol(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: GetSymbol(string)
+  nameWithType: ICppTraderSymbolMapper.GetSymbol(string)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbol
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: CppTraderSymbolSpecification GetSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+    content.vb: Function GetSymbol(symbol As String) As CppTraderSymbolSpecification
+  overload: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol*
+  nameWithType.vb: ICppTraderSymbolMapper.GetSymbol(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(String)
+  name.vb: GetSymbol(String)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+  id: ToRegisterRequest(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ToRegisterRequest(string)
+  nameWithType: ICppTraderSymbolMapper.ToRegisterRequest(string)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToRegisterRequest
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: RegisterSymbolRequest ToRegisterRequest(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+    content.vb: Function ToRegisterRequest(symbol As String) As RegisterSymbolRequest
+  overload: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest*
+  nameWithType.vb: ICppTraderSymbolMapper.ToRegisterRequest(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(String)
+  name.vb: ToRegisterRequest(String)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  id: ConvertPriceToNanos(System.String,System.Decimal)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ConvertPriceToNanos(string, decimal)
+  nameWithType: ICppTraderSymbolMapper.ConvertPriceToNanos(string, decimal)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertPriceToNanos
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: long ConvertPriceToNanos(string symbol, decimal price)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: price
+      type: System.Decimal
+    return:
+      type: System.Int64
+    content.vb: Function ConvertPriceToNanos(symbol As String, price As Decimal) As Long
+  overload: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos*
+  nameWithType.vb: ICppTraderSymbolMapper.ConvertPriceToNanos(String, Decimal)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(String, Decimal)
+  name.vb: ConvertPriceToNanos(String, Decimal)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  id: ConvertQuantityToNanos(System.String,System.Decimal)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ConvertQuantityToNanos(string, decimal)
+  nameWithType: ICppTraderSymbolMapper.ConvertQuantityToNanos(string, decimal)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertQuantityToNanos
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: long ConvertQuantityToNanos(string symbol, decimal quantity)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Decimal
+    return:
+      type: System.Int64
+    content.vb: Function ConvertQuantityToNanos(symbol As String, quantity As Decimal) As Long
+  overload: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos*
+  nameWithType.vb: ICppTraderSymbolMapper.ConvertQuantityToNanos(String, Decimal)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(String, Decimal)
+  name.vb: ConvertQuantityToNanos(String, Decimal)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  id: ConvertQuantityFromNanos(System.String,System.Int64)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ConvertQuantityFromNanos(string, long)
+  nameWithType: ICppTraderSymbolMapper.ConvertQuantityFromNanos(string, long)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertQuantityFromNanos
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/ICppTraderSymbolMapper.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: decimal ConvertQuantityFromNanos(string symbol, long quantityNanos)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantityNanos
+      type: System.Int64
+    return:
+      type: System.Decimal
+    content.vb: Function ConvertQuantityFromNanos(symbol As String, quantityNanos As Long) As Decimal
+  overload: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos*
+  nameWithType.vb: ICppTraderSymbolMapper.ConvertQuantityFromNanos(String, Long)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(String, Long)
+  name.vb: ConvertQuantityFromNanos(String, Long)
+references:
+- uid: Meridian.Infrastructure.CppTrader.Symbols
+  commentId: N:Meridian.Infrastructure.CppTrader.Symbols
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Symbols
+  nameWithType: Meridian.Infrastructure.CppTrader.Symbols
+  fullName: Meridian.Infrastructure.CppTrader.Symbols
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Symbols
+    name: Symbols
+    href: Meridian.Infrastructure.CppTrader.Symbols.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Symbols
+    name: Symbols
+    href: Meridian.Infrastructure.CppTrader.Symbols.html
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_GetSymbol_System_String_
+  name: GetSymbol
+  nameWithType: ICppTraderSymbolMapper.GetSymbol
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  commentId: T:Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  parent: Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification.html
+  name: CppTraderSymbolSpecification
+  nameWithType: CppTraderSymbolSpecification
+  fullName: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Options
+  commentId: N:Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Options
+  nameWithType: Meridian.Infrastructure.CppTrader.Options
+  fullName: Meridian.Infrastructure.CppTrader.Options
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Options
+    name: Options
+    href: Meridian.Infrastructure.CppTrader.Options.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Options
+    name: Options
+    href: Meridian.Infrastructure.CppTrader.Options.html
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ToRegisterRequest_System_String_
+  name: ToRegisterRequest
+  nameWithType: ICppTraderSymbolMapper.ToRegisterRequest
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest
+- uid: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest.html
+  name: RegisterSymbolRequest
+  nameWithType: RegisterSymbolRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertPriceToNanos_System_String_System_Decimal_
+  name: ConvertPriceToNanos
+  nameWithType: ICppTraderSymbolMapper.ConvertPriceToNanos
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityToNanos_System_String_System_Decimal_
+  name: ConvertQuantityToNanos
+  nameWithType: ICppTraderSymbolMapper.ConvertQuantityToNanos
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityFromNanos_System_String_System_Int64_
+  name: ConvertQuantityFromNanos
+  nameWithType: ICppTraderSymbolMapper.ConvertQuantityFromNanos
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos

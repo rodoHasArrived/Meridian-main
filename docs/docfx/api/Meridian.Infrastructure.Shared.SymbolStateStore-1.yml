@@ -1,0 +1,2653 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  commentId: T:Meridian.Infrastructure.Shared.SymbolStateStore`1
+  id: SymbolStateStore`1
+  parent: Meridian.Infrastructure.Shared
+  children:
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.#ctor(System.Boolean)
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.Clear
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.Contains(System.String)
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.Count
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.Dispose
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.ForEach(System.Action{System.String,`0})
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSnapshot
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSymbols
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.Remove(System.String)
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.Set(System.String,`0)
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.TryGet(System.String,`0@)
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1.TryRemove(System.String,`0@)
+  langs:
+  - csharp
+  - vb
+  name: SymbolStateStore<T>
+  nameWithType: SymbolStateStore<T>
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolStateStore
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Default implementation of ISymbolStateStore using ConcurrentDictionary.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "ConcurrentDictionary-based symbol state store")]
+
+      public sealed class SymbolStateStore<T> : ISymbolStateStore<T>, IDisposable where T : class
+    typeParameters:
+    - id: T
+      description: Type of state to store.
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "ConcurrentDictionary-based symbol state store")>
+
+      Public NotInheritable Class SymbolStateStore(Of T As Class) Implements ISymbolStateStore(Of T), IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: ConcurrentDictionary-based symbol state store
+  nameWithType.vb: SymbolStateStore(Of T)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T)
+  name.vb: SymbolStateStore(Of T)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.#ctor(System.Boolean)
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.#ctor(System.Boolean)
+  id: '#ctor(System.Boolean)'
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: SymbolStateStore(bool)
+  nameWithType: SymbolStateStore<T>.SymbolStateStore(bool)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.SymbolStateStore(bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Creates a new symbol state store.
+  example: []
+  syntax:
+    content: public SymbolStateStore(bool ignoreCase = true)
+    parameters:
+    - id: ignoreCase
+      type: System.Boolean
+      description: 'Whether to ignore case in symbol keys (default: true).'
+    content.vb: Public Sub New(ignoreCase As Boolean = True)
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.#ctor*
+  nameWithType.vb: SymbolStateStore(Of T).New(Boolean)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).New(Boolean)
+  name.vb: New(Boolean)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Count
+  commentId: P:Meridian.Infrastructure.Shared.SymbolStateStore`1.Count
+  id: Count
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: SymbolStateStore<T>.Count
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Gets the number of symbols with state.
+  example: []
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.Count*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Count
+  nameWithType.vb: SymbolStateStore(Of T).Count
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Count
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+  id: GetOrAdd(System.String,System.Func{System.String,`0})
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: GetOrAdd(string, Func<string, T>)
+  nameWithType: SymbolStateStore<T>.GetOrAdd(string, Func<string, T>)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.GetOrAdd(string, System.Func<string, T>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrAdd
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Gets or creates state for a symbol.
+  example: []
+  syntax:
+    content: public T GetOrAdd(string symbol, Func<string, T> factory)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    - id: factory
+      type: System.Func{System.String,{T}}
+      description: Factory to create state if not exists.
+    return:
+      type: '{T}'
+      description: Existing or newly created state.
+    content.vb: Public Function GetOrAdd(symbol As String, factory As Func(Of String, T)) As T
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetOrAdd*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.GetOrAdd(System.String,System.Func{System.String,{T}})
+  nameWithType.vb: SymbolStateStore(Of T).GetOrAdd(String, Func(Of String, T))
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).GetOrAdd(String, System.Func(Of String, T))
+  name.vb: GetOrAdd(String, Func(Of String, T))
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.TryGet(System.String,`0@)
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.TryGet(System.String,`0@)
+  id: TryGet(System.String,`0@)
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: TryGet(string, out T?)
+  nameWithType: SymbolStateStore<T>.TryGet(string, out T?)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.TryGet(string, out T?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGet
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Gets state for a symbol if it exists.
+  example: []
+  syntax:
+    content: public bool TryGet(string symbol, out T? state)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    - id: state
+      type: '{T}'
+      description: State if found.
+    return:
+      type: System.Boolean
+      description: True if state exists.
+    content.vb: Public Function TryGet(symbol As String, state As T) As Boolean
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.TryGet*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.TryGet(System.String,{T}@)
+  nameWithType.vb: SymbolStateStore(Of T).TryGet(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).TryGet(String, T)
+  name.vb: TryGet(String, T)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Set(System.String,`0)
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.Set(System.String,`0)
+  id: Set(System.String,`0)
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: Set(string, T)
+  nameWithType: SymbolStateStore<T>.Set(string, T)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Set(string, T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Set
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Updates state for a symbol.
+  example: []
+  syntax:
+    content: public void Set(string symbol, T state)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    - id: state
+      type: '{T}'
+      description: New state.
+    content.vb: Public Sub [Set](symbol As String, state As T)
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.Set*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Set(System.String,{T})
+  nameWithType.vb: SymbolStateStore(Of T).Set(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Set(String, T)
+  name.vb: Set(String, T)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  id: AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: AddOrUpdate(string, Func<string, T>, Func<string, T, T>)
+  nameWithType: SymbolStateStore<T>.AddOrUpdate(string, Func<string, T>, Func<string, T, T>)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.AddOrUpdate(string, System.Func<string, T>, System.Func<string, T, T>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddOrUpdate
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Updates state with a transformation function.
+  example: []
+  syntax:
+    content: public T AddOrUpdate(string symbol, Func<string, T> addFactory, Func<string, T, T> updateFactory)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    - id: addFactory
+      type: System.Func{System.String,{T}}
+      description: Function to create state if not present.
+    - id: updateFactory
+      type: System.Func{System.String,{T},{T}}
+      description: Function to update state.
+    return:
+      type: '{T}'
+      description: Updated state.
+    content.vb: Public Function AddOrUpdate(symbol As String, addFactory As Func(Of String, T), updateFactory As Func(Of String, T, T)) As T
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.AddOrUpdate*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.AddOrUpdate(System.String,System.Func{System.String,{T}},System.Func{System.String,{T},{T}})
+  nameWithType.vb: SymbolStateStore(Of T).AddOrUpdate(String, Func(Of String, T), Func(Of String, T, T))
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).AddOrUpdate(String, System.Func(Of String, T), System.Func(Of String, T, T))
+  name.vb: AddOrUpdate(String, Func(Of String, T), Func(Of String, T, T))
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Remove(System.String)
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.Remove(System.String)
+  id: Remove(System.String)
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: Remove(string)
+  nameWithType: SymbolStateStore<T>.Remove(string)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Remove(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Remove
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Removes state for a symbol.
+  example: []
+  syntax:
+    content: public bool Remove(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    return:
+      type: System.Boolean
+      description: True if removed.
+    content.vb: Public Function Remove(symbol As String) As Boolean
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.Remove*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Remove(System.String)
+  nameWithType.vb: SymbolStateStore(Of T).Remove(String)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Remove(String)
+  name.vb: Remove(String)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.TryRemove(System.String,`0@)
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.TryRemove(System.String,`0@)
+  id: TryRemove(System.String,`0@)
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: TryRemove(string, out T?)
+  nameWithType: SymbolStateStore<T>.TryRemove(string, out T?)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.TryRemove(string, out T?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryRemove
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Removes state for a symbol and returns it.
+  example: []
+  syntax:
+    content: public bool TryRemove(string symbol, out T? state)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    - id: state
+      type: '{T}'
+      description: Removed state if found.
+    return:
+      type: System.Boolean
+      description: True if removed.
+    content.vb: Public Function TryRemove(symbol As String, state As T) As Boolean
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.TryRemove*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.TryRemove(System.String,{T}@)
+  nameWithType.vb: SymbolStateStore(Of T).TryRemove(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).TryRemove(String, T)
+  name.vb: TryRemove(String, T)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Contains(System.String)
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.Contains(System.String)
+  id: Contains(System.String)
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: Contains(string)
+  nameWithType: SymbolStateStore<T>.Contains(string)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Contains(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contains
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Checks if state exists for a symbol.
+  example: []
+  syntax:
+    content: public bool Contains(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol key.
+    return:
+      type: System.Boolean
+      description: True if state exists.
+    content.vb: Public Function Contains(symbol As String) As Boolean
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.Contains*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Contains(System.String)
+  nameWithType.vb: SymbolStateStore(Of T).Contains(String)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Contains(String)
+  name.vb: Contains(String)
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSymbols
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSymbols
+  id: GetSymbols
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: GetSymbols()
+  nameWithType: SymbolStateStore<T>.GetSymbols()
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.GetSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbols
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Gets all symbols with state.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetSymbols()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: List of symbols.
+    content.vb: Public Function GetSymbols() As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSymbols*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.GetSymbols
+  nameWithType.vb: SymbolStateStore(Of T).GetSymbols()
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).GetSymbols()
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSnapshot
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: SymbolStateStore<T>.GetSnapshot()
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Gets a snapshot of all state (thread-safe copy).
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, T> GetSnapshot()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,{T}}
+      description: Dictionary snapshot.
+    content.vb: Public Function GetSnapshot() As IReadOnlyDictionary(Of String, T)
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSnapshot*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.GetSnapshot
+  nameWithType.vb: SymbolStateStore(Of T).GetSnapshot()
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).GetSnapshot()
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Clear
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.Clear
+  id: Clear
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: Clear()
+  nameWithType: SymbolStateStore<T>.Clear()
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Clear()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Clear
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Clears all state.
+  example: []
+  syntax:
+    content: public void Clear()
+    content.vb: Public Sub Clear()
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.Clear*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Clear
+  nameWithType.vb: SymbolStateStore(Of T).Clear()
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Clear()
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.ForEach(System.Action{System.String,`0})
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.ForEach(System.Action{System.String,`0})
+  id: ForEach(System.Action{System.String,`0})
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: ForEach(Action<string, T>)
+  nameWithType: SymbolStateStore<T>.ForEach(Action<string, T>)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.ForEach(System.Action<string, T>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForEach
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Applies an action to all states.
+  example: []
+  syntax:
+    content: public void ForEach(Action<string, T> action)
+    parameters:
+    - id: action
+      type: System.Action{System.String,{T}}
+      description: Action to apply.
+    content.vb: Public Sub ForEach(action As Action(Of String, T))
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.ForEach*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.ForEach(System.Action{System.String,{T}})
+  nameWithType.vb: SymbolStateStore(Of T).ForEach(Action(Of String, T))
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).ForEach(System.Action(Of String, T))
+  name.vb: ForEach(Action(Of String, T))
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  id: RemoveStale(System.Func{System.String,`0,System.Boolean})
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: RemoveStale(Func<string, T, bool>)
+  nameWithType: SymbolStateStore<T>.RemoveStale(Func<string, T, bool>)
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.RemoveStale(System.Func<string, T, bool>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveStale
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Removes stale entries based on a predicate.
+  example: []
+  syntax:
+    content: public int RemoveStale(Func<string, T, bool> isStale)
+    parameters:
+    - id: isStale
+      type: System.Func{System.String,{T},System.Boolean}
+      description: Predicate to determine staleness.
+    return:
+      type: System.Int32
+      description: Number of entries removed.
+    content.vb: Public Function RemoveStale(isStale As Func(Of String, T, Boolean)) As Integer
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.RemoveStale*
+  implements:
+  - Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.RemoveStale(System.Func{System.String,{T},System.Boolean})
+  nameWithType.vb: SymbolStateStore(Of T).RemoveStale(Func(Of String, T, Boolean))
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).RemoveStale(System.Func(Of String, T, Boolean))
+  name.vb: RemoveStale(Func(Of String, T, Boolean))
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Dispose
+  commentId: M:Meridian.Infrastructure.Shared.SymbolStateStore`1.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: SymbolStateStore<T>.Dispose()
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Shared
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Shared.SymbolStateStore`1.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+  nameWithType.vb: SymbolStateStore(Of T).Dispose()
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Dispose()
+references:
+- uid: Meridian.Infrastructure.Shared
+  commentId: N:Meridian.Infrastructure.Shared
+  href: Meridian.html
+  name: Meridian.Infrastructure.Shared
+  nameWithType: Meridian.Infrastructure.Shared
+  fullName: Meridian.Infrastructure.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  commentId: T:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}
+  parent: Meridian.Infrastructure.Shared
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  name: ISymbolStateStore<T>
+  nameWithType: ISymbolStateStore<T>
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>
+  nameWithType.vb: ISymbolStateStore(Of T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T)
+  name.vb: ISymbolStateStore(Of T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+    name: ISymbolStateStore
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+    name: ISymbolStateStore
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+  commentId: T:Meridian.Infrastructure.Shared.ISymbolStateStore`1
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  name: ISymbolStateStore<T>
+  nameWithType: ISymbolStateStore<T>
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>
+  nameWithType.vb: ISymbolStateStore(Of T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T)
+  name.vb: ISymbolStateStore(Of T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+    name: ISymbolStateStore
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+    name: ISymbolStateStore
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.#ctor
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1__ctor_System_Boolean_
+  name: SymbolStateStore
+  nameWithType: SymbolStateStore<T>.SymbolStateStore
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.SymbolStateStore
+  nameWithType.vb: SymbolStateStore(Of T).New
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Count*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.Count
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_Count
+  name: Count
+  nameWithType: SymbolStateStore<T>.Count
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Count
+  nameWithType.vb: SymbolStateStore(Of T).Count
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Count
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Count
+  commentId: P:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Count
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Count
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Count
+  name: Count
+  nameWithType: ISymbolStateStore<T>.Count
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Count
+  nameWithType.vb: ISymbolStateStore(Of T).Count
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Count
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Count
+  commentId: P:Meridian.Infrastructure.Shared.ISymbolStateStore`1.Count
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Count
+  name: Count
+  nameWithType: ISymbolStateStore<T>.Count
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Count
+  nameWithType.vb: ISymbolStateStore(Of T).Count
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Count
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetOrAdd*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.GetOrAdd
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  name: GetOrAdd
+  nameWithType: SymbolStateStore<T>.GetOrAdd
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.GetOrAdd
+  nameWithType.vb: SymbolStateStore(Of T).GetOrAdd
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).GetOrAdd
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.GetOrAdd(System.String,System.Func{System.String,{T}})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetOrAdd(System.String,System.Func{System.String,`0})
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  name: GetOrAdd(string, Func<string, T>)
+  nameWithType: ISymbolStateStore<T>.GetOrAdd(string, Func<string, T>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.GetOrAdd(string, System.Func<string, T>)
+  nameWithType.vb: ISymbolStateStore(Of T).GetOrAdd(String, Func(Of String, T))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).GetOrAdd(String, System.Func(Of String, T))
+  name.vb: GetOrAdd(String, Func(Of String, T))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetOrAdd(System.String,System.Func{System.String,`0})
+    name: GetOrAdd
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetOrAdd(System.String,System.Func{System.String,`0})
+    name: GetOrAdd
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Func{System.String,{T}}
+  commentId: T:System.Func{System.String,`0}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<string, T>
+  nameWithType: Func<string, T>
+  fullName: System.Func<string, T>
+  nameWithType.vb: Func(Of String, T)
+  fullName.vb: System.Func(Of String, T)
+  name.vb: Func(Of String, T)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  name: GetOrAdd(string, Func<string, T>)
+  nameWithType: ISymbolStateStore<T>.GetOrAdd(string, Func<string, T>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.GetOrAdd(string, System.Func<string, T>)
+  nameWithType.vb: ISymbolStateStore(Of T).GetOrAdd(String, Func(Of String, T))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).GetOrAdd(String, System.Func(Of String, T))
+  name.vb: GetOrAdd(String, Func(Of String, T))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+    name: GetOrAdd
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetOrAdd(System.String,System.Func{System.String,`0})
+    name: GetOrAdd
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetOrAdd_System_String_System_Func_System_String__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.TryGet*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.TryGet
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_TryGet_System_String__0__
+  name: TryGet
+  nameWithType: SymbolStateStore<T>.TryGet
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.TryGet
+  nameWithType.vb: SymbolStateStore(Of T).TryGet
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).TryGet
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.TryGet(System.String,{T}@)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.TryGet(System.String,`0@)
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryGet(System.String,`0@)
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryGet_System_String__0__
+  name: TryGet(string, out T)
+  nameWithType: ISymbolStateStore<T>.TryGet(string, out T)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.TryGet(string, out T)
+  nameWithType.vb: ISymbolStateStore(Of T).TryGet(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).TryGet(String, T)
+  name.vb: TryGet(String, T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.TryGet(System.String,`0@)
+    name: TryGet
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryGet_System_String__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: out
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.TryGet(System.String,`0@)
+    name: TryGet
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryGet_System_String__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryGet(System.String,`0@)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryGet(System.String,`0@)
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryGet_System_String__0__
+  name: TryGet(string, out T)
+  nameWithType: ISymbolStateStore<T>.TryGet(string, out T)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.TryGet(string, out T)
+  nameWithType.vb: ISymbolStateStore(Of T).TryGet(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).TryGet(String, T)
+  name.vb: TryGet(String, T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryGet(System.String,`0@)
+    name: TryGet
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryGet_System_String__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: out
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryGet(System.String,`0@)
+    name: TryGet
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryGet_System_String__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Set*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.Set
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_Set_System_String__0_
+  name: Set
+  nameWithType: SymbolStateStore<T>.Set
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Set
+  nameWithType.vb: SymbolStateStore(Of T).Set
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Set
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Set(System.String,{T})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Set(System.String,`0)
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Set(System.String,`0)
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Set_System_String__0_
+  name: Set(string, T)
+  nameWithType: ISymbolStateStore<T>.Set(string, T)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Set(string, T)
+  nameWithType.vb: ISymbolStateStore(Of T).Set(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Set(String, T)
+  name.vb: Set(String, T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Set(System.String,`0)
+    name: Set
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Set_System_String__0_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Set(System.String,`0)
+    name: Set
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Set_System_String__0_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Set(System.String,`0)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.Set(System.String,`0)
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Set_System_String__0_
+  name: Set(string, T)
+  nameWithType: ISymbolStateStore<T>.Set(string, T)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Set(string, T)
+  nameWithType.vb: ISymbolStateStore(Of T).Set(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Set(String, T)
+  name.vb: Set(String, T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Set(System.String,`0)
+    name: Set
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Set_System_String__0_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Set(System.String,`0)
+    name: Set
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Set_System_String__0_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.AddOrUpdate*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.AddOrUpdate
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  name: AddOrUpdate
+  nameWithType: SymbolStateStore<T>.AddOrUpdate
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.AddOrUpdate
+  nameWithType.vb: SymbolStateStore(Of T).AddOrUpdate
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).AddOrUpdate
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.AddOrUpdate(System.String,System.Func{System.String,{T}},System.Func{System.String,{T},{T}})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  name: AddOrUpdate(string, Func<string, T>, Func<string, T, T>)
+  nameWithType: ISymbolStateStore<T>.AddOrUpdate(string, Func<string, T>, Func<string, T, T>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.AddOrUpdate(string, System.Func<string, T>, System.Func<string, T, T>)
+  nameWithType.vb: ISymbolStateStore(Of T).AddOrUpdate(String, Func(Of String, T), Func(Of String, T, T))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).AddOrUpdate(String, System.Func(Of String, T), System.Func(Of String, T, T))
+  name.vb: AddOrUpdate(String, Func(Of String, T), Func(Of String, T, T))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+    name: AddOrUpdate
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+    name: AddOrUpdate
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: System.Func{System.String,{T},{T}}
+  commentId: T:System.Func{System.String,`0,`0}
+  parent: System
+  definition: System.Func`3
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Func<string, T, T>
+  nameWithType: Func<string, T, T>
+  fullName: System.Func<string, T, T>
+  nameWithType.vb: Func(Of String, T, T)
+  fullName.vb: System.Func(Of String, T, T)
+  name.vb: Func(Of String, T, T)
+  spec.csharp:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  name: AddOrUpdate(string, Func<string, T>, Func<string, T, T>)
+  nameWithType: ISymbolStateStore<T>.AddOrUpdate(string, Func<string, T>, Func<string, T, T>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.AddOrUpdate(string, System.Func<string, T>, System.Func<string, T, T>)
+  nameWithType.vb: ISymbolStateStore(Of T).AddOrUpdate(String, Func(Of String, T), Func(Of String, T, T))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).AddOrUpdate(String, System.Func(Of String, T), System.Func(Of String, T, T))
+  name.vb: AddOrUpdate(String, Func(Of String, T), Func(Of String, T, T))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+    name: AddOrUpdate
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.AddOrUpdate(System.String,System.Func{System.String,`0},System.Func{System.String,`0,`0})
+    name: AddOrUpdate
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_AddOrUpdate_System_String_System_Func_System_String__0__System_Func_System_String__0__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: System.Func`3
+  commentId: T:System.Func`3
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Func<T1, T2, TResult>
+  nameWithType: Func<T1, T2, TResult>
+  fullName: System.Func<T1, T2, TResult>
+  nameWithType.vb: Func(Of T1, T2, TResult)
+  fullName.vb: System.Func(Of T1, T2, TResult)
+  name.vb: Func(Of T1, T2, TResult)
+  spec.csharp:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Remove*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.Remove
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_Remove_System_String_
+  name: Remove
+  nameWithType: SymbolStateStore<T>.Remove
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Remove
+  nameWithType.vb: SymbolStateStore(Of T).Remove
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Remove
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Remove(System.String)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Remove(System.String)
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Remove(System.String)
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Remove_System_String_
+  name: Remove(string)
+  nameWithType: ISymbolStateStore<T>.Remove(string)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Remove(string)
+  nameWithType.vb: ISymbolStateStore(Of T).Remove(String)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Remove(String)
+  name.vb: Remove(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Remove(System.String)
+    name: Remove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Remove_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Remove(System.String)
+    name: Remove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Remove_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Remove(System.String)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.Remove(System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Remove_System_String_
+  name: Remove(string)
+  nameWithType: ISymbolStateStore<T>.Remove(string)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Remove(string)
+  nameWithType.vb: ISymbolStateStore(Of T).Remove(String)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Remove(String)
+  name.vb: Remove(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Remove(System.String)
+    name: Remove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Remove_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Remove(System.String)
+    name: Remove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Remove_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.TryRemove*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.TryRemove
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_TryRemove_System_String__0__
+  name: TryRemove
+  nameWithType: SymbolStateStore<T>.TryRemove
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.TryRemove
+  nameWithType.vb: SymbolStateStore(Of T).TryRemove
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).TryRemove
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.TryRemove(System.String,{T}@)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.TryRemove(System.String,`0@)
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryRemove(System.String,`0@)
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryRemove_System_String__0__
+  name: TryRemove(string, out T)
+  nameWithType: ISymbolStateStore<T>.TryRemove(string, out T)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.TryRemove(string, out T)
+  nameWithType.vb: ISymbolStateStore(Of T).TryRemove(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).TryRemove(String, T)
+  name.vb: TryRemove(String, T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.TryRemove(System.String,`0@)
+    name: TryRemove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryRemove_System_String__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: out
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.TryRemove(System.String,`0@)
+    name: TryRemove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryRemove_System_String__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryRemove(System.String,`0@)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryRemove(System.String,`0@)
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryRemove_System_String__0__
+  name: TryRemove(string, out T)
+  nameWithType: ISymbolStateStore<T>.TryRemove(string, out T)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.TryRemove(string, out T)
+  nameWithType.vb: ISymbolStateStore(Of T).TryRemove(String, T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).TryRemove(String, T)
+  name.vb: TryRemove(String, T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryRemove(System.String,`0@)
+    name: TryRemove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryRemove_System_String__0__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: out
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.TryRemove(System.String,`0@)
+    name: TryRemove
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_TryRemove_System_String__0__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Contains*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.Contains
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_Contains_System_String_
+  name: Contains
+  nameWithType: SymbolStateStore<T>.Contains
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Contains
+  nameWithType.vb: SymbolStateStore(Of T).Contains
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Contains
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Contains(System.String)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Contains(System.String)
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Contains(System.String)
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Contains_System_String_
+  name: Contains(string)
+  nameWithType: ISymbolStateStore<T>.Contains(string)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Contains(string)
+  nameWithType.vb: ISymbolStateStore(Of T).Contains(String)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Contains(String)
+  name.vb: Contains(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Contains(System.String)
+    name: Contains
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Contains_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Contains(System.String)
+    name: Contains
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Contains_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Contains(System.String)
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.Contains(System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Contains_System_String_
+  name: Contains(string)
+  nameWithType: ISymbolStateStore<T>.Contains(string)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Contains(string)
+  nameWithType.vb: ISymbolStateStore(Of T).Contains(String)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Contains(String)
+  name.vb: Contains(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Contains(System.String)
+    name: Contains
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Contains_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Contains(System.String)
+    name: Contains
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Contains_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSymbols*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSymbols
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_GetSymbols
+  name: GetSymbols
+  nameWithType: SymbolStateStore<T>.GetSymbols
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.GetSymbols
+  nameWithType.vb: SymbolStateStore(Of T).GetSymbols
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).GetSymbols
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.GetSymbols
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetSymbols
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSymbols
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSymbols
+  name: GetSymbols()
+  nameWithType: ISymbolStateStore<T>.GetSymbols()
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.GetSymbols()
+  nameWithType.vb: ISymbolStateStore(Of T).GetSymbols()
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).GetSymbols()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetSymbols
+    name: GetSymbols
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSymbols
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetSymbols
+    name: GetSymbols
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSymbols
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSymbols
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSymbols
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSymbols
+  name: GetSymbols()
+  nameWithType: ISymbolStateStore<T>.GetSymbols()
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.GetSymbols()
+  nameWithType.vb: ISymbolStateStore(Of T).GetSymbols()
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).GetSymbols()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSymbols
+    name: GetSymbols
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSymbols
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSymbols
+    name: GetSymbols
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSymbols
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSnapshot*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.GetSnapshot
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_GetSnapshot
+  name: GetSnapshot
+  nameWithType: SymbolStateStore<T>.GetSnapshot
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.GetSnapshot
+  nameWithType.vb: SymbolStateStore(Of T).GetSnapshot
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).GetSnapshot
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.GetSnapshot
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetSnapshot
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSnapshot
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSnapshot
+  name: GetSnapshot()
+  nameWithType: ISymbolStateStore<T>.GetSnapshot()
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.GetSnapshot()
+  nameWithType.vb: ISymbolStateStore(Of T).GetSnapshot()
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).GetSnapshot()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSnapshot
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,{T}}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, T>
+  nameWithType: IReadOnlyDictionary<string, T>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, T>
+  nameWithType.vb: IReadOnlyDictionary(Of String, T)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, T)
+  name.vb: IReadOnlyDictionary(Of String, T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSnapshot
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSnapshot
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSnapshot
+  name: GetSnapshot()
+  nameWithType: ISymbolStateStore<T>.GetSnapshot()
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.GetSnapshot()
+  nameWithType.vb: ISymbolStateStore(Of T).GetSnapshot()
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).GetSnapshot()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_GetSnapshot
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Clear*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.Clear
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_Clear
+  name: Clear
+  nameWithType: SymbolStateStore<T>.Clear
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Clear
+  nameWithType.vb: SymbolStateStore(Of T).Clear
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Clear
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.Clear
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Clear
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Clear
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Clear
+  name: Clear()
+  nameWithType: ISymbolStateStore<T>.Clear()
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Clear()
+  nameWithType.vb: ISymbolStateStore(Of T).Clear()
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Clear()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Clear
+    name: Clear
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Clear
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.Clear
+    name: Clear
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Clear
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Clear
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.Clear
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Clear
+  name: Clear()
+  nameWithType: ISymbolStateStore<T>.Clear()
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.Clear()
+  nameWithType.vb: ISymbolStateStore(Of T).Clear()
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).Clear()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Clear
+    name: Clear
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Clear
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.Clear
+    name: Clear
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_Clear
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.ForEach*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.ForEach
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_ForEach_System_Action_System_String__0__
+  name: ForEach
+  nameWithType: SymbolStateStore<T>.ForEach
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.ForEach
+  nameWithType.vb: SymbolStateStore(Of T).ForEach
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).ForEach
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.ForEach(System.Action{System.String,{T}})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.ForEach(System.Action{System.String,`0})
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.ForEach(System.Action{System.String,`0})
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_ForEach_System_Action_System_String__0__
+  name: ForEach(Action<string, T>)
+  nameWithType: ISymbolStateStore<T>.ForEach(Action<string, T>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.ForEach(System.Action<string, T>)
+  nameWithType.vb: ISymbolStateStore(Of T).ForEach(Action(Of String, T))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).ForEach(System.Action(Of String, T))
+  name.vb: ForEach(Action(Of String, T))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.ForEach(System.Action{System.String,`0})
+    name: ForEach
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_ForEach_System_Action_System_String__0__
+  - name: (
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.ForEach(System.Action{System.String,`0})
+    name: ForEach
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_ForEach_System_Action_System_String__0__
+  - name: (
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: System.Action{System.String,{T}}
+  commentId: T:System.Action{System.String,`0}
+  parent: System
+  definition: System.Action`2
+  href: https://learn.microsoft.com/dotnet/api/system.action-2
+  name: Action<string, T>
+  nameWithType: Action<string, T>
+  fullName: System.Action<string, T>
+  nameWithType.vb: Action(Of String, T)
+  fullName.vb: System.Action(Of String, T)
+  name.vb: Action(Of String, T)
+  spec.csharp:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.ForEach(System.Action{System.String,`0})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.ForEach(System.Action{System.String,`0})
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_ForEach_System_Action_System_String__0__
+  name: ForEach(Action<string, T>)
+  nameWithType: ISymbolStateStore<T>.ForEach(Action<string, T>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.ForEach(System.Action<string, T>)
+  nameWithType.vb: ISymbolStateStore(Of T).ForEach(Action(Of String, T))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).ForEach(System.Action(Of String, T))
+  name.vb: ForEach(Action(Of String, T))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.ForEach(System.Action{System.String,`0})
+    name: ForEach
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_ForEach_System_Action_System_String__0__
+  - name: (
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.ForEach(System.Action{System.String,`0})
+    name: ForEach
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_ForEach_System_Action_System_String__0__
+  - name: (
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: System.Action`2
+  commentId: T:System.Action`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-2
+  name: Action<T1, T2>
+  nameWithType: Action<T1, T2>
+  fullName: System.Action<T1, T2>
+  nameWithType.vb: Action(Of T1, T2)
+  fullName.vb: System.Action(Of T1, T2)
+  name.vb: Action(Of T1, T2)
+  spec.csharp:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: <
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.RemoveStale*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.RemoveStale
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  name: RemoveStale
+  nameWithType: SymbolStateStore<T>.RemoveStale
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.RemoveStale
+  nameWithType.vb: SymbolStateStore(Of T).RemoveStale
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).RemoveStale
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}.RemoveStale(System.Func{System.String,{T},System.Boolean})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  parent: Meridian.Infrastructure.Shared.ISymbolStateStore{{T}}
+  definition: Meridian.Infrastructure.Shared.ISymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  name: RemoveStale(Func<string, T, bool>)
+  nameWithType: ISymbolStateStore<T>.RemoveStale(Func<string, T, bool>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.RemoveStale(System.Func<string, T, bool>)
+  nameWithType.vb: ISymbolStateStore(Of T).RemoveStale(Func(Of String, T, Boolean))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).RemoveStale(System.Func(Of String, T, Boolean))
+  name.vb: RemoveStale(Func(Of String, T, Boolean))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.RemoveStale(System.Func{System.String,`0,System.Boolean})
+    name: RemoveStale
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore{`0}.RemoveStale(System.Func{System.String,`0,System.Boolean})
+    name: RemoveStale
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+- uid: System.Func{System.String,{T},System.Boolean}
+  commentId: T:System.Func{System.String,`0,System.Boolean}
+  parent: System
+  definition: System.Func`3
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Func<string, T, bool>
+  nameWithType: Func<string, T, bool>
+  fullName: System.Func<string, T, bool>
+  nameWithType.vb: Func(Of String, T, Boolean)
+  fullName.vb: System.Func(Of String, T, Boolean)
+  name.vb: Func(Of String, T, Boolean)
+  spec.csharp:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  commentId: M:Meridian.Infrastructure.Shared.ISymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+  isExternal: true
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  name: RemoveStale(Func<string, T, bool>)
+  nameWithType: ISymbolStateStore<T>.RemoveStale(Func<string, T, bool>)
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>.RemoveStale(System.Func<string, T, bool>)
+  nameWithType.vb: ISymbolStateStore(Of T).RemoveStale(Func(Of String, T, Boolean))
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T).RemoveStale(System.Func(Of String, T, Boolean))
+  name.vb: RemoveStale(Func(Of String, T, Boolean))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+    name: RemoveStale
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1.RemoveStale(System.Func{System.String,`0,System.Boolean})
+    name: RemoveStale
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html#Meridian_Infrastructure_Shared_ISymbolStateStore_1_RemoveStale_System_Func_System_String__0_System_Boolean__
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Shared.SymbolStateStore`1.Dispose
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html#Meridian_Infrastructure_Shared_SymbolStateStore_1_Dispose
+  name: Dispose
+  nameWithType: SymbolStateStore<T>.Dispose
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>.Dispose
+  nameWithType.vb: SymbolStateStore(Of T).Dispose
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T).Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
