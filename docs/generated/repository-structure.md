@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-07 22:13:19 UTC. Do not edit manually.
+> Auto-generated on 2026-04-08 02:43:00 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -445,7 +445,8 @@ Meridian-main
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
-│   │   └── wpf-shell-mvvm.md
+│   │   ├── wpf-shell-mvvm.md
+│   │   └── wpf-workstation-shell-ux.md
 │   ├── audits
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
@@ -894,7 +895,8 @@ Meridian-main
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
-│   └── report_canonicalization_drift.py
+│   ├── report_canonicalization_drift.py
+│   └── wpf_finance_ux_checks.py
 ├── src
 │   ├── Meridian
 │   │   ├── Integrations
@@ -915,6 +917,7 @@ Meridian-main
 │   │   ├── app.manifest
 │   │   ├── DashboardServerBridge.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── HostedBrokerageGatewayServiceCollectionExtensions.cs
 │   │   ├── Meridian.csproj
 │   │   ├── Program.cs
 │   │   ├── runtimeconfig.template.json
@@ -2556,6 +2559,7 @@ Meridian-main
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
+│       │   ├── WorkspaceShellChromeModels.cs
 │       │   └── WorkspaceShellModels.cs
 │       ├── Services
 │       │   ├── AgentLoopService.cs
@@ -2612,6 +2616,7 @@ Meridian-main
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
 │       │   ├── WorkspaceService.cs
+│       │   ├── WorkspaceShellContextService.cs
 │       │   └── WorkstationReconciliationApiClient.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
@@ -2882,8 +2887,12 @@ Meridian-main
 │       │   ├── WatchlistPage.xaml.cs
 │       │   ├── WelcomePage.xaml
 │       │   ├── WelcomePage.xaml.cs
+│       │   ├── WorkspaceCommandBarControl.xaml
+│       │   ├── WorkspaceCommandBarControl.xaml.cs
 │       │   ├── WorkspacePage.xaml
-│       │   └── WorkspacePage.xaml.cs
+│       │   ├── WorkspacePage.xaml.cs
+│       │   ├── WorkspaceShellContextStripControl.xaml
+│       │   └── WorkspaceShellContextStripControl.xaml.cs
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
@@ -3138,6 +3147,8 @@ Meridian-main
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   └── CsvPartnerFileParserTests.cs
+│   │   │   ├── Http
+│   │   │   │   └── HttpClientConfigurationTests.cs
 │   │   │   ├── Providers
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── InteractiveBrokers
@@ -3436,7 +3447,8 @@ Meridian-main
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
 │   │   │   ├── TooltipServiceTests.cs
 │   │   │   ├── WatchlistServiceTests.cs
-│   │   │   └── WorkspaceServiceTests.cs
+│   │   │   ├── WorkspaceServiceTests.cs
+│   │   │   └── WorkspaceShellContextServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
