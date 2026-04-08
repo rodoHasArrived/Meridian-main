@@ -12,6 +12,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Infrastructure.Adapters.Robinhood;
@@ -35,7 +36,7 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 /// </list>
 /// </para>
 /// </summary>
-[DataSource("robinhood-options", "Robinhood Options Chain", DataSourceType.Realtime, DataSourceCategory.Options,
+[DataSource("robinhood-options", "Robinhood Options Chain", DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 35, Description = "Robinhood options chain data via unofficial API (requires personal access token)")]
 [ImplementsAdr("ADR-001", "Robinhood options chain provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
@@ -615,7 +616,17 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         [JsonPropertyName("cutoff_price")] public string? CutoffPrice { get; init; }
     }
 
-    internal sealed class RobinhoodOptionChainResponse : RobinhoodOptionChain;
+    /// <summary>Typed alias used when deserialising a single-chain API response (same shape as <see cref="RobinhoodOptionChain"/>).</summary>
+    internal sealed class RobinhoodOptionChainResponse
+    {
+        [JsonPropertyName("id")] public string? Id { get; init; }
+        [JsonPropertyName("symbol")] public string? Symbol { get; init; }
+        [JsonPropertyName("expiration_dates")] public string[]? ExpirationDates { get; init; }
+        [JsonPropertyName("trade_value_multiplier")] public string? TradeValueMultiplier { get; init; }
+        [JsonPropertyName("can_open_position")] public bool? CanOpenPosition { get; init; }
+        [JsonPropertyName("cash_component")] public string? CashComponent { get; init; }
+        [JsonPropertyName("min_ticks")] public RobinhoodOptionMinTicks? MinTicks { get; init; }
+    }
 
     internal sealed class RobinhoodOptionChainListResponse
     {

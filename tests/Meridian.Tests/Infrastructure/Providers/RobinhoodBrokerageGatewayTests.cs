@@ -15,6 +15,8 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// </summary>
 public sealed class RobinhoodBrokerageGatewayTests : IDisposable
 {
+    private const string BaseUrl = "https://api.robinhood.com";
+
     private readonly string? _originalAccessToken;
 
     public RobinhoodBrokerageGatewayTests()
@@ -219,7 +221,231 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         await sut.DisposeAsync();
     }
 
-    // ── GetAccountInfoAsync ───────────────────────────────────────────────
+    // ── GetPositionsAsync ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetPositionsAsync_NoOptionPositions_ReturnsOnlyEquityPositions()
+    {
+        // Equity positions page, then options positions page (empty).
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildPositionsResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildJson(new { results = Array.Empty<object>() }) },
+            // instrument lookup for the equity position
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildJson(new { url = "https://api.robinhood.com/instruments/AAPL/", symbol = "AAPL" }) },
+        });
+
+        // SequentialStubHandler dequeues in order; instrument resolution is async inside the loop.
+        // Use a router that can handle any order of calls.
+        var handler = new UrlRoutingStubHandler(new Dictionary<string, HttpResponseMessage>
+        {
+            [$"{BaseUrl}/positions/?nonzero=true"] = new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildPositionsResponse() },
+            [$"{BaseUrl}/options/positions/?nonzero=true"] = new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildJson(new { results = Array.Empty<object>() }) },
+            [$"https://api.robinhood.com/instruments/AAPL/"] = new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildJson(new { url = "https://api.robinhood.com/instruments/AAPL/", symbol = "AAPL" }) },
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var positions = await sut.GetPositionsAsync(cts.Token);
+
+        positions.Should().HaveCount(1);
+        positions[0].Symbol.Should().Be("AAPL");
+        positions[0].AssetClass.Should().Be("equity");
+
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task GetPositionsAsync_WithOptionPositions_ReturnsBothEquityAndOptionPositions()
+    {
+        var optionPositionsContent = BuildJson(new
+        {
+            results = new[]
+            {
+                new
+                {
+                    option = "https://api.robinhood.com/options/instruments/some-uuid/",
+                    chain_symbol = "AAPL",
+                    quantity = "2",
+                    average_price = "3.50",
+                    type = "call"
+                }
+            }
+        });
+
+        var handler = new UrlRoutingStubHandler(new Dictionary<string, HttpResponseMessage>
+        {
+            [$"{BaseUrl}/positions/?nonzero=true"] = new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildPositionsResponse() },
+            [$"{BaseUrl}/options/positions/?nonzero=true"] = new HttpResponseMessage(HttpStatusCode.OK) { Content = optionPositionsContent },
+            [$"https://api.robinhood.com/instruments/AAPL/"] = new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildJson(new { url = "https://api.robinhood.com/instruments/AAPL/", symbol = "AAPL" }) },
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var positions = await sut.GetPositionsAsync(cts.Token);
+
+        positions.Should().HaveCount(2);
+
+        var equity = positions.First(p => p.AssetClass == "equity");
+        equity.Symbol.Should().Be("AAPL");
+        equity.Quantity.Should().Be(10m);
+
+        var option = positions.First(p => p.AssetClass == "option");
+        option.Symbol.Should().Be("AAPL");
+        option.Quantity.Should().Be(2m);
+        option.AverageEntryPrice.Should().Be(3.50m);
+
+        await sut.DisposeAsync();
+    }
+
+    // ── GetOpenOrdersAsync ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetOpenOrdersAsync_WithOpenOptionOrders_ReturnsBothEquityAndOptionOrders()
+    {
+        var equityOrdersContent = BuildJson(new
+        {
+            results = new[]
+            {
+                new
+                {
+                    id = "eq-order-1",
+                    ref_id = "ref-eq-1",
+                    symbol = "AAPL",
+                    side = "buy",
+                    type = "limit",
+                    time_in_force = "gfd",
+                    quantity = "1",
+                    price = "150.00",
+                    state = "queued",
+                    created_at = "2024-01-02T10:00:00Z"
+                }
+            }
+        });
+
+        var optionOrdersContent = BuildJson(new
+        {
+            results = new[]
+            {
+                new
+                {
+                    id = "opt-order-1",
+                    ref_id = "ref-opt-1",
+                    chain_symbol = "AAPL",
+                    direction = "debit",
+                    type = "limit",
+                    time_in_force = "gfd",
+                    quantity = "2",
+                    price = "3.50",
+                    state = "queued",
+                    created_at = "2024-01-02T10:05:00Z"
+                }
+            }
+        });
+
+        var handler = new UrlRoutingStubHandler(new Dictionary<string, HttpResponseMessage>
+        {
+            [$"{BaseUrl}/orders/?state=queued,unconfirmed,confirmed,partially_filled"] =
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = equityOrdersContent },
+            [$"{BaseUrl}/options/orders/?state=queued,unconfirmed,confirmed,partially_filled"] =
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = optionOrdersContent },
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var orders = await sut.GetOpenOrdersAsync(cts.Token);
+
+        orders.Should().HaveCount(2);
+        orders.Should().Contain(o => o.OrderId == "eq-order-1" && o.Symbol == "AAPL");
+        orders.Should().Contain(o => o.OrderId == "opt-order-1" && o.Symbol == "AAPL" && o.Side == OrderSide.Buy);
+
+        await sut.DisposeAsync();
+    }
+
+    // ── SubmitOrderAsync (options) ────────────────────────────────────────
+
+    [Fact]
+    public async Task SubmitOrderAsync_OptionOrder_RoutesToOptionsOrdersEndpoint()
+    {
+        var optionOrderResponse = BuildJson(new
+        {
+            id = "opt-order-submit-1",
+            chain_symbol = "AAPL",
+            direction = "debit",
+            type = "limit",
+            quantity = "1",
+            state = "confirmed",
+            created_at = "2024-01-02T10:00:00Z"
+        });
+
+        var postedUrls = new List<string>();
+        var handler = new RecordingStubHandler(postedUrls,
+            connectResponse: BuildAccountResponse(),
+            accountUrlResponse: BuildAccountResponse(),
+            submitResponse: optionOrderResponse);
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 3.50m,
+            TimeInForce = TimeInForce.Day,
+            Metadata = new Dictionary<string, string>
+            {
+                ["asset_class"] = "option",
+                ["option_instrument_url"] = "https://api.robinhood.com/options/instruments/test-uuid/",
+            }
+        };
+
+        var report = await sut.SubmitOrderAsync(request, cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.New);
+        report.OrderStatus.Should().Be(OrderStatus.Accepted);
+        postedUrls.Should().Contain(u => u.Contains("/options/orders/"));
+
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_OptionOrder_MissingInstrumentUrl_ReturnsRejected()
+    {
+        var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, BuildAccountResponse()));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Connect first (StubHttpHandler always returns account response).
+        await sut.ConnectAsync(cts.Token);
+
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 1m,
+            LimitPrice = 3.50m,
+            TimeInForce = TimeInForce.Day,
+            Metadata = new Dictionary<string, string>
+            {
+                ["asset_class"] = "option",
+                // option_instrument_url intentionally omitted
+            }
+        };
+
+        var report = await sut.SubmitOrderAsync(request, cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.Rejected);
+        report.RejectReason.Should().Contain("option_instrument_url");
+
+        await sut.DisposeAsync();
+    }
 
     [Fact]
     public async Task GetAccountInfoAsync_ValidResponse_ReturnsAccountInfo()
@@ -328,5 +554,77 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
 
         public HttpClient CreateClient(string name) =>
             new HttpClient(_handler, disposeHandler: false) { BaseAddress = new Uri("https://api.robinhood.com/") };
+    }
+
+    /// <summary>Routes each request to a pre-canned response keyed by the full request URL.</summary>
+    private sealed class UrlRoutingStubHandler : HttpMessageHandler
+    {
+        private readonly Dictionary<string, HttpResponseMessage> _routes;
+
+        public UrlRoutingStubHandler(Dictionary<string, HttpResponseMessage> routes) => _routes = routes;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            var url = request.RequestUri?.ToString() ?? string.Empty;
+            if (_routes.TryGetValue(url, out var response))
+            {
+                // Re-read body so the same response can be returned multiple times.
+                var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                return Task.FromResult(new HttpResponseMessage(response.StatusCode)
+                {
+                    Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+                });
+            }
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
+        }
+    }
+
+    /// <summary>
+    /// Records all POST request URLs and routes:
+    /// <list type="bullet">
+    ///   <item>GET /accounts/ → <paramref name="connectResponse"/> (ConnectAsync + GetAccountUrlAsync)</item>
+    ///   <item>POST /options/orders/ → <paramref name="submitResponse"/></item>
+    /// </list>
+    /// </summary>
+    private sealed class RecordingStubHandler : HttpMessageHandler
+    {
+        private readonly List<string> _postedUrls;
+        private readonly StringContent _connectResponse;
+        private readonly StringContent _submitResponse;
+
+        public RecordingStubHandler(
+            List<string> postedUrls,
+            StringContent connectResponse,
+            StringContent accountUrlResponse,
+            StringContent submitResponse)
+        {
+            _postedUrls = postedUrls;
+            _connectResponse = connectResponse;
+            _submitResponse = submitResponse;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            var url = request.RequestUri?.ToString() ?? string.Empty;
+
+            if (request.Method == HttpMethod.Post)
+            {
+                _postedUrls.Add(url);
+                var body = _submitResponse.ReadAsStringAsync().GetAwaiter().GetResult();
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json")
+                });
+            }
+
+            // All GETs return the account response (handles ConnectAsync + GetAccountUrlAsync).
+            var acctBody = _connectResponse.ReadAsStringAsync().GetAwaiter().GetResult();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(acctBody, System.Text.Encoding.UTF8, "application/json")
+            });
+        }
     }
 }
