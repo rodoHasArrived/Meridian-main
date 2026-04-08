@@ -66,11 +66,19 @@ public sealed partial class SplitPaneViewModel : BindableBase
         }
 
         var activeSlot = SelectedLayout.Slots[Math.Clamp(ActivePaneIndex, 0, SelectedLayout.PaneCount - 1)];
+        bool isSplitLeft = direction.Equals("Left", StringComparison.OrdinalIgnoreCase);
+
         PaneLayout nextLayout = direction.Equals("Below", StringComparison.OrdinalIgnoreCase)
             ? SplitBelow(activeSlot)
-            : SplitRight(activeSlot);
+            : isSplitLeft
+                ? SplitLeft(activeSlot)
+                : SplitRight(activeSlot);
 
-        var insertIndex = Math.Min(SelectedLayout.PaneCount, ActivePaneIndex + 1);
+        // For SplitLeft the new pane is inserted BEFORE the active pane; for all others it goes after.
+        var insertIndex = isSplitLeft
+            ? ActivePaneIndex
+            : Math.Min(SelectedLayout.PaneCount, ActivePaneIndex + 1);
+
         _panePageTags.Insert(insertIndex, null);
         ApplyLayout(nextLayout);
         SetActivePane(insertIndex);
@@ -216,6 +224,42 @@ public sealed partial class SplitPaneViewModel : BindableBase
         SelectedLayout = normalized;
         LayoutChanged?.Invoke(this, normalized);
         PaneAssignmentsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private PaneLayout SplitLeft(PaneLayoutSlot activeSlot)
+    {
+        var columnInsertIndex = activeSlot.Column;
+        var slots = new List<PaneLayoutSlot>();
+
+        foreach (var slot in SelectedLayout.Slots)
+        {
+            var adjusted = slot.Column >= columnInsertIndex
+                ? slot with { Column = slot.Column + 1 }
+                : slot;
+            slots.Add(adjusted);
+        }
+
+        slots.Insert(
+            Math.Max(0, ActivePaneIndex),
+            new PaneLayoutSlot(
+                PaneId: $"pane-{slots.Count + 1}",
+                Row: activeSlot.Row,
+                Column: columnInsertIndex,
+                RowSpan: activeSlot.RowSpan,
+                ColumnSpan: 1,
+                Header: "Split Pane"));
+
+        var columnWidths = Enumerable.Range(0, SelectedLayout.ColumnWidths.Length + 1)
+            .Select(_ => new System.Windows.GridLength(1, System.Windows.GridUnitType.Star))
+            .ToArray();
+
+        return SelectedLayout.CloneAs(
+            kind: PaneLayoutKind.Custom,
+            layoutId: $"custom-{++_customLayoutCounter}",
+            label: "Custom Layout",
+            icon: "◫",
+            columnWidths: columnWidths,
+            slots: slots);
     }
 
     private PaneLayout SplitRight(PaneLayoutSlot activeSlot)
