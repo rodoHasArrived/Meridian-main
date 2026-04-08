@@ -141,7 +141,7 @@ public sealed class IBBrokerageGatewayTests
     [Fact]
     public async Task SubmitOrderAsync_BondOrder_SecTypeMetadata_ReturnsAcceptedReport()
     {
-        // secType="BOND" signals a corporate bond contract to the TWS routing layer.
+        // secType="BOND" in Metadata should route the order without error and return an accepted report.
         await using var sut = await CreateConnectedSutAsync();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
@@ -150,7 +150,7 @@ public sealed class IBBrokerageGatewayTests
             Symbol = "459200HU8",   // IBM corporate bond CUSIP
             Side = OrderSide.Buy,
             Type = OrderType.Market,
-            Quantity = 5000m,       // face value (par amount) in USD
+            Quantity = 5000m,       // 5,000 bonds = $5,000,000 face value (1 bond = $1,000 par)
             Metadata = new Dictionary<string, string>
             {
                 ["sec_type"] = "BOND",
@@ -167,7 +167,7 @@ public sealed class IBBrokerageGatewayTests
     [Fact]
     public async Task SubmitOrderAsync_TreasuryOrder_SecTypeGovt_ReturnsAcceptedReport()
     {
-        // secType="GOVT" signals a US Treasury / government bond to the IB routing desk.
+        // secType="GOVT" in Metadata should route to the IB government bond desk without error.
         await using var sut = await CreateConnectedSutAsync();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
@@ -176,7 +176,7 @@ public sealed class IBBrokerageGatewayTests
             Symbol = "912828YY0",   // 2-Year Treasury Note CUSIP
             Side = OrderSide.Buy,
             Type = OrderType.Limit,
-            Quantity = 10000m,      // face value in USD
+            Quantity = 10000m,      // 10,000 bonds = $10,000,000 face value (1 bond = $1,000 par)
             Metadata = new Dictionary<string, string>
             {
                 ["sec_type"] = "GOVT",
@@ -192,7 +192,7 @@ public sealed class IBBrokerageGatewayTests
     [Fact]
     public async Task SubmitOrderAsync_OrderWithoutSecTypeMetadata_StillSucceeds()
     {
-        // No Metadata — standard equity order — sec_type defaults to STK in the TWS layer.
+        // No Metadata → gateway defaults to IB SecType STK (equity) in the TWS contract layer.
         await using var sut = await CreateConnectedSutAsync();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 

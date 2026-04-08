@@ -16,8 +16,8 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// <c>SecurityType = "GOVT"</c> explicitly — IB routes these to a dedicated government-bond
 /// desk and the <c>"BOND"</c> SecType does not apply.<br/>
 /// For both cases, set <see cref="SymbolConfig.Symbol"/> to the nine-character CUSIP, e.g.
-/// <c>"912828YY0"</c>, and <c>Exchange = "SMART"</c>.  The TWS API uses face-value (par amount)
-/// as the order quantity — 1 unit = $1,000 par for most US fixed income.
+/// <c>"912828YY0"</c>, and <c>Exchange = "SMART"</c>.  The TWS API uses face-value in number of
+/// bonds as the order quantity: 1 bond = $1,000 par, so <c>Quantity = 5</c> submits $5,000 face value.
 /// </para>
 /// </summary>
 public static class ContractFactory

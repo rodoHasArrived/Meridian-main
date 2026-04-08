@@ -29,7 +29,8 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 /// Fixed income support:
 /// - Corporate bonds: use <c>Metadata["sec_type"] = "BOND"</c> on <see cref="OrderRequest"/>
 /// - US Treasuries/Government bonds: use <c>Metadata["sec_type"] = "GOVT"</c>
-/// - Bond quantity is face-value (par amount) in USD, not share count
+/// - Bond quantity is number of bonds where 1 unit = $1,000 par (e.g., <c>Quantity = 5</c> → $5,000 face value)
+/// - Orders without <c>sec_type</c> metadata default to IB SecType <c>"STK"</c> (equity)
 /// - Accrued interest is reported per position via the TWS <c>position()</c> callback
 ///   and mapped to <see cref="BrokerPosition.AccruedInterest"/>
 ///
@@ -326,8 +327,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         //    - For bonds: symbol = CUSIP, exchange = "SMART", currency = "USD"
         //    - For US Treasuries: symbol = CUSIP, secType = "GOVT", exchange = "US-T-BOND"
         // 2. Build an IB Order (action, orderType, totalQuantity, lmtPrice, tif)
-        //    - Note: for bonds/treasuries, totalQuantity is face value (par amount) in USD,
-        //      not share count (e.g., 1000 = $1,000 par amount).
+        //    - Note: for bonds/treasuries, totalQuantity is face value in number of bonds,
+        //      where 1 unit = $1,000 par amount (e.g., quantity=5 → $5,000 face value).
         // 3. Call _client.placeOrder(nextValidOrderId, contract, order)
         // 4. Await the orderStatus() callback
 
