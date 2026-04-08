@@ -94,6 +94,44 @@ public sealed record BrokerageCapabilities
             SupportsFractionalShares = fractional,
             SupportsExtendedHours = extendedHours,
         };
+
+    /// <summary>
+    /// Brokerage capabilities for brokers that support both US equities and fixed income
+    /// instruments (US Treasuries, corporate bonds, municipal bonds).
+    /// Fixed income orders may use notional (dollar-amount) sizing in addition to share qty.
+    /// </summary>
+    public static BrokerageCapabilities UsEquityAndFixedIncome(
+        bool modification = true,
+        bool partialFills = true,
+        bool shortSelling = true,
+        bool fractional = true,
+        bool extendedHours = false) => new()
+        {
+            SupportedOrderTypes = new HashSet<OrderType>
+        {
+            OrderType.Market,
+            OrderType.Limit,
+            OrderType.StopMarket,
+            OrderType.StopLimit
+        },
+            SupportedTimeInForce = new HashSet<TimeInForce>
+        {
+            TimeInForce.Day,
+            TimeInForce.GoodTilCancelled,
+            TimeInForce.ImmediateOrCancel,
+            TimeInForce.FillOrKill
+        },
+            SupportsOrderModification = modification,
+            SupportsPartialFills = partialFills,
+            SupportsShortSelling = shortSelling,
+            SupportsFractionalShares = fractional,
+            SupportsExtendedHours = extendedHours,
+            SupportedAssetClasses = ["equity", "us_treasury", "bond"],
+            Extensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["supportsNotionalOrders"] = "true",
+            }
+        };
 }
 
 /// <summary>
@@ -146,8 +184,14 @@ public sealed record BrokerPosition
     /// <summary>Unrealized P&amp;L.</summary>
     public decimal UnrealizedPnl { get; init; }
 
-    /// <summary>Asset class (e.g., "equity", "crypto").</summary>
+    /// <summary>Asset class (e.g., "equity", "us_treasury", "bond").</summary>
     public string AssetClass { get; init; } = "equity";
+
+    /// <summary>
+    /// Accrued interest for fixed income positions (bonds, treasuries).
+    /// Null for non-fixed-income positions.
+    /// </summary>
+    public decimal? AccruedInterest { get; init; }
 }
 
 /// <summary>
