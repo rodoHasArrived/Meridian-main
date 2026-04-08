@@ -146,6 +146,20 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void NavigateToAddProviderWizard_KeepsDataOperationsWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("AddProviderWizard");
+
+            vm.CurrentWorkspace.Should().Be("data-operations");
+            vm.CurrentPageTag.Should().Be("AddProviderWizard");
+        });
+    }
+
+    [Fact]
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
         WpfTestThread.Run(() =>

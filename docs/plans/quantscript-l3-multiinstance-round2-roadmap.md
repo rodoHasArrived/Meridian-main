@@ -510,9 +510,11 @@ export requests and executing them in sequence.
 **Configuration:**
 
 ```json
-"QuantScript": {
-  "ExportChartWidthPx": 1200,
-  "ExportChartHeightPx": 800
+{
+  "QuantScript": {
+    "ExportChartWidthPx": 1200,
+    "ExportChartHeightPx": 800
+  }
 }
 ```
 
@@ -816,21 +818,30 @@ short calibration windows.
 // config/inference-model.json
 {
   "venueProfile": "Auto",  // "NASDAQ" | "NYSE" | "CBOE" | "Auto"
-  ...
+  "priorDivergenceWarningThreshold": 0.4,
+  "minCalibrationWindowDays": 5
 }
 ```
 
 **`config/venue-calibration-priors.json` format:**
 
-```jsonc
+```json
 {
   "NYSE": {
     "arrivalRatePrior": { "mean": 0.82, "stdDev": 0.12 },
     "decayAlphaPrior":  { "mean": 0.31, "stdDev": 0.05 },
     "queueDepthScalePrior": { "mean": 1.0, "stdDev": 0.15 }
   },
-  "NASDAQ": { ... },
-  "CBOE":   { ... }
+  "NASDAQ": {
+    "arrivalRatePrior": { "mean": 0.88, "stdDev": 0.10 },
+    "decayAlphaPrior":  { "mean": 0.27, "stdDev": 0.04 },
+    "queueDepthScalePrior": { "mean": 0.94, "stdDev": 0.12 }
+  },
+  "CBOE": {
+    "arrivalRatePrior": { "mean": 0.79, "stdDev": 0.11 },
+    "decayAlphaPrior":  { "mean": 0.34, "stdDev": 0.06 },
+    "queueDepthScalePrior": { "mean": 1.08, "stdDev": 0.18 }
+  }
 }
 ```
 

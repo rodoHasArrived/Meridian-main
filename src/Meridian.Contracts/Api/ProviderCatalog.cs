@@ -185,6 +185,45 @@ public static class ProviderCatalog
             }
         },
 
+        ["robinhood"] = new ProviderCatalogEntry
+        {
+            ProviderId = "robinhood",
+            DisplayName = "Robinhood",
+            Description = "Broker-backed Robinhood integration for quotes, options chains, and live positions/orders",
+            ProviderType = ProviderTypeKind.Streaming,
+            RequiresCredentials = true,
+            CredentialFields = new[]
+            {
+                new CredentialFieldInfo("AccessToken", "ROBINHOOD_ACCESS_TOKEN", "Robinhood Access Token", true)
+            },
+            RateLimit = new RateLimitInfo
+            {
+                MaxRequestsPerWindow = 60,
+                WindowSeconds = 60,
+                MinDelayMs = 1000,
+                Description = "Broker-session rate limits vary"
+            },
+            Notes = new[]
+            {
+                "Requires a valid Robinhood access token.",
+                "Supports Robinhood symbol lookup, brokerage reads, and option-chain retrieval.",
+                "Live option orders require broker instrument metadata supplied by the app."
+            },
+            Warnings = new[]
+            {
+                "Uses the unofficial Robinhood API.",
+                "Options support is limited to US equity options."
+            },
+            SupportedMarkets = new[] { "US" },
+            DataTypes = new[] { "Quotes", "OptionsChain", "Brokerage", "SymbolSearch" },
+            Capabilities = new CapabilityInfo
+            {
+                SupportsQuotes = true,
+                SupportsOptionsChain = true,
+                SupportsBrokerage = true
+            }
+        },
+
         ["tiingo"] = new ProviderCatalogEntry
         {
             ProviderId = "tiingo",
@@ -802,6 +841,18 @@ public sealed class CapabilityInfo
     public bool SupportsQuotes { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether options chain data is supported.
+    /// </summary>
+    [JsonPropertyName("supportsOptionsChain")]
+    public bool SupportsOptionsChain { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether brokerage execution is supported.
+    /// </summary>
+    [JsonPropertyName("supportsBrokerage")]
+    public bool SupportsBrokerage { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether auction data is supported.
     /// </summary>
     [JsonPropertyName("supportsAuctions")]
@@ -832,6 +883,10 @@ public sealed class CapabilityInfo
             dict["SupportsTrades"] = true;
         if (SupportsQuotes)
             dict["SupportsQuotes"] = true;
+        if (SupportsOptionsChain)
+            dict["SupportsOptionsChain"] = true;
+        if (SupportsBrokerage)
+            dict["SupportsBrokerage"] = true;
         if (SupportsAuctions)
             dict["SupportsAuctions"] = true;
 

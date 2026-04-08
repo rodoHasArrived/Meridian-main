@@ -12,10 +12,12 @@ using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -67,16 +69,20 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             RegisterBackfillProviders(registry, config, credentialResolver, log);
             RegisterSymbolSearchProviders(registry, config, credentialResolver, log);
             ProviderCatalog.InitializeFromRegistry(
-                registry.GetProviderCatalog,
-                registry.GetProviderCatalogEntry);
+                () => BuildMergedProviderCatalog(registry, sp.GetServices<IOptionsChainProvider>()),
+                providerId => GetMergedProviderCatalogEntry(
+                    registry,
+                    sp.GetServices<IOptionsChainProvider>(),
+                    providerId));
 
             return registry;
         });
 
-        // Options chain providers — registered in priority order.
-        // CollectorFeatureRegistration resolves the first registered IOptionsChainProvider via
-        // sp.GetService<IOptionsChainProvider>() and passes it to OptionsChainService.
+        // Options chain providers — register the default providers first.
+        // CollectorFeatureRegistration resolves a single IOptionsChainProvider, and Microsoft DI
+        // returns the last registration for single-service resolution.
         RegisterOptionsChainProviders(services);
+        RegisterOptionsChainProviders(services, options);
 
         // Keep ProviderFactory for backward compatibility
         services.AddSingleton<ProviderFactory>(sp =>
@@ -89,6 +95,28 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         });
 
         return services;
+    }
+
+    private static void RegisterOptionsChainProviders(
+        IServiceCollection services,
+        CompositionOptions options)
+    {
+        if (!options.EnableHttpClientFactory)
+            return;
+
+        var config = new ConfigStore(options.ConfigPath).Load();
+        var robinhoodEnabled = config.Backfill?.Providers?.Robinhood?.Enabled == true;
+        var accessToken = Environment.GetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN");
+
+        if (!robinhoodEnabled || string.IsNullOrWhiteSpace(accessToken))
+            return;
+
+        services.AddSingleton<IOptionsChainProvider>(sp =>
+        {
+            var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+            var logger = sp.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>();
+            return new RobinhoodOptionsChainProvider(httpClientFactory, logger, accessToken);
+        });
     }
 
     private static void RegisterStreamingFactories(
@@ -226,6 +254,110 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         }
     }
 
+    private static IReadOnlyList<Meridian.Contracts.Api.ProviderCatalogEntry> BuildMergedProviderCatalog(
+        ProviderRegistry registry,
+        IEnumerable<IOptionsChainProvider> optionProviders)
+    {
+        var merged = registry.GetProviderCatalog()
+            .ToDictionary(entry => entry.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var provider in optionProviders)
+        {
+            var optionEntry = ProviderTemplateFactory.ToCatalogEntry(provider);
+            if (merged.TryGetValue(optionEntry.ProviderId, out var existing))
+            {
+                merged[optionEntry.ProviderId] = MergeCatalogEntries(existing, optionEntry);
+            }
+            else
+            {
+                merged[optionEntry.ProviderId] = optionEntry;
+            }
+        }
+
+        return merged.Values
+            .OrderBy(entry => entry.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static Meridian.Contracts.Api.ProviderCatalogEntry? GetMergedProviderCatalogEntry(
+        ProviderRegistry registry,
+        IEnumerable<IOptionsChainProvider> optionProviders,
+        string providerId)
+    {
+        return BuildMergedProviderCatalog(registry, optionProviders)
+            .FirstOrDefault(entry => string.Equals(entry.ProviderId, providerId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static Meridian.Contracts.Api.ProviderCatalogEntry MergeCatalogEntries(
+        Meridian.Contracts.Api.ProviderCatalogEntry existing,
+        Meridian.Contracts.Api.ProviderCatalogEntry overlay)
+    {
+        var mergedCredentials = existing.CredentialFields
+            .Concat(overlay.CredentialFields)
+            .GroupBy(
+                field => $"{field.Name}|{field.EnvironmentVariable}",
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToArray();
+
+        var mergedNotes = existing.Notes
+            .Concat(overlay.Notes)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var mergedWarnings = existing.Warnings
+            .Concat(overlay.Warnings)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var mergedMarkets = existing.SupportedMarkets
+            .Concat(overlay.SupportedMarkets)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var mergedDataTypes = existing.DataTypes
+            .Concat(overlay.DataTypes)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var existingCaps = existing.Capabilities;
+        var overlayCaps = overlay.Capabilities;
+        var maxDepthLevels = Math.Max(existingCaps.MaxDepthLevels ?? 0, overlayCaps.MaxDepthLevels ?? 0);
+        var mergedCapabilities = new CapabilityInfo
+        {
+            SupportsStreaming = existingCaps.SupportsStreaming || overlayCaps.SupportsStreaming,
+            SupportsMarketDepth = existingCaps.SupportsMarketDepth || overlayCaps.SupportsMarketDepth,
+            MaxDepthLevels = maxDepthLevels > 0 ? maxDepthLevels : null,
+            SupportsAdjustedPrices = existingCaps.SupportsAdjustedPrices || overlayCaps.SupportsAdjustedPrices,
+            SupportsDividends = existingCaps.SupportsDividends || overlayCaps.SupportsDividends,
+            SupportsSplits = existingCaps.SupportsSplits || overlayCaps.SupportsSplits,
+            SupportsIntraday = existingCaps.SupportsIntraday || overlayCaps.SupportsIntraday,
+            SupportsTrades = existingCaps.SupportsTrades || overlayCaps.SupportsTrades,
+            SupportsQuotes = existingCaps.SupportsQuotes || overlayCaps.SupportsQuotes,
+            SupportsOptionsChain = existingCaps.SupportsOptionsChain || overlayCaps.SupportsOptionsChain,
+            SupportsBrokerage = existingCaps.SupportsBrokerage || overlayCaps.SupportsBrokerage,
+            SupportsAuctions = existingCaps.SupportsAuctions || overlayCaps.SupportsAuctions
+        };
+
+        return new Meridian.Contracts.Api.ProviderCatalogEntry
+        {
+            ProviderId = existing.ProviderId,
+            DisplayName = string.IsNullOrWhiteSpace(existing.DisplayName) ? overlay.DisplayName : existing.DisplayName,
+            Description = string.Equals(existing.Description, overlay.Description, StringComparison.OrdinalIgnoreCase)
+                ? existing.Description
+                : $"{existing.Description} {overlay.Description}".Trim(),
+            ProviderType = existing.ProviderType,
+            RequiresCredentials = existing.RequiresCredentials || overlay.RequiresCredentials,
+            CredentialFields = mergedCredentials,
+            RateLimit = existing.RateLimit ?? overlay.RateLimit,
+            Notes = mergedNotes,
+            Warnings = mergedWarnings,
+            SupportedMarkets = mergedMarkets,
+            DataTypes = mergedDataTypes,
+            Capabilities = mergedCapabilities
+        };
+    }
+
     /// <summary>
     /// Registers <see cref="IOptionsChainProvider"/> implementations in priority order.
     /// <list type="number">
@@ -233,8 +365,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     ///   <item>Else if Polygon credentials are present, Polygon is selected.</item>
     ///   <item>Otherwise, the <see cref="SyntheticOptionsChainProvider"/> is used as the fallback.</item>
     /// </list>
+    /// <see cref="CollectorFeatureRegistration"/> resolves
+    /// <c>IOptionsChainProvider</c> via <c>GetService&lt;IOptionsChainProvider&gt;()</c>;
+    /// Microsoft DI returns the last registration for single-service resolution.
     /// All providers are also exposed via <c>IEnumerable&lt;IOptionsChainProvider&gt;</c>
-    /// for consumers that enumerate every registered provider for health monitoring.
+    /// for enumeration and health checks.
     /// </summary>
     private static void RegisterOptionsChainProviders(IServiceCollection services)
     {
@@ -247,7 +382,9 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         // 3. Synthetic — always available, deterministic offline fallback
         services.AddSingleton<SyntheticOptionsChainProvider>();
 
-        // Register all three via the interface for IEnumerable<IOptionsChainProvider> consumers.
+        // Register via the interface:
+        //   • GetService<IOptionsChainProvider>() → Synthetic by default (last registration wins)
+        //   • GetServices<IOptionsChainProvider>() → all three (for enumeration)
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<AlpacaOptionsChainProvider>());
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<PolygonOptionsChainProvider>());
         services.AddSingleton<IOptionsChainProvider>(sp => sp.GetRequiredService<SyntheticOptionsChainProvider>());

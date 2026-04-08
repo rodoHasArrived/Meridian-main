@@ -12,23 +12,23 @@ rules:
   # Architecture Decision Records
   # ---------------------------------------------------------------------------
   - name: "ADR has status field"
-    applies_to: "docs/adr/*.md"
+    applies_to: "docs/adr/[0-9][0-9][0-9]-*.md"
     must_contain: "Status:"
     severity: error
 
   - name: "ADR has date"
-    applies_to: "docs/adr/*.md"
+    applies_to: "docs/adr/[0-9][0-9][0-9]-*.md"
     must_match: "Date:|date:"
     severity: warning
 
   - name: "ADR has context section"
-    applies_to: "docs/adr/*.md"
+    applies_to: "docs/adr/[0-9][0-9][0-9]-*.md"
     required_sections:
       - "Context"
     severity: warning
 
   - name: "ADR has decision section"
-    applies_to: "docs/adr/*.md"
+    applies_to: "docs/adr/[0-9][0-9][0-9]-*.md"
     required_sections:
       - "Decision"
     severity: warning
@@ -64,7 +64,7 @@ rules:
     applies_to: "CLAUDE.md"
     required_sections:
       - "Quick Commands"
-      - "Repository Structure"
+      - "Repository Layout"
       - "Critical Rules"
     severity: error
 

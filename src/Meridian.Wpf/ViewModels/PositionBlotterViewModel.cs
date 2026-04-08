@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -21,6 +23,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     // Backing storage for all entries before filtering
     private readonly List<BlotterEntry> _allEntries = [];
+    private string _lastSnapshotStatus = "No positions loaded.";
+    private string _lastSnapshotSource = "execution service";
 
     // ── Filter state ──────────────────────────────────────────────────────────
 
@@ -120,8 +124,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     // ── Lifecycle actions ─────────────────────────────────────────────────────
 
     public IAsyncRelayCommand RefreshCommand { get; }
-    public IRelayCommand UpsizeCommand { get; }
-    public IRelayCommand TerminateCommand { get; }
+    public IAsyncRelayCommand UpsizeCommand { get; }
+    public IAsyncRelayCommand TerminateCommand { get; }
     public IRelayCommand RemoveFilterChipCommand { get; }
     public IRelayCommand<BlotterGroup> ToggleGroupCommand { get; }
 
@@ -135,8 +139,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         _navigationService = navigationService;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
-        UpsizeCommand = new RelayCommand(ExecuteUpsize, () => HasSelectedEntries());
-        TerminateCommand = new RelayCommand(ExecuteTerminate, () => HasSelectedEntries());
+        UpsizeCommand = new AsyncRelayCommand(ExecuteUpsizeAsync, HasUpsizeableEntries);
+        TerminateCommand = new AsyncRelayCommand(ExecuteTerminateAsync, HasClosableEntries);
         RemoveFilterChipCommand = new RelayCommand<BlotterFilterChip>(RemoveFilterChip);
         ToggleGroupCommand = new RelayCommand<BlotterGroup>(g =>
         {
@@ -177,27 +181,34 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     {
         StatusText = "Loading positions…";
 
-        var positions = await _apiClient.GetAsync<List<ExecutionPositionDto>>(
-            "/api/execution/positions", ct);
+        var response = await _apiClient.GetWithResponseAsync<ExecutionBlotterSnapshotResponse>(
+            UiApiRoutes.ExecutionBlotterPositions,
+            ct);
 
+        UnsubscribeEntrySelectionChanged();
         _allEntries.Clear();
 
-        if (positions is { Count: > 0 })
+        if (response.Success && response.Data is not null)
         {
-            foreach (var pos in positions)
+            _lastSnapshotStatus = response.Data.StatusMessage;
+            _lastSnapshotSource = response.Data.Source;
+
+            foreach (var pos in response.Data.Positions)
             {
                 _allEntries.Add(MapToEntry(pos));
             }
         }
         else
         {
-            // When the paper trading portfolio is unavailable, surface demo entries
-            // so the UI remains functional for demonstration purposes.
-            _allEntries.AddRange(BuildDemoEntries());
+            _lastSnapshotSource = "execution service";
+            _lastSnapshotStatus = response.IsConnectionError
+                ? "Unable to reach the execution service."
+                : string.IsNullOrWhiteSpace(response.ErrorMessage)
+                    ? "Unable to load positions."
+                    : response.ErrorMessage;
         }
 
         ApplyFilters();
-        UpdateStatusBar();
         TradeTimeText = DateTime.Now.ToString("HH:mm:ss");
     }
 
@@ -261,6 +272,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         }
 
         // Rebuild grouped observable
+        UnsubscribeEntrySelectionChanged();
         Groups.Clear();
         var byGroup = filtered.GroupBy(e => e.Group, StringComparer.OrdinalIgnoreCase);
         foreach (var g in byGroup.OrderBy(g => g.Key))
@@ -268,6 +280,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             var group = new BlotterGroup { Name = g.Key };
             foreach (var entry in g.OrderByDescending(e => e.Expiry))
             {
+                entry.PropertyChanged += OnEntryPropertyChanged;
                 group.Entries.Add(entry);
             }
 
@@ -295,20 +308,30 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     // ── Upsize / Terminate ────────────────────────────────────────────────────
 
-    private void ExecuteUpsize()
+    private async Task ExecuteUpsizeAsync()
     {
-        // Placeholder: in a full implementation this would open an order ticket
-        // pre-populated with the selected positions for quantity increase.
+        await ExecuteSelectedActionAsync(
+            UiApiRoutes.ExecutionPositionActionUpsize,
+            "Upsize",
+            entry => entry.SupportsUpsize);
     }
 
-    private void ExecuteTerminate()
+    private async Task ExecuteTerminateAsync()
     {
-        // Placeholder: in a full implementation this would send close/flatten orders
-        // for each selected position.
+        await ExecuteSelectedActionAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            "Close",
+            entry => entry.SupportsClose);
     }
 
     private bool HasSelectedEntries() =>
         Groups.Any(g => g.Entries.Any(e => e.IsSelected));
+
+    private bool HasClosableEntries() =>
+        Groups.Any(g => g.Entries.Any(e => e.IsSelected && e.SupportsClose));
+
+    private bool HasUpsizeableEntries() =>
+        Groups.Any(g => g.Entries.Any(e => e.IsSelected && e.SupportsUpsize));
 
     private void NotifyCommandsChanged()
     {
@@ -338,9 +361,9 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         StatusText = RowCount switch
         {
-            0 when _allEntries.Count == 0 => "No positions loaded. Start the paper trading engine to populate the blotter.",
+            0 when _allEntries.Count == 0 => _lastSnapshotStatus,
             0 => "No positions match the current filters.",
-            _ => $"{RowCount} row{(RowCount == 1 ? string.Empty : "s")} displayed."
+            _ => $"{RowCount} row{(RowCount == 1 ? string.Empty : "s")} displayed from {_lastSnapshotSource}."
         };
     }
 
@@ -386,54 +409,114 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     // ── Mapping ───────────────────────────────────────────────────────────────
 
-    private static BlotterEntry MapToEntry(ExecutionPositionDto pos)
+    private static BlotterEntry MapToEntry(ExecutionPositionDetailResponse pos)
     {
         return new BlotterEntry
         {
-            Group = pos.Symbol,
-            ProductDescription = pos.Symbol,
+            PositionKey = pos.PositionKey,
+            Group = pos.UnderlyingSymbol,
+            ProductDescription = pos.ProductDescription,
             TradeId = pos.TradeId ?? string.Empty,
             UnitPrice = pos.AverageCostBasis,
             Quantity = pos.Quantity,
-            Side = pos.Quantity >= 0 ? "Buy" : "Sell",
+            Side = pos.Side,
             Status = "Active",
+            AssetClass = pos.AssetClass,
+            Expiry = pos.Expiration,
+            Metadata = pos.Metadata,
+            SupportsClose = pos.SupportsClose,
+            SupportsUpsize = pos.SupportsUpsize,
             UnrealisedPnl = pos.UnrealisedPnl,
             MarketTime = TimeOnly.FromDateTime(DateTime.Now)
         };
     }
 
-    // ── Demo data ─────────────────────────────────────────────────────────────
-
-    private static List<BlotterEntry> BuildDemoEntries()
+    private async Task ExecuteSelectedActionAsync(
+        string endpoint,
+        string actionLabel,
+        Func<BlotterEntry, bool> canExecute)
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        int daysUntilFriday = ((int)DayOfWeek.Friday - (int)today.DayOfWeek + 7) % 7;
-        if (daysUntilFriday == 0) daysUntilFriday = 7;
-        var thisFriday = today.AddDays(daysUntilFriday);
-        var nextFriday = thisFriday.AddDays(7);
+        var lowerAction = actionLabel.ToLowerInvariant();
+        var progressiveAction = actionLabel switch
+        {
+            "Close" => "Closing",
+            "Upsize" => "Upsizing",
+            _ => $"{actionLabel}ing"
+        };
+        var completedAction = actionLabel switch
+        {
+            "Close" => "closed",
+            "Upsize" => "upsized",
+            _ => $"{lowerAction}d"
+        };
 
-        return
-        [
-            new BlotterEntry { Group = "AAPL", ProductDescription = "AAPL 150 Call " + thisFriday.ToString("dMMMyy"),  TradeId = "T-10042", UnitPrice = 3.45m,  Quantity =  10, Side = "Buy",  Status = "Active",  Expiry = thisFriday,  MarketTime = new TimeOnly(14, 15), UnrealisedPnl =  345.00m },
-            new BlotterEntry { Group = "AAPL", ProductDescription = "AAPL 145 Put "  + thisFriday.ToString("dMMMyy"),  TradeId = "T-10043", UnitPrice = 1.20m,  Quantity = -5,  Side = "Sell", Status = "Active",  Expiry = thisFriday,  MarketTime = new TimeOnly(14, 20), UnrealisedPnl = -60.00m  },
-            new BlotterEntry { Group = "AAPL", ProductDescription = "AAPL 155 Call " + nextFriday.ToString("dMMMyy"), TradeId = "T-10047", UnitPrice = 2.10m,  Quantity =  5,  Side = "Buy",  Status = "Active",  Expiry = nextFriday, MarketTime = new TimeOnly(14, 30), UnrealisedPnl =  105.00m },
-            new BlotterEntry { Group = "SPY",  ProductDescription = "SPY 420 Call "  + thisFriday.ToString("dMMMyy"),  TradeId = "T-10044", UnitPrice = 5.80m,  Quantity =  20, Side = "Buy",  Status = "Active",  Expiry = thisFriday,  MarketTime = new TimeOnly(14, 18), UnrealisedPnl =  580.00m },
-            new BlotterEntry { Group = "SPY",  ProductDescription = "SPY 415 Put "   + thisFriday.ToString("dMMMyy"),  TradeId = "T-10045", UnitPrice = 2.30m,  Quantity = -10, Side = "Sell", Status = "Active",  Expiry = thisFriday,  MarketTime = new TimeOnly(14, 55), UnrealisedPnl = -230.00m },
-            new BlotterEntry { Group = "TSLA", ProductDescription = "TSLA 200 Call " + nextFriday.ToString("dMMMyy"), TradeId = "T-10046", UnitPrice = 8.90m,  Quantity =  3,  Side = "Buy",  Status = "Pending", Expiry = nextFriday, MarketTime = new TimeOnly(14, 42), UnrealisedPnl =  267.00m },
-            new BlotterEntry { Group = "TSLA", ProductDescription = "TSLA 190 Put "  + nextFriday.ToString("dMMMyy"), TradeId = "T-10048", UnitPrice = 6.15m,  Quantity = -2,  Side = "Sell", Status = "Active",  Expiry = nextFriday, MarketTime = new TimeOnly(14, 50), UnrealisedPnl = -123.00m },
-        ];
+        var selectedEntries = Groups
+            .SelectMany(group => group.Entries)
+            .Where(entry => entry.IsSelected && canExecute(entry))
+            .ToArray();
+
+        if (selectedEntries.Length == 0)
+        {
+            StatusText = $"Select at least one position that can be {completedAction}.";
+            return;
+        }
+
+        StatusText = $"{progressiveAction} {selectedEntries.Length} position(s)…";
+
+        var failures = new List<string>();
+        var successes = 0;
+
+        foreach (var entry in selectedEntries)
+        {
+            var response = await _apiClient.PostWithResponseAsync<TradingActionResultDto>(
+                endpoint,
+                new ExecutionPositionActionRequest(entry.PositionKey),
+                _cts.Token);
+
+            if (response.Success)
+            {
+                successes++;
+            }
+            else
+            {
+                failures.Add(string.IsNullOrWhiteSpace(response.ErrorMessage)
+                    ? entry.ProductDescription
+                    : $"{entry.ProductDescription}: {response.ErrorMessage}");
+            }
+        }
+
+        await RefreshAsync(_cts.Token);
+
+        StatusText = failures.Count switch
+        {
+            0 => $"{actionLabel} submitted for {successes} position(s).",
+            _ when successes > 0 => $"{actionLabel} submitted for {successes} position(s); {failures.Count} failed.",
+            _ => $"Unable to {lowerAction} the selected positions."
+        };
     }
 
-    // ── Inner DTO for API response ────────────────────────────────────────────
-
-    /// <summary>Minimal DTO matching the shape returned by /api/execution/positions.</summary>
-    private sealed class ExecutionPositionDto
+    private void OnEntryPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        public string Symbol { get; set; } = string.Empty;
-        public long Quantity { get; set; }
-        public decimal AverageCostBasis { get; set; }
-        public decimal UnrealisedPnl { get; set; }
-        public decimal RealisedPnl { get; set; }
-        public string? TradeId { get; set; }
+        if (e.PropertyName == nameof(BlotterEntry.IsSelected))
+        {
+            NotifyCommandsChanged();
+        }
+    }
+
+    private void UnsubscribeEntrySelectionChanged()
+    {
+        foreach (var group in Groups)
+        {
+            foreach (var entry in group.Entries)
+            {
+                entry.PropertyChanged -= OnEntryPropertyChanged;
+            }
+        }
+    }
+
+    private sealed class TradingActionResultDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 }

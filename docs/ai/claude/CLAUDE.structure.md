@@ -1576,6 +1576,7 @@ Meridian/
 └── README.md
 ```
 
+> Desktop runtime note: the repository `config/` folder is the development and CLI configuration surface. Installed WPF builds persist runtime config in `%LocalAppData%\Meridian\appsettings.json`, and relative `DataRoot` values plus retained desktop metadata resolve from that external config root rather than the install directory.
 
 ---
 

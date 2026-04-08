@@ -2,6 +2,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Logging;
 using Meridian.Application.UI;
+using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Finnhub;
@@ -672,6 +673,11 @@ public sealed class ConfigurationService : IAsyncDisposable
                 }
             }
         }
+
+        config = config with
+        {
+            DataRoot = MeridianPathDefaults.ResolveDataRoot(configPath, config.DataRoot)
+        };
 
         return config;
     }

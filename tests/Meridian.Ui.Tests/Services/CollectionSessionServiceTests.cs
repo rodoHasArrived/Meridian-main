@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Session;
 using Meridian.Ui.Services;
 
@@ -24,6 +25,19 @@ public sealed class CollectionSessionServiceTests
         var a = CollectionSessionService.Instance;
         var b = CollectionSessionService.Instance;
         a.Should().BeSameAs(b);
+    }
+
+    [Fact]
+    public void Constructor_UsesResolvedDataRootForSessionsFilePath()
+    {
+        using var fixture = new PathFixture("mdc-session-path");
+        var service = new CollectionSessionService(
+            new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "retained-data" }),
+            NotificationService.Instance);
+
+        var path = GetPrivateField<string>(service, "_sessionsFilePath");
+
+        path.Should().Be(Path.Combine(fixture.RootPath, "retained-data", "_sessions", "sessions.json"));
     }
 
     // ── CollectionSession model (from Contracts) ────────────────────
@@ -192,5 +206,14 @@ public sealed class CollectionSessionServiceTests
         service.SessionCreated -= (_, _) => sessionCreatedFired = true;
 
         sessionCreatedFired.Should().BeFalse("no event was raised");
+    }
+
+    private static T GetPrivateField<T>(object instance, string fieldName)
+    {
+        var field = instance.GetType().GetField(
+            fieldName,
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        field.Should().NotBeNull();
+        return (T)field!.GetValue(instance)!;
     }
 }

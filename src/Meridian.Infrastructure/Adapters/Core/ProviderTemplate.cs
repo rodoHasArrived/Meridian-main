@@ -174,6 +174,8 @@ public static class ProviderTemplateFactory
             SupportsIntraday = caps.SupportsIntraday,
             SupportsTrades = caps.SupportsRealtimeTrades || caps.SupportsHistoricalTrades,
             SupportsQuotes = caps.SupportsRealtimeQuotes || caps.SupportsHistoricalQuotes,
+            SupportsOptionsChain = caps.SupportsOptionsChain,
+            SupportsBrokerage = caps.SupportsBrokerage,
             SupportsAuctions = caps.SupportsHistoricalAuctions
         };
 

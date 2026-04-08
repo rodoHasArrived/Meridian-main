@@ -186,10 +186,12 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         }
     }
 
-    public static IServiceProvider CreateMainPageServiceProvider(RunMatService? runMatService = null)
+    public static IServiceProvider CreateMainPageServiceProvider(
+        RunMatService? runMatService = null,
+        FundContextService? fundContextService = null)
     {
         var services = new ServiceCollection();
-        var fundContext = new FundContextService(Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}.json"));
+        var fundContext = fundContextService ?? new FundContextService(Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}.json"));
         services.AddSingleton<NavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<ConnectionService>(_ => ConnectionService.Instance);

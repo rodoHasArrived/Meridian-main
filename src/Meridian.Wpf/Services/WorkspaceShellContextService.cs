@@ -12,6 +12,7 @@ namespace Meridian.Wpf.Services;
 public sealed class WorkspaceShellContextService
 {
     private readonly FundContextService _fundContextService;
+    private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly NotificationService _notificationService;
     private readonly IStatusService _statusService;
@@ -21,13 +22,29 @@ public sealed class WorkspaceShellContextService
         FixtureModeDetector fixtureModeDetector,
         NotificationService notificationService,
         IStatusService statusService)
+        : this(fundContextService, fixtureModeDetector, notificationService, statusService, operatingContextService: null)
+    {
+    }
+
+    public WorkspaceShellContextService(
+        FundContextService fundContextService,
+        FixtureModeDetector fixtureModeDetector,
+        NotificationService notificationService,
+        IStatusService statusService,
+        WorkstationOperatingContextService? operatingContextService)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
+        _operatingContextService = operatingContextService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         _statusService = statusService ?? throw new ArgumentNullException(nameof(statusService));
 
         _fundContextService.ActiveFundProfileChanged += (_, _) => SignalsChanged?.Invoke(this, EventArgs.Empty);
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.ActiveContextChanged += (_, _) => SignalsChanged?.Invoke(this, EventArgs.Empty);
+            _operatingContextService.WindowModeChanged += (_, _) => SignalsChanged?.Invoke(this, EventArgs.Empty);
+        }
         _fixtureModeDetector.ModeChanged += (_, _) => SignalsChanged?.Invoke(this, EventArgs.Empty);
         _notificationService.NotificationReceived += (_, _) => SignalsChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -41,7 +58,13 @@ public sealed class WorkspaceShellContextService
         ArgumentNullException.ThrowIfNull(input);
 
         await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+        if (_operatingContextService is not null)
+        {
+            await _operatingContextService.LoadAsync(ct).ConfigureAwait(false);
+        }
+
         var profile = _fundContextService.CurrentFundProfile;
+        var operatingContext = _operatingContextService?.CurrentContext;
         var status = await _statusService.GetStatusAsync(ct).ConfigureAwait(false);
         var history = _notificationService.GetHistory();
         var unreadCount = history.Count(item => !item.IsRead);
@@ -52,11 +75,18 @@ public sealed class WorkspaceShellContextService
             new()
             {
                 Label = input.PrimaryScopeLabel,
-                Value = ResolveScopeValue(profile, input.PrimaryScopeValue),
+                Value = ResolveScopeValue(profile, operatingContext, input.PrimaryScopeValue),
                 Glyph = "\uE8B7",
                 Tone = string.IsNullOrWhiteSpace(input.PrimaryScopeValue) && profile is null
                     ? WorkspaceTone.Warning
                     : WorkspaceTone.Info
+            },
+            new()
+            {
+                Label = "Scope",
+                Value = operatingContext?.ScopeKind.ToDisplayName() ?? "Fund",
+                Glyph = "\uE81E",
+                Tone = WorkspaceTone.Neutral
             },
             new()
             {
@@ -105,6 +135,28 @@ public sealed class WorkspaceShellContextService
                 Tone = unreadCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Neutral
             }
         };
+
+        if (!string.IsNullOrWhiteSpace(operatingContext?.BaseCurrency))
+        {
+            badges.Add(new WorkspaceShellBadge
+            {
+                Label = "Currency",
+                Value = operatingContext.BaseCurrency,
+                Glyph = "\uEAFD",
+                Tone = WorkspaceTone.Neutral
+            });
+        }
+
+        if (operatingContext?.LedgerGroupIds.Count > 0)
+        {
+            badges.Add(new WorkspaceShellBadge
+            {
+                Label = "Ledger Scope",
+                Value = $"{operatingContext.LedgerGroupIds.Count} group(s)",
+                Glyph = "\uEE94",
+                Tone = WorkspaceTone.Info
+            });
+        }
 
         if (input.AdditionalBadges.Count > 0)
         {
@@ -159,11 +211,19 @@ public sealed class WorkspaceShellContextService
             : WorkspaceTone.Warning;
     }
 
-    private static string ResolveScopeValue(FundProfileDetail? profile, string requestedValue)
+    private static string ResolveScopeValue(
+        FundProfileDetail? profile,
+        WorkstationOperatingContext? operatingContext,
+        string requestedValue)
     {
         if (!string.IsNullOrWhiteSpace(requestedValue))
         {
             return requestedValue;
+        }
+
+        if (operatingContext is not null)
+        {
+            return $"{operatingContext.DisplayName} · {operatingContext.BaseCurrency}";
         }
 
         return profile is null

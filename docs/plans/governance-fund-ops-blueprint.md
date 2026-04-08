@@ -1,29 +1,50 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-04-07
 
 ## Summary
 
-Implement a Meridian-native governance and fund-operations capability set that makes `Security Master`, `account and entity management`, `multi-ledger accounting`, `trial balance`, `cash-flow modeling`, `reconciliation`, `trade-management support`, and `report generation` first-class product workflows inside the existing `Governance` workstation and broader fund-management product.
+Implement a Meridian-native governance and fund-operations capability set that makes `account and entity management`, `multi-ledger accounting`, `trial balance`, `cash-flow modeling`, `reconciliation`, `trade-management support`, and `report generation` first-class product workflows inside the existing `Governance` workstation and broader fund-management product, building on Meridian's already-delivered `Security Master` seam.
 
 This blueprint starts from the current repository state:
 
 - shared run, portfolio, and ledger read services already exist
 - WPF already has `StrategyRuns`, `RunDetail`, `RunPortfolio`, and `RunLedger` surfaces
-- Security Master contracts, services, storage, migrations, and F# domain modules already exist
+- Security Master contracts, services, storage, migrations, workstation propagation, and F# domain modules already exist as an authoritative instrument-definition seam
 - run-scoped reconciliation contracts, services, and workstation endpoints already exist
 - direct-lending services, migrations, projections, and `/api/loans/*` endpoints already exist as the first deep governance/UFL vertical slice
 - export infrastructure already exists for JSONL, Parquet, Arrow, XLSX, and CSV
 
-The design goal is to finish these capabilities without creating a parallel architecture outside Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian credible as a comprehensive front-, middle-, and back-office fund-management platform.
+The design goal is to finish these capabilities without creating a parallel architecture outside Meridian's current workstation, strategy, ledger, and storage layers, while making Meridian credible as a comprehensive front-, middle-, and back-office fund-management platform. Security Master should be treated as a delivered baseline in this blueprint, not as a future foundation wave.
 
 For the first deep vertical implementation of these governance patterns in direct lending, see [UFL Direct Lending Target-State Package V2](ufl-direct-lending-target-state-v2.md).
+
+## Current implementation foundation
+
+The current repository now includes the first organization-rooted governance structure slice:
+
+- `FundStructure` contracts now support `Organization`, `Business`, `Client`, and `InvestmentPortfolio` node kinds alongside the existing fund, sleeve, vehicle, entity, and account nodes.
+- `BusinessKindDto` supports advisory, fund-manager, and hybrid operating models in one structure graph.
+- `IFundStructureService` and `InMemoryFundStructureService` provide the first shared graph service for:
+  - organization/business/client/fund/portfolio creation
+  - ownership links and assignments
+  - organization graph queries
+  - advisory operating views
+  - fund operating views
+  - accounting ledger-group views
+  - compatibility `FundStructureGraphDto` output for one-wave legacy consumers
+- `/api/fund-structure/*` endpoints now expose the same structure graph and projection queries used by the new in-memory service.
+- `CreateAccountRequest` now accepts `PortfolioId`, `LedgerReference`, `StrategyId`, and `RunId` so accounts can participate in the new structure graph without breaking the existing fund-account API.
+- Fund-account and fund-structure services now persist local-first JSON snapshots under the configured storage root so organizations, businesses, clients, portfolios, links, assignments, and account state survive restarts without introducing a second governance storage architecture.
+- Governance structure, advisory, fund, and accounting views now expose a shared data-access summary for `Security Master`, `historical price data`, and `backfill state`, so those operator-facing capabilities are available across all governance projections without deriving them from position holdings.
+
+This is intentionally still an early governance slice. Durable local-first persistence and shared Security Master/price/backfill accessibility summaries are now in place, but Postgres-backed governance persistence, deeper instrument-aware drill-ins, governance cash-flow, generalized reconciliation, report packs, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
 ### In scope
 
-- Security Master productization for workstation-facing use
+- governance and fund-operations workflows built on the delivered Security Master seam
 - Multi-ledger accounting model for fund, sleeve, vehicle, and entity views
 - Consolidated and per-ledger trial-balance views
 - Cash-flow projection and realized-vs-projected governance views
@@ -50,16 +71,16 @@ For the first deep vertical implementation of these governance patterns in direc
 
 The implementation should be organized into six collaborating layers:
 
-1. Security Master platform layer
+1. Delivered Security Master platform seam
 2. Fund accounting and multi-ledger kernel
 3. Cash-flow and reconciliation domain services
 4. Governance application services and projections
 5. Governance workstation UI and API endpoints
 6. Report generation and export packaging
 
-### Layer 1: Security Master platform layer
+### Layer 1: Delivered Security Master platform seam
 
-Use existing Security Master components as the authoritative instrument-definition source for:
+Use the existing Security Master components as the authoritative instrument-definition source for:
 
 - canonical identifiers
 - classifications
@@ -74,6 +95,12 @@ Primary anchors:
 - `src/Meridian.FSharp/Domain/SecurityMaster.fs`
 - `src/Meridian.FSharp/Domain/SecurityEconomicDefinition.fs`
 - `src/Meridian.FSharp/Domain/SecurityClassification.fs`
+
+Current expectation:
+
+- do not rebuild Security Master as a separate governance subsystem
+- reuse the delivered workstation propagation and drill-in patterns already present across workstation and governance surfaces
+- limit new Security Master work to governance-specific gaps, not baseline productization that is already complete
 
 ### Layer 2: Fund accounting and multi-ledger kernel
 
@@ -173,6 +200,7 @@ Reuse where possible:
 - `ISecurityMasterQueryService`
 - `ISecurityMasterService`
 - `ISecurityResolver`
+- `WorkstationSecurityReference`
 
 Add if needed:
 
@@ -343,7 +371,7 @@ Risk:
 
 Mitigation:
 - sequence the work strictly
-- treat Security Master, multi-ledger, and reconciliation as enabling kernels
+- treat the delivered Security Master seam plus multi-ledger and reconciliation kernels as the enabling path
 - delay advanced report polish until shared DTOs are stable
 
 ## Test Plan
@@ -394,13 +422,13 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 ## Implementation Checklist
 
-### Phase F1: Security Master as a Product Platform
+### Phase F1: Security Master seam delta closure
 
-- [ ] Audit existing Security Master contracts, services, storage, and F# domain modules for workstation-facing gaps.
-- [ ] Define workstation DTOs for Security Master identity, classification, and economic-definition summaries.
-- [ ] Wire Security Master enrichment into `PortfolioReadService` and `LedgerReadService`.
-- [ ] Add governance-facing drill-ins for Security Master-backed instrument details.
-- [ ] Add tests for unresolved instrument identity and degraded metadata cases.
+- [ ] Audit existing Security Master contracts, services, storage, workstation propagation, and F# domain modules for remaining governance-specific gaps.
+- [ ] Reuse and extend current workstation DTOs only where governance workflows still need missing identity, classification, or economic-definition fields.
+- [ ] Close remaining Security Master enrichment gaps in portfolio, ledger, reconciliation, and report-generation paths.
+- [ ] Add governance-facing drill-ins only where the delivered workstation pattern does not yet cover the required governance workflow.
+- [ ] Add delta tests for unresolved instrument identity, degraded metadata, and governance-specific classification edge cases.
 
 ### Phase F2: Multi-Ledger Governance Foundation
 
@@ -503,7 +531,7 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 ## Suggested first PR slices
 
-1. Security Master workstation DTOs plus enrichment in `PortfolioReadService` and `LedgerReadService`
+1. Security Master governance delta closure in portfolio, ledger, reconciliation, and report-generation paths
 2. Multi-ledger grouping and consolidated trial-balance query path
 3. Reconciliation DTOs plus F# rules spike and C# orchestration shell
 4. Cash-flow projection kernel plus governance cash-ladder read path

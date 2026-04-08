@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using Meridian.Contracts.Configuration;
+using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
 
@@ -12,7 +14,9 @@ public sealed class SymbolMappingService
     private static readonly Lazy<SymbolMappingService> _instance = new(() => new SymbolMappingService());
     public static SymbolMappingService Instance => _instance.Value;
 
+    private readonly IConfigService _configService;
     private readonly string _mappingsFilePath;
+    private readonly string _legacyMappingsFilePath;
     private SymbolMappingsConfig _config = new();
 
     // Use centralized JSON options to avoid duplication across services
@@ -38,9 +42,15 @@ public sealed class SymbolMappingService
     public event EventHandler? MappingsChanged;
 
     private SymbolMappingService()
+        : this(new ConfigService())
     {
-        var baseDir = AppContext.BaseDirectory;
-        _mappingsFilePath = Path.Combine(baseDir, "data", "_config", "symbol-mappings.json");
+    }
+
+    internal SymbolMappingService(IConfigService configService)
+    {
+        _configService = configService;
+        _mappingsFilePath = ResolveMappingsFilePath();
+        _legacyMappingsFilePath = Path.Combine(AppContext.BaseDirectory, "data", "_config", "symbol-mappings.json");
     }
 
     /// <summary>
@@ -50,11 +60,26 @@ public sealed class SymbolMappingService
     {
         try
         {
-            if (File.Exists(_mappingsFilePath))
+            var loadPath = _mappingsFilePath;
+            var migratedFromLegacy = false;
+            if (!File.Exists(loadPath) &&
+                !PathsEqual(_mappingsFilePath, _legacyMappingsFilePath) &&
+                File.Exists(_legacyMappingsFilePath))
             {
-                var json = await File.ReadAllTextAsync(_mappingsFilePath);
+                loadPath = _legacyMappingsFilePath;
+                migratedFromLegacy = true;
+            }
+
+            if (File.Exists(loadPath))
+            {
+                var json = await File.ReadAllTextAsync(loadPath, ct);
                 _config = JsonSerializer.Deserialize<SymbolMappingsConfig>(json, JsonOptions)
                           ?? new SymbolMappingsConfig();
+
+                if (migratedFromLegacy)
+                {
+                    await SaveAsync(ct);
+                }
             }
             else
             {
@@ -385,6 +410,92 @@ public sealed class SymbolMappingService
 
         return mapping;
     }
+
+    private string ResolveMappingsFilePath()
+    {
+        var config = TryLoadConfig();
+        var configuredPersistencePath = TryReadConfiguredPersistencePath();
+        if (!string.IsNullOrWhiteSpace(configuredPersistencePath))
+        {
+            return MeridianPathDefaults.ResolvePathFromConfigBase(
+                _configService.ConfigPath,
+                configuredPersistencePath,
+                Path.Combine(MeridianPathDefaults.DefaultDataRoot, "_config", "symbol-mappings.json"));
+        }
+
+        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
+        return Path.Combine(dataRoot, "_config", "symbol-mappings.json");
+    }
+
+    private AppConfig? TryLoadConfig()
+    {
+        try
+        {
+            return _configService.LoadConfigAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private string? TryReadConfiguredPersistencePath()
+    {
+        try
+        {
+            if (!File.Exists(_configService.ConfigPath))
+            {
+                return null;
+            }
+
+            using var document = JsonDocument.Parse(File.ReadAllText(_configService.ConfigPath));
+            if (!TryGetProperty(document.RootElement, "dataSources", out var dataSources) ||
+                dataSources.ValueKind != JsonValueKind.Object ||
+                !TryGetProperty(dataSources, "symbolMappings", out var symbolMappings) ||
+                symbolMappings.ValueKind != JsonValueKind.Object ||
+                !TryGetProperty(symbolMappings, "persistencePath", out var persistencePath) ||
+                persistencePath.ValueKind != JsonValueKind.String)
+            {
+                return null;
+            }
+
+            return persistencePath.GetString();
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement propertyValue)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (property.NameEquals(propertyName) ||
+                property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                propertyValue = property.Value;
+                return true;
+            }
+        }
+
+        propertyValue = default;
+        return false;
+    }
+
+    private static bool PathsEqual(string left, string right)
+        => string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>

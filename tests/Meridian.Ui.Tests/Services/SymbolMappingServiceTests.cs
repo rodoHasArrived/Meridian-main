@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -30,6 +31,30 @@ public sealed class SymbolMappingServiceTests
 
         // Assert
         instance1.Should().BeSameAs(instance2);
+    }
+
+    [Fact]
+    public void Constructor_UsesConfiguredPersistencePathWhenPresent()
+    {
+        using var fixture = new PathFixture("mdc-symbol-map-path");
+        File.WriteAllText(
+            fixture.ConfigPath,
+            """
+            {
+              "dataRoot": "retained-data",
+              "dataSources": {
+                "symbolMappings": {
+                  "persistencePath": "state/symbol-mappings.json"
+                }
+              }
+            }
+            """);
+        var config = new AppConfigDto { DataRoot = "retained-data" };
+        var service = new SymbolMappingService(new FixedConfigService(fixture.ConfigPath, config));
+
+        var path = GetPrivateField<string>(service, "_mappingsFilePath");
+
+        path.Should().Be(Path.Combine(fixture.RootPath, "state", "symbol-mappings.json"));
     }
 
     // ── KnownProviders ───────────────────────────────────────────────
@@ -536,5 +561,14 @@ public sealed class SymbolMappingServiceTests
 
         // Assert
         result.Should().Be("AAPL");
+    }
+
+    private static T GetPrivateField<T>(object instance, string fieldName)
+    {
+        var field = instance.GetType().GetField(
+            fieldName,
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        field.Should().NotBeNull();
+        return (T)field!.GetValue(instance)!;
     }
 }

@@ -69,7 +69,11 @@ The primary container record that wraps all market data events with common metad
   "source": "Alpaca",
   "schemaVersion": 1,
   "tier": "Raw",
-  "payload": { ... }
+  "payload": {
+    "price": 189.42,
+    "size": 100,
+    "exchange": "NASDAQ"
+  }
 }
 ```
 

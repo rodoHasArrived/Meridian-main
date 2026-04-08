@@ -5,11 +5,23 @@ namespace Meridian.Contracts.FundStructure;
 [JsonConverter(typeof(JsonStringEnumConverter<FundStructureNodeKindDto>))]
 public enum FundStructureNodeKindDto
 {
+    Organization,
+    Business,
+    Client,
     Fund,
     Sleeve,
     Vehicle,
+    InvestmentPortfolio,
     Entity,
     Account
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<BusinessKindDto>))]
+public enum BusinessKindDto
+{
+    FinancialAdvisor,
+    FundManager,
+    Hybrid
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<LegalEntityTypeDto>))]
@@ -137,8 +149,47 @@ public sealed record FundStructureNodeDto(
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo);
 
+public sealed record OrganizationSummaryDto(
+    Guid OrganizationId,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    bool IsActive,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    IReadOnlyList<Guid> BusinessIds,
+    string? Description = null);
+
+public sealed record BusinessSummaryDto(
+    Guid BusinessId,
+    Guid OrganizationId,
+    BusinessKindDto BusinessKind,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    bool IsActive,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    IReadOnlyList<Guid> ClientIds,
+    IReadOnlyList<Guid> FundIds,
+    IReadOnlyList<Guid> InvestmentPortfolioIds,
+    string? Description = null);
+
+public sealed record ClientSummaryDto(
+    Guid ClientId,
+    Guid BusinessId,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    bool IsActive,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    IReadOnlyList<Guid> InvestmentPortfolioIds,
+    string? Description = null);
+
 public sealed record FundSummaryDto(
     Guid FundId,
+    Guid? BusinessId,
     string Code,
     string Name,
     string BaseCurrency,
@@ -148,7 +199,9 @@ public sealed record FundSummaryDto(
     IReadOnlyList<Guid> SleeveIds,
     IReadOnlyList<Guid> VehicleIds,
     IReadOnlyList<Guid> EntityIds,
-    IReadOnlyList<Guid> AccountIds);
+    IReadOnlyList<Guid> InvestmentPortfolioIds,
+    IReadOnlyList<Guid> AccountIds,
+    string? Description = null);
 
 public sealed record SleeveSummaryDto(
     Guid SleeveId,
@@ -160,6 +213,7 @@ public sealed record SleeveSummaryDto(
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
     IReadOnlyList<Guid> StrategyIds,
+    IReadOnlyList<Guid> InvestmentPortfolioIds,
     IReadOnlyList<Guid> AccountIds);
 
 public sealed record VehicleSummaryDto(
@@ -172,7 +226,9 @@ public sealed record VehicleSummaryDto(
     bool IsActive,
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
-    IReadOnlyList<Guid> AccountIds);
+    IReadOnlyList<Guid> InvestmentPortfolioIds,
+    IReadOnlyList<Guid> AccountIds,
+    string? Description = null);
 
 public sealed record LegalEntitySummaryDto(
     Guid EntityId,
@@ -183,7 +239,26 @@ public sealed record LegalEntitySummaryDto(
     string BaseCurrency,
     bool IsActive,
     DateTimeOffset EffectiveFrom,
-    DateTimeOffset? EffectiveTo);
+    DateTimeOffset? EffectiveTo,
+    string? Description = null);
+
+public sealed record InvestmentPortfolioSummaryDto(
+    Guid InvestmentPortfolioId,
+    Guid BusinessId,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    bool IsActive,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    Guid? ClientId,
+    Guid? FundId,
+    Guid? SleeveId,
+    Guid? VehicleId,
+    Guid? EntityId,
+    IReadOnlyList<Guid> AccountIds,
+    string? Description = null,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
 
 public sealed record AccountSummaryDto(
     Guid AccountId,
@@ -204,7 +279,40 @@ public sealed record AccountSummaryDto(
     string? StrategyId,
     string? RunId,
     CustodianAccountDetailsDto? CustodianDetails = null,
-    BankAccountDetailsDto? BankDetails = null);
+    BankAccountDetailsDto? BankDetails = null,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
+public sealed record FundStructureSharedDataAccessDto(
+    SecurityMasterAccessSummaryDto SecurityMaster,
+    HistoricalPriceAccessSummaryDto HistoricalPrices,
+    BackfillAccessSummaryDto Backfill);
+
+public sealed record SecurityMasterAccessSummaryDto(
+    bool IsAvailable,
+    string AvailabilityDescription,
+    bool InstrumentDefinitionsAccessible,
+    bool EconomicDefinitionsAccessible,
+    bool TradingParametersAccessible);
+
+public sealed record HistoricalPriceAccessSummaryDto(
+    bool IsAvailable,
+    bool HasStoredData,
+    int AvailableSymbolCount,
+    IReadOnlyList<string> SampleSymbols,
+    string AvailabilityDescription);
+
+public sealed record BackfillAccessSummaryDto(
+    bool IsAvailable,
+    bool IsActive,
+    int ProviderCount,
+    string? LastProvider,
+    DateOnly? LastFrom,
+    DateOnly? LastTo,
+    DateTimeOffset? LastCompletedUtc,
+    bool? LastRunSucceeded,
+    int SymbolCheckpointCount,
+    int SymbolBarCountCount,
+    string AvailabilityDescription);
 
 public sealed record OwnershipLinkDto(
     Guid OwnershipLinkId,
@@ -226,7 +334,206 @@ public sealed record FundStructureAssignmentDto(
     DateTimeOffset? EffectiveTo,
     bool IsPrimary);
 
+public sealed record OrganizationStructureGraphDto(
+    IReadOnlyList<OrganizationSummaryDto> Organizations,
+    IReadOnlyList<BusinessSummaryDto> Businesses,
+    IReadOnlyList<ClientSummaryDto> Clients,
+    IReadOnlyList<FundSummaryDto> Funds,
+    IReadOnlyList<SleeveSummaryDto> Sleeves,
+    IReadOnlyList<VehicleSummaryDto> Vehicles,
+    IReadOnlyList<LegalEntitySummaryDto> Entities,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> Accounts,
+    IReadOnlyList<FundStructureNodeDto> Nodes,
+    IReadOnlyList<OwnershipLinkDto> OwnershipLinks,
+    IReadOnlyList<FundStructureAssignmentDto> Assignments,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
+public sealed record AdvisoryClientViewDto(
+    ClientSummaryDto Client,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> Accounts);
+
+public sealed record AdvisoryStructureViewDto(
+    OrganizationSummaryDto Organization,
+    BusinessSummaryDto Business,
+    IReadOnlyList<AdvisoryClientViewDto> Clients,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> UnassignedInvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> UnassignedAccounts,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
+public sealed record FundSleeveOperatingViewDto(
+    SleeveSummaryDto Sleeve,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> Accounts);
+
+public sealed record VehicleOperatingViewDto(
+    VehicleSummaryDto Vehicle,
+    LegalEntitySummaryDto? LegalEntity,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> Accounts);
+
+public sealed record FundOperatingSliceDto(
+    FundSummaryDto Fund,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> Accounts,
+    IReadOnlyList<FundSleeveOperatingViewDto> Sleeves,
+    IReadOnlyList<VehicleOperatingViewDto> Vehicles);
+
+public sealed record FundOperatingViewDto(
+    OrganizationSummaryDto Organization,
+    BusinessSummaryDto Business,
+    IReadOnlyList<FundOperatingSliceDto> Funds,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> UnassignedInvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> UnassignedAccounts,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
+public readonly record struct LedgerGroupId(string Value);
+
+public sealed record LedgerGroupSummaryDto(
+    LedgerGroupId LedgerGroupId,
+    string DisplayName,
+    IReadOnlyList<Guid> AccountIds,
+    IReadOnlyList<Guid> InvestmentPortfolioIds,
+    IReadOnlyList<Guid> ClientIds,
+    IReadOnlyList<Guid> FundIds,
+    IReadOnlyList<Guid> SleeveIds,
+    IReadOnlyList<Guid> VehicleIds,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
+public sealed record AccountingStructureViewDto(
+    OrganizationSummaryDto? Organization,
+    BusinessSummaryDto? Business,
+    IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
+    IReadOnlyList<AccountSummaryDto> Accounts,
+    IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
 public sealed record FundStructureGraphDto(
     IReadOnlyList<FundStructureNodeDto> Nodes,
     IReadOnlyList<OwnershipLinkDto> OwnershipLinks,
     IReadOnlyList<FundStructureAssignmentDto> Assignments);
+
+[JsonConverter(typeof(JsonStringEnumConverter<GovernanceCashFlowScopeKindDto>))]
+public enum GovernanceCashFlowScopeKindDto
+{
+    Organization,
+    Business,
+    Client,
+    Fund,
+    Sleeve,
+    Vehicle,
+    InvestmentPortfolio,
+    Account,
+    LedgerGroup
+}
+
+public sealed record GovernanceCashFlowScopeDto(
+    GovernanceCashFlowScopeKindDto ScopeKind,
+    string DisplayName,
+    Guid? OrganizationId,
+    Guid? BusinessId,
+    Guid? ClientId,
+    Guid? FundId,
+    Guid? SleeveId,
+    Guid? VehicleId,
+    Guid? InvestmentPortfolioId,
+    Guid? AccountId,
+    LedgerGroupId? LedgerGroupId,
+    IReadOnlyList<Guid> AccountIds,
+    IReadOnlyList<Guid> InvestmentPortfolioIds);
+
+public sealed record GovernanceCashFlowAccountViewDto(
+    Guid AccountId,
+    string AccountCode,
+    string DisplayName,
+    string BaseCurrency,
+    string? LedgerReference,
+    decimal CurrentCashBalance,
+    decimal RealizedNetFlow,
+    decimal ProjectedNetFlow,
+    int RealizedEntryCount,
+    int ProjectedEntryCount,
+    DateOnly? LatestSnapshotDate,
+    bool UsedTrendFallback,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+
+public sealed record GovernanceCashFlowEntryDto(
+    DateTimeOffset EventDate,
+    decimal Amount,
+    string Currency,
+    string EventKind,
+    string SourceKind,
+    Guid AccountId,
+    string AccountDisplayName,
+    string? LedgerReference,
+    string? Description,
+    bool IsProjected);
+
+public sealed record GovernanceCashFlowBucketDto(
+    int BucketIndex,
+    DateTimeOffset BucketStart,
+    DateTimeOffset BucketEnd,
+    decimal ProjectedInflows,
+    decimal ProjectedOutflows,
+    decimal NetFlow,
+    string Currency,
+    int EventCount);
+
+public sealed record GovernanceCashFlowLadderDto(
+    DateTimeOffset AsOf,
+    DateTimeOffset WindowEnd,
+    string Currency,
+    int BucketDays,
+    decimal TotalProjectedInflows,
+    decimal TotalProjectedOutflows,
+    decimal NetPosition,
+    IReadOnlyList<GovernanceCashFlowBucketDto> Buckets);
+
+public sealed record GovernanceCashFlowVarianceBucketDto(
+    int BucketIndex,
+    DateTimeOffset RealizedBucketStart,
+    DateTimeOffset RealizedBucketEnd,
+    DateTimeOffset ProjectedBucketStart,
+    DateTimeOffset ProjectedBucketEnd,
+    decimal RealizedInflows,
+    decimal RealizedOutflows,
+    decimal RealizedNetFlow,
+    decimal ProjectedInflows,
+    decimal ProjectedOutflows,
+    decimal ProjectedNetFlow,
+    decimal VarianceAmount,
+    int RealizedEventCount,
+    int ProjectedEventCount,
+    string Currency);
+
+public sealed record GovernanceCashFlowVarianceSummaryDto(
+    decimal RealizedInflows,
+    decimal RealizedOutflows,
+    decimal RealizedNetFlow,
+    decimal ProjectedInflows,
+    decimal ProjectedOutflows,
+    decimal ProjectedNetFlow,
+    decimal VarianceAmount,
+    string ComparisonBasis);
+
+public sealed record GovernanceCashFlowViewDto(
+    GovernanceCashFlowScopeDto Scope,
+    DateTimeOffset AsOf,
+    DateTimeOffset HistoricalWindowStart,
+    DateTimeOffset ProjectionWindowEnd,
+    string Currency,
+    int HistoricalDays,
+    int ForecastDays,
+    int BucketDays,
+    int AccountCount,
+    decimal CurrentCashBalance,
+    decimal ProjectedClosingCashBalance,
+    IReadOnlyList<GovernanceCashFlowAccountViewDto> Accounts,
+    IReadOnlyList<GovernanceCashFlowEntryDto> RealizedEntries,
+    IReadOnlyList<GovernanceCashFlowEntryDto> ProjectedEntries,
+    GovernanceCashFlowLadderDto RealizedLadder,
+    GovernanceCashFlowLadderDto ProjectedLadder,
+    GovernanceCashFlowVarianceSummaryDto VarianceSummary,
+    IReadOnlyList<GovernanceCashFlowVarianceBucketDto> VarianceBuckets,
+    FundStructureSharedDataAccessDto? SharedDataAccess = null);

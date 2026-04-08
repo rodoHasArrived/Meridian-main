@@ -30,6 +30,13 @@ Use the full desktop workstation shell on Windows:
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 ```
 
+The desktop shell is update-safe by default:
+
+- Config lives at `%LocalAppData%\Meridian\appsettings.json`
+- Relative `DataRoot` values such as `data` resolve relative to that config location, not the executable folder
+- Desktop catalog and health metadata also live alongside the external config instead of under the install directory
+- Retained desktop state now follows the external roots as well: activity logs and collection session history write under the resolved `DataRoot`, symbol mapping persistence follows its configured path or a `DataRoot` fallback, and generated schema artifacts live under `%LocalAppData%\Meridian\_catalog\schemas`
+
 On Linux/macOS, the WPF project remains in the solution as a CI-friendly stub build rather than a full desktop runtime.
 
 ### Discover commands
@@ -41,9 +48,13 @@ make help
 
 ## Verified CLI Workflows
 
+<a id="command-line-usage"></a>
+
 The current CLI argument surface is defined in `src/Meridian.Application/Commands/CliArguments.cs`, with command handlers in `src/Meridian.Application/Commands/`.
 
 ### Configuration and startup
+
+<a id="configuration"></a>
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
@@ -73,7 +84,11 @@ Configuration path resolution is currently:
 3. `config/appsettings.json`
 4. `appsettings.json`
 
+For the WPF desktop host, startup now pins both the UI shell and the launched backend process to `%LocalAppData%\Meridian\appsettings.json`, and relative storage paths resolve from that external config root.
+
 ### Diagnostics
+
+<a id="troubleshooting"></a>
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
@@ -110,6 +125,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backf
 ```
 
 ### Package operations
+
+<a id="analysis-ready-exports"></a>
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name market-data-archive
@@ -172,6 +189,14 @@ npm --prefix src/Meridian.Ui/dashboard run test
 ## Configuration
 
 Configuration lives in `config/` at the repository root. The primary config file is `config/appsettings.json`. Provider credentials and secrets use the secrets management pattern documented in [ADR-011](adr/011-centralized-configuration-and-credentials.md).
+
+Desktop note:
+
+- The installed WPF application does not use the repo-local `config/` directory at runtime
+- It stores config under `%LocalAppData%\Meridian\appsettings.json`
+- If `DataRoot` is omitted, Meridian uses `data` under the active config root
+- Legacy desktop configs that still contain `Storage.BaseDirectory` are migrated to `DataRoot` on load
+- Legacy desktop installs with app-folder `sessions.json`, `data/_logs/activity_log.json`, `data/_config/symbol-mappings.json`, or `_catalog/schemas/data_dictionary.json` are migrated into the external desktop locations on first use
 
 ```bash
 # View current configuration

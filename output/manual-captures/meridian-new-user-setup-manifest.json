@@ -1,0 +1,118 @@
+{
+  "title": "Meridian Desktop Quick Start Manual",
+  "subtitle": "Basic setup and configuration for a new user",
+  "author": "Codex",
+  "version": "0.1",
+  "date": "2026-04-07",
+  "intro": [
+    "This guide walks a new Meridian desktop user through the core first-run tasks: confirm the backend, choose providers, store credentials, set storage, add symbols, and start collection.",
+    "Screenshots were captured from the Windows WPF shell in fixture mode on April 7, 2026. Layout and labels should match the desktop product, but live status values may differ from the sample data shown here.",
+    "Meridian stores the desktop configuration in %LocalAppData%\\\\Meridian\\\\appsettings.json. Relative data paths such as data resolve from that folder."
+  ],
+  "sections": [
+    {
+      "heading": "Get Oriented",
+      "summary": "Start with the built-in help and settings surfaces so you can move through setup in the same order Meridian expects.",
+      "steps": [
+        {
+          "title": "Review the built-in quick start",
+          "body": "Open Meridian and use the Help & Getting Started page to confirm the basic onboarding sequence: Provider, Credentials, Symbols, Storage, and Start. This gives you a stable map of the first-run flow before you change any settings.",
+          "notes": [
+            "Press F1 to open Help.",
+            "The shortcut list shows Ctrl + , for Settings and Ctrl + S for Start Collector."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/07-help.png",
+          "caption": "Meridian Help & Getting Started page with the built-in quick start sequence."
+        },
+        {
+          "title": "Open Settings and locate the setup tools",
+          "body": "Open the Settings page and use the Quick Actions row to launch the configuration tools you need most often. This page gives you one place to add a provider, configure storage, open the Credential Vault, or run the Setup Wizard.",
+          "notes": [
+            "The Credential Vault status colors are green for configured, yellow for partial, and red for missing.",
+            "Use Settings as the home base for any follow-up changes after first run."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/06-settings.png",
+          "caption": "Settings page with quick actions for provider, storage, credentials, and setup."
+        },
+        {
+          "title": "Use the Setup Wizard if you want a guided first run",
+          "body": "From Settings, select Setup Wizard when you want Meridian to guide the process. The wizard checks the backend connection, lets you apply an optional workflow preset, records your default provider and storage location, and saves optional API keys as user-scoped environment variables.",
+          "notes": [
+            "The wizard connects to http://localhost:8080 and can start the backend for you if it is not already running.",
+            "The current wizard provider choices are NoOp, Stooq, NasdaqDataLink, Polygon, and Alpaca."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Configure Connectivity",
+      "summary": "Choose the data provider Meridian should use and make sure the provider can authenticate cleanly before you start ingesting data.",
+      "steps": [
+        {
+          "title": "Choose a provider and verify connectivity",
+          "body": "Open the Providers page from Data Operations or Settings. Select the market-data provider you plan to use, then use Configure, Validate, or Test Connections so Meridian can verify credentials and connectivity before you start collection or backfill jobs.",
+          "notes": [
+            "For Alpaca, configure ALPACA_KEY_ID and ALPACA_SECRET_KEY.",
+            "For Polygon, configure POLYGON_API_KEY.",
+            "Interactive Brokers requires TWS or IB Gateway plus host and port settings from the provider setup guide."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/02-providers.png",
+          "caption": "Providers page showing the main connectivity and validation controls."
+        },
+        {
+          "title": "Set the default data-source routing",
+          "body": "Open Data Sources Configuration and choose the default real-time and historical sources Meridian should prefer. Enable automatic failover if you want Meridian to switch to the next provider when the primary one becomes unavailable.",
+          "notes": [
+            "If the source drop-downs are empty, finish provider configuration first.",
+            "Keep failover timeout values conservative on first run until you understand provider latency and entitlement limits."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/05-data-sources.png",
+          "caption": "Data Sources Configuration page for default routing and failover behavior."
+        }
+      ]
+    },
+    {
+      "heading": "Configure Storage And Coverage",
+      "summary": "Finalize where Meridian writes data and which symbols it should collect before you start the collector.",
+      "steps": [
+        {
+          "title": "Confirm where Meridian will write data",
+          "body": "Open Storage Management and review the data directory, naming convention, and compression. For most new users the default posture is a solid starting point: a relative data folder, symbol-based layout, and gzip compression.",
+          "notes": [
+            "Desktop runtime config lives under %LocalAppData%\\\\Meridian, so a relative DataRoot such as data resolves from that location.",
+            "If you plan to run large backfills, point DataRoot to the disk or folder you want before you ingest significant history."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/06-storage.png",
+          "caption": "Storage Management page showing directory, naming convention, and compression settings."
+        },
+        {
+          "title": "Add the symbols you want to collect",
+          "body": "Return to the Data Operations workspace and use Manage Symbols to create the initial subscription list. This is where you define the instruments Meridian should monitor, archive, and later backfill if needed.",
+          "notes": [
+            "Start with a small test set such as AAPL, MSFT, and SPY while you validate the workflow.",
+            "Use Run Backfill only after provider credentials and storage are working as expected."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/01-data-operations-shell.png",
+          "caption": "Data Operations workspace with quick actions for providers, backfill, symbols, and storage."
+        }
+      ]
+    },
+    {
+      "heading": "Validate And Start",
+      "summary": "Finish by starting the collector and checking that Meridian reports a healthy operating state.",
+      "steps": [
+        {
+          "title": "Start the collector and confirm healthy status",
+          "body": "Open Dashboard and start the collector. Watch the status cards and quick actions area so you can confirm that Meridian is running, publishing events, and not reporting dropped data, integrity issues, or missing historical coverage.",
+          "notes": [
+            "If the backend is offline, use the Setup Wizard Start Backend action or restart the desktop app.",
+            "CLI fallback: dotnet run --project src/Meridian/Meridian.csproj -- --validate-config checks the active configuration without starting collection.",
+            "CLI fallback: dotnet run --project src/Meridian/Meridian.csproj -- --show-config prints the effective configuration Meridian is using."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/01-dashboard.png",
+          "caption": "Dashboard after setup, where the collector can be started and monitored."
+        }
+      ]
+    }
+  ]
+}

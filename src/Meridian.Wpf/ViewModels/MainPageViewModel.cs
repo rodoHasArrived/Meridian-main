@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -111,9 +113,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly INavigationService _navigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
+    private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly ObservableCollection<string> _commandPalettePages = [];
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
+    private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
+    private readonly ObservableCollection<BoundedWindowMode> _windowModes =
+    [
+        BoundedWindowMode.Focused,
+        BoundedWindowMode.DockFloat,
+        BoundedWindowMode.WorkbenchPreset
+    ];
     private bool _suppressNavigation;
+    private bool _suppressOperatingContextSelection;
+    private bool _suppressWindowModeSelection;
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
@@ -130,19 +142,25 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private string _activeFundName = "Select Fund";
     private string _activeFundSubtitle = "Fund context required";
     private Visibility _activeFundVisibility = Visibility.Collapsed;
+    private WorkstationOperatingContext? _selectedOperatingContext;
+    private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;
 
     public MainPageViewModel(
         INavigationService navigationService,
         FixtureModeDetector fixtureModeDetector,
-        FundContextService? fundContextService = null)
+        FundContextService? fundContextService = null,
+        WorkstationOperatingContextService? operatingContextService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
+        _operatingContextService = operatingContextService;
 
         SplitPane = new SplitPaneViewModel();
         CommandPalettePages = new ReadOnlyObservableCollection<string>(_commandPalettePages);
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
+        OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
+        WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
 
         SelectWorkspaceCommand = new RelayCommand<string>(workspace => SelectWorkspace(workspace, navigateToHome: true));
         NavigateToPageCommand = new RelayCommand<string>(NavigateToPage);
@@ -155,11 +173,17 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         GoBackCommand = new RelayCommand(GoBack, () => _navigationService.CanGoBack);
         RefreshPageCommand = new RelayCommand(RefreshCurrentPage);
         DismissFixtureModeBannerCommand = new RelayCommand(() => FixtureModeBannerVisibility = Visibility.Collapsed);
-        SwitchFundCommand = new RelayCommand(() => _fundContextService.RequestSwitchFund());
+        SwitchFundCommand = new RelayCommand(RequestContextSelection);
 
         _navigationService.Navigated += OnNavigated;
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
+            _operatingContextService.ContextCatalogChanged += OnOperatingContextCatalogChanged;
+            _operatingContextService.WindowModeChanged += OnWindowModeChanged;
+        }
 
         var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? GetWorkspaceHomePageTag(DefaultWorkspace);
         ApplyCurrentPage(initialPage);
@@ -167,6 +191,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshRecentPages();
         SyncNavigationState();
         UpdateFixtureModeBanner();
+        RefreshOperatingContexts();
+        RefreshWindowMode();
         UpdateActiveFundDisplay();
     }
 
@@ -177,6 +203,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public ReadOnlyObservableCollection<string> CommandPalettePages { get; }
 
     public ReadOnlyObservableCollection<RecentPageEntry> RecentPages { get; }
+
+    public ReadOnlyObservableCollection<WorkstationOperatingContext> OperatingContexts { get; }
+
+    public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
 
     public IRelayCommand<string> SelectWorkspaceCommand { get; }
 
@@ -201,6 +231,43 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public IRelayCommand DismissFixtureModeBannerCommand { get; }
 
     public IRelayCommand SwitchFundCommand { get; }
+
+    public WorkstationOperatingContext? SelectedOperatingContext
+    {
+        get => _selectedOperatingContext;
+        set
+        {
+            if (!SetProperty(ref _selectedOperatingContext, value) || _suppressOperatingContextSelection || value is null)
+            {
+                return;
+            }
+
+            _ = SelectOperatingContextAsync(value);
+        }
+    }
+
+    public BoundedWindowMode SelectedWindowMode
+    {
+        get => _selectedWindowMode;
+        set
+        {
+            if (!SetProperty(ref _selectedWindowMode, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(CurrentModeName));
+
+            if (_suppressWindowModeSelection || _operatingContextService is null)
+            {
+                return;
+            }
+
+            _ = _operatingContextService.SetWindowModeAsync(value);
+        }
+    }
+
+    public string CurrentModeName => _operatingContextService?.GetCurrentModeDisplayName() ?? "Dock + Float";
 
     public string CurrentWorkspace
     {
@@ -374,6 +441,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _navigationService.Navigated -= OnNavigated;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
+            _operatingContextService.ContextCatalogChanged -= OnOperatingContextCatalogChanged;
+            _operatingContextService.WindowModeChanged -= OnWindowModeChanged;
+        }
     }
 
     private void OnNavigated(object? sender, NavigationEventArgs e)
@@ -404,6 +477,23 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
         UpdateActiveFundDisplay();
+    }
+
+    private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
+    {
+        RefreshOperatingContexts();
+        RefreshWindowMode();
+        UpdateActiveFundDisplay();
+    }
+
+    private void OnOperatingContextCatalogChanged(object? sender, EventArgs e)
+    {
+        RefreshOperatingContexts();
+    }
+
+    private void OnWindowModeChanged(object? sender, EventArgs e)
+    {
+        RefreshWindowMode();
     }
 
     private void SelectWorkspace(string? workspace, bool navigateToHome = false)
@@ -443,6 +533,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private static string? InferWorkspaceFromPage(string? pageTag) => pageTag switch
     {
+        _ when !string.IsNullOrWhiteSpace(WorkspaceService.InferWorkspaceIdForPageTag(pageTag))
+            => WorkspaceService.InferWorkspaceIdForPageTag(pageTag),
+
         "Backtest" or "BatchBacktest" or "RunMat" or "Charts" or "QuantScript"
             or "LeanIntegration" or "AdvancedAnalytics" or "ResearchShell"
             or "Watchlist" or "StrategyRuns" or "RunDetail"
@@ -469,7 +562,6 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
             or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
             or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"
-            or "AddProviderWizard"
             => "governance",
 
         _ => null  // Dashboard, Welcome, Workspaces — stay in current workspace
@@ -602,11 +694,20 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void UpdateActiveFundDisplay()
     {
+        var operatingContext = _operatingContextService?.CurrentContext;
+        if (operatingContext is not null)
+        {
+            ActiveFundName = operatingContext.DisplayName;
+            ActiveFundSubtitle = operatingContext.Subtitle;
+            ActiveFundVisibility = Visibility.Visible;
+            return;
+        }
+
         var activeFund = _fundContextService.CurrentFundProfile;
         if (activeFund is null)
         {
-            ActiveFundName = "Select Fund";
-            ActiveFundSubtitle = "Fund context required";
+            ActiveFundName = "Select Context";
+            ActiveFundSubtitle = "Operating context required";
             ActiveFundVisibility = Visibility.Collapsed;
             return;
         }
@@ -614,6 +715,76 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ActiveFundName = activeFund.DisplayName;
         ActiveFundSubtitle = $"{activeFund.LegalEntityName} · {activeFund.BaseCurrency}";
         ActiveFundVisibility = Visibility.Visible;
+    }
+
+    private async Task SelectOperatingContextAsync(WorkstationOperatingContext context)
+    {
+        if (_operatingContextService is null)
+        {
+            return;
+        }
+
+        await _operatingContextService.SelectContextAsync(context.ContextKey).ConfigureAwait(false);
+    }
+
+    private void RequestContextSelection()
+    {
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.RequestSwitchContext();
+            return;
+        }
+
+        _fundContextService.RequestSwitchFund();
+    }
+
+    private void RefreshOperatingContexts()
+    {
+        if (_operatingContextService is null)
+        {
+            return;
+        }
+
+        _suppressOperatingContextSelection = true;
+        try
+        {
+            _operatingContexts.Clear();
+            foreach (var context in _operatingContextService.Contexts)
+            {
+                _operatingContexts.Add(context);
+            }
+
+            SelectedOperatingContext = _operatingContexts.FirstOrDefault(context =>
+                                          string.Equals(context.ContextKey, _operatingContextService.CurrentContext?.ContextKey, StringComparison.OrdinalIgnoreCase))
+                                      ?? _operatingContexts.FirstOrDefault(context =>
+                                          string.Equals(context.ContextKey, _operatingContextService.LastSelectedOperatingContextKey, StringComparison.OrdinalIgnoreCase))
+                                      ?? _operatingContexts.FirstOrDefault();
+        }
+        finally
+        {
+            _suppressOperatingContextSelection = false;
+        }
+    }
+
+    private void RefreshWindowMode()
+    {
+        if (_operatingContextService is null)
+        {
+            RaisePropertyChanged(nameof(CurrentModeName));
+            return;
+        }
+
+        _suppressWindowModeSelection = true;
+        try
+        {
+            SelectedWindowMode = _operatingContextService.CurrentWindowMode;
+        }
+        finally
+        {
+            _suppressWindowModeSelection = false;
+        }
+
+        RaisePropertyChanged(nameof(CurrentModeName));
     }
 
     private static int GetCommandPaletteSortBucket(string pageTag)

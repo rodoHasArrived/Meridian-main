@@ -264,6 +264,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
             StreamingProviders.Add(CreateDefaultProvider("alpaca", "Alpaca Markets"));
             StreamingProviders.Add(CreateDefaultProvider("ib", "Interactive Brokers"));
             StreamingProviders.Add(CreateDefaultProvider("polygon", "Polygon.io"));
+            StreamingProviders.Add(CreateDefaultProvider("robinhood", "Robinhood"));
         }
     }
 
@@ -327,6 +328,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         {
             "ALPACA" => "ALPACA__KEYID",
             "POLYGON" => "POLYGON__APIKEY",
+            "ROBINHOOD" => "ROBINHOOD_ACCESS_TOKEN",
             "TIINGO" => "TIINGO__TOKEN",
             "FINNHUB" => "FINNHUB__APIKEY",
             "ALPHAVANTAGE" => "ALPHAVANTAGE__APIKEY",
@@ -341,6 +343,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         {
             "alpaca" => "200 req/min",
             "polygon" => "5 req/min (free)",
+            "robinhood" => "Rate limited by broker session",
             "tiingo" => "500 req/hour",
             "finnhub" => "60 req/min",
             "alphavantage" => "5 req/min",

@@ -116,7 +116,7 @@ def load_todos(path: Path) -> list[TodoItem]:  # noqa: C901
 
         items.append(
             TodoItem(
-                type=str(raw.get("type", "TODO")),
+                type=str(raw.get("type") or raw.get("tag") or "TODO"),
                 text=str(raw.get("text", "")).strip(),
                 file=str(raw.get("file", "")),
                 line=int(raw.get("line", 0)),

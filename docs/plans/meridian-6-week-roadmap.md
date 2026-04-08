@@ -1,8 +1,8 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-04-07
 **Horizon:** Next 6 weeks
-**Status:** Current repo-grounded proposal aligned to the 2026-04-04 roadmap refresh
+**Status:** Current repo-grounded proposal aligned to the 2026-04-07 roadmap refresh
 
 This plan assumes the current repository baseline, not the older page-shell or partial-foundation framing. The next six weeks should therefore focus on trust closure, cockpit hardening, shared-model continuity, and the first genuinely connected governance slices.
 
@@ -16,7 +16,7 @@ The highest-value near-term work is:
 2. harden the paper-trading cockpit that is already present in the web workstation
 3. deepen the shared run, portfolio, ledger, and reconciliation continuity now that the baseline is in code
 4. keep the WPF workstation migration moving toward workflow-first orchestration on the highest-traffic pages
-5. productize Security Master and the first governance/fund-operations seams on top of the existing read models and export stack
+5. deepen governance and fund-operations workflows on top of the delivered Security Master seam, shared read models, and export stack
 
 Out of scope for this six-week window:
 
@@ -35,7 +35,7 @@ This six-week plan starts from the current repo state:
 - the React workstation already includes meaningful research, trading, data-operations, and governance flows
 - the paper-trading cockpit is partially productized, not greenfield
 - shared run, portfolio, and ledger read services already exist and feed workstation surfaces
-- Security Master is now visible in governance workflows, but not yet the consistent cross-product authority layer
+- Security Master now acts as the authoritative instrument-definition seam across workstation and governance surfaces
 - governance has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
 - provider readiness remains uneven enough that trust work is still the main release gate
 
@@ -67,7 +67,7 @@ This six-week plan starts from the current repo state:
 
 ### Outcome 5: Governance track shows up as product, not just planning
 
-- Security Master becomes more clearly connected to reconciliation, portfolio, and ledger workflows
+- Security Master remains the authoritative seam while reconciliation, portfolio, ledger, cash-flow, and reporting workflows deepen on top of it
 - the next governance slice is defined in terms of shared DTOs, read models, and operator surfaces
 
 ---
@@ -80,7 +80,7 @@ This six-week plan starts from the current repo state:
 | 2 | Cockpit hardening slice | tighten the existing trading cockpit into a more dependable operator lane | cockpit hardening checklist; session/replay acceptance criteria; promotion workflow gap list |
 | 3 | Shared run continuity | reduce cross-workspace seams between research, trading, and governance | run-model continuity backlog; clearer fills/attribution/ledger/reconciliation linkage; query/read-model alignment notes |
 | 4 | WPF workflow refresh | keep the desktop migration focused on workflow-first orchestration | high-traffic WPF page priority order; MVVM extraction targets; workspace-first navigation refinements |
-| 5 | Security Master and governance seams | connect Security Master and governance planning to concrete product slices | Security Master enrichment targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
+| 5 | Governance productization seam | connect the delivered Security Master seam to concrete governance product slices | account/entity and strategy-structure targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
 | 6 | Hardening and closeout | make the six-week baseline easy to continue from | docs/status refresh; acceptance criteria review; narrowed follow-on backlog for the next wave |
 
 ---
@@ -123,11 +123,11 @@ Priorities:
 - continue MVVM extraction where pages still depend heavily on code-behind
 - keep navigation, command-palette, and workspace framing aligned
 
-### Workstream E: Governance foundation
+### Workstream E: Governance productization on top of Security Master
 
 Priorities:
 
-- make Security Master more clearly operator-facing across governance workflows
+- keep Security Master authoritative while extending its use across governance workflows
 - define the next concrete slices for multi-ledger, cash-flow, reconciliation, and reporting work
 - keep governance work grounded in shared DTOs, read models, and export seams
 
@@ -174,5 +174,5 @@ Mitigation:
 - the paper-trading cockpit has a tighter, more dependable operator story
 - shared run, portfolio, ledger, and reconciliation flows are easier to follow across workspaces
 - WPF workstation work is more obviously workflow-first on the highest-traffic pages
-- Security Master and governance work are represented by concrete product seams, not only planning language
+- Security Master-backed governance work is represented by concrete product seams, not only planning language
 - the next backlog wave is narrower, clearer, and less dependent on document reconciliation

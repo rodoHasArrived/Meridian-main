@@ -2,7 +2,7 @@
 
 > **Canonical reference.** This file is the single source of truth for project statistics, provider inventory, key abstractions with file paths, and storage design. Both `meridian-brainstorm` and `meridian-code-review` skills reference this file. Update here first; do not maintain separate copies.
 >
-> **Last verified:** 2026-03-19
+> **Last verified:** 2026-04-07
 > **Refresh command:** `python3 build/scripts/ai-repo-updater.py audit`
 
 ---
@@ -63,6 +63,15 @@ Meridian.sln
 └── benchmarks/
     └── Meridian.Benchmarks/        # BenchmarkDotNet performance benchmarks
 ```
+
+---
+
+## Desktop Persistence Baseline
+
+- Installed WPF builds store runtime config at `%LocalAppData%\Meridian\appsettings.json`; the repo-local `config/appsettings.json` path is the normal CLI, server, and development config surface.
+- Relative `DataRoot` values resolve from the active config file base via `MeridianPathDefaults.ResolveDataRoot`, not from the executable directory.
+- `Storage.BaseDirectory` is legacy migration input only; new code and docs should prefer top-level `DataRoot`.
+- Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs, collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under the resolved external config and data roots so upgrades do not depend on the install directory.
 
 ---
 

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Meridian.FSharp.Ledger</name></assembly>
+<members>
+<member name="T:Meridian.FSharp.Ledger.ReconciliationRun">
+<summary>
+ Summary of one executed reconciliation run
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.ReconciliationRunStatus">
+<summary>
+ Lifecycle status of a reconciliation run
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.BreakRecord">
+<summary>
+ Immutable record representing one identified break found in a reconciliation run
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.LedgerBreakClassification">
+<summary>
+ Structural classification of a ledger break
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.BreakSeverity">
+<summary>
+ Severity of a ledger reconciliation break
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.MatchCandidate">
+<summary>
+ A projected-vs-actual candidate pair submitted for rule evaluation
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.MatchOutcome">
+<summary>
+ Outcome of evaluating a matching rule against one candidate pair
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.MatchingRule">
+<summary>
+ Configuration for a ledger matching rule
+</summary>
+</member>
+<member name="T:Meridian.FSharp.Ledger.Posting">
+<summary>
+ Ordinals correspond to the C# LedgerAccountType enum:
+   Asset = 0 | Liability = 1 | Equity = 2 | Revenue = 3 | Expense = 4
+ Debit-normal accounts (normal balance is a debit): Asset, Expense.
+ Credit-normal accounts (normal balance is a credit): Liability, Equity, Revenue.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.LedgerBreakClassificationModule.severity(System.Decimal,Meridian.FSharp.Ledger.LedgerBreakClassification)">
+<summary>
+ Derive break severity from classification and nominal amount.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.classifyBreaks(System.Guid,Meridian.FSharp.Ledger.MatchingRule,Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.MatchCandidate})">
+<summary>
+ Classify all non-matching candidates into &lt;see cref=&quot;BreakRecord&quot;/&gt; values.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.applyBest(Microsoft.FSharp.Collections.FSharpList{Meridian.FSharp.Ledger.MatchingRule},Meridian.FSharp.Ledger.MatchCandidate)">
+<summary>
+ Apply a prioritised list of rules; accept the first match found.
+ Falls back to &lt;c&gt;NoMatch MissingEntry&lt;/c&gt; if no rule produces a match.
+</summary>
+</member>
+<member name="M:Meridian.FSharp.Ledger.ReconciliationRules.apply(Meridian.FSharp.Ledger.MatchingRule,Meridian.FSharp.Ledger.MatchCandidate)">
+<summary>
+ Apply a single matching rule to a projected-vs-actual candidate pair.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.MatchingRuleModule.strict">
+<summary>
+ Strict rule: zero tolerance on both amount and timing.
+</summary>
+</member>
+<member name="P:Meridian.FSharp.Ledger.MatchingRuleModule.default">
+<summary>
+ Default rule: 1 % amount tolerance, 2-day timing window, currency must match exactly.
+</summary>
+</member>
+</members>
+</doc>

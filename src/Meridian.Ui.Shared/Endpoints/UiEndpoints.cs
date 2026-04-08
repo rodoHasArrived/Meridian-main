@@ -265,6 +265,9 @@ public static class UiEndpoints
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
 
+        // Organization-rooted governance structure endpoints
+        app.MapFundStructureEndpoints(jsonOptions);
+
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -373,6 +376,9 @@ public static class UiEndpoints
 
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
+
+        // Organization-rooted governance structure endpoints
+        app.MapFundStructureEndpoints(jsonOptions);
 
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);

@@ -267,6 +267,7 @@
                                 <ComboBoxItem Content="Interactive Brokers (IB)" Tag="IB" />
                                 <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
                                 <ComboBoxItem Content="Polygon.io" Tag="Polygon" />
+                                <ComboBoxItem Content="Robinhood" Tag="Robinhood" />
                             </ComboBox>
                         </StackPanel>
 

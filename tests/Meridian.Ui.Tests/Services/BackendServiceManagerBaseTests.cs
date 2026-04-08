@@ -21,8 +21,14 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
     public string? LastResolvedPath { get; private set; }
     public string? LastLogInfoMessage { get; private set; }
     public string? LastLogErrorMessage { get; private set; }
+    public IReadOnlyList<string> LastArguments { get; private set; } = Array.Empty<string>();
+    public IReadOnlyDictionary<string, string?> LastEnvironmentVariables { get; private set; } =
+        new Dictionary<string, string?>(StringComparer.Ordinal);
     public string? ResolvePathReturn { get; set; }
     public bool StartProcessShouldFail { get; set; }
+    public IReadOnlyList<string> ProcessArgumentsToReturn { get; set; } = Array.Empty<string>();
+    public IReadOnlyDictionary<string, string?> ProcessEnvironmentVariablesToReturn { get; set; } =
+        new Dictionary<string, string?>(StringComparer.Ordinal);
 
     public TestBackendServiceManager(string appDataDir) : base(appDataDir)
     {
@@ -38,10 +44,23 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
         return ResolvePathReturn ?? preferredPath;
     }
 
-    protected override int? StartProcess(string executablePath, string workingDirectory)
+    protected override IReadOnlyList<string> GetProcessArguments(string executablePath)
+        => ProcessArgumentsToReturn;
+
+    protected override IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
+        => ProcessEnvironmentVariablesToReturn;
+
+    protected override int? StartProcess(
+        string executablePath,
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IReadOnlyDictionary<string, string?> environmentVariables)
     {
         if (StartProcessShouldFail)
             return null;
+
+        LastArguments = arguments.ToArray();
+        LastEnvironmentVariables = new Dictionary<string, string?>(environmentVariables, StringComparer.Ordinal);
         _lastPid = 12345;
         _processRunning = true;
         return _lastPid;
@@ -254,6 +273,26 @@ public sealed class BackendServiceManagerBaseTests : IDisposable
         var result = await _sut.RestartAsync();
 
         result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task StartAsync_PassesProcessArgumentsAndEnvironmentVariables()
+    {
+        var exePath = Path.Combine(_tempDir, "backend.exe");
+        await File.WriteAllTextAsync(exePath, "fake");
+        _sut.ResolvePathReturn = exePath;
+        _sut.ProcessArgumentsToReturn = ["--config", "C:\\config\\appsettings.json"];
+        _sut.ProcessEnvironmentVariablesToReturn = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["MDC_CONFIG_PATH"] = "C:\\config\\appsettings.json"
+        };
+
+        await _sut.InstallAsync();
+        await _sut.StartAsync();
+
+        _sut.LastArguments.Should().Equal("--config", "C:\\config\\appsettings.json");
+        _sut.LastEnvironmentVariables.Should().ContainKey("MDC_CONFIG_PATH");
+        _sut.LastEnvironmentVariables["MDC_CONFIG_PATH"].Should().Be("C:\\config\\appsettings.json");
     }
 
     [Fact]

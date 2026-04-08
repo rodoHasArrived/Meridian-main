@@ -1,13 +1,13 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-06
-**Status:** Current end-state product summary aligned to the active roadmap
+**Last Updated:** 2026-04-07
+**Status:** Current end-state product summary aligned to the April 7 roadmap refresh
 
 ---
 
 ## Snapshot
 
-Meridian's target end state is a workflow-centric, self-hosted trading workstation and fund-operations platform. It is not just a collector, not just a backtester, and not just a governance add-on. It is one connected product where evidence-backed data trust, research, paper trading, portfolio visibility, ledger auditability, Security Master, reconciliation, and governed reporting all live inside the same operator workflow.
+Meridian's target end state is a workflow-centric, self-hosted trading workstation and fund-operations platform. It is not just a collector, not just a backtester, and not just a governance add-on. It is one connected product where evidence-backed data trust, research, paper trading, portfolio visibility, ledger auditability, Security Master, reconciliation, and governed reporting all live inside the same operator workflow. In current roadmap terms, the authoritative Security Master seam is already in place; the remaining gap is turning that seam and the existing workstation flows into deeper governance and operator-ready workflows.
 
 ---
 

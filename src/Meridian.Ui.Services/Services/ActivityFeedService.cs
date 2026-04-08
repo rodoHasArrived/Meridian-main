@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services.Collections;
+using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
 
@@ -16,7 +18,9 @@ public sealed class ActivityFeedService
     private const int MaxActivities = 100;
 
     private static readonly Lazy<ActivityFeedService> _instance = new(() => new ActivityFeedService());
+    private readonly IConfigService _configService;
     private readonly string _activityLogPath;
+    private readonly string _legacyActivityLogPath;
     private readonly BoundedObservableCollection<ActivityItem> _activities;
     private readonly JsonSerializerOptions _jsonOptions;
 
@@ -41,9 +45,15 @@ public sealed class ActivityFeedService
     public event EventHandler<ActivityItem>? ActivityAdded;
 
     private ActivityFeedService()
+        : this(new ConfigService())
     {
-        var appDir = AppContext.BaseDirectory;
-        _activityLogPath = Path.Combine(appDir, "data", "_logs", ActivityLogFileName);
+    }
+
+    internal ActivityFeedService(IConfigService configService)
+    {
+        _configService = configService;
+        _activityLogPath = ResolveActivityLogPath();
+        _legacyActivityLogPath = Path.Combine(AppContext.BaseDirectory, "data", "_logs", ActivityLogFileName);
         _activities = new BoundedObservableCollection<ActivityItem>(MaxActivities);
         _jsonOptions = new JsonSerializerOptions
         {
@@ -352,9 +362,19 @@ public sealed class ActivityFeedService
     {
         try
         {
-            if (File.Exists(_activityLogPath))
+            var loadPath = _activityLogPath;
+            var migratedFromLegacy = false;
+            if (!File.Exists(loadPath) &&
+                !PathsEqual(_activityLogPath, _legacyActivityLogPath) &&
+                File.Exists(_legacyActivityLogPath))
             {
-                var json = await File.ReadAllTextAsync(_activityLogPath);
+                loadPath = _legacyActivityLogPath;
+                migratedFromLegacy = true;
+            }
+
+            if (File.Exists(loadPath))
+            {
+                var json = await File.ReadAllTextAsync(loadPath, ct);
                 var items = JsonSerializer.Deserialize<List<ActivityItem>>(json, _jsonOptions);
                 if (items != null)
                 {
@@ -362,6 +382,11 @@ public sealed class ActivityFeedService
                     {
                         _activities.Add(item);
                     }
+                }
+
+                if (migratedFromLegacy)
+                {
+                    await SaveActivitiesAsync(ct);
                 }
             }
         }
@@ -389,6 +414,31 @@ public sealed class ActivityFeedService
             // Ignore save errors
         }
     }
+
+    private string ResolveActivityLogPath()
+    {
+        var config = TryLoadConfig();
+        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
+        return Path.Combine(dataRoot, "_logs", ActivityLogFileName);
+    }
+
+    private AppConfig? TryLoadConfig()
+    {
+        try
+        {
+            return _configService.LoadConfigAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool PathsEqual(string left, string right)
+        => string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
 
     private static string FormatBytes(long bytes) => FormatHelpers.FormatBytes(bytes);
 }

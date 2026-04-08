@@ -68,6 +68,7 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - Inspect only the relevant Meridian project instincts when local learned behavior would help. Treat each instinct as a hint to verify against the current repo state before turning it into instructions.
 - Keep the main skill file concise and written in imperative form. Move detailed material into `references/`, deterministic helpers into `scripts/`, and output resources into `assets/`.
 - Preserve host-specific metadata rules. For repo-local Codex skills, keep frontmatter to `name` and `description`. For portable/Claude packages, keep the metadata required by that host intact.
+- Keep mirrored Codex, Claude, and GitHub agent guidance aligned when a shared workflow or policy changes.
 - Avoid auxiliary docs inside skill folders unless they directly support execution or are required by the host format.
 - If `agents/openai.yaml` exists, regenerate or update it so the UI-facing metadata still matches the skill instructions.
 - Run package validation after editing, and run representative tests for any added or changed scripts.
@@ -92,6 +93,7 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - Prefer editing an existing doc when one already covers the topic.
 - Create new docs only when no suitable home exists.
 - For new docs, choose placement using `references/documentation-routing.md` and add cross-links from the nearest index/README.
+- When runtime config or persistence semantics change, update the AI-facing docs and shared context in the same change: the relevant `docs/ai/*` pages, `../_shared/project-context.md`, and any mirrored Codex, Claude, or GitHub agent files that teach the affected workflow.
 - Keep documentation concrete: what changed, why, and how to use/operate it.
 
 ## Automation Scripts

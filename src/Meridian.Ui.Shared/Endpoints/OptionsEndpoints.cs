@@ -151,6 +151,7 @@ public static class OptionsEndpoints
                 return ServiceUnavailableError("OptionsChainService", jsonOptions);
 
             var summary = service.GetSummary();
+            var providerStatus = service.GetProviderStatus();
 
             return Results.Json(new OptionsSummaryResponse(
                 TrackedContracts: summary.TrackedContracts,
@@ -159,7 +160,12 @@ public static class OptionsEndpoints
                 ContractsWithGreeks: summary.ContractsWithGreeks,
                 ContractsWithOpenInterest: summary.ContractsWithOpenInterest,
                 ProviderAvailable: service.IsProviderAvailable,
-                Timestamp: DateTimeOffset.UtcNow), jsonOptions);
+                Timestamp: DateTimeOffset.UtcNow,
+                ProviderId: providerStatus.ProviderId,
+                ProviderDisplayName: providerStatus.ProviderDisplayName,
+                ProviderMode: providerStatus.Mode,
+                IsFallbackProvider: providerStatus.IsFallback,
+                ProviderStatusMessage: providerStatus.Message), jsonOptions);
         })
         .WithName("GetOptionsSummary")
         .Produces(200)
@@ -174,12 +180,10 @@ public static class OptionsEndpoints
 
             var underlyings = collector.GetTrackedUnderlyings();
 
-            return Results.Json(new
-            {
-                underlyings,
-                count = underlyings.Count,
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            return Results.Json(new OptionsTrackedUnderlyingsResponse(
+                Underlyings: underlyings,
+                Count: underlyings.Count,
+                Timestamp: DateTimeOffset.UtcNow), jsonOptions);
         })
         .WithName("GetTrackedUnderlyings")
         .Produces(200)

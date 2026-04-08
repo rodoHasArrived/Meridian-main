@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -53,6 +54,20 @@ public static class ExecutionEndpoints
         })
         .WithName("GetExecutionPositions")
         .Produces<ExecutionPosition[]>(200)
+        .Produces(503);
+
+        group.MapGet("/positions/blotter", async (HttpContext context) =>
+        {
+            var snapshot = await BuildBlotterSnapshotAsync(
+                context.RequestServices,
+                context.RequestAborted).ConfigureAwait(false);
+
+            return snapshot is null
+                ? Results.Problem("Execution position services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable)
+                : Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("GetExecutionBlotterPositions")
+        .Produces<ExecutionBlotterSnapshotResponse>(200)
         .Produces(503);
 
         group.MapGet("/portfolio", (HttpContext context) =>
@@ -572,82 +587,127 @@ public static class ExecutionEndpoints
 
         // --- Position actions ---
 
-        group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
+        group.MapPost("/positions/actions/close", async (ExecutionPositionActionRequest request, HttpContext context) =>
         {
-            var oms = context.RequestServices.GetService<IOrderManager>();
-            var portfolio = context.RequestServices.GetService<IPortfolioState>();
-            if (oms is null || portfolio is null)
+            var snapshot = await BuildBlotterSnapshotAsync(
+                context.RequestServices,
+                context.RequestAborted).ConfigureAwait(false);
+
+            if (snapshot is null)
                 return Results.Problem("Execution services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var logger = GetLogger(context.RequestServices);
-            var actionId = GenerateActionId();
-            var actor = ResolveActor(context);
-            var symbolUpper = symbol.ToUpperInvariant();
+            var position = snapshot.Positions.FirstOrDefault(p =>
+                string.Equals(p.PositionKey, request.PositionKey, StringComparison.OrdinalIgnoreCase));
 
-            if (!portfolio.Positions.TryGetValue(symbolUpper, out var position))
+            if (position is null)
             {
-                logger.LogWarning("Trading action {ActionId}: close position {Symbol} — position not found", actionId, symbolUpper);
                 var notFound = new TradingActionResult(
-                    ActionId: actionId,
+                    ActionId: GenerateActionId(),
+                    Status: "Rejected",
+                    Message: $"Position {request.PositionKey} was not found.",
+                    OccurredAt: DateTimeOffset.UtcNow);
+                return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            return await SubmitPositionActionAsync(
+                position,
+                snapshot.Source,
+                actionName: "ClosePosition",
+                side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
+                quantity: request.Quantity ?? Math.Abs(position.Quantity),
+                positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                successVerb: "Close",
+                jsonOptions: jsonOptions,
+                context: context).ConfigureAwait(false);
+        })
+        .WithName("ClosePositionByKey")
+        .Produces<TradingActionResult>(200)
+        .Produces<TradingActionResult>(400)
+        .Produces(503);
+
+        group.MapPost("/positions/actions/upsize", async (ExecutionPositionActionRequest request, HttpContext context) =>
+        {
+            var snapshot = await BuildBlotterSnapshotAsync(
+                context.RequestServices,
+                context.RequestAborted).ConfigureAwait(false);
+
+            if (snapshot is null)
+                return Results.Problem("Execution services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var position = snapshot.Positions.FirstOrDefault(p =>
+                string.Equals(p.PositionKey, request.PositionKey, StringComparison.OrdinalIgnoreCase));
+
+            if (position is null)
+            {
+                var notFound = new TradingActionResult(
+                    ActionId: GenerateActionId(),
+                    Status: "Rejected",
+                    Message: $"Position {request.PositionKey} was not found.",
+                    OccurredAt: DateTimeOffset.UtcNow);
+                return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            return await SubmitPositionActionAsync(
+                position,
+                snapshot.Source,
+                actionName: "UpsizePosition",
+                side: position.Quantity < 0 ? OrderSide.Sell : OrderSide.Buy,
+                quantity: request.Quantity ?? Math.Abs(position.Quantity),
+                positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "open" : null,
+                successVerb: "Upsize",
+                jsonOptions: jsonOptions,
+                context: context).ConfigureAwait(false);
+        })
+        .WithName("UpsizePositionByKey")
+        .Produces<TradingActionResult>(200)
+        .Produces<TradingActionResult>(400)
+        .Produces(503);
+
+        group.MapPost("/positions/{symbol}/close", async (string symbol, HttpContext context) =>
+        {
+            var snapshot = await BuildBlotterSnapshotAsync(
+                context.RequestServices,
+                context.RequestAborted).ConfigureAwait(false);
+
+            if (snapshot is null)
+                return Results.Problem("Execution services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var symbolUpper = symbol.ToUpperInvariant();
+            var matches = snapshot.Positions
+                .Where(position => string.Equals(position.Symbol, symbolUpper, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (matches.Length == 0)
+            {
+                var notFound = new TradingActionResult(
+                    ActionId: GenerateActionId(),
                     Status: "Rejected",
                     Message: $"No open position found for {symbolUpper}.",
                     OccurredAt: DateTimeOffset.UtcNow);
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var closingSide = position.IsShort ? OrderSide.Buy : OrderSide.Sell;
-            var closeRequest = new OrderRequest
+            if (matches.Length > 1)
             {
-                Symbol = symbolUpper,
-                Side = closingSide,
-                Type = OrderType.Market,
-                Quantity = (decimal)position.AbsoluteQuantity,
-                ClientOrderId = $"close-{symbolUpper}-{Guid.NewGuid():N}",
-                Metadata = MergeMetadata(
-                    null,
-                    ("actor", actor),
-                    ("correlationId", actionId))
-            };
-
-            var result = await oms.PlaceOrderAsync(closeRequest, context.RequestAborted).ConfigureAwait(false);
-
-            if (result.Success)
-            {
-                logger.LogInformation("Trading action {ActionId}: close position {Symbol} qty {Quantity} — order {OrderId} submitted", actionId, symbolUpper, closeRequest.Quantity, result.OrderId);
-            }
-            else
-            {
-                logger.LogWarning("Trading action {ActionId}: close position {Symbol} — order rejected: {Reason}", actionId, symbolUpper, result.ErrorMessage);
+                var ambiguous = new TradingActionResult(
+                    ActionId: GenerateActionId(),
+                    Status: "Rejected",
+                    Message: $"Multiple positions match {symbolUpper}. Use the keyed position action endpoint.",
+                    OccurredAt: DateTimeOffset.UtcNow);
+                return Results.Json(ambiguous, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var auditEntry = await RecordOperatorAuditAsync(
-                context,
-                actionId,
-                action: "ClosePosition",
-                outcome: result.Success ? "Accepted" : "Rejected",
-                message: result.Success
-                    ? $"Close order for {symbolUpper} submitted."
-                    : (result.ErrorMessage ?? $"Close order rejected for {symbolUpper}."),
-                orderId: result.OrderId,
-                symbol: symbolUpper,
-                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["quantity"] = closeRequest.Quantity.ToString("G29"),
-                    ["side"] = closingSide.ToString()
-                }).ConfigureAwait(false);
-
-            var actionResult = new TradingActionResult(
-                ActionId: actionId,
-                Status: result.Success ? "Accepted" : "Rejected",
-                Message: result.Success
-                    ? $"Close order for {symbolUpper} submitted (order {result.OrderId})."
-                    : (result.ErrorMessage ?? "Close order rejected."),
-                OccurredAt: DateTimeOffset.UtcNow,
-                AuditId: auditEntry?.AuditId);
-
-            return result.Success
-                ? Results.Json(actionResult, jsonOptions)
-                : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            var position = matches[0];
+            return await SubmitPositionActionAsync(
+                position,
+                snapshot.Source,
+                actionName: "ClosePosition",
+                side: position.Quantity < 0 ? OrderSide.Buy : OrderSide.Sell,
+                quantity: Math.Abs(position.Quantity),
+                positionEffect: position.AssetClass.Equals("option", StringComparison.OrdinalIgnoreCase) ? "close" : null,
+                successVerb: "Close",
+                jsonOptions: jsonOptions,
+                context: context).ConfigureAwait(false);
         })
         .WithName("ClosePosition")
         .Produces<TradingActionResult>(200)
@@ -658,6 +718,221 @@ public static class ExecutionEndpoints
     // ------------------------------------------------------------------ //
     // Private helpers                                                     //
     // ------------------------------------------------------------------ //
+
+    private static async Task<ExecutionBlotterSnapshotResponse?> BuildBlotterSnapshotAsync(
+        IServiceProvider services,
+        CancellationToken ct)
+    {
+        var executionGateway = services.GetService<IExecutionGateway>();
+        var orderGateway = services.GetService<IOrderGateway>();
+
+        if (executionGateway is IBrokerageGateway brokerageGateway)
+        {
+            var positions = await brokerageGateway.GetPositionsAsync(ct).ConfigureAwait(false);
+            var details = positions
+                .Select(MapBrokerPositionToDetail)
+                .ToArray();
+
+            var source = string.IsNullOrWhiteSpace(brokerageGateway.BrokerDisplayName)
+                ? brokerageGateway.GatewayId
+                : brokerageGateway.BrokerDisplayName;
+
+            var statusMessage = details.Length == 0
+                ? $"No live positions returned by {source}."
+                : $"Showing {details.Length} live position(s) from {source}.";
+
+            return new ExecutionBlotterSnapshotResponse(
+                Positions: details,
+                IsBrokerBacked: true,
+                IsLive: orderGateway?.Mode == Meridian.Execution.Models.ExecutionMode.Live || executionGateway.IsConnected,
+                Source: source,
+                StatusMessage: statusMessage,
+                AsOf: DateTimeOffset.UtcNow);
+        }
+
+        var portfolio = services.GetService<IPortfolioState>();
+        if (portfolio is null)
+            return null;
+
+        var paperPositions = portfolio.Positions.Values
+            .Select(MapPortfolioPositionToDetail)
+            .ToArray();
+
+        var paperStatus = paperPositions.Length == 0
+            ? "No paper positions are open."
+            : $"Showing {paperPositions.Length} paper position(s).";
+
+        return new ExecutionBlotterSnapshotResponse(
+            Positions: paperPositions,
+            IsBrokerBacked: false,
+            IsLive: false,
+            Source: "Paper Trading",
+            StatusMessage: paperStatus,
+            AsOf: DateTimeOffset.UtcNow);
+    }
+
+    private static async Task<IResult> SubmitPositionActionAsync(
+        ExecutionPositionDetailResponse position,
+        string positionSource,
+        string actionName,
+        OrderSide side,
+        decimal quantity,
+        string? positionEffect,
+        string successVerb,
+        JsonSerializerOptions jsonOptions,
+        HttpContext context)
+    {
+        if (quantity <= 0m)
+        {
+            var invalid = new TradingActionResult(
+                ActionId: GenerateActionId(),
+                Status: "Rejected",
+                Message: $"A positive quantity is required to {successVerb.ToLowerInvariant()} {position.ProductDescription}.",
+                OccurredAt: DateTimeOffset.UtcNow);
+            return Results.Json(invalid, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var oms = context.RequestServices.GetService<IOrderManager>();
+        if (oms is null)
+        {
+            return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var logger = GetLogger(context.RequestServices);
+        var actionId = GenerateActionId();
+        var actor = ResolveActor(context);
+        var metadata = MergeMetadata(
+            position.Metadata,
+            ("actor", actor),
+            ("correlationId", actionId),
+            ("positionKey", position.PositionKey),
+            ("positionSource", positionSource),
+            ("asset_class", position.AssetClass));
+
+        if (!string.IsNullOrWhiteSpace(positionEffect))
+        {
+            metadata = MergeMetadata(metadata, ("position_effect", positionEffect));
+        }
+
+        var orderRequest = new OrderRequest
+        {
+            Symbol = position.Symbol,
+            Side = side,
+            Type = OrderType.Market,
+            Quantity = quantity,
+            ClientOrderId = $"{actionName.ToLowerInvariant()}-{position.Symbol}-{Guid.NewGuid():N}",
+            Metadata = metadata
+        };
+
+        var result = await oms.PlaceOrderAsync(orderRequest, context.RequestAborted).ConfigureAwait(false);
+
+        if (result.Success)
+        {
+            logger.LogInformation(
+                "Trading action {ActionId}: {Action} {PositionKey} qty {Quantity} — order {OrderId} submitted",
+                actionId,
+                actionName,
+                position.PositionKey,
+                quantity,
+                result.OrderId);
+        }
+        else
+        {
+            logger.LogWarning(
+                "Trading action {ActionId}: {Action} {PositionKey} — order rejected: {Reason}",
+                actionId,
+                actionName,
+                position.PositionKey,
+                result.ErrorMessage);
+        }
+
+        var auditEntry = await RecordOperatorAuditAsync(
+            context,
+            actionId,
+            action: actionName,
+            outcome: result.Success ? "Accepted" : "Rejected",
+            message: result.Success
+                ? $"{successVerb} order for {position.ProductDescription} submitted."
+                : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
+            orderId: result.OrderId,
+            symbol: position.Symbol,
+            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["positionKey"] = position.PositionKey,
+                ["quantity"] = quantity.ToString("G29"),
+                ["side"] = side.ToString(),
+                ["assetClass"] = position.AssetClass,
+                ["source"] = positionSource
+            }).ConfigureAwait(false);
+
+        var actionResult = new TradingActionResult(
+            ActionId: actionId,
+            Status: result.Success ? "Accepted" : "Rejected",
+            Message: result.Success
+                ? $"{successVerb} order for {position.ProductDescription} submitted (order {result.OrderId})."
+                : (result.ErrorMessage ?? $"{successVerb} order rejected."),
+            OccurredAt: DateTimeOffset.UtcNow,
+            AuditId: auditEntry?.AuditId);
+
+        return result.Success
+            ? Results.Json(actionResult, jsonOptions)
+            : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static ExecutionPositionDetailResponse MapBrokerPositionToDetail(BrokerPosition position)
+    {
+        var quantity = position.Quantity;
+        return new ExecutionPositionDetailResponse(
+            PositionKey: position.PositionId ?? position.Symbol,
+            Symbol: position.Symbol,
+            UnderlyingSymbol: position.UnderlyingSymbol ?? position.Symbol,
+            ProductDescription: string.IsNullOrWhiteSpace(position.Description) ? position.Symbol : position.Description,
+            TradeId: ExtractTradeId(position.PositionId),
+            Quantity: quantity,
+            AverageCostBasis: position.AverageEntryPrice,
+            MarketPrice: position.MarketPrice,
+            MarketValue: position.MarketValue,
+            UnrealisedPnl: position.UnrealizedPnl,
+            RealisedPnl: 0m,
+            AssetClass: position.AssetClass,
+            Side: quantity < 0m ? "Sell" : "Buy",
+            Expiration: position.Expiration,
+            Strike: position.Strike,
+            Right: position.Right,
+            SupportsClose: quantity != 0m,
+            SupportsUpsize: quantity != 0m,
+            Metadata: position.Metadata);
+    }
+
+    private static ExecutionPositionDetailResponse MapPortfolioPositionToDetail(IPosition position)
+    {
+        return new ExecutionPositionDetailResponse(
+            PositionKey: position.Symbol,
+            Symbol: position.Symbol,
+            UnderlyingSymbol: position.Symbol,
+            ProductDescription: position.Symbol,
+            TradeId: position.Symbol,
+            Quantity: position.Quantity,
+            AverageCostBasis: position.AverageCostBasis,
+            MarketPrice: 0m,
+            MarketValue: 0m,
+            UnrealisedPnl: position.UnrealizedPnl,
+            RealisedPnl: position.RealizedPnl,
+            AssetClass: "equity",
+            Side: position.Quantity < 0 ? "Sell" : "Buy");
+    }
+
+    private static string? ExtractTradeId(string? positionId)
+    {
+        if (string.IsNullOrWhiteSpace(positionId))
+            return null;
+
+        var trimmed = positionId.TrimEnd('/');
+        var slashIndex = trimmed.LastIndexOf('/');
+        return slashIndex >= 0 && slashIndex < trimmed.Length - 1
+            ? trimmed[(slashIndex + 1)..]
+            : trimmed;
+    }
 
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 

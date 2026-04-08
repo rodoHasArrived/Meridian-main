@@ -622,7 +622,7 @@ public sealed class QuantScriptOptions
 }
 ```
 
-```json
+```jsonc
 // appsettings.json addition:
 {
   "QuantScript": {

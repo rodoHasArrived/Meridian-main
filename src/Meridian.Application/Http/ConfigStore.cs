@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
+using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage;
 
@@ -71,16 +72,17 @@ public sealed class ConfigStore
             {
                 Console.WriteLine($"[Warning] Configuration file not found: {path}");
                 Console.WriteLine("Using default configuration. Copy config/appsettings.sample.json to config/appsettings.json to customize.");
-                return new AppConfig();
+                return CreateDefaultConfig(path);
             }
 
             var json = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read) ?? new AppConfig();
+            var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);
+            return NormalizeLoadedConfig(path, json, config);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[Error] Failed to load configuration: {ex.Message}");
-            return new AppConfig();
+            return CreateDefaultConfig(path);
         }
     }
 
@@ -149,9 +151,7 @@ public sealed class ConfigStore
     public string GetDataRoot(AppConfig? cfg = null)
     {
         cfg ??= Load();
-        var root = string.IsNullOrWhiteSpace(cfg.DataRoot) ? "data" : cfg.DataRoot;
-        var baseDir = Path.GetDirectoryName(ConfigPath)!;
-        return Path.IsPathRooted(root) ? root : Path.GetFullPath(Path.Combine(baseDir, root));
+        return MeridianPathDefaults.ResolveDataRoot(ConfigPath, cfg.DataRoot);
     }
 
     public string GetProviderMetricsPath(AppConfig? cfg = null)
@@ -187,5 +187,20 @@ public sealed class ConfigStore
         {
             return null;
         }
+    }
+
+    private static AppConfig CreateDefaultConfig(string path)
+        => new(DataRoot: MeridianPathDefaults.ResolveDataRoot(path, null));
+
+    private static AppConfig NormalizeLoadedConfig(string path, string json, AppConfig? config)
+    {
+        var configuredDataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(
+            json,
+            config?.DataRoot);
+
+        var resolvedDataRoot = MeridianPathDefaults.ResolveDataRoot(path, configuredDataRoot);
+        var effectiveConfig = config ?? new AppConfig();
+
+        return effectiveConfig with { DataRoot = resolvedDataRoot };
     }
 }

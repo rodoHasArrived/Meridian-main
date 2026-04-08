@@ -286,20 +286,41 @@
                                            Foreground="#9CA3AF" />
                             </StackPanel>
                         </Border>
+                        <ComboBox Width="220"
+                                  Margin="0,0,8,0"
+                                  ItemsSource="{Binding OperatingContexts}"
+                                  SelectedItem="{Binding SelectedOperatingContext, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  Background="{StaticResource TopBarBorderBrush}"
+                                  Foreground="{StaticResource TopBarTextBrush}"
+                                  BorderBrush="{StaticResource SidebarBorderBrush}"
+                                  Padding="6,2"
+                                  ToolTip="Switch operating context"
+                                  AutomationProperties.Name="Operating Context Switcher" />
                         <Button Style="{StaticResource IconButtonStyle}"
                                 Command="{Binding SwitchFundCommand}"
-                                ToolTip="Switch Fund"
+                                ToolTip="Choose Operating Context"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Foreground="{StaticResource TopBarTextBrush}"
                                 Width="28" Height="28" Padding="4"
                                 Margin="0,0,8,0"
-                                AutomationProperties.Name="Switch Fund">
+                                AutomationProperties.Name="Choose Operating Context">
                             <TextBlock Text="&#xE777;"
                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
                                        FontSize="14"
                                        Foreground="#9CA3AF" />
                         </Button>
+                        <ComboBox Width="132"
+                                  Margin="0,0,8,0"
+                                  ItemsSource="{Binding WindowModes}"
+                                  SelectedItem="{Binding SelectedWindowMode, Mode=TwoWay}"
+                                  Background="{StaticResource TopBarBorderBrush}"
+                                  Foreground="{StaticResource TopBarTextBrush}"
+                                  BorderBrush="{StaticResource SidebarBorderBrush}"
+                                  Padding="6,2"
+                                  ToolTip="Select bounded window mode"
+                                  AutomationProperties.Name="Window Mode Switcher" />
                         <Border Background="{StaticResource TopBarBorderBrush}"
                                 CornerRadius="3"
                                 Padding="8,3"
@@ -363,7 +384,9 @@
                                         Grid.Row="0" Grid.Column="0"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="research"
-                                        Margin="0,0,4,4">
+                                        Margin="0,0,4,4"
+                                        AutomationProperties.AutomationId="WorkspaceResearchButton"
+                                        AutomationProperties.Name="Research Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -388,7 +411,9 @@
                                         Grid.Row="0" Grid.Column="1"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="trading"
-                                        Margin="4,0,0,4">
+                                        Margin="4,0,0,4"
+                                        AutomationProperties.AutomationId="WorkspaceTradingButton"
+                                        AutomationProperties.Name="Trading Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -413,7 +438,9 @@
                                         Grid.Row="1" Grid.Column="0"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="data-operations"
-                                        Margin="0,0,4,0">
+                                        Margin="0,0,4,0"
+                                        AutomationProperties.AutomationId="WorkspaceDataOperationsButton"
+                                        AutomationProperties.Name="Data Operations Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -438,7 +465,9 @@
                                         Grid.Row="1" Grid.Column="1"
                                         Command="{Binding SelectWorkspaceCommand}"
                                         CommandParameter="governance"
-                                        Margin="4,0,0,0">
+                                        Margin="4,0,0,0"
+                                        AutomationProperties.AutomationId="WorkspaceGovernanceButton"
+                                        AutomationProperties.Name="Governance Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -921,13 +950,17 @@
                                                 PreviewMouseMove="OnRecentPageButtonMouseMove"
                                                 Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 CommandParameter="{Binding PageTag}"
-                                                Content="{Binding DisplayName}" />
+                                                Content="{Binding DisplayName}"
+                                                AutomationProperties.AutomationId="{Binding PageTag, StringFormat=RecentPage{0}}"
+                                                AutomationProperties.Name="{Binding DisplayName}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <TextBlock x:Name="RecentPagesEmptyText"
                                        Text="Navigate to any page to start building history."
                                        Visibility="{Binding RecentPagesEmptyVisibility}"
+                                       AutomationProperties.AutomationId="RecentPagesEmptyText"
+                                       AutomationProperties.Name="Recent Pages Empty State"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="16,0,0,0" />
                         </StackPanel>
@@ -991,11 +1024,13 @@
                                     Style="{StaticResource FooterNavButtonStyle}"
                                     Margin="0,4,0,0"
                                     Command="{Binding ToggleTickerStripCommand}"
+                                    AutomationProperties.AutomationId="TickerStripToggleButton"
                                     AutomationProperties.Name="Toggle Ticker Strip"
                                     ToolTip="Toggle live ticker strip">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#x1F4C8;" FontSize="11" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding TickerStripLabel}"
+                                    <TextBlock x:Name="TickerStripToggleLabelText"
+                                               Text="{Binding TickerStripLabel}"
                                                Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -1017,6 +1052,8 @@
                         Padding="16,10"
                         CornerRadius="0"
                         Visibility="{Binding FixtureModeBannerVisibility}"
+                        AutomationProperties.AutomationId="FixtureModeBanner"
+                        AutomationProperties.Name="Fixture Mode Banner"
                         Panel.ZIndex="10">
                     <Border.Background>
                         <LinearGradientBrush x:Name="FixtureModeBannerBrush" StartPoint="0,0" EndPoint="1,0">
@@ -1040,6 +1077,8 @@
                                        FontSize="12"
                                        FontWeight="SemiBold"
                                        Foreground="#1A1A2E"
+                                       AutomationProperties.AutomationId="FixtureModeLabel"
+                                       AutomationProperties.Name="Fixture Mode Label"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                         <Button x:Name="FixtureModeDismissButton"
@@ -1048,6 +1087,8 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Command="{Binding DismissFixtureModeBannerCommand}"
+                                AutomationProperties.AutomationId="FixtureModeDismissButton"
+                                AutomationProperties.Name="Dismiss Fixture Mode Banner"
                                 ToolTip="Dismiss banner">
                             <TextBlock Text="&#x2715;"
                                        FontSize="12"
@@ -1075,6 +1116,8 @@
                                         Style="{StaticResource IconButtonStyle}"
                                         Visibility="{Binding BackButtonVisibility}"
                                         Command="{Binding GoBackCommand}"
+                                        AutomationProperties.AutomationId="ShellBackButton"
+                                        AutomationProperties.Name="Shell Back Button"
                                         ToolTip="Go Back">
                                     <TextBlock Text="{StaticResource IconBack}"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -1085,7 +1128,8 @@
                                            VerticalAlignment="Center"
                                            Style="{StaticResource ShellSectionLabelStyle}" />
                             </StackPanel>
-                            <TextBlock Text="{Binding CurrentPageTitle}"
+                            <TextBlock x:Name="PageTitleTextBlock"
+                                       Text="{Binding CurrentPageTitle}"
                                        Margin="0,6,0,0"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="20"

@@ -121,7 +121,8 @@ Key optimization: `validate-docs`, `regenerate-docs`, and `scan-todos` all run i
 
 #### `scan-todos.py`
 
-Scans the codebase for TODO/FIXME/HACK/NOTE comments.
+Scans the codebase for explicit `TODO:`, `FIXME:`, `HACK:`, and `NOTE:` annotations.
+The scanner skips generated outputs, TODO artifacts, template scaffolds, and `.claude/worktrees/` duplicates so the report stays actionable.
 
 ```bash
 # Basic scan
@@ -231,6 +232,7 @@ Creates GitHub issues for untracked TODO items discovered by `scan-todos.py`.
 - Returns structured outcome (created/existing/dry-run)
 - Optional `--output-json` for machine-readable summaries
 - Prevents duplicate issues by searching for existing markers
+- Uses issue refs, derived priority, and local line context from scan output when composing issue bodies
 
 ```bash
 # 1) Generate scan JSON

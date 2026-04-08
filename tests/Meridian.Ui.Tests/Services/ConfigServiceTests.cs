@@ -14,6 +14,7 @@ public sealed class ConfigServiceTests : IDisposable
     private readonly string _tempDir;
     private readonly string _configDir;
     private readonly string _configPath;
+    private readonly Func<string> _originalPathResolver = ConfigService.DefaultPathResolver;
 
     public ConfigServiceTests()
     {
@@ -25,6 +26,8 @@ public sealed class ConfigServiceTests : IDisposable
 
     public void Dispose()
     {
+        ConfigService.DefaultPathResolver = _originalPathResolver;
+
         try
         { Directory.Delete(_tempDir, recursive: true); }
         catch { }
@@ -71,6 +74,16 @@ public sealed class ConfigServiceTests : IDisposable
         svc.ConfigPath.Should().NotBeNullOrEmpty();
     }
 
+    [Fact]
+    public void ConfigPath_UsesDefaultPathResolverOverride()
+    {
+        ConfigService.DefaultPathResolver = () => _configPath;
+
+        var svc = new ConfigService();
+
+        svc.ConfigPath.Should().Be(_configPath);
+    }
+
     // ── LoadConfigAsync ──────────────────────────────────────────────
 
     [Fact]
@@ -106,6 +119,26 @@ public sealed class ConfigServiceTests : IDisposable
         config!.DataRoot.Should().Be("test-data");
         config.DataSource.Should().Be("Alpaca");
         config.Compress.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task LoadConfigAsync_MigratesLegacyStorageBaseDirectoryToDataRoot()
+    {
+        ConfigService.DefaultPathResolver = () => _configPath;
+        var json = """
+        {
+            "storage": {
+                "baseDirectory": "legacy-data"
+            }
+        }
+        """;
+        await File.WriteAllTextAsync(_configPath, json);
+
+        var svc = new ConfigService();
+        var config = await svc.LoadConfigAsync();
+
+        config.Should().NotBeNull();
+        config!.DataRoot.Should().Be("legacy-data");
     }
 
     [Fact]
@@ -307,6 +340,17 @@ public sealed class ConfigServiceTests : IDisposable
         loaded.Symbols.Should().HaveCount(1);
         loaded.Symbols![0].Symbol.Should().Be("MSFT");
         loaded.Symbols[0].DepthLevels.Should().Be(5);
+    }
+
+    [Fact]
+    public void ResolveDataRoot_UsesParentOfConfigDirectoryForRelativePaths()
+    {
+        ConfigService.DefaultPathResolver = () => _configPath;
+        var svc = new ConfigService();
+
+        var resolved = svc.ResolveDataRoot(new AppConfigDto { DataRoot = "relative-data" });
+
+        resolved.Should().Be(Path.Combine(_tempDir, "relative-data"));
     }
 
     // ── DiagnosticValidationResult model ────────────────────────────────

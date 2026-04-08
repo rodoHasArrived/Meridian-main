@@ -380,13 +380,20 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                 var symbol = await ResolveSymbolFromInstrumentAsync(p.Instrument, client, ct).ConfigureAwait(false);
                 positions.Add(new BrokerPosition
                 {
+                    PositionId         = symbol ?? p.Instrument,
                     Symbol            = symbol ?? p.Instrument ?? string.Empty,
+                    UnderlyingSymbol  = symbol ?? p.Instrument ?? string.Empty,
+                    Description       = symbol ?? p.Instrument ?? string.Empty,
                     Quantity          = ParseDecimal(p.Quantity),
                     AverageEntryPrice = ParseDecimal(p.AveragePrice),
                     MarketPrice       = 0m, // Robinhood positions endpoint does not include current price
                     MarketValue       = 0m,
                     UnrealizedPnl     = 0m,
                     AssetClass        = "equity",
+                    Metadata          = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["asset_class"] = "equity"
+                    }
                 });
             }
         }
@@ -403,20 +410,40 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 
                 if (optResult?.Results is not null)
                 {
-                    foreach (var p in optResult.Results)
+                    var optionDetails = await Task.WhenAll(optResult.Results.Select(async p => new
                     {
+                        Position = p,
+                        Detail = await ResolveOptionInstrumentAsync(p.Option, client, ct).ConfigureAwait(false)
+                    })).ConfigureAwait(false);
+
+                    foreach (var item in optionDetails)
+                    {
+                        var p = item.Position;
+                        var detail = item.Detail;
                         var qty = ParseDecimal(p.Quantity);
                         if (qty == 0m)
                             continue;
+
+                        var underlyingSymbol = detail?.ChainSymbol ?? p.ChainSymbol ?? string.Empty;
+                        var expiration = TryParseDateOnly(detail?.ExpirationDate);
+                        var strike = TryParseDecimal(detail?.StrikePrice);
+                        var right = NormalizeOptionRight(detail?.Type ?? p.Type);
                         positions.Add(new BrokerPosition
                         {
-                            Symbol            = p.ChainSymbol ?? p.Option ?? string.Empty,
+                            PositionId        = p.Option ?? BuildFallbackOptionPositionId(underlyingSymbol, right, expiration, strike),
+                            Symbol            = underlyingSymbol,
+                            UnderlyingSymbol  = underlyingSymbol,
+                            Description       = BuildOptionDescription(underlyingSymbol, strike, right, expiration),
                             Quantity          = qty,
                             AverageEntryPrice = ParseDecimal(p.AveragePrice),
                             MarketPrice       = 0m,
                             MarketValue       = 0m,
                             UnrealizedPnl     = 0m,
                             AssetClass        = "option",
+                            Expiration        = expiration,
+                            Strike            = strike,
+                            Right             = right,
+                            Metadata          = BuildOptionPositionMetadata(p.Option, underlyingSymbol, right, expiration, strike)
                         });
                     }
                 }
@@ -714,6 +741,106 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
     }
 
+    private static async Task<RobinhoodOptionInstrumentResponse?> ResolveOptionInstrumentAsync(
+        string? optionInstrumentUrl,
+        HttpClient client,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(optionInstrumentUrl))
+            return null;
+
+        try
+        {
+            var response = await client.GetAsync(optionInstrumentUrl, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync(
+                RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionInstrumentResponse,
+                ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Dictionary<string, string> BuildOptionPositionMetadata(
+        string? optionInstrumentUrl,
+        string underlyingSymbol,
+        string? right,
+        DateOnly? expiration,
+        decimal? strike)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["asset_class"] = "option"
+        };
+
+        if (!string.IsNullOrWhiteSpace(optionInstrumentUrl))
+            metadata["option_instrument_url"] = optionInstrumentUrl;
+        if (!string.IsNullOrWhiteSpace(underlyingSymbol))
+            metadata["underlying_symbol"] = underlyingSymbol;
+        if (!string.IsNullOrWhiteSpace(right))
+            metadata["right"] = right;
+        if (expiration.HasValue)
+            metadata["expiration"] = expiration.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        if (strike.HasValue)
+            metadata["strike"] = strike.Value.ToString("G", CultureInfo.InvariantCulture);
+
+        return metadata;
+    }
+
+    private static string BuildOptionDescription(
+        string underlyingSymbol,
+        decimal? strike,
+        string? right,
+        DateOnly? expiration)
+    {
+        var parts = new List<string>(4);
+
+        if (!string.IsNullOrWhiteSpace(underlyingSymbol))
+            parts.Add(underlyingSymbol);
+        if (strike.HasValue)
+            parts.Add(strike.Value.ToString("G", CultureInfo.InvariantCulture));
+        if (!string.IsNullOrWhiteSpace(right))
+            parts.Add(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(right.ToLowerInvariant()));
+        if (expiration.HasValue)
+            parts.Add(expiration.Value.ToString("ddMMMyy", CultureInfo.InvariantCulture));
+
+        return parts.Count == 0 ? "Option Position" : string.Join(" ", parts);
+    }
+
+    private static string BuildFallbackOptionPositionId(
+        string underlyingSymbol,
+        string? right,
+        DateOnly? expiration,
+        decimal? strike)
+    {
+        var expirationText = expiration?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "unknown-expiry";
+        var strikeText = strike?.ToString("G", CultureInfo.InvariantCulture) ?? "unknown-strike";
+        var rightText = string.IsNullOrWhiteSpace(right) ? "unknown-right" : right;
+        return $"{underlyingSymbol}:{rightText}:{expirationText}:{strikeText}";
+    }
+
+    private static string? NormalizeOptionRight(string? value) => value?.ToLowerInvariant() switch
+    {
+        "call" or "c" => "call",
+        "put" or "p" => "put",
+        _ => value
+    };
+
+    private static DateOnly? TryParseDateOnly(string? value)
+        => DateOnly.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
+            ? parsed
+            : null;
+
+    private static decimal? TryParseDecimal(string? value)
+        => decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+            CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+
     private static ExecutionReport BuildRejectedReport(OrderRequest request, string reason) =>
         new()
         {
@@ -921,6 +1048,15 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     {
         [JsonPropertyName("results")] public RobinhoodOptionPositionResponse[]? Results { get; set; }
     }
+
+    internal sealed class RobinhoodOptionInstrumentResponse
+    {
+        [JsonPropertyName("url")] public string? Url { get; set; }
+        [JsonPropertyName("chain_symbol")] public string? ChainSymbol { get; set; }
+        [JsonPropertyName("expiration_date")] public string? ExpirationDate { get; set; }
+        [JsonPropertyName("strike_price")] public string? StrikePrice { get; set; }
+        [JsonPropertyName("type")] public string? Type { get; set; }
+    }
 }
 
 /// <summary>
@@ -941,6 +1077,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionOrderListResponse))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionPositionResponse))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionPositionListResponse))]
+[JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionInstrumentResponse))]
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true)]
 internal sealed partial class RobinhoodBrokerageSerializerContext : JsonSerializerContext;

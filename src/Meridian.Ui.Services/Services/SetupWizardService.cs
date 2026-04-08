@@ -465,14 +465,15 @@ public sealed class SetupWizardService
         return result;
     }
 
-    private Task<CheckResult> CheckDiskSpaceAsync(CancellationToken ct)
+    private async Task<CheckResult> CheckDiskSpaceAsync(CancellationToken ct)
     {
         var result = new CheckResult { Name = "Disk Space" };
 
         try
         {
-            var appDir = AppContext.BaseDirectory;
-            var driveInfo = new DriveInfo(Path.GetPathRoot(appDir) ?? "C:");
+            var config = await _configService.LoadConfigAsync(ct);
+            var dataDir = _configService.ResolveDataRoot(config);
+            var driveInfo = new DriveInfo(Path.GetPathRoot(dataDir) ?? "C:");
 
             var freeGb = driveInfo.AvailableFreeSpace / (1024.0 * 1024 * 1024);
             result.Success = freeGb >= 1.0; // At least 1GB free
@@ -489,16 +490,17 @@ public sealed class SetupWizardService
             result.Message = $"Unable to check: {ex.Message}";
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 
-    private Task<CheckResult> CheckStoragePermissionsAsync(CancellationToken ct)
+    private async Task<CheckResult> CheckStoragePermissionsAsync(CancellationToken ct)
     {
         var result = new CheckResult { Name = "Storage Permissions" };
 
         try
         {
-            var dataDir = Path.Combine(AppContext.BaseDirectory, "data");
+            var config = await _configService.LoadConfigAsync(ct);
+            var dataDir = _configService.ResolveDataRoot(config);
             if (!Directory.Exists(dataDir))
             {
                 Directory.CreateDirectory(dataDir);
@@ -518,7 +520,7 @@ public sealed class SetupWizardService
             result.Message = $"Permission denied: {ex.Message}";
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 
     private async Task<CheckResult> CheckCollectorServiceAsync(CancellationToken ct)

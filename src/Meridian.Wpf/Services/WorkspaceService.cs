@@ -47,6 +47,7 @@ public sealed class WorkspaceService
     public SessionState? LastSession => _lastSession;
     public IReadOnlyList<WorkspaceTemplate> Workspaces => _workspaces.AsReadOnly();
     public string? LastSelectedFundProfileId { get; private set; }
+    public string? LastSelectedOperatingContextKey => LastSelectedFundProfileId;
 
     private Task EnsureInitializedAsync() => _initialLoadTask;
 
@@ -58,6 +59,9 @@ public sealed class WorkspaceService
             ["storage-admin"] = "data-operations",
             ["analysis-export"] = "governance"
         };
+
+    private static readonly Lazy<IReadOnlyDictionary<string, string>> UniquePageWorkspaceOwnership =
+        new(BuildUniquePageWorkspaceOwnership);
 
     private static string GetSettingsFilePath()
     {
@@ -77,6 +81,18 @@ public sealed class WorkspaceService
             "Meridian");
         Directory.CreateDirectory(dir);
         return Path.Combine(dir, WorkspacesFileName);
+    }
+
+    public static string? InferWorkspaceIdForPageTag(string? pageTag)
+    {
+        if (string.IsNullOrWhiteSpace(pageTag))
+        {
+            return null;
+        }
+
+        return UniquePageWorkspaceOwnership.Value.TryGetValue(pageTag.Trim(), out var workspaceId)
+            ? workspaceId
+            : null;
     }
 
     /// <summary>
@@ -313,7 +329,17 @@ public sealed class WorkspaceService
         try
         {
             await EnsureInitializedAsync();
-            state.ActiveWorkspaceId ??= _activeWorkspace?.Id;
+            var resolvedWorkspace = ResolveWorkspaceForSession(state, state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+            if (resolvedWorkspace is not null)
+            {
+                _activeWorkspace = resolvedWorkspace;
+                state.ActiveWorkspaceId = resolvedWorkspace.Id;
+            }
+            else
+            {
+                state.ActiveWorkspaceId = NormalizeWorkspaceId(state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+            }
+
             state.SavedAt = DateTime.UtcNow;
             _lastSession = state;
             var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
@@ -341,11 +367,17 @@ public sealed class WorkspaceService
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         if (string.IsNullOrWhiteSpace(normalizedFundProfileId))
         {
+            if (_lastSession is not null)
+            {
+                NormalizeSessionState(_lastSession, _lastSession.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+            }
+
             return _lastSession;
         }
 
         if (_sessionsByFundProfileId.TryGetValue(normalizedFundProfileId, out var session))
         {
+            NormalizeSessionState(session, session.ActiveWorkspaceId ?? _activeWorkspace?.Id);
             _lastSession = session;
             LastSelectedFundProfileId = normalizedFundProfileId;
             return session;
@@ -362,6 +394,12 @@ public sealed class WorkspaceService
         LastSelectedFundProfileId = NormalizeFundProfileId(fundProfileId);
         await SaveWorkspacesAsync(ct).ConfigureAwait(false);
     }
+
+    public Task SetLastSelectedOperatingContextKeyAsync(string? operatingContextKey, CancellationToken ct = default)
+        => SetLastSelectedFundProfileIdAsync(operatingContextKey, ct);
+
+    public SessionState? GetLastSessionStateForContext(string? operatingContextKey)
+        => GetLastSessionState(operatingContextKey);
 
     /// <summary>
     /// Saves a single named filter value for a page into the active session's
@@ -605,6 +643,40 @@ public sealed class WorkspaceService
         return changed;
     }
 
+    private static IReadOnlyDictionary<string, string> BuildUniquePageWorkspaceOwnership()
+    {
+        var owners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+        static void AddOwner(IDictionary<string, HashSet<string>> map, string pageTag, string workspaceId)
+        {
+            if (!map.TryGetValue(pageTag, out var pageOwners))
+            {
+                pageOwners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                map[pageTag] = pageOwners;
+            }
+
+            pageOwners.Add(workspaceId);
+        }
+
+        foreach (var workspace in GetDefaultWorkspaces())
+        {
+            foreach (var page in workspace.Pages)
+            {
+                AddOwner(owners, page.PageTag, workspace.Id);
+            }
+        }
+
+        AddOwner(owners, "GovernanceShell", "governance");
+        AddOwner(owners, "DataOperationsShell", "data-operations");
+
+        return owners
+            .Where(static pair => pair.Value.Count == 1)
+            .ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value.Single(),
+                StringComparer.OrdinalIgnoreCase);
+    }
+
     private static string? NormalizeFundProfileId(string? fundProfileId)
         => string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim();
 
@@ -699,6 +771,45 @@ public sealed class WorkspaceService
         return false;
     }
 
+    private WorkspaceTemplate? ResolveWorkspaceForSession(SessionState? session, string? fallbackWorkspaceId = null)
+    {
+        var inferredWorkspaceId = InferWorkspaceIdForPageTag(session?.ActivePageTag);
+        var workspaceId = NormalizeWorkspaceId(inferredWorkspaceId)
+            ?? NormalizeWorkspaceId(session?.ActiveWorkspaceId)
+            ?? NormalizeWorkspaceId(fallbackWorkspaceId);
+
+        if (string.IsNullOrWhiteSpace(workspaceId))
+        {
+            return null;
+        }
+
+        return _workspaces.FirstOrDefault(workspace =>
+            string.Equals(workspace.Id, workspaceId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private SessionState NormalizeSessionState(SessionState session, string? fallbackWorkspaceId = null)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+
+        var resolvedWorkspace = ResolveWorkspaceForSession(session, fallbackWorkspaceId);
+        if (resolvedWorkspace is not null)
+        {
+            session.ActiveWorkspaceId = resolvedWorkspace.Id;
+            session.ActivePageTag = ResolveActivePageTag(resolvedWorkspace, session);
+        }
+        else
+        {
+            session.ActiveWorkspaceId = NormalizeWorkspaceId(session.ActiveWorkspaceId);
+        }
+
+        if (session.RecentPages.Count == 0 && !string.IsNullOrWhiteSpace(session.ActivePageTag))
+        {
+            session.RecentPages.Add(session.ActivePageTag);
+        }
+
+        return session;
+    }
+
     internal static void SetSettingsFilePathOverrideForTests(string? filePath)
     {
         _settingsFilePathOverride = filePath;
@@ -728,10 +839,19 @@ public sealed class WorkspaceService
 
     private void PersistActiveWorkspaceSnapshot()
     {
-        if (_activeWorkspace is null || _lastSession is null)
+        if (_lastSession is null)
         {
             return;
         }
+
+        var resolvedWorkspace = ResolveWorkspaceForSession(_lastSession, _activeWorkspace?.Id);
+        if (resolvedWorkspace is null)
+        {
+            return;
+        }
+
+        _activeWorkspace = resolvedWorkspace;
+        NormalizeSessionState(_lastSession, resolvedWorkspace.Id);
 
         _lastSession.ActiveWorkspaceId = _activeWorkspace.Id;
         _lastSession.ActivePageTag = ResolveActivePageTag(_activeWorkspace, _lastSession);
@@ -812,17 +932,26 @@ public sealed class WorkspaceService
 
     private static string ResolveActivePageTag(WorkspaceTemplate workspace, SessionState session)
     {
-        if (!string.IsNullOrWhiteSpace(session.ActivePageTag))
+        if (!string.IsNullOrWhiteSpace(session.ActivePageTag) &&
+            IsPageCompatibleWithWorkspace(session.ActivePageTag, workspace.Id))
         {
             return session.ActivePageTag;
         }
 
-        if (!string.IsNullOrWhiteSpace(workspace.LastActivePageTag))
+        if (!string.IsNullOrWhiteSpace(workspace.LastActivePageTag) &&
+            IsPageCompatibleWithWorkspace(workspace.LastActivePageTag, workspace.Id))
         {
             return workspace.LastActivePageTag;
         }
 
         return ResolvePreferredPageTag(workspace);
+    }
+
+    private static bool IsPageCompatibleWithWorkspace(string? pageTag, string workspaceId)
+    {
+        var inferredWorkspaceId = InferWorkspaceIdForPageTag(pageTag);
+        return inferredWorkspaceId is null ||
+               string.Equals(inferredWorkspaceId, workspaceId, StringComparison.OrdinalIgnoreCase);
     }
 
     private static List<WorkspacePage> CreateDefaultOpenPages(WorkspaceTemplate workspace, string preferredPageTag)
@@ -925,6 +1054,9 @@ public sealed class WorkspaceService
             LayoutId = layout.LayoutId,
             DisplayName = layout.DisplayName,
             ActivePaneId = layout.ActivePaneId,
+            OperatingContextKey = layout.OperatingContextKey,
+            WindowMode = layout.WindowMode,
+            LayoutPresetId = layout.LayoutPresetId,
             DockLayoutXml = layout.DockLayoutXml,
             SavedAt = layout.SavedAt,
             LayoutContext = new Dictionary<string, string>(layout.LayoutContext, StringComparer.Ordinal),
@@ -1036,6 +1168,13 @@ public sealed class WorkspaceService
         await SaveWorkspacesAsync(ct);
     }
 
+    public Task SaveWorkspaceLayoutStateForContextAsync(
+        string workspaceId,
+        WorkstationLayoutState layoutState,
+        string? operatingContextKey = null,
+        CancellationToken ct = default)
+        => SaveWorkspaceLayoutStateAsync(workspaceId, layoutState, operatingContextKey, ct);
+
     public async Task<WorkstationLayoutState?> GetWorkspaceLayoutStateAsync(
         string workspaceId,
         string? fundProfileId = null,
@@ -1050,6 +1189,12 @@ public sealed class WorkspaceService
             ? CloneWorkstationLayoutState(layoutState)
             : null;
     }
+
+    public Task<WorkstationLayoutState?> GetWorkspaceLayoutStateForContextAsync(
+        string workspaceId,
+        string? operatingContextKey = null,
+        CancellationToken ct = default)
+        => GetWorkspaceLayoutStateAsync(workspaceId, operatingContextKey, ct);
 
     private readonly Dictionary<string, string> _dockLayouts = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, WorkstationLayoutState> _workspaceLayouts = new(StringComparer.OrdinalIgnoreCase);

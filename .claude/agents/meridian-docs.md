@@ -76,6 +76,7 @@ The AI guidance system has six tiers — keep them in sync when code or conventi
 |---------|----------------|
 | New provider added | `docs/ai/claude/CLAUDE.providers.md`, `CLAUDE.md` provider table |
 | Storage architecture changes | `docs/ai/claude/CLAUDE.storage.md`, `docs/architecture/storage-design.md` |
+| WPF runtime config or persistence-path changes | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/claude/CLAUDE.structure.md`, `docs/ai/copilot/instructions.md`, `.claude/skills/_shared/project-context.md`, `.codex/skills/_shared/project-context.md` |
 | New test pattern discovered | `docs/ai/claude/CLAUDE.testing.md`, `.claude/skills/meridian-test-writer/references/test-patterns.md` |
 | New CI/CD workflow added | `docs/ai/claude/CLAUDE.actions.md`, `.github/workflows/README.md` |
 | F# domain model changes | `docs/ai/claude/CLAUDE.fsharp.md` |

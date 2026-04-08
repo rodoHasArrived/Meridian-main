@@ -24,6 +24,7 @@ Historical documentation is organized by type so the active `docs/` tree stays f
 - Documentation triage snapshot (2026-03-21): [`summaries/DOCUMENTATION_TRIAGE_2026_03_21.md`](summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
 - Now / Next / Later roadmap snapshot (2026-03-25): [`summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md`](summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
 - UWP to WPF migration: [`migrations/uwp-to-wpf-migration.md`](migrations/uwp-to-wpf-migration.md)
+- Platform restructuring ADR (superseded): [`migrations/ADR-015-platform-restructuring.md`](migrations/ADR-015-platform-restructuring.md)
 
 ## Active Documentation
 

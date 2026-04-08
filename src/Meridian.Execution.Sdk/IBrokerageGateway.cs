@@ -128,8 +128,17 @@ public sealed record AccountInfo
 /// </summary>
 public sealed record BrokerPosition
 {
+    /// <summary>Stable provider-side identifier for this position.</summary>
+    public string? PositionId { get; init; }
+
     /// <summary>Ticker symbol.</summary>
     public required string Symbol { get; init; }
+
+    /// <summary>Underlying symbol for derivatives; defaults to <see cref="Symbol"/> for spot assets.</summary>
+    public string? UnderlyingSymbol { get; init; }
+
+    /// <summary>Human-readable description suitable for blotter-style UIs.</summary>
+    public string? Description { get; init; }
 
     /// <summary>Signed quantity (negative for short positions).</summary>
     public decimal Quantity { get; init; }
@@ -148,6 +157,18 @@ public sealed record BrokerPosition
 
     /// <summary>Asset class (e.g., "equity", "crypto").</summary>
     public string AssetClass { get; init; } = "equity";
+
+    /// <summary>Expiration date for derivative positions when available.</summary>
+    public DateOnly? Expiration { get; init; }
+
+    /// <summary>Strike price for option positions when available.</summary>
+    public decimal? Strike { get; init; }
+
+    /// <summary>Option right or derivative-side classification (e.g., "call", "put").</summary>
+    public string? Right { get; init; }
+
+    /// <summary>Provider-specific metadata required to manage the position.</summary>
+    public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 }
 
 /// <summary>

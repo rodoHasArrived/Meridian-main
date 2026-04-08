@@ -1,5 +1,35 @@
 namespace Meridian.Contracts.FundStructure;
 
+public sealed record CreateOrganizationRequest(
+    Guid OrganizationId,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    DateTimeOffset EffectiveFrom,
+    string CreatedBy,
+    string? Description = null);
+
+public sealed record CreateBusinessRequest(
+    Guid BusinessId,
+    Guid OrganizationId,
+    BusinessKindDto BusinessKind,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    DateTimeOffset EffectiveFrom,
+    string CreatedBy,
+    string? Description = null);
+
+public sealed record CreateClientRequest(
+    Guid ClientId,
+    Guid BusinessId,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    DateTimeOffset EffectiveFrom,
+    string CreatedBy,
+    string? Description = null);
+
 public sealed record CreateFundRequest(
     Guid FundId,
     string Code,
@@ -7,7 +37,8 @@ public sealed record CreateFundRequest(
     string BaseCurrency,
     DateTimeOffset EffectiveFrom,
     string CreatedBy,
-    string? Description = null);
+    string? Description = null,
+    Guid? BusinessId = null);
 
 public sealed record CreateSleeveRequest(
     Guid SleeveId,
@@ -41,6 +72,21 @@ public sealed record CreateLegalEntityRequest(
     string CreatedBy,
     string? Description = null);
 
+public sealed record CreateInvestmentPortfolioRequest(
+    Guid InvestmentPortfolioId,
+    Guid BusinessId,
+    string Code,
+    string Name,
+    string BaseCurrency,
+    DateTimeOffset EffectiveFrom,
+    string CreatedBy,
+    Guid? ClientId = null,
+    Guid? FundId = null,
+    Guid? SleeveId = null,
+    Guid? VehicleId = null,
+    Guid? EntityId = null,
+    string? Description = null);
+
 public sealed record CreateAccountRequest(
     Guid AccountId,
     AccountTypeDto AccountType,
@@ -55,7 +101,11 @@ public sealed record CreateAccountRequest(
     Guid? VehicleId = null,
     string? Institution = null,
     CustodianAccountDetailsDto? CustodianDetails = null,
-    BankAccountDetailsDto? BankDetails = null);
+    BankAccountDetailsDto? BankDetails = null,
+    string? PortfolioId = null,
+    string? LedgerReference = null,
+    string? StrategyId = null,
+    string? RunId = null);
 
 public sealed record UpdateCustodianAccountDetailsRequest(
     CustodianAccountDetailsDto Details,

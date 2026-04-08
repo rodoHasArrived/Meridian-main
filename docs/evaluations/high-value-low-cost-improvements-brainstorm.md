@@ -220,10 +220,10 @@ The `--dry-run --offline` combination already exists but may not cover all these
 
 **Improvement:** Generate a JSON Schema file from the C# configuration classes (`AppConfig`, `BackfillConfig`, `StorageOptions`, etc.) using a build-time tool or source generator. Reference it in the config file:
 
-```json
+```jsonc
 {
   "$schema": "./config/appsettings.schema.json",
-  ...
+  // existing config values remain here
 }
 ```
 

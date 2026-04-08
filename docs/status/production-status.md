@@ -2,7 +2,7 @@
 
 **Version:** 1.7.2
 **Last Updated:** 2026-04-07
-**Status:** Development / Pilot Ready (comprehensive fund-management planning active)
+**Status:** Development / Pilot Ready (workstation and governance productization active)
 
 This document summarizes the current production-readiness posture and the next product-delivery gaps from the current repository state.
 
@@ -21,10 +21,10 @@ The active plan now has two connected delivery tracks:
 |----------|--------|-------|
 | Core event pipeline | Implemented | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
 | Storage layer | Implemented | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
-| Backfill providers | Implemented | 10+ providers with fallback chain; some require credentials |
+| Backfill providers | Implemented | 10+ price providers with fallback chain plus FRED economic-series support; some require credentials |
 | Backtesting engine | Implemented | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
 | Paper trading gateway | Implemented | Risk rules (position limits, drawdown stops, order rate throttle), position and fill tracking |
-| **Brokerage gateway framework** | **Implemented** | `BaseBrokerageGateway` + Alpaca, IB, StockSharp adapters; live-validated runtime paths pending |
+| **Brokerage gateway framework** | **Implemented** | `BaseBrokerageGateway` + Alpaca, Robinhood, IB, StockSharp adapters; live-validated runtime paths pending |
 | Direct lending module | Implemented | PostgreSQL-backed services, workflows, and `/api/loans/*` endpoints |
 | CppTrader integration | Implemented | Host management, order gateway, ITCH ingestion, replay service |
 | WPF desktop shell | Active | Fluent theme, SVG icons, candlestick charting, and zero-API-key startup landed (PRs #512, #513, #522, #524); MVVM extraction and high-traffic page redesign ongoing |
@@ -39,7 +39,8 @@ The active plan now has two connected delivery tracks:
 
 - Mature ingestion, replay, storage, and export foundations
 - Shared composition and host startup patterns
-- **Brokerage gateway framework** with Alpaca, IB, and StockSharp adapters ready for cockpit integration
+- **Brokerage gateway framework** with Alpaca, Robinhood, IB, and StockSharp adapters ready for cockpit integration
+- Broader provider surface already includes Robinhood live quotes/brokerage, FRED economic-series backfill, and EDGAR symbol/security-master support providers beyond the core execution-gated set
 - Backtesting engine with tick replay, fill models, and QuantConnect Lean integration
 - Direct lending module with PostgreSQL persistence, workflows, and API endpoints
 - Portfolio and ledger concepts already present in the codebase (double-entry accounting, F# ledger, trading state machines)
@@ -53,7 +54,7 @@ The active plan now has two connected delivery tracks:
 
 ### Workstation productization
 
-Meridian still exposes too much capability through page-first flows instead of operator workflows. The Research, Trading, Data Operations, and Governance taxonomy is now established, but richer cockpit shells and broader shared-run coverage remain to be implemented.
+Meridian still exposes too much capability through page-first flows instead of operator workflows. The Research, Trading, Data Operations, and Governance taxonomy is now established, but the existing cockpit and shared-run surfaces still need hardening, deeper continuity, and clearer operator acceptance criteria.
 
 ### Governance and fund operations
 
@@ -72,9 +73,12 @@ The target governance capability set is now defined, with Security Master covera
 Some providers remain conditionally operator-ready:
 
 - **Polygon**: replay fixture and parser coverage is passing in-repo, but live reconnect/rate-limit runtime proof is still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs), [partial gap evidence](provider-validation-matrix.md)).
+- **Robinhood**: brokerage submit-path, live quote polling, historical bars, and symbol search are implemented with stable-seam execution evidence, but reconnect/rate-limit runtime proof is still partial and the adapter depends on the unofficial Robinhood API ([pass evidence](../../tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs), [provider tests](../../tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs)).
 - **Interactive Brokers**: non-`IBAPI` guidance and smoke-build checks pass, but full live runtime path remains partially validated ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs), [prerequisites](../providers/interactive-brokers-setup.md)).
 - **StockSharp**: connector capability and subscription-guidance tests pass, with runtime connector validation still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs), [runbook](../providers/stocksharp-connectors.md)).
 - **NYSE**: reconnect and parser lifecycle tests pass; auth/rate-limit explicit evidence still pending ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/NyseMarketDataClientTests.cs), [open checks](provider-validation-matrix.md)).
+
+Lower-risk non-execution provider surfaces such as FRED economic-series backfill and EDGAR symbol/security-master ingestion are implemented and inventoried, but they are not part of the execution-oriented readiness matrix.
 
 ## Provider Evidence Links (Pass/Fail)
 
@@ -82,6 +86,8 @@ Some providers remain conditionally operator-ready:
 |---|---|---|---|
 | Polygon | Replay fixtures (trades/quotes/aggregates/status) | ✅ Pass | `PolygonRecordedSessionReplayTests`, `PolygonMessageParsingTests`, fixtures in `tests/.../Fixtures/Polygon` |
 | Polygon | Reconnect + live rate-limit runtime proof | ⚠️ Partial | `ProviderResilienceTests` baseline + outstanding live validation in matrix |
+| Robinhood | Stable execution seam + brokerage submit path | ✅ Pass | `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam`, `RobinhoodBrokerageGatewayTests` |
+| Robinhood | Quote polling / reconnect / rate-limit runtime proof | ⚠️ Partial | `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, outstanding live-session validation in matrix |
 | IB | Non-IBAPI runtime guidance + smoke compile path | ✅ Pass | `IBRuntimeGuidanceTests`, `scripts/dev/build-ibapi-smoke.ps1` |
 | IB | Real vendor runtime (`IBAPI` + TWS/Gateway) | ⚠️ Partial | prerequisites/checklist in `docs/providers/interactive-brokers-setup.md` |
 | StockSharp | Subscription guidance + conversion contracts | ✅ Pass | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
@@ -105,8 +111,8 @@ The current planning set is synchronized around these documents:
 
 - [ ] Configure real provider credentials and validate operator startup paths
 - [ ] Complete Wave 1 provider-confidence hardening for Polygon replay, IB runtime/bootstrap, NYSE lifecycle/transport, StockSharp validated adapters, backfill checkpoints/gap detection, and Parquet L2 persistence
-- [ ] Validate brokerage gateway adapters (Alpaca, IB, StockSharp) against live vendor surfaces
-- [ ] Build paper-trading cockpit in web dashboard wired to brokerage gateways
+- [ ] Validate brokerage gateway adapters (Alpaca, Robinhood, IB, StockSharp) against live vendor surfaces
+- [ ] Harden and validate the existing paper-trading cockpit in the web dashboard across positions, orders, fills, replay, sessions, and promotion flows
 - [ ] Finish workspace-first trading workstation flows beyond the first shared run baseline
 - [ ] Extend governance report-pack, cash-flow, and multi-ledger workflows beyond the delivered Security Master/reconciliation baseline
 - [ ] Implement multi-ledger, trial-balance, and cash-flow governance views

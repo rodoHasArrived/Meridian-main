@@ -1,6 +1,10 @@
 # Repository Structure
 
+<<<<<<< Updated upstream
 > Auto-generated on 2026-04-08 03:35:15 UTC. Do not edit manually.
+=======
+> Auto-generated on 2026-04-08 03:28:38 UTC. Do not edit manually.
+>>>>>>> Stashed changes
 
 ```text
 Meridian-main
@@ -89,20 +93,25 @@ Meridian-main
 │   │   │   │   └── trace_archive_candidates.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
+│   │   │   ├── agents
 │   │   │   ├── scripts
 │   │   │   │   └── repo-updater.ps1
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
+│   │   │   ├── agents
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
+│   │   │   ├── agents
 │   │   │   ├── evals
 │   │   │   │   ├── benchmark_baseline.json
 │   │   │   │   ├── evals.json
@@ -117,6 +126,7 @@ Meridian-main
 │   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   └── SKILL.md
@@ -125,10 +135,12 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
+│   │   │   ├── agents
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
 │   │   │   └── SKILL.md
@@ -236,6 +248,7 @@ Meridian-main
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
+├── .vscode
 ├── benchmarks
 │   ├── Meridian.Benchmarks
 │   │   ├── Budget
@@ -348,6 +361,7 @@ Meridian-main
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
+│   ├── appsettings.json
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
 │   ├── condition-codes.json
@@ -381,6 +395,7 @@ Meridian-main
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
+├── dist
 ├── docs
 │   ├── adr
 │   │   ├── 001-provider-abstraction.md
@@ -400,7 +415,6 @@ Meridian-main
 │   │   ├── 015-strategy-execution-contract.md
 │   │   ├── 016-platform-architecture-migration.md
 │   │   ├── _template.md
-│   │   ├── ADR-015-platform-restructuring.md
 │   │   └── README.md
 │   ├── ai
 │   │   ├── agents
@@ -823,6 +837,7 @@ Meridian-main
 │   │   ├── ROADMAP_COMBINED.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
+│   │   ├── todo-scan-results.json
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -3018,6 +3033,7 @@ Meridian-main
 │   │   │   │   ├── Startup
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
+│   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
@@ -3111,6 +3127,9 @@ Meridian-main
 │   │   │   └── ReconciliationRunServiceTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
+│   │   ├── Contracts
+│   │   │   └── Api
+│   │   │       └── UiApiClientTests.cs
 │   │   ├── Domain
 │   │   │   ├── Collectors
 │   │   │   │   ├── L3OrderBookCollectorTests.cs
@@ -3464,6 +3483,7 @@ Meridian-main
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
+│   │   │   ├── MainPageUiAutomationFacade.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
@@ -3479,6 +3499,7 @@ Meridian-main
 │   │   ├── Views
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── MainPageSmokeTests.cs
+│   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
@@ -3513,5 +3534,6 @@ Meridian-main
 ├── Meridian.sln
 ├── package-lock.json
 ├── package.json
-└── README.md
+├── README.md
+└── test-build.ps1
 ```

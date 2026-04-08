@@ -45,6 +45,7 @@ Use this lane whenever the task creates or updates an agent/skill package.
 - Inspect only the relevant Meridian instinct files when local learned behavior would help; treat them as hints to verify against the repository, not policy to copy blindly.
 - Keep the primary skill file concise and imperative. Move detailed reference material into `references/`, deterministic helpers into `scripts/`, and output resources into `assets/`.
 - Preserve host-specific metadata rules. For Codex repo-local skills, keep frontmatter minimal (`name`, `description`). For portable/Claude packages, preserve the package metadata already required by that host.
+- Keep mirrored Codex, Claude, and GitHub agent guidance aligned when a shared workflow or policy changes.
 - Avoid auxiliary files inside skill folders unless they are required by the host format or directly support execution.
 - When `agents/openai.yaml` exists, regenerate or update it so it still matches the skill instructions.
 - Validate the package after editing and run representative checks for any added or changed scripts.
@@ -102,6 +103,7 @@ A task is complete when **all** of the following are true:
 - Validation commands (builds/tests/scripts) with pass/fail + duration
 - Traceability matrix (requirement ↔ implementation ↔ evidence)
 - Catalog updates recorded (agents/skills symmetry) when capabilities change
+- Host-runtime doc sync when configuration, persistence, or upgrade-path behavior changes
 - Package validation evidence when skills change, including metadata sync notes and any regenerated interface files
 - Docs updated if behavior or workflows changed
 - `score_eval.py` rubric report included in response
@@ -137,6 +139,7 @@ See the [Claude skill](../../.claude/skills/meridian-implementation-assurance/SK
 
 | Version | Date | Change |
 |---------|------|--------|
+| 1.3 | 2026-04-07 | Added mirrored-host guidance sync and explicit host-runtime doc-sync evidence when configuration or persistence semantics change |
 | 1.2 | 2026-04-07 | Added a skill-authoring lane derived from skill-creator guidance, including lean package rules, metadata synchronization, and Codex skill validation expectations |
 | 1.1 | 2026-03-31 | Resolved merge conflicts; consolidated Requirement Type Detection into table; merged Bundled Tooling and Script Helpers into single table; added cross-links and changelog |
 | 1.0 | 2026-03-21 | Initial agent file |

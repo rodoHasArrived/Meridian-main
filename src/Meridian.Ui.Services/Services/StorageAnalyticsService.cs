@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
 
 namespace Meridian.Ui.Services;
 
@@ -52,17 +53,13 @@ public sealed class StorageAnalyticsService
     private async Task<StorageAnalytics> CalculateAnalyticsAsync(CancellationToken ct = default)
     {
         var config = await _configService.LoadConfigAsync();
-        var dataRoot = config?.DataRoot ?? "data";
 
         var analytics = new StorageAnalytics
         {
             LastUpdated = (DateTime?)DateTime.UtcNow
         };
 
-        // Resolve data root path
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = _configService.ResolveDataRoot(config);
 
         if (!Directory.Exists(basePath))
         {
@@ -268,10 +265,7 @@ public sealed class StorageAnalyticsService
         try
         {
             var config = await _configService.LoadConfigAsync();
-            var dataRoot = config?.DataRoot ?? "data";
-            var basePath = Path.IsPathRooted(dataRoot)
-                ? dataRoot
-                : Path.Combine(AppContext.BaseDirectory, dataRoot);
+            var basePath = _configService.ResolveDataRoot(config);
 
             var driveInfo = new DriveInfo(Path.GetPathRoot(basePath) ?? "C:");
             var usedPercent = 100.0 - (driveInfo.AvailableFreeSpace * 100.0 / driveInfo.TotalSize);
@@ -295,10 +289,7 @@ public sealed class StorageAnalyticsService
         try
         {
             var config = await _configService.LoadConfigAsync();
-            var dataRoot = config?.DataRoot ?? "data";
-            var basePath = Path.IsPathRooted(dataRoot)
-                ? dataRoot
-                : Path.Combine(AppContext.BaseDirectory, dataRoot);
+            var basePath = _configService.ResolveDataRoot(config);
 
             var driveInfo = new DriveInfo(Path.GetPathRoot(basePath) ?? "C:");
 
@@ -323,9 +314,7 @@ public sealed class StorageAnalyticsService
     /// </summary>
     public Task<bool> SymbolHasDataAsync(string symbol, string dataRoot)
     {
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, dataRoot);
 
         if (!Directory.Exists(basePath))
             return Task.FromResult(false);
@@ -348,9 +337,7 @@ public sealed class StorageAnalyticsService
     /// </summary>
     public Task<DateTime?> GetLastUpdateTimeAsync(string symbol, string dataRoot)
     {
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, dataRoot);
 
         if (!Directory.Exists(basePath))
             return Task.FromResult<DateTime?>(null);

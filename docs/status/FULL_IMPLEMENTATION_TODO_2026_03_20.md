@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-07
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -41,14 +41,14 @@ Closed platform work:
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- Security Master application/storage/domain foundation
+- delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
 - live execution governance now wired into the stable execution seam: durable audit trail, circuit breaker / position-limit / manual-override controls, and human-approved `Paper → Live` promotion
 - Alpaca execution path validated end to end through the existing `/api/execution/*` seam with executable test evidence
 
-The remaining backlog is therefore about turning those foundations into a complete operator-facing product.
+The remaining backlog is therefore about turning those foundations and delivered seams into a complete operator-facing product.
 
 ---
 
@@ -74,13 +74,13 @@ Every major provider has documented replay/runtime evidence and passes its valid
 
 ### Track B: Paper trading cockpit web UI
 
-Goal: make the existing execution primitives, brokerage adapters, and wired REST endpoints visible through a real operator cockpit in the web dashboard.
+Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web dashboard.
 
 Open work:
 
-- build live positions, open orders, fills, P&L, and risk state panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result, approval controls, and execution-control state in the dashboard
-- add paper-trading session persistence and replay from persisted order history
+- tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
+- expose promotion evaluation result, approval controls, session state, and execution-control state with clearer acceptance criteria in the dashboard
+- verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 
 Primary anchors:
@@ -161,12 +161,11 @@ Current status: Alpaca execution path is now validated through the stable REST s
 
 ### Track F: Governance and fund-operations productization
 
-Goal: productize Security Master and the direct lending foundations into operator-facing governance tooling.
+Goal: productize governance and fund-operations workflows on top of the delivered Security Master seam and direct-lending foundations.
 
 Open work:
 
-- productize Security Master beyond its current foundational services
-- add account/entity and strategy-structure workflows
+- extend the delivered Security Master seam into broader account/entity and strategy-structure workflows
 - deepen portfolio and ledger surfaces into first-class governance tooling
 - add multi-ledger, trial-balance, and cash-flow views
 - implement reconciliation workflows and governed reporting/report-pack generation
@@ -296,15 +295,18 @@ References:
 
 ### Wave 4
 
-- Track D: Backtest Studio unification
+- Track F: Governance and fund-operations productization on top of Security Master
 
 ### Wave 5
+
+- Track D: Backtest Studio unification
+
+### Wave 6
 
 - Track E: Live integration readiness
 
 ### Optional Wave
 
-- Track F: Governance and Security Master productization
 - Track G: QuantScript *(implemented — deeper workflow integration and sample scripts remain)*
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
@@ -315,12 +317,14 @@ References:
 
 ## Practical Definition of Done
 
-The repository can reasonably claim core-platform readiness when all of the following are true:
+The repository can reasonably claim core operator-readiness when all of the following are true:
 
 1. Every major provider has documented replay/runtime validation evidence
 2. Paper trading is exposed as a full cockpit in the web dashboard (wired to the existing `/api/execution/*` and `/api/promotion/*` endpoints)
 3. The `Backtest → Paper` promotion workflow is explicit and auditable through the dashboard
 4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
 5. Backfill checkpoint reliability is validated across providers and date ranges
+6. Security Master remains operator-accessible and materially integrated into governance workflows
+7. Governance has concrete account/entity, multi-ledger, reconciliation, cash-flow, and reporting seams built on shared contracts
 
 Until then, Meridian is best described as feature-rich and structurally strong, but still in active productization rather than fully complete.

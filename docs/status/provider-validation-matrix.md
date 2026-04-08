@@ -1,9 +1,10 @@
-# Provider Validation Matrix (Alpaca, Polygon, IB, StockSharp, NYSE)
+# Provider Validation Matrix (Alpaca, Polygon, Robinhood, IB, StockSharp, NYSE)
 
-**Last Updated:** 2026-04-05  
-**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, rate-limit handling, and stable-seam execution validation where applicable.
+**Last Updated:** 2026-04-07  
+**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, rate-limit handling, and stable-seam execution validation for execution- and streaming-oriented provider readiness.
 
 This matrix is the execution checklist referenced by `production-status.md` and `FEATURE_INVENTORY.md` for provider readiness gating.
+Historical-only and Security Master support providers such as FRED and EDGAR are tracked in `FEATURE_INVENTORY.md` rather than this execution-oriented matrix.
 
 ## Legend
 
@@ -17,6 +18,7 @@ This matrix is the execution checklist referenced by `production-status.md` and 
 |---|---|---|---|---|---|---|
 | Alpaca | ⚠️ | ✅ | ⚠️ | ✅ | ⚠️ | `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam`, `AlpacaCredentialAndReconnectTests` |
 | Polygon | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | `PolygonRecordedSessionReplayTests`, `PolygonMarketDataClientTests`, fixtures under `Fixtures/Polygon` |
+| Robinhood | ⚠️ | ⚠️ | ⚠️ | ✅ | ❌ | `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam`, `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests` |
 | Interactive Brokers (IB) | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `IBRuntimeGuidanceTests`, `IBSimulationClientContractTests`, `build-ibapi-smoke.ps1` |
 | StockSharp | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
 | NYSE | ⚠️ | ✅ | ⚠️ | ⚠️ | ❌ | `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` |
@@ -36,6 +38,14 @@ This matrix is the execution checklist referenced by `production-status.md` and 
 - **Cancellation** is covered at provider client level (`ConnectAsync`/`DisconnectAsync` and cancellation token paths).
 - **Auth failure** is validated by status-frame fixtures (`auth_failed`) and missing-key connection exception tests.
 - **Rate-limit handling** exists for Polygon REST ingest paths; WebSocket runtime throttling still needs live verification evidence.
+
+### Robinhood
+
+- Robinhood is implemented as an unofficial broker-backed surface spanning quote polling, historical daily bars, symbol search, options chains, and brokerage reads/orders.
+- The stable `/api/execution/*` seam is exercised end to end against the concrete Robinhood brokerage gateway with stubbed broker responses.
+- Auth and token-failure behavior are covered in market-data, historical, and brokerage tests, but reconnect and cancellation remain only partially validated because there is no committed live broker-session replay transcript.
+- Robinhood does not expose a public WebSocket market-data feed in this adapter set, so quote readiness is based on polling-path validation rather than transport replay fixtures.
+- Explicit provider-level rate-limit fixtures are still missing even though the provider catalog and adapter comments document broker-session throttling constraints.
 
 ### Interactive Brokers (IB)
 

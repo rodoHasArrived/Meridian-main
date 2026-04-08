@@ -49,6 +49,13 @@ EXCLUDE_DIRS: frozenset[str] = frozenset({
     ".vs",
 })
 
+#: Generated markdown reports that should not be scanned for internal links.
+#: These files often embed raw regex patterns, CLI excerpts, and report fragments
+#: that resemble markdown links but are not authored navigation targets.
+EXCLUDE_FILES: frozenset[str] = frozenset({
+    "docs/status/TODO.md",
+})
+
 #: Regex that captures markdown links: [text](target)
 #: Group 1 = link text, Group 2 = link target (path + optional anchor).
 #: Ignores image links (![alt](src)) by requiring the opening bracket is NOT
@@ -56,6 +63,10 @@ EXCLUDE_DIRS: frozenset[str] = frozenset({
 _LINK_PATTERN: re.Pattern[str] = re.compile(
     r"(?<!!)\[([^\]]*)\]\(([^)]+)\)"
 )
+
+_FENCE_PATTERN: re.Pattern[str] = re.compile(r"^\s*(```|~~~)")
+
+_INLINE_CODE_PATTERN: re.Pattern[str] = re.compile(r"`[^`]*`")
 
 #: Anchors generated from markdown headings.
 #: GitHub-flavoured heading-to-anchor rules:
@@ -207,6 +218,11 @@ def _should_skip_dir(name: str) -> bool:
     return name in EXCLUDE_DIRS
 
 
+def _mask_inline_code(line: str) -> str:
+    """Replace inline-code spans with whitespace to preserve match offsets."""
+    return _INLINE_CODE_PATTERN.sub(lambda m: " " * len(m.group(0)), line)
+
+
 def _build_file_index(root: Path) -> dict[str, list[Path]]:
     """Build an index mapping each filename to its path(s) under *root*.
 
@@ -312,7 +328,11 @@ def _collect_markdown_files(docs_root: Path) -> list[Path]:
         dirnames[:] = [d for d in dirnames if not _should_skip_dir(d)]
         for fname in filenames:
             if fname.lower().endswith(".md"):
-                md_files.append(Path(dirpath) / fname)
+                md_file = Path(dirpath) / fname
+                rel_path = md_file.relative_to(docs_root.parent).as_posix()
+                if rel_path in EXCLUDE_FILES:
+                    continue
+                md_files.append(md_file)
     md_files.sort()
     return md_files
 
@@ -345,9 +365,19 @@ def _scan_file(  # noqa: C901
 
     lines = content.splitlines(keepends=True)
     replacements: list[tuple[int, str, str]] = []  # (line_idx, old, new)
+    in_fenced_block = False
 
     for line_idx, line in enumerate(lines):
-        for match in _LINK_PATTERN.finditer(line):
+        if _FENCE_PATTERN.match(line):
+            in_fenced_block = not in_fenced_block
+            continue
+
+        if in_fenced_block:
+            continue
+
+        scan_line = _mask_inline_code(line)
+
+        for match in _LINK_PATTERN.finditer(scan_line):
             link_text = match.group(1)
             raw_target = match.group(2).strip()
 
@@ -380,7 +410,16 @@ def _scan_file(  # noqa: C901
 
             if path_part:
                 # Resolve relative to the source file's directory.
-                resolved = (md_file.parent / path_part).resolve()
+                try:
+                    resolved = (md_file.parent / path_part).resolve()
+                except OSError:
+                    result.broken_links.append(
+                        BrokenLink(
+                            location=location,
+                            reason="Invalid path syntax",
+                        )
+                    )
+                    continue
 
                 if not resolved.exists():
                     # Target file does not exist -- try to locate it.

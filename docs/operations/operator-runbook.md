@@ -325,7 +325,9 @@ When using quote-capable providers, the system can ingest **quote (BBO)** update
 To enable quote ingestion in Alpaca mode, set:
 
 ```json
-"Alpaca": { "SubscribeQuotes": true }
+{
+  "Alpaca": { "SubscribeQuotes": true }
+}
 ```
 
 This will emit `MarketEventType.BboQuote` events with `BboQuotePayload` and improve `Trade` + `OrderFlow` aggressor classification.

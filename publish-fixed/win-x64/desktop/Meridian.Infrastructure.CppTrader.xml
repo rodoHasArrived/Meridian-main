@@ -1,0 +1,350 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.Infrastructure.CppTrader</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter">
+            <summary>
+            Session-local feed cache populated from CppTrader execution events.
+            </summary>
+        </member>
+        <member name="T:Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway">
+            <summary>
+            Process-backed simulated order gateway that delegates matching to an external CppTrader host.
+            </summary>
+        </member>
+        <member name="T:Meridian.Infrastructure.CppTrader.Options.CppTraderOptions">
+            <summary>
+            Runtime options for the external CppTrader integration layer.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.Boolean">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.Decimal">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.NullableDecimal">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.AggressorSide">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderFeatureOptions">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderOptions">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderSymbolSpecification">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.AcceptedEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.BookSnapshotEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CancelledEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CancelOrderRequest">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CancelOrderResponse">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderBookLevel">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderBookSnapshot">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderEnvelope">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CppTraderSessionKind">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CreateSessionRequest">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.CreateSessionResponse">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.ExecutionEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.FaultEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.GetSnapshotRequest">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.GetSnapshotResponse">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.HeartbeatRequest">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.HeartbeatResponse">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.HostHealthSnapshot">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.RegisterSymbolRequest">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.RegisterSymbolResponse">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.RejectedEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.SessionClosedEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.SubmitOrderRequest">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.SubmitOrderResponse">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.TradePrintEvent">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.DictionaryStringCppTraderSymbolSpecification">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.IReadOnlyDictionaryStringCppTraderSymbolSpecification">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.IReadOnlyDictionaryStringString">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.IReadOnlyListCppTraderBookLevel">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.DateTimeOffset">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.NullableDateTimeOffset">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.JsonElement">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.TimeSpan">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.Int32">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.Int64">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.NullableInt64">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.String">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.Default">
+            <summary>
+            The default <see cref="T:System.Text.Json.Serialization.JsonSerializerContext"/> associated with a default <see cref="T:System.Text.Json.JsonSerializerOptions"/> instance.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.GeneratedSerializerOptions">
+            <summary>
+            The source-generated options associated with this context.
+            </summary>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.#ctor(System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Protocol.CppTraderJsonContext.GetTypeInfo(System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService">
+            <summary>
+            Opens ITCH ingestion sessions on the external CppTrader host process and returns the session identifier.
+            The host will begin streaming market data for the configured symbols once the session is active.
+            </summary>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager,Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})">
+            <summary>
+            Opens ITCH ingestion sessions on the external CppTrader host process and returns the session identifier.
+            The host will begin streaming market data for the configured symbols once the session is active.
+            </summary>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService.OpenFeedAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Opens a new ITCH ingestion session for the specified source and returns its session identifier.
+            </summary>
+            <param name="sourceId">Logical source identifier (e.g. feed name or venue code) passed as the session name.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>The session ID assigned by the host.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when ITCH ingestion is disabled in configuration.</exception>
+        </member>
+        <member name="T:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient">
+            <summary>
+            Streaming market-data provider backed by a CppTrader ITCH ingestion session.
+            Receives <see cref="F:Meridian.Infrastructure.CppTrader.Protocol.CppTraderProtocolNames.TradePrint"/> and
+            <see cref="F:Meridian.Infrastructure.CppTrader.Protocol.CppTraderProtocolNames.BookSnapshot"/> events from the native host and
+            forwards them to the domain <see cref="T:Meridian.Domain.Collectors.TradeDataCollector"/> and
+            <see cref="T:Meridian.Domain.Collectors.MarketDepthCollector"/> for pipeline processing.
+            </summary>
+        </member>
+        <member name="P:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.IsEnabled">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.ConnectAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.UnsubscribeMarketDepth(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.UnsubscribeTrades(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.TryRegisterSymbolInBackground(System.String)">
+            <summary>
+            Registers <paramref name="symbol"/> with the native host session in the background
+            if a session is active and the symbol has not already been registered.
+            The returned task is tracked and awaited during <see cref="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.HandleBookSnapshot(Meridian.Infrastructure.CppTrader.Protocol.CppTraderBookSnapshot)">
+            <summary>
+            Converts a full order-book snapshot into a series of incremental depth inserts consumed
+            by <see cref="T:Meridian.Domain.Collectors.MarketDepthCollector"/>. The symbol stream is reset before insertion so
+            that stale levels are cleared before the fresh snapshot is applied.
+            </summary>
+        </member>
+        <member name="T:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService">
+            <summary>
+            Creates replay sessions on the external CppTrader host process and returns the session identifier.
+            Callers use the returned session ID to correlate subsequent replay events received via the host.
+            </summary>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager,Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})">
+            <summary>
+            Creates replay sessions on the external CppTrader host process and returns the session identifier.
+            Callers use the returned session ID to correlate subsequent replay events received via the host.
+            </summary>
+        </member>
+        <member name="M:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)">
+            <summary>
+            Opens a new replay session on the CppTrader host and returns its session identifier.
+            </summary>
+            <param name="ct">Cancellation token.</param>
+            <returns>The session ID assigned by the host.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when replay is disabled in configuration.</exception>
+        </member>
+    </members>
+</doc>

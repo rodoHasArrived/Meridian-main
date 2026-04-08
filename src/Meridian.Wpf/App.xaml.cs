@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
@@ -110,6 +112,10 @@ public partial class App : System.Windows.Application
         // Windows shell (taskbar, JumpList, toast activations) maps all
         // notifications back to this process identity.
         WpfServices.ToastNotificationService.SetAppUserModelId();
+        Meridian.Ui.Services.ConfigService.DefaultPathResolver =
+            () => WpfServices.FirstRunService.Instance.ConfigFilePath;
+        Meridian.Application.UI.ConfigStore.DefaultPathResolver =
+            () => WpfServices.FirstRunService.Instance.ConfigFilePath;
 
         // Enforce single instance: if another Meridian window is already running,
         // forward the launch args to it via named pipe and exit cleanly.
@@ -257,6 +263,13 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
         services.AddSingleton(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
+        services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
+            sp.GetRequiredService<IFundAccountService>(),
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "fund-structure.json")));
+        services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
 
         // ── Domain / feature services ───────────────────────────────────────

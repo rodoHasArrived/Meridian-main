@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Schema;
 using Meridian.Ui.Services;
 
@@ -17,11 +18,15 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
     public static SchemaService Instance => _instance.Value;
 
     private readonly string _schemasPath;
+    private readonly string _legacySchemasPath;
     private DataDictionary? _dataDictionary;
 
     private SchemaService()
     {
-        _schemasPath = Path.Combine(AppContext.BaseDirectory, "_catalog", "schemas");
+        _schemasPath = Path.Combine(
+            MeridianPathDefaults.GetCatalogRoot(FirstRunService.Instance.ConfigFilePath),
+            "schemas");
+        _legacySchemasPath = Path.Combine(AppContext.BaseDirectory, "_catalog", "schemas");
     }
 
     public event EventHandler<Meridian.Ui.Services.DataDictionaryEventArgs>? DictionaryGenerated;
@@ -91,6 +96,24 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
             }
         }
 
+        var legacyDictionaryPath = Path.Combine(_legacySchemasPath, "data_dictionary.json");
+        if (!PathsEqual(dictionaryPath, legacyDictionaryPath) && File.Exists(legacyDictionaryPath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(legacyDictionaryPath, ct);
+                var dictionary = JsonSerializer.Deserialize<DataDictionary>(json, DesktopJsonOptions.Compact);
+                if (dictionary != null)
+                {
+                    await SaveDataDictionaryAsync(dictionary, ct);
+                    return dictionary;
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         return await GenerateDataDictionaryAsync();
     }
 
@@ -114,4 +137,10 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
             Directory.CreateDirectory(_schemasPath);
         }
     }
+
+    private static bool PathsEqual(string left, string right)
+        => string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
 }

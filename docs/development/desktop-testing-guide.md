@@ -54,6 +54,25 @@ dotnet test tests/Meridian.Ui.Tests   # Shared UI services (Windows target; inte
 dotnet test tests/Meridian.Tests      # Cross-platform startup, composition, contracts, and endpoint-shape coverage
 ```
 
+### Desktop persistence locations
+
+The desktop app is now wired for update-safe persistence:
+
+- Config: `%LocalAppData%\Meridian\appsettings.json`
+- Relative data root: `%LocalAppData%\Meridian\data` when `DataRoot` is left at the default `data`
+- Desktop catalog and archive-health metadata: `%LocalAppData%\Meridian\_catalog\`
+- Activity log and collection session history: under the resolved data root, for example `%LocalAppData%\Meridian\data\_logs\activity_log.json` and `%LocalAppData%\Meridian\data\_sessions\sessions.json`
+- Symbol mapping overrides: `DataSources:SymbolMappings:PersistencePath` when configured, otherwise under the resolved data root at `_config\symbol-mappings.json`
+- Generated schema dictionary artifacts: `%LocalAppData%\Meridian\_catalog\schemas\`
+
+When testing upgrades or publish/install flows, verify that:
+
+1. `appsettings.json` remains under `%LocalAppData%\Meridian`
+2. The setup wizard writes `DataRoot` at the config root level
+3. The launched backend process receives the same config path via `--config` and `MDC_CONFIG_PATH`
+4. Existing configs that only contain `Storage.BaseDirectory` still load into the same effective data directory
+5. Legacy app-folder session, activity-log, symbol-mapping, and schema files are copied forward into the external desktop locations on first upgraded launch
+
 ## Test Projects
 
 ### Meridian.Tests (cross-platform backend + host topology)
@@ -147,6 +166,11 @@ Tests for WPF-specific behavior that genuinely depends on WPF types (`System.Win
    - Event handling
    - HTTP client interaction
 
+5. **MainPageUiWorkflowTests** (3 tests)
+   - Command palette filtering and page-open workflow
+   - Workspace tile navigation across workstation home surfaces
+   - Fixture banner dismissal and ticker-strip toggle behavior
+
 **Running WPF Tests:**
 
 ```bash
@@ -161,6 +185,7 @@ On non-Windows platforms, these tests will be skipped automatically by the Makef
 - binding-specific behavior
 - navigation/page registration behavior
 - WPF host wiring and desktop-only service registration
+- in-process user workflow smoke tests that exercise real WPF controls and automation IDs
 
 Do **not** move mapping, filtering, or refresh-state logic into this project unless the logic truly requires WPF types. Prefer shared services or plain viewmodel logic with an injected scheduler abstraction.
 
@@ -178,6 +203,7 @@ Do **not** move mapping, filtering, or refresh-state logic into this project unl
 - Configuration: 13 tests (validation, data source management)
 - Status Tracking: 13 tests (real-time updates, HTTP interaction)
 - Connection Management: 18 tests (state management, auto-reconnect)
+- Shell UI Workflows: command palette, workspace switching, fixture banner, ticker strip
 - Collections: 19 tests (bounded/circular buffer operations)
 - Business Services: 52 tests (validation, health, backfill, fixtures)
 
@@ -278,7 +304,7 @@ Current test coverage for desktop services:
 
 **Areas Not Yet Covered** (future work):
 - Integration tests with actual backend service
-- UI interaction tests (would require UI automation frameworks)
+- Cross-process desktop automation against a launched app window
 - Visual regression tests
 - Performance tests for singleton access patterns
 
@@ -296,6 +322,7 @@ When adding new desktop tests:
    - `Meridian.Tests` for startup/composition/contracts/endpoint shape and any logic that must run cross-platform
    - `Meridian.Ui.Tests` for shared UI-service logic with platform-neutral cores
    - `Meridian.Wpf.Tests` only for WPF-specific binding, navigation, and host wiring
+8. **Prefer in-process UI automation for shell workflows**: Add or reuse `AutomationProperties.AutomationId` hooks and exercise the page through `tests/Meridian.Wpf.Tests/Support/*UiAutomationFacade.cs` helpers before reaching for an external UI automation framework
 
 Example test structure:
 

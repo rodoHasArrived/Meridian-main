@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Archive;
 using Meridian.Storage.Services;
 using Meridian.Ui.Services;
@@ -36,7 +37,9 @@ public sealed class ArchiveHealthService
     private ArchiveHealthService()
     {
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.Default);
-        _healthStatusPath = Path.Combine(AppContext.BaseDirectory, "_catalog", "archive_health.json");
+        _healthStatusPath = Path.Combine(
+            MeridianPathDefaults.GetCatalogRoot(FirstRunService.Instance.ConfigFilePath),
+            "archive_health.json");
     }
 
     public event EventHandler<ArchiveHealthEventArgs>? HealthStatusUpdated;
@@ -185,10 +188,7 @@ public sealed class ArchiveHealthService
         try
         {
             var config = await ConfigService.Instance.LoadConfigAsync();
-            var dataRoot = config?.DataRoot ?? "data";
-            var basePath = Path.IsPathRooted(dataRoot)
-                ? dataRoot
-                : Path.Combine(AppContext.BaseDirectory, dataRoot);
+            var basePath = ConfigService.Instance.ResolveDataRoot(config);
 
             var checksumService = new StorageChecksumService();
             var result = await checksumService.VerifyAuditChainAsync(basePath, ct);
@@ -209,10 +209,7 @@ public sealed class ArchiveHealthService
     private async Task<ArchiveHealthStatus> CalculateHealthStatusAsync(CancellationToken ct = default)
     {
         var config = await ConfigService.Instance.LoadConfigAsync();
-        var dataRoot = config?.DataRoot ?? "data";
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = ConfigService.Instance.ResolveDataRoot(config);
 
         var status = new ArchiveHealthStatus
         {
@@ -339,10 +336,7 @@ public sealed class ArchiveHealthService
         IProgress<VerificationProgress>? progress, CancellationToken cancellationToken)
     {
         var config = await ConfigService.Instance.LoadConfigAsync();
-        var dataRoot = config?.DataRoot ?? "data";
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = ConfigService.Instance.ResolveDataRoot(config);
 
         if (!Directory.Exists(basePath)) return;
 

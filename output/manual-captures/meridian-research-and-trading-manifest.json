@@ -1,0 +1,95 @@
+{
+  "title": "Meridian Research And Trading Manual",
+  "subtitle": "Backtests, strategy review, notebooks, positions, and risk",
+  "author": "Codex",
+  "version": "0.1",
+  "date": "2026-04-07",
+  "intro": [
+    "This manual walks through Meridian's research and trading surfaces, from backtest setup through position and risk review.",
+    "Screenshots were captured from the Windows WPF shell in fixture mode on April 7, 2026. Several pages are intentionally empty because the fixture environment contains sample structure rather than live runs."
+  ],
+  "sections": [
+    {
+      "heading": "Research Workflow",
+      "summary": "Use the research surfaces to define, run, and review strategy experiments.",
+      "steps": [
+        {
+          "title": "Begin in the Research workspace",
+          "body": "Open the Research workspace to reach the strategy-analysis surfaces Meridian groups together for exploration and review. This workspace is the best entry point when you are moving from an idea into a testable run.",
+          "notes": [
+            "Use the workspace shell to move into backtesting, strategy-run review, and notebook analysis.",
+            "Research typically feeds Trading once a run is ready for operational supervision."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/01-research-shell.png",
+          "caption": "Research workspace overview."
+        },
+        {
+          "title": "Configure and inspect a backtest",
+          "body": "Open Backtest Workstation to define symbols, date ranges, capital assumptions, margin assumptions, and data-root inputs for a simulation. The workstation is designed to keep configuration, equity-curve output, and summary metrics visible together.",
+          "notes": [
+            "Use the left-side configuration panel to set symbols, dates, and capital assumptions.",
+            "Run Browser, Latest Detail, Latest Portfolio, and Latest Ledger provide jump-off points after a run completes."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/02-backtest.png",
+          "caption": "Backtest Workstation with configuration, equity-curve, and summary panes."
+        },
+        {
+          "title": "Review completed strategy runs",
+          "body": "Open Strategy Run Browser to filter, compare, and drill into completed runs. It is the fastest way to move from raw backtest execution into result review and side-by-side analysis.",
+          "notes": [
+            "If no runs are listed yet, complete a backtest first.",
+            "Use filters and compare actions to narrow the review set."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/03-strategy-runs.png",
+          "caption": "Strategy Run Browser used to browse and compare completed runs."
+        },
+        {
+          "title": "Use QuantScript for notebook-style exploration",
+          "body": "Open QuantScript Notebook when you need an interactive analysis surface for ad hoc investigation, charting, and scripted experiments. It combines code cells, console output, and charts inside one workspace.",
+          "notes": [
+            "Use Run All to execute the notebook end to end.",
+            "Use New Notebook and Save to manage multiple analysis notebooks."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/04-quant-script.png",
+          "caption": "QuantScript Notebook for interactive scripting and chart preview."
+        }
+      ]
+    },
+    {
+      "heading": "Trading Workflow",
+      "summary": "Move into the trading surfaces when a strategy or portfolio needs active supervision.",
+      "steps": [
+        {
+          "title": "Switch into the Trading workspace",
+          "body": "Open the Trading workspace when you need a cockpit for operational supervision rather than research. It serves as the umbrella view for blotters, positions, and risk controls.",
+          "notes": [
+            "Use the workspace as a starting point before opening more detailed operational pages.",
+            "Trading pages focus on current state and actions, not just analysis."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/05-trading-shell.png",
+          "caption": "Trading workspace overview."
+        },
+        {
+          "title": "Inspect current positions in the blotter",
+          "body": "Open Position Blotter to review positions, marks, quantities, sides, unrealized PnL, and status. This is the page to use when you need a tabular operational view of what is currently held.",
+          "notes": [
+            "Use the filter controls to narrow the set you want to inspect.",
+            "Upsize, Terminate, and Refresh provide direct operating actions from the blotter."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/06-position-blotter.png",
+          "caption": "Position Blotter with table columns for current position review."
+        },
+        {
+          "title": "Review portfolio and run risk",
+          "body": "Open Portfolio Risk to inspect net exposure, drawdown, Sharpe-style metrics, and historical-risk visuals for a selected run or portfolio. It is the right page for a final risk pass before operational action.",
+          "notes": [
+            "If no run is selected yet, use Run Browser to choose one first.",
+            "Use the top navigation to switch between run, portfolio, and cash-flow views."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/07-run-risk.png",
+          "caption": "Portfolio Risk page with exposure and historical-risk panels."
+        }
+      ]
+    }
+  ]
+}

@@ -341,6 +341,53 @@ public sealed class WorkspaceServiceTests
     }
 
     [Fact]
+    public async Task SaveSessionStateAsync_ShouldRealignWorkspaceToUniquePageOwner()
+    {
+        var svc = CreateService();
+        await svc.ActivateWorkspaceAsync("governance");
+
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "governance",
+            ActivePageTag = "DataOperationsShell",
+            RecentPages = new List<string> { "DataOperationsShell" }
+        });
+
+        svc.ActiveWorkspace.Should().NotBeNull();
+        svc.ActiveWorkspace!.Id.Should().Be("data-operations");
+
+        var restored = svc.GetLastSessionState();
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored.ActivePageTag.Should().Be("DataOperationsShell");
+
+        svc.Workspaces.First(w => w.Id == "data-operations").SessionSnapshot.Should().NotBeNull();
+        svc.Workspaces.First(w => w.Id == "data-operations").SessionSnapshot!.ActivePageTag.Should().Be("DataOperationsShell");
+        svc.Workspaces.First(w => w.Id == "governance").LastActivePageTag.Should().NotBe("DataOperationsShell");
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldIgnoreSnapshotFromDifferentWorkspace()
+    {
+        var svc = CreateService();
+        var governance = svc.Workspaces.First(w => w.Id == "governance");
+        governance.LastActivePageTag = "DataOperationsShell";
+        governance.SessionSnapshot = new SessionState
+        {
+            ActiveWorkspaceId = "governance",
+            ActivePageTag = "DataOperationsShell",
+            RecentPages = new List<string> { "DataOperationsShell" }
+        };
+
+        await svc.ActivateWorkspaceAsync("governance");
+
+        var restored = svc.GetLastSessionState();
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("governance");
+        restored.ActivePageTag.Should().Be("DataQuality");
+    }
+
+    [Fact]
     public void GetLastSessionState_InitialState_MayBeNullOrPreviouslySaved()
     {
         var svc = CreateService();

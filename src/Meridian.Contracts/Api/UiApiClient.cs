@@ -141,7 +141,11 @@ public sealed class UiApiClient
         => await GetAsync<OptionsSummaryResponse>(UiApiRoutes.OptionsSummary, ct).ConfigureAwait(false);
 
     public async Task<List<string>?> GetOptionsTrackedUnderlyingsAsync(CancellationToken ct = default)
-        => await GetAsync<List<string>>(UiApiRoutes.OptionsTrackedUnderlyings, ct).ConfigureAwait(false);
+    {
+        var response = await GetAsync<OptionsTrackedUnderlyingsResponse>(
+            UiApiRoutes.OptionsTrackedUnderlyings, ct).ConfigureAwait(false);
+        return response?.Underlyings?.ToList();
+    }
 
     public async Task<OptionsChainResponse?> RefreshOptionsChainAsync(OptionsRefreshRequest request, CancellationToken ct = default)
         => await PostAsync<OptionsChainResponse>(UiApiRoutes.OptionsRefresh, request, ct).ConfigureAwait(false);

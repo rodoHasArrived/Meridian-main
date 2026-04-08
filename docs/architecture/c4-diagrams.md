@@ -1,228 +1,61 @@
-# C4 Diagrams
+# C4 And System Diagrams
 
-## Rendered exports (SVG/PNG)
+**Last Updated:** 2026-04-07
 
-These are pre-rendered exports for environments that don't support Mermaid rendering.
+This page is the quickest way to review the current Meridian visual model. The editable source of truth remains the DOT files in [`docs/diagrams/`](../diagrams/README.md); this page curates the most useful rendered views for architecture work.
 
-- Level 1: System Context
-  - SVG: `docs/diagrams/c4-level1-context.svg`
-  - PNG: `docs/diagrams/c4-level1-context.png`
+## Core C4 Views
 
-- Level 2: Containers
-  - SVG: `docs/diagrams/c4-level2-containers.svg`
-  - PNG: `docs/diagrams/c4-level2-containers.png`
+### Level 1 — System Context
 
-- Level 3: Components
-  - SVG: `docs/diagrams/c4-level3-components.svg`
-  - PNG: `docs/diagrams/c4-level3-components.png`
+![C4 Level 1 Context](../diagrams/c4-level1-context.svg)
 
----
+Shows Meridian in context with operators, desktop and web surfaces, external data providers, and storage/analytics edges.
 
-These diagrams describe the system using the C4 model:
-- **Level 1**: System Context
-- **Level 2**: Container Diagram
-- **Level 3**: Component Diagram (Collector runtime)
+### Level 2 — Containers
 
-> Notes:
-> - Mermaid diagrams render on GitHub and in many markdown viewers.
-> - For DocFX, Mermaid rendering depends on theme/extension. If Mermaid isn't rendered, treat these as source diagrams and export to SVG/PNG later.
-> - Diagrams include multiple data provider feeds and the `QuoteCollector` that emits BBO events used for aggressor inference.
+![C4 Level 2 Containers](../diagrams/c4-level2-containers.svg)
 
----
+Shows the main deployable containers and major technology boundaries across presentation, application, provider, pipeline, storage, and observability concerns.
 
-## Level 1 — System Context (C4)
+### Level 3 — Components
 
-```mermaid
-flowchart LR
-    IB[Interactive Brokers\nTWS/Gateway]:::ext
-    ALP[Alpaca\nWebSocket + REST]:::ext
-    HIST[Historical Providers\nYahoo/Stooq/Nasdaq]:::ext
-    OPR[Operator]:::person
-    UI[Web Dashboard\nASP.NET]:::container
-    WPF[Desktop App\nWPF]:::container
-    COL[Meridian\nService]:::system
-    DISK[(Local Storage\nJSONL / Parquet)]:::store
+![C4 Level 3 Components](../diagrams/c4-level3-components.svg)
 
-    OPR --> UI
-    OPR --> WPF
-    UI <--> DISK
-    WPF <--> DISK
-    UI --> COL
-    WPF --> COL
-    IB --> COL
-    ALP --> COL
-    HIST --> COL
-    COL --> DISK
+Shows the collector-runtime internals in more detail, including provider clients, domain collectors, pipeline, and storage sinks.
 
-classDef person fill:#fff,stroke:#333,stroke-width:1px;
-classDef ext fill:#f8f8f8,stroke:#333,stroke-dasharray: 4 2;
-classDef container fill:#e8f4ff,stroke:#2b6cb0,stroke-width:1px;
-classDef system fill:#e6fffa,stroke:#2c7a7b,stroke-width:1px;
-classDef store fill:#fff5f5,stroke:#c53030,stroke-width:1px;
-```
+## Current Runtime And Product Views
 
----
+These diagrams sit next to the C4 set and fill in the parts of the repo that are hardest to infer from the C4 views alone.
 
-## Level 2 — Containers (C4)
+### Runtime Hosts And Startup Modes
 
-```mermaid
-flowchart TB
-    subgraph C["Meridian (Process)"]
-        APP["Application Layer<br/>Composition/ConfigWatcher/StatusWriter/BackfillService/Scheduling"]:::container
-        DOM["Domain Layer<br/>Collectors + Models"]:::container
-        PIPE["Event Pipeline<br/>EventPipeline/DualPathEventPipeline/IngestionJobService"]:::container
-        STOR["Storage<br/>Jsonl/Parquet/CatalogSync Sinks"]:::container
-        INFRA["Infrastructure<br/>Streaming + Historical Providers"]:::container
-    end
+![Runtime Hosts And Startup Modes](../diagrams/runtime-hosts.svg)
 
-    IB["Interactive Brokers<br/>TWS/Gateway"]:::ext
-    ALP["Alpaca<br/>WebSocket + REST"]:::ext
-    HIST["Historical APIs<br/>Yahoo/Stooq/Nasdaq"]:::ext
-    DISK[("Filesystem<br/>./data")]:::store
-    UI["Web Dashboard<br/>Meridian.Ui"]:::container
-    WPF["Desktop App<br/>Meridian.Wpf"]:::container
-    OPR[Operator]:::person
+Shows the runnable projects in the repo and the verified `SharedStartupBootstrapper` / `StartupOrchestrator` flow behind `src/Meridian`, including how web, desktop, collector, and backfill modes branch.
 
-    OPR --> UI
-    OPR --> WPF
-    UI <--> DISK
-    WPF <--> DISK
+### Workstation Delivery
 
-    IB --> INFRA
-    ALP --> INFRA
-    HIST --> INFRA
-    INFRA --> DOM
-    DOM --> PIPE
-    PIPE --> STOR
-    STOR --> DISK
+![Workstation Delivery](../diagrams/workstation-delivery.svg)
 
-    APP --> INFRA
-    APP --> DOM
-    APP --> PIPE
-    APP --> STOR
+Shows how WPF pages and the React workstation shell converge on shared run, portfolio, ledger, cash-flow, and security-reference services.
 
-classDef person fill:#fff,stroke:#333,stroke-width:1px;
-classDef ext fill:#f8f8f8,stroke:#333,stroke-dasharray: 4 2;
-classDef container fill:#e8f4ff,stroke:#2b6cb0,stroke-width:1px;
-classDef store fill:#fff5f5,stroke:#c53030,stroke-width:1px;
-```
+### Security Master Lifecycle
 
----
+![Security Master Lifecycle](../diagrams/security-master-lifecycle.svg)
 
-## Level 3 — Components (Collector Runtime)
+Shows the current Security Master product path across import, event storage, projections, cache warmup, and workstation/query consumers.
 
-```mermaid
-flowchart LR
-    subgraph INF["Infrastructure/Providers"]
-        CONN["EnhancedIBConnectionManager<br/>(EWrapper)"]:::component
-        ROUTE[IBCallbackRouter]:::component
-        FACT[ContractFactory]:::component
-        CLIENT["IMarketDataClient<br/>IBMarketDataClient/AlpacaMarketDataClient/NoOp"]:::component
-    end
+### Fund Ops And Reconciliation
 
-    subgraph DOM["Domain"]
-        TD[TradeDataCollector]:::component
-        MD[MarketDepthCollector]:::component
-        QC["QuoteCollector<br/>(BBO cache/emitter)"]:::component
-        MODELS["Models<br/>Trade/LOBSnapshot/BboQuotePayload/Integrity"]:::component
-    end
+![Fund Ops And Reconciliation](../diagrams/fund-ops-reconciliation.svg)
 
-    subgraph APP["Application"]
-        CW[ConfigWatcher]:::component
-        SW[StatusWriter]:::component
-        MET[Metrics]:::component
-    end
+Shows the governance review loop across workstation services, reconciliation projections, the F# reconciliation engine, and persisted run/break state.
 
-    subgraph PIPE["Pipeline/Storage"]
-        EP["EventPipeline<br/>Bounded Channel"]:::component
-        SINK[JsonlStorageSink]:::component
-        POL[JsonlStoragePolicy]:::component
-        FS[(Filesystem)]:::store
-    end
+## Related Visual References
 
-    IB[IB TWS/Gateway]:::ext
-    ALP[Alpaca WebSocket]:::ext
-
-    IB --> CONN --> ROUTE
-    ALP --> CLIENT
-    ROUTE --> TD
-    ROUTE --> MD
-    ROUTE --> QC
-    CLIENT --> TD
-    CLIENT --> QC
-    TD --> EP
-    MD --> EP
-    QC --> EP
-    QC --> TD
-    EP --> SINK --> FS
-    POL --> SINK
-
-    CW --> APP
-    SW --> FS
-    MET --> APP
-
-    CLIENT --> FACT
-    CLIENT --> CONN
-
-classDef ext fill:#f8f8f8,stroke:#333,stroke-dasharray: 4 2;
-classDef component fill:#f7fafc,stroke:#4a5568,stroke-width:1px;
-classDef store fill:#fff5f5,stroke:#c53030,stroke-width:1px;
-```
-
----
-
-## Level 4 — Microservices Architecture (Optional Deployment)
-
-For high-throughput scenarios, the system can be deployed as microservices:
-
-```mermaid
-flowchart TB
-    subgraph GATEWAY[API Gateway :5000]
-        GW[Request Routing\nRate Limiting\nProvider Management]:::service
-    end
-
-    subgraph SERVICES[Ingestion Services]
-        TRADE[Trade Service\n:5001]:::service
-        BOOK[OrderBook Service\n:5002]:::service
-        QUOTE[Quote Service\n:5003]:::service
-        HIST[Historical Service\n:5004]:::service
-        VAL[Validation Service\n:5005]:::service
-    end
-
-    IB[IB/Alpaca\nData Sources]:::ext
-    MQ[(RabbitMQ\nMessage Bus)]:::store
-    DISK[(Storage\nJSONL/DB)]:::store
-
-    IB --> GATEWAY
-    GATEWAY --> MQ
-    MQ --> TRADE
-    MQ --> BOOK
-    MQ --> QUOTE
-    MQ --> VAL
-    HIST --> DISK
-    TRADE --> DISK
-    BOOK --> DISK
-    QUOTE --> DISK
-    VAL --> DISK
-
-classDef ext fill:#f8f8f8,stroke:#333,stroke-dasharray: 4 2;
-classDef service fill:#e8f4ff,stroke:#2b6cb0,stroke-width:1px;
-classDef store fill:#fff5f5,stroke:#c53030,stroke-width:1px;
-```
-
-### Microservices Summary
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| Gateway | 5000 | Entry point, routing, rate limiting |
-| Trade | 5001 | Tick-by-tick trade processing |
-| OrderBook | 5002 | L2 order book maintenance |
-| Quote | 5003 | BBO/NBBO quote processing |
-| Historical | 5004 | Historical data backfill |
-| Validation | 5005 | Data quality and alerting |
-
----
-
-**Version:** 1.7.0
-**Last Updated:** 2026-03-18
-**See Also:** [Architecture Overview](overview.md) | [Domains](domains.md) | [Why This Architecture](why-this-architecture.md) | [ADR Index](../adr/README.md)
+- [Diagrams Index](../diagrams/README.md)
+- [Architecture Overview](overview.md)
+- [Desktop Layers](desktop-layers.md)
+- [Ledger Architecture](ledger-architecture.md)
+- [Why This Architecture](why-this-architecture.md)

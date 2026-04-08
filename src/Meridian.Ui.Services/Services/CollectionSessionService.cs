@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
+using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
 
@@ -14,19 +16,26 @@ namespace Meridian.Ui.Services;
 public sealed class CollectionSessionService
 {
     private static readonly Lazy<CollectionSessionService> _instance = new(() => new CollectionSessionService());
-    private readonly ConfigService _configService;
+    private readonly IConfigService _configService;
     private readonly NotificationService _notificationService;
     private readonly string _sessionsFilePath;
+    private readonly string _legacySessionsFilePath;
     private CollectionSessionsConfig? _sessionsConfig;
     private CollectionSession? _activeSession;
 
     public static CollectionSessionService Instance => _instance.Value;
 
     private CollectionSessionService()
+        : this(new ConfigService(), NotificationService.Instance)
     {
-        _configService = new ConfigService();
-        _notificationService = NotificationService.Instance;
-        _sessionsFilePath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
+    }
+
+    internal CollectionSessionService(IConfigService configService, NotificationService notificationService)
+    {
+        _configService = configService;
+        _notificationService = notificationService;
+        _sessionsFilePath = ResolveSessionsFilePath();
+        _legacySessionsFilePath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
     }
 
     /// <summary>
@@ -41,10 +50,24 @@ public sealed class CollectionSessionService
 
         try
         {
-            if (File.Exists(_sessionsFilePath))
+            var loadPath = _sessionsFilePath;
+            var migratedFromLegacy = false;
+            if (!File.Exists(loadPath) &&
+                !PathsEqual(_sessionsFilePath, _legacySessionsFilePath) &&
+                File.Exists(_legacySessionsFilePath))
             {
-                var json = await File.ReadAllTextAsync(_sessionsFilePath);
+                loadPath = _legacySessionsFilePath;
+                migratedFromLegacy = true;
+            }
+
+            if (File.Exists(loadPath))
+            {
+                var json = await File.ReadAllTextAsync(loadPath, ct);
                 _sessionsConfig = JsonSerializer.Deserialize<CollectionSessionsConfig>(json, DesktopJsonOptions.Compact);
+                if (migratedFromLegacy && _sessionsConfig != null)
+                {
+                    await SaveSessionsAsync(ct);
+                }
             }
         }
         catch (Exception)
@@ -65,8 +88,14 @@ public sealed class CollectionSessionService
 
         try
         {
+            var directory = Path.GetDirectoryName(_sessionsFilePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             var json = JsonSerializer.Serialize(_sessionsConfig, DesktopJsonOptions.PrettyPrint);
-            await File.WriteAllTextAsync(_sessionsFilePath, json);
+            await File.WriteAllTextAsync(_sessionsFilePath, json, ct);
         }
         catch (Exception)
         {
@@ -489,6 +518,31 @@ Verification: {(session.ManifestPath != null ? "✓ Manifest generated" : "Pendi
 
         return Math.Max(0, Math.Min(100, score));
     }
+
+    private string ResolveSessionsFilePath()
+    {
+        var config = TryLoadConfig();
+        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
+        return Path.Combine(dataRoot, "_sessions", "sessions.json");
+    }
+
+    private AppConfig? TryLoadConfig()
+    {
+        try
+        {
+            return _configService.LoadConfigAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool PathsEqual(string left, string right)
+        => string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
 
     private static string FormatDuration(TimeSpan duration)
     {

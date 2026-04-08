@@ -431,10 +431,13 @@ public static class UiApiRoutes
     // Execution / Paper Trading Cockpit endpoints
     public const string ExecutionAccount = "/api/execution/account";
     public const string ExecutionPositions = "/api/execution/positions";
+    public const string ExecutionBlotterPositions = "/api/execution/positions/blotter";
     public const string ExecutionOrders = "/api/execution/orders";
     public const string ExecutionOrderById = "/api/execution/orders/{orderId}";
     public const string ExecutionOrderSubmit = "/api/execution/orders/submit";
     public const string ExecutionOrderCancel = "/api/execution/orders/{orderId}/cancel";
+    public const string ExecutionPositionActionClose = "/api/execution/positions/actions/close";
+    public const string ExecutionPositionActionUpsize = "/api/execution/positions/actions/upsize";
     public const string ExecutionPortfolio = "/api/execution/portfolio";
     public const string ExecutionHealth = "/api/execution/health";
     public const string ExecutionCapabilities = "/api/execution/capabilities";

@@ -137,7 +137,7 @@ dotnet run --project src/Meridian -- \
 
 The reconstruction timeline is built **once** and reused across all 15 parameter combinations. Output includes the standard per-run artifacts plus a `sensitivity-report.json` ranking each combination by fill rate, slippage, and implementation shortfall:
 
-```json
+```jsonc
 // sensitivity-report.json (excerpt)
 {
   "gridDimensions": {"limitOffsetTicks": [-2,-1,0,1,2], "cancelAfterMinutes": [5,10,20]},
@@ -495,7 +495,7 @@ dotnet run --project src/Meridian -- <flags>
 
 The `--sim-orders` input is a JSONL file where each line is one order intent:
 
-```jsonc
+```jsonl
 // One record per line
 {
   "orderId": "order-001",
@@ -583,7 +583,7 @@ Results written to: ./results/aapl-jan/
 
 ### `fill-tape.jsonl` — one fill event per line
 
-```jsonc
+```jsonl
 {
   "fillId": "fill-001-1",
   "orderId": "order-001",

@@ -3803,6 +3803,7 @@ Resources for AI agents working in this repository.
 
 - After fixing an agent-caused bug (add entry to `ai-known-errors.md`)
 - When conventions or ADR contracts change
+- When WPF runtime config or persistence-path behavior changes (update the Claude storage/structure guides, Copilot instructions, and shared project context)
 - When a Claude sub-guide becomes stale relative to the codebase
 
 ---

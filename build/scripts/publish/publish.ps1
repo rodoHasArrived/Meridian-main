@@ -27,14 +27,16 @@ $ErrorActionPreference = "Stop"
 
 # Script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $ScriptDir
+$RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
+$ConfigDir = Join-Path $RepoRoot "config"
+Set-Location $RepoRoot
 
 # Configuration
 $AllPlatforms = @("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
 $WindowsPlatforms = @("win-x64", "win-arm64")
-$CollectorProject = "src/Meridian/Meridian.csproj"
-$UiProject = "src/Meridian.Ui/Meridian.Ui.csproj"
-$DesktopProject = "src/Meridian.Uwp/Meridian.Uwp.csproj"
+$CollectorProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
+$UiProject = Join-Path $RepoRoot "src/Meridian.Ui/Meridian.Ui.csproj"
+$DesktopProject = Join-Path $RepoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj"
 
 function Write-Info {
     param([string]$Message)
@@ -80,7 +82,7 @@ Parameters:
                   all        Build all projects
                   collector  Build only Meridian (CLI)
                   ui         Build only Meridian.Ui (Web Dashboard)
-                  desktop    Build only Meridian.Uwp (Windows Desktop App)
+                  desktop    Build only Meridian.Wpf / Meridian.Desktop (Windows Desktop App)
 
   -Version      Version number (default: 1.0.0)
   -Configuration Build configuration (default: Release)
@@ -124,7 +126,7 @@ function Publish-Project {
     }
 
     # Copy configuration file
-    $configFile = Join-Path $ScriptDir "appsettings.json"
+    $configFile = Join-Path $ConfigDir "appsettings.json"
     if (Test-Path $configFile) {
         Copy-Item $configFile -Destination $outputPath
     }
@@ -136,27 +138,29 @@ function Publish-DesktopApp {
     param([string]$RuntimeId)
 
     $outputPath = Join-Path $OutputDir $RuntimeId "desktop"
+    $platform = if ($RuntimeId -eq "win-arm64") { "ARM64" } else { "x64" }
 
-    Write-Info "Publishing Windows Desktop App for $RuntimeId..."
+    Write-Info "Publishing Meridian Desktop (WPF) for $RuntimeId..."
 
-    # Windows Desktop App uses WinUI 3, which requires special publish settings
+    # Meridian Desktop is a WPF app with a separate assembly name.
     dotnet publish $DesktopProject `
         -c $Configuration `
         -r $RuntimeId `
         -o $outputPath `
         -p:Version=$Version `
-        -p:Platform=x64 `
+        -p:EnableFullWpfBuild=true `
+        -p:Platform=$platform `
         --self-contained true `
         -p:WindowsPackageType=None `
-        -p:PublishReadyToRun=true
+        -p:PublishReadyToRun=false
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to publish Windows Desktop App for $RuntimeId"
+        throw "Failed to publish Meridian Desktop for $RuntimeId"
     }
 
     # Copy configuration files
-    $configFile = Join-Path $ScriptDir "appsettings.json"
-    $sampleConfigFile = Join-Path $ScriptDir "appsettings.sample.json"
+    $configFile = Join-Path $ConfigDir "appsettings.json"
+    $sampleConfigFile = Join-Path $ConfigDir "appsettings.sample.json"
 
     if (Test-Path $configFile) {
         Copy-Item $configFile -Destination $outputPath
@@ -169,7 +173,7 @@ function Publish-DesktopApp {
     $dataDir = Join-Path $outputPath "data"
     New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
 
-    Write-Success "Published Windows Desktop App for $RuntimeId -> $outputPath"
+    Write-Success "Published Meridian Desktop (WPF) for $RuntimeId -> $outputPath"
 }
 
 function New-Package {
@@ -225,9 +229,9 @@ foreach ($rid in $TargetPlatforms) {
         Publish-Project -ProjectPath $UiProject -RuntimeId $rid -ProjectName "Meridian.Ui" -OutputSubDir "ui"
     }
 
-    # Build Windows Desktop App only for Windows platforms
+    # Build the WPF desktop app only for Windows platforms
     if (($Project -eq "all" -or $Project -eq "desktop") -and ($rid -in $WindowsPlatforms)) {
-        Write-Info "Publishing Windows Desktop App for $rid..."
+        Write-Info "Publishing Meridian Desktop (WPF) for $rid..."
         Publish-DesktopApp -RuntimeId $rid
     }
 
@@ -252,3 +256,5 @@ Get-ChildItem $OutputDir -Recurse -Filter "Meridian*" |
 Write-Host ""
 Write-Info "To run the collector:"
 Write-Host "  $OutputDir\win-x64\collector\Meridian.exe"
+Write-Info "To run the desktop app:"
+Write-Host "  $OutputDir\win-x64\desktop\Meridian.Desktop.exe"

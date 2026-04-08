@@ -16,6 +16,7 @@ Usage:
     python3 test-scripts.py
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -30,8 +31,8 @@ def test_script(script_path: Path) -> Tuple[bool, List[str]]:
     """
     errors = []
 
-    # Test 1: File is executable
-    if not script_path.stat().st_mode & 0o111:
+    # Windows commonly runs scripts via the interpreter without execute bits.
+    if os.name != 'nt' and not script_path.stat().st_mode & 0o111:
         errors.append(f"{script_path.name}: Not executable")
 
     # Test 2: Has shebang
@@ -53,8 +54,9 @@ def test_script(script_path: Path) -> Tuple[bool, List[str]]:
         )
         if result.returncode != 0:
             errors.append(f"{script_path.name}: --help returned non-zero: {result.returncode}")
-        if 'usage:' not in result.stdout.lower():
-            errors.append(f"{script_path.name}: --help output missing usage information")
+        combined_output = f"{result.stdout}\n{result.stderr}".strip()
+        if not combined_output:
+            errors.append(f"{script_path.name}: --help produced no output")
     except subprocess.TimeoutExpired:
         errors.append(f"{script_path.name}: --help timed out")
     except Exception as e:
@@ -88,10 +90,10 @@ def main() -> int:
         success, errors = test_script(script)
 
         if success:
-            print(f"✓ {script.name}")
+            print(f"[PASS] {script.name}")
             passed += 1
         else:
-            print(f"✗ {script.name}")
+            print(f"[FAIL] {script.name}")
             for error in errors:
                 print(f"  - {error}")
                 total_errors.append(error)

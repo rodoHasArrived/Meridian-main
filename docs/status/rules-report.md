@@ -1,59 +1,58 @@
 # Documentation Rules Report
 
-*Generated: 2026-03-22 03:10:50 UTC*
+*Generated: 2026-04-08 03:32:13 UTC*
 
 ## Summary
 
 | Metric | Count |
 |--------|-------|
 | Rules loaded | 13 |
-| Total file checks | 415 |
-| Passed | 392 |
-| Failed | 23 |
-| Errors | 3 |
-| Warnings | 10 |
-| Info | 10 |
+| Total file checks | 524 |
+| Passed | 504 |
+| Failed | 20 |
+| Errors | 0 |
+| Warnings | 8 |
+| Info | 12 |
 
-**Result: FAIL** (3 error(s) found)
+**Result: PASS with warnings** (8 warning(s))
 
 ## Violations
 
 | Severity | File | Rule | Suggestion |
 |----------|------|------|------------|
-| **ERROR** | `CLAUDE.md` | CLAUDE.md has quick commands | Missing required section heading: `Repository Structure` |
-| **ERROR** | `docs\adr\ADR-015-platform-restructuring.md` | ADR has status field | File should contain: `Status:` |
-| **ERROR** | `docs\adr\README.md` | ADR has status field | File should contain: `Status:` |
-| **WARNING** | `docs\adr\ADR-015-platform-restructuring.md` | ADR has date | File should have a line matching: `Date:|date:` |
-| **WARNING** | `docs\adr\README.md` | ADR has date | File should have a line matching: `Date:|date:` |
-| **WARNING** | `docs\adr\README.md` | ADR has context section | Missing required section heading: `Context` |
-| **WARNING** | `docs\adr\README.md` | ADR has decision section | Missing required section heading: `Decision` |
 | **WARNING** | `docs\generated\documentation-coverage.md` | Generated docs have auto-generated notice | File should contain: `auto-generated` |
-| **WARNING** | `docs\generated\interfaces.md` | Generated docs have auto-generated notice | File should contain: `auto-generated` |
 | **WARNING** | `docs\generated\project-context.md` | Generated docs have auto-generated notice | File should contain: `auto-generated` |
+| **WARNING** | `docs\generated\provider-registry.md` | Generated docs have auto-generated notice | File should contain: `auto-generated` |
+| **WARNING** | `docs\generated\repository-structure.md` | Generated docs have auto-generated notice | File should contain: `auto-generated` |
+| **WARNING** | `docs\generated\workflows-overview.md` | Generated docs have auto-generated notice | File should contain: `auto-generated` |
 | **WARNING** | `docs\operations\operator-runbook.md` | Operator runbook has troubleshooting section | Missing required section heading: `Troubleshooting` |
 | **WARNING** | `docs\providers\alpaca-setup.md` | Provider docs mention setup steps | Missing required section heading: `Prerequisites` |
 | **WARNING** | `docs\providers\interactive-brokers-setup.md` | Provider docs mention setup steps | Missing required section heading: `Configuration` |
 | **INFO** | `docs\HELP.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
+| **INFO** | `docs\WORKFLOW_GUIDE.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\development\adding-custom-rules.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\development\otlp-trace-visualization.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\docfx\README.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\evaluations\desktop-platform-improvements-implementation-guide.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
-| **INFO** | `docs\getting-started\README.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\operations\deployment.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\operations\operator-runbook.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\reference\api-reference.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 | **INFO** | `docs\reference\environment-variables.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
+| **INFO** | `docs\screenshots\README.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
+| **INFO** | `docs\status\rules-report.md` | No hardcoded localhost URLs in docs | File should NOT contain: `http://localhost` |
 
 ## Passed Checks
 
 | File | Rule | Severity |
 |------|------|----------|
+| `CLAUDE.md` | CLAUDE.md has quick commands | error |
 | `README.md` | README has project description | error |
 | `docs\DEPENDENCIES.md` | No hardcoded API keys in docs | error |
 | `docs\DEPENDENCIES.md` | No hardcoded localhost URLs in docs | info |
 | `docs\HELP.md` | No hardcoded API keys in docs | error |
 | `docs\README.md` | No hardcoded API keys in docs | error |
 | `docs\README.md` | No hardcoded localhost URLs in docs | info |
+| `docs\WORKFLOW_GUIDE.md` | No hardcoded API keys in docs | error |
 | `docs\adr\001-provider-abstraction.md` | ADR has context section | warning |
 | `docs\adr\001-provider-abstraction.md` | ADR has date | warning |
 | `docs\adr\001-provider-abstraction.md` | ADR has decision section | warning |
@@ -150,16 +149,8 @@
 | `docs\adr\016-platform-architecture-migration.md` | ADR has status field | error |
 | `docs\adr\016-platform-architecture-migration.md` | No hardcoded API keys in docs | error |
 | `docs\adr\016-platform-architecture-migration.md` | No hardcoded localhost URLs in docs | info |
-| `docs\adr\ADR-015-platform-restructuring.md` | ADR has context section | warning |
-| `docs\adr\ADR-015-platform-restructuring.md` | ADR has decision section | warning |
-| `docs\adr\ADR-015-platform-restructuring.md` | No hardcoded API keys in docs | error |
-| `docs\adr\ADR-015-platform-restructuring.md` | No hardcoded localhost URLs in docs | info |
 | `docs\adr\README.md` | No hardcoded API keys in docs | error |
 | `docs\adr\README.md` | No hardcoded localhost URLs in docs | info |
-| `docs\adr\_template.md` | ADR has context section | warning |
-| `docs\adr\_template.md` | ADR has date | warning |
-| `docs\adr\_template.md` | ADR has decision section | warning |
-| `docs\adr\_template.md` | ADR has status field | error |
 | `docs\adr\_template.md` | No hardcoded API keys in docs | error |
 | `docs\adr\_template.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ai\README.md` | No hardcoded API keys in docs | error |
@@ -174,6 +165,9 @@
 | `docs\ai\claude\CLAUDE.api.md` | AI guides reference the project name | info |
 | `docs\ai\claude\CLAUDE.api.md` | No hardcoded API keys in docs | error |
 | `docs\ai\claude\CLAUDE.api.md` | No hardcoded localhost URLs in docs | info |
+| `docs\ai\claude\CLAUDE.domain-naming.md` | AI guides reference the project name | info |
+| `docs\ai\claude\CLAUDE.domain-naming.md` | No hardcoded API keys in docs | error |
+| `docs\ai\claude\CLAUDE.domain-naming.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ai\claude\CLAUDE.fsharp.md` | AI guides reference the project name | info |
 | `docs\ai\claude\CLAUDE.fsharp.md` | No hardcoded API keys in docs | error |
 | `docs\ai\claude\CLAUDE.fsharp.md` | No hardcoded localhost URLs in docs | info |
@@ -196,8 +190,12 @@
 | `docs\ai\copilot\ai-sync-workflow.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ai\copilot\instructions.md` | No hardcoded API keys in docs | error |
 | `docs\ai\copilot\instructions.md` | No hardcoded localhost URLs in docs | info |
+| `docs\ai\generated\repo-navigation.md` | No hardcoded API keys in docs | error |
+| `docs\ai\generated\repo-navigation.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ai\instructions\README.md` | No hardcoded API keys in docs | error |
 | `docs\ai\instructions\README.md` | No hardcoded localhost URLs in docs | info |
+| `docs\ai\navigation\README.md` | No hardcoded API keys in docs | error |
+| `docs\ai\navigation\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ai\prompts\README.md` | No hardcoded API keys in docs | error |
 | `docs\ai\prompts\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\ai\skills\README.md` | No hardcoded API keys in docs | error |
@@ -216,6 +214,8 @@
 | `docs\architecture\domains.md` | No hardcoded localhost URLs in docs | info |
 | `docs\architecture\layer-boundaries.md` | No hardcoded API keys in docs | error |
 | `docs\architecture\layer-boundaries.md` | No hardcoded localhost URLs in docs | info |
+| `docs\architecture\ledger-architecture.md` | No hardcoded API keys in docs | error |
+| `docs\architecture\ledger-architecture.md` | No hardcoded localhost URLs in docs | info |
 | `docs\architecture\overview.md` | No hardcoded API keys in docs | error |
 | `docs\architecture\overview.md` | No hardcoded localhost URLs in docs | info |
 | `docs\architecture\provider-management.md` | No hardcoded API keys in docs | error |
@@ -226,10 +226,14 @@
 | `docs\architecture\ui-redesign.md` | No hardcoded localhost URLs in docs | info |
 | `docs\architecture\why-this-architecture.md` | No hardcoded API keys in docs | error |
 | `docs\architecture\why-this-architecture.md` | No hardcoded localhost URLs in docs | info |
+| `docs\architecture\wpf-shell-mvvm.md` | No hardcoded API keys in docs | error |
+| `docs\architecture\wpf-shell-mvvm.md` | No hardcoded localhost URLs in docs | info |
+| `docs\architecture\wpf-workstation-shell-ux.md` | No hardcoded API keys in docs | error |
+| `docs\architecture\wpf-workstation-shell-ux.md` | No hardcoded localhost URLs in docs | info |
 | `docs\audits\AUDIT_REPORT.md` | No hardcoded API keys in docs | error |
 | `docs\audits\AUDIT_REPORT.md` | No hardcoded localhost URLs in docs | info |
-| `docs\audits\CODE_REVIEW_2026-03-16.md` | No hardcoded API keys in docs | error |
-| `docs\audits\CODE_REVIEW_2026-03-16.md` | No hardcoded localhost URLs in docs | info |
+| `docs\audits\BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | No hardcoded API keys in docs | error |
+| `docs\audits\BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md` | No hardcoded localhost URLs in docs | info |
 | `docs\audits\FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | No hardcoded API keys in docs | error |
 | `docs\audits\FURTHER_SIMPLIFICATION_OPPORTUNITIES.md` | No hardcoded localhost URLs in docs | info |
 | `docs\audits\README.md` | No hardcoded API keys in docs | error |
@@ -251,6 +255,8 @@
 | `docs\development\expanding-scripts.md` | No hardcoded localhost URLs in docs | info |
 | `docs\development\fsharp-decision-rule.md` | No hardcoded API keys in docs | error |
 | `docs\development\fsharp-decision-rule.md` | No hardcoded localhost URLs in docs | info |
+| `docs\development\git-hooks.md` | No hardcoded API keys in docs | error |
+| `docs\development\git-hooks.md` | No hardcoded localhost URLs in docs | info |
 | `docs\development\github-actions-summary.md` | No hardcoded API keys in docs | error |
 | `docs\development\github-actions-summary.md` | No hardcoded localhost URLs in docs | info |
 | `docs\development\github-actions-testing.md` | No hardcoded API keys in docs | error |
@@ -264,6 +270,8 @@
 | `docs\development\refactor-map.md` | No hardcoded localhost URLs in docs | info |
 | `docs\development\repository-organization-guide.md` | No hardcoded API keys in docs | error |
 | `docs\development\repository-organization-guide.md` | No hardcoded localhost URLs in docs | info |
+| `docs\development\repository-rule-set.md` | No hardcoded API keys in docs | error |
+| `docs\development\repository-rule-set.md` | No hardcoded localhost URLs in docs | info |
 | `docs\development\tooling-workflow-backlog.md` | No hardcoded API keys in docs | error |
 | `docs\development\tooling-workflow-backlog.md` | No hardcoded localhost URLs in docs | info |
 | `docs\development\ui-fixture-mode-guide.md` | No hardcoded API keys in docs | error |
@@ -275,12 +283,16 @@
 | `docs\diagrams\uml\README.md` | No hardcoded API keys in docs | error |
 | `docs\diagrams\uml\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\docfx\README.md` | No hardcoded API keys in docs | error |
+| `docs\docfx\api\index.md` | No hardcoded API keys in docs | error |
+| `docs\docfx\api\index.md` | No hardcoded localhost URLs in docs | info |
 | `docs\evaluations\2026-03-brainstorm-next-frontier.md` | No hardcoded API keys in docs | error |
 | `docs\evaluations\2026-03-brainstorm-next-frontier.md` | No hardcoded localhost URLs in docs | info |
 | `docs\evaluations\README.md` | No hardcoded API keys in docs | error |
 | `docs\evaluations\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\evaluations\assembly-performance-opportunities.md` | No hardcoded API keys in docs | error |
 | `docs\evaluations\assembly-performance-opportunities.md` | No hardcoded localhost URLs in docs | info |
+| `docs\evaluations\competitive-analysis-2026-03.md` | No hardcoded API keys in docs | error |
+| `docs\evaluations\competitive-analysis-2026-03.md` | No hardcoded localhost URLs in docs | info |
 | `docs\evaluations\data-quality-monitoring-evaluation.md` | No hardcoded API keys in docs | error |
 | `docs\evaluations\data-quality-monitoring-evaluation.md` | No hardcoded localhost URLs in docs | info |
 | `docs\evaluations\desktop-improvements-executive-summary.md` | No hardcoded API keys in docs | error |
@@ -306,6 +318,8 @@
 | `docs\evaluations\storage-architecture-evaluation.md` | No hardcoded localhost URLs in docs | info |
 | `docs\evaluations\windows-desktop-provider-configurability-assessment.md` | No hardcoded API keys in docs | error |
 | `docs\evaluations\windows-desktop-provider-configurability-assessment.md` | No hardcoded localhost URLs in docs | info |
+| `docs\examples\README.md` | No hardcoded API keys in docs | error |
+| `docs\examples\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\examples\provider-template\README.md` | No hardcoded API keys in docs | error |
 | `docs\examples\provider-template\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\generated\README.md` | Generated docs have auto-generated notice | warning |
@@ -319,20 +333,21 @@
 | `docs\generated\configuration-schema.md` | No hardcoded localhost URLs in docs | info |
 | `docs\generated\documentation-coverage.md` | No hardcoded API keys in docs | error |
 | `docs\generated\documentation-coverage.md` | No hardcoded localhost URLs in docs | info |
-| `docs\generated\interfaces.md` | No hardcoded API keys in docs | error |
-| `docs\generated\interfaces.md` | No hardcoded localhost URLs in docs | info |
 | `docs\generated\project-context.md` | No hardcoded API keys in docs | error |
 | `docs\generated\project-context.md` | No hardcoded localhost URLs in docs | info |
-| `docs\generated\provider-registry.md` | Generated docs have auto-generated notice | warning |
+| `docs\generated\project-dependencies.md` | Generated docs have auto-generated notice | warning |
+| `docs\generated\project-dependencies.md` | No hardcoded API keys in docs | error |
+| `docs\generated\project-dependencies.md` | No hardcoded localhost URLs in docs | info |
 | `docs\generated\provider-registry.md` | No hardcoded API keys in docs | error |
 | `docs\generated\provider-registry.md` | No hardcoded localhost URLs in docs | info |
-| `docs\generated\repository-structure.md` | Generated docs have auto-generated notice | warning |
 | `docs\generated\repository-structure.md` | No hardcoded API keys in docs | error |
 | `docs\generated\repository-structure.md` | No hardcoded localhost URLs in docs | info |
-| `docs\generated\workflows-overview.md` | Generated docs have auto-generated notice | warning |
 | `docs\generated\workflows-overview.md` | No hardcoded API keys in docs | error |
 | `docs\generated\workflows-overview.md` | No hardcoded localhost URLs in docs | info |
 | `docs\getting-started\README.md` | No hardcoded API keys in docs | error |
+| `docs\getting-started\README.md` | No hardcoded localhost URLs in docs | info |
+| `docs\getting-started\pilot-operator-quickstart.md` | No hardcoded API keys in docs | error |
+| `docs\getting-started\pilot-operator-quickstart.md` | No hardcoded localhost URLs in docs | info |
 | `docs\integrations\README.md` | No hardcoded API keys in docs | error |
 | `docs\integrations\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\integrations\fsharp-integration.md` | No hardcoded API keys in docs | error |
@@ -344,8 +359,12 @@
 | `docs\operations\README.md` | No hardcoded API keys in docs | error |
 | `docs\operations\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\operations\deployment.md` | No hardcoded API keys in docs | error |
+| `docs\operations\governance-operator-workflow.md` | No hardcoded API keys in docs | error |
+| `docs\operations\governance-operator-workflow.md` | No hardcoded localhost URLs in docs | info |
 | `docs\operations\high-availability.md` | No hardcoded API keys in docs | error |
 | `docs\operations\high-availability.md` | No hardcoded localhost URLs in docs | info |
+| `docs\operations\live-execution-controls.md` | No hardcoded API keys in docs | error |
+| `docs\operations\live-execution-controls.md` | No hardcoded localhost URLs in docs | info |
 | `docs\operations\msix-packaging.md` | No hardcoded API keys in docs | error |
 | `docs\operations\msix-packaging.md` | No hardcoded localhost URLs in docs | info |
 | `docs\operations\operator-runbook.md` | No hardcoded API keys in docs | error |
@@ -353,12 +372,24 @@
 | `docs\operations\performance-tuning.md` | No hardcoded localhost URLs in docs | info |
 | `docs\operations\portable-data-packager.md` | No hardcoded API keys in docs | error |
 | `docs\operations\portable-data-packager.md` | No hardcoded localhost URLs in docs | info |
+| `docs\operations\preflight-checklist.md` | No hardcoded API keys in docs | error |
+| `docs\operations\preflight-checklist.md` | No hardcoded localhost URLs in docs | info |
 | `docs\operations\service-level-objectives.md` | No hardcoded API keys in docs | error |
 | `docs\operations\service-level-objectives.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\README.md` | No hardcoded API keys in docs | error |
+| `docs\plans\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\assembly-performance-roadmap.md` | No hardcoded API keys in docs | error |
 | `docs\plans\assembly-performance-roadmap.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\backtest-studio-unification-blueprint.md` | No hardcoded API keys in docs | error |
+| `docs\plans\backtest-studio-unification-blueprint.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\backtest-studio-unification-pr-sequenced-roadmap.md` | No hardcoded API keys in docs | error |
+| `docs\plans\backtest-studio-unification-pr-sequenced-roadmap.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\codebase-audit-cleanup-roadmap.md` | No hardcoded API keys in docs | error |
 | `docs\plans\codebase-audit-cleanup-roadmap.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\fund-management-module-implementation-backlog.md` | No hardcoded API keys in docs | error |
+| `docs\plans\fund-management-module-implementation-backlog.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\fund-management-pr-sequenced-roadmap.md` | No hardcoded API keys in docs | error |
+| `docs\plans\fund-management-pr-sequenced-roadmap.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\fund-management-product-vision-and-capability-matrix.md` | No hardcoded API keys in docs | error |
 | `docs\plans\fund-management-product-vision-and-capability-matrix.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\governance-fund-ops-blueprint.md` | No hardcoded API keys in docs | error |
@@ -369,16 +400,72 @@
 | `docs\plans\meridian-6-week-roadmap.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\meridian-database-blueprint.md` | No hardcoded API keys in docs | error |
 | `docs\plans\meridian-database-blueprint.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\options-roadmap.md` | No hardcoded API keys in docs | error |
+| `docs\plans\options-roadmap.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\provider-reliability-data-confidence-wave-1-blueprint.md` | No hardcoded API keys in docs | error |
+| `docs\plans\provider-reliability-data-confidence-wave-1-blueprint.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\quant-script-environment-blueprint.md` | No hardcoded API keys in docs | error |
 | `docs\plans\quant-script-environment-blueprint.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\quant-script-page-implementation-guide.md` | No hardcoded API keys in docs | error |
+| `docs\plans\quant-script-page-implementation-guide.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\quantscript-l3-multiinstance-round2-roadmap.md` | No hardcoded API keys in docs | error |
+| `docs\plans\quantscript-l3-multiinstance-round2-roadmap.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\readability-refactor-baseline.md` | No hardcoded API keys in docs | error |
 | `docs\plans\readability-refactor-baseline.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\readability-refactor-roadmap.md` | No hardcoded API keys in docs | error |
 | `docs\plans\readability-refactor-roadmap.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\readability-refactor-technical-design-pack.md` | No hardcoded API keys in docs | error |
 | `docs\plans\readability-refactor-technical-design-pack.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\security-master-productization-roadmap.md` | No hardcoded API keys in docs | error |
+| `docs\plans\security-master-productization-roadmap.md` | No hardcoded localhost URLs in docs | info |
 | `docs\plans\trading-workstation-migration-blueprint.md` | No hardcoded API keys in docs | error |
 | `docs\plans\trading-workstation-migration-blueprint.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-bond-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-bond-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-cash-sweep-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-cash-sweep-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-certificate-of-deposit-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-certificate-of-deposit-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-cfd-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-cfd-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-commercial-paper-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-commercial-paper-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-commodity-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-commodity-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-crypto-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-crypto-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-deposit-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-deposit-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-direct-lending-implementation-roadmap.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-direct-lending-implementation-roadmap.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-direct-lending-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-direct-lending-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-equity-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-equity-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-future-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-future-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-fx-spot-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-fx-spot-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-money-market-fund-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-money-market-fund-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-option-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-option-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-other-security-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-other-security-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-repo-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-repo-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-supported-assets-index.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-supported-assets-index.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-swap-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-swap-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-treasury-bill-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-treasury-bill-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\ufl-warrant-target-state-v2.md` | No hardcoded API keys in docs | error |
+| `docs\plans\ufl-warrant-target-state-v2.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\workstation-release-readiness-blueprint.md` | No hardcoded API keys in docs | error |
+| `docs\plans\workstation-release-readiness-blueprint.md` | No hardcoded localhost URLs in docs | info |
+| `docs\plans\workstation-sprint-1-implementation-backlog.md` | No hardcoded API keys in docs | error |
+| `docs\plans\workstation-sprint-1-implementation-backlog.md` | No hardcoded localhost URLs in docs | info |
 | `docs\providers\README.md` | No hardcoded API keys in docs | error |
 | `docs\providers\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\providers\alpaca-setup.md` | No hardcoded API keys in docs | error |
@@ -393,11 +480,17 @@
 | `docs\providers\interactive-brokers-setup.md` | No hardcoded localhost URLs in docs | info |
 | `docs\providers\provider-comparison.md` | No hardcoded API keys in docs | error |
 | `docs\providers\provider-comparison.md` | No hardcoded localhost URLs in docs | info |
+| `docs\providers\provider-confidence-baseline.md` | No hardcoded API keys in docs | error |
+| `docs\providers\provider-confidence-baseline.md` | No hardcoded localhost URLs in docs | info |
+| `docs\providers\security-master-guide.md` | No hardcoded API keys in docs | error |
+| `docs\providers\security-master-guide.md` | No hardcoded localhost URLs in docs | info |
 | `docs\providers\stocksharp-connectors.md` | No hardcoded API keys in docs | error |
 | `docs\providers\stocksharp-connectors.md` | No hardcoded localhost URLs in docs | info |
 | `docs\reference\README.md` | No hardcoded API keys in docs | error |
 | `docs\reference\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\reference\api-reference.md` | No hardcoded API keys in docs | error |
+| `docs\reference\brand-assets.md` | No hardcoded API keys in docs | error |
+| `docs\reference\brand-assets.md` | No hardcoded localhost URLs in docs | info |
 | `docs\reference\data-dictionary.md` | No hardcoded API keys in docs | error |
 | `docs\reference\data-dictionary.md` | No hardcoded localhost URLs in docs | info |
 | `docs\reference\data-uniformity.md` | No hardcoded API keys in docs | error |
@@ -407,6 +500,7 @@
 | `docs\reference\environment-variables.md` | No hardcoded API keys in docs | error |
 | `docs\reference\open-source-references.md` | No hardcoded API keys in docs | error |
 | `docs\reference\open-source-references.md` | No hardcoded localhost URLs in docs | info |
+| `docs\screenshots\README.md` | No hardcoded API keys in docs | error |
 | `docs\security\README.md` | No hardcoded API keys in docs | error |
 | `docs\security\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\security\known-vulnerabilities.md` | No hardcoded API keys in docs | error |
@@ -414,8 +508,6 @@
 | `docs\status\CHANGELOG.md` | CHANGELOG exists and has entries | warning |
 | `docs\status\CHANGELOG.md` | No hardcoded API keys in docs | error |
 | `docs\status\CHANGELOG.md` | No hardcoded localhost URLs in docs | info |
-| `docs\status\DOCUMENTATION_TRIAGE_2026_03_21.md` | No hardcoded API keys in docs | error |
-| `docs\status\DOCUMENTATION_TRIAGE_2026_03_21.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\EVALUATIONS_AND_AUDITS.md` | No hardcoded API keys in docs | error |
 | `docs\status\EVALUATIONS_AND_AUDITS.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\FEATURE_INVENTORY.md` | No hardcoded API keys in docs | error |
@@ -424,19 +516,36 @@
 | `docs\status\FULL_IMPLEMENTATION_TODO_2026_03_20.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\IMPROVEMENTS.md` | No hardcoded API keys in docs | error |
 | `docs\status\IMPROVEMENTS.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\OPPORTUNITY_SCAN.md` | No hardcoded API keys in docs | error |
+| `docs\status\OPPORTUNITY_SCAN.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\README.md` | No hardcoded API keys in docs | error |
 | `docs\status\README.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\ROADMAP.md` | No hardcoded API keys in docs | error |
 | `docs\status\ROADMAP.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\ROADMAP_COMBINED.md` | No hardcoded API keys in docs | error |
+| `docs\status\ROADMAP_COMBINED.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\TARGET_END_PRODUCT.md` | No hardcoded API keys in docs | error |
+| `docs\status\TARGET_END_PRODUCT.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\TODO.md` | No hardcoded API keys in docs | error |
 | `docs\status\TODO.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\api-docs-report.md` | No hardcoded API keys in docs | error |
+| `docs\status\api-docs-report.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\badge-sync-report.md` | No hardcoded API keys in docs | error |
+| `docs\status\badge-sync-report.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\coverage-report.md` | No hardcoded API keys in docs | error |
 | `docs\status\coverage-report.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\docs-automation-summary.md` | No hardcoded API keys in docs | error |
+| `docs\status\docs-automation-summary.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\example-validation.md` | No hardcoded API keys in docs | error |
 | `docs\status\example-validation.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\health-dashboard.md` | No hardcoded API keys in docs | error |
 | `docs\status\health-dashboard.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\link-repair-report.md` | No hardcoded API keys in docs | error |
 | `docs\status\link-repair-report.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\metrics-dashboard.md` | No hardcoded API keys in docs | error |
+| `docs\status\metrics-dashboard.md` | No hardcoded localhost URLs in docs | info |
 | `docs\status\production-status.md` | No hardcoded API keys in docs | error |
 | `docs\status\production-status.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\provider-validation-matrix.md` | No hardcoded API keys in docs | error |
+| `docs\status\provider-validation-matrix.md` | No hardcoded localhost URLs in docs | info |
+| `docs\status\rules-report.md` | No hardcoded API keys in docs | error |

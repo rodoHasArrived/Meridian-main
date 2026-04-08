@@ -3648,7 +3648,8 @@ Key workflows:
 
 - **NEVER commit credentials:** `appsettings.json` is gitignored
 - **Use environment variables for secrets:** `ALPACA_KEY_ID`, `ALPACA_SECRET_KEY`, etc.
-- **Copy sample config:** Always start with `cp config/appsettings.sample.json config/appsettings.json`
+- **Copy sample config:** For CLI, server, and local dev flows, start with `cp config/appsettings.sample.json config/appsettings.json`
+- **Desktop runtime config:** Installed WPF builds use `%LocalAppData%\Meridian\appsettings.json`; relative `DataRoot` values resolve from that config directory, not from the install folder.
 
 ### Code Style
 
@@ -3666,8 +3667,8 @@ For the full conventions reference, see [`CLAUDE.md`](https://github.com/rodoHas
 | Issue | Solution |
 |-------|----------|
 | Build fails with NETSDK1100 on Linux/macOS | Use `/p:EnableWindowsTargeting=true` (set in `Directory.Build.props`) |
-| `appsettings.json` not found | `cp config/appsettings.sample.json config/appsettings.json` |
-| Data or logs directories missing | `mkdir -p data logs` or `make setup-config` |
+| `appsettings.json` not found | For CLI/dev flows, `cp config/appsettings.sample.json config/appsettings.json`. For the installed WPF desktop host, use `%LocalAppData%\Meridian\appsettings.json`. |
+| Data or logs directories missing | For CLI/dev flows, `mkdir -p data logs` or `make setup-config`. For the installed WPF desktop host, inspect `%LocalAppData%\Meridian\appsettings.json` and the resolved `DataRoot` instead of creating folders beside the executable. |
 | Docker build fails | Ensure `appsettings.json` exists before building |
 | Tests fail due to missing config | Tests should mock configuration; check test setup |
 | NU1008 error on restore | Remove `Version=` from `<PackageReference>` (CPM is active) |

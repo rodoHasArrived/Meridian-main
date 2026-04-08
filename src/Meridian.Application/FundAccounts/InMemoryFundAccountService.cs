@@ -1,19 +1,38 @@
+using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.FundAccounts;
 
 /// <summary>
-/// Thread-safe in-memory implementation of <see cref="IFundAccountService"/>.
-/// Used when no Postgres connection string is configured. All state is lost on restart.
+/// Thread-safe fund-account service backed by an in-memory working set with optional
+/// durable JSON snapshot persistence for local-first workflows.
 /// </summary>
 public sealed class InMemoryFundAccountService : IFundAccountService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+
     private readonly object _gate = new();
-
-    // Core storage
+    private readonly string? _persistencePath;
+    private readonly SemaphoreSlim _persistGate = new(1, 1);
     private readonly Dictionary<Guid, StoredAccount> _accounts = new();
+    private long _stateVersion;
+    private long _persistedVersion;
 
-    // ── Internal state record ────────────────────────────────────────────────────
+    public InMemoryFundAccountService()
+        : this(null)
+    {
+    }
+
+    public InMemoryFundAccountService(string? persistencePath)
+    {
+        _persistencePath = string.IsNullOrWhiteSpace(persistencePath) ? null : persistencePath;
+        LoadState();
+    }
 
     private sealed record StoredAccount(
         AccountSummaryDto Summary,
@@ -29,9 +48,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             this with { Summary = summary };
     }
 
-    // ── Account CRUD ─────────────────────────────────────────────────────────────
+    private sealed record PersistedState(
+        int Version,
+        List<StoredAccount> Accounts);
 
-    public Task<AccountSummaryDto> CreateAccountAsync(
+    public async Task<AccountSummaryDto> CreateAccountAsync(
         CreateAccountRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -50,18 +71,20 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             IsActive: true,
             request.EffectiveFrom,
             EffectiveTo: null,
-            PortfolioId: null,
-            LedgerReference: null,
-            StrategyId: null,
-            RunId: null,
+            request.PortfolioId,
+            request.LedgerReference,
+            request.StrategyId,
+            request.RunId,
             request.CustodianDetails,
             request.BankDetails);
 
+        (long Version, string Json)? snapshot;
         lock (_gate)
         {
             if (_accounts.ContainsKey(request.AccountId))
-                throw new InvalidOperationException(
-                    $"Account {request.AccountId} already exists.");
+            {
+                throw new InvalidOperationException($"Account {request.AccountId} already exists.");
+            }
 
             _accounts[request.AccountId] = new StoredAccount(
                 dto,
@@ -72,9 +95,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService
                 BankLines: [],
                 ReconciliationRuns: [],
                 ReconciliationResults: []);
+            snapshot = CaptureSnapshotLocked();
         }
 
-        return Task.FromResult(dto);
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return dto;
     }
 
     public Task<AccountSummaryDto?> GetAccountAsync(
@@ -98,73 +123,94 @@ public sealed class InMemoryFundAccountService : IFundAccountService
                 .Select(s => s.Summary)
                 .Where(a => (!query.ActiveOnly || a.IsActive)
                     && (query.AccountId == null || a.AccountId == query.AccountId)
-                    && (query.EntityId == null  || a.EntityId  == query.EntityId)
-                    && (query.FundId == null    || a.FundId    == query.FundId)
-                    && (query.SleeveId == null  || a.SleeveId  == query.SleeveId)
+                    && (query.EntityId == null || a.EntityId == query.EntityId)
+                    && (query.FundId == null || a.FundId == query.FundId)
+                    && (query.SleeveId == null || a.SleeveId == query.SleeveId)
                     && (query.VehicleId == null || a.VehicleId == query.VehicleId)
                     && (query.PortfolioId == null || a.PortfolioId == query.PortfolioId)
                     && (query.LedgerReference == null || a.LedgerReference == query.LedgerReference)
                     && (query.StrategyId == null || a.StrategyId == query.StrategyId)
-                    && (query.RunId == null     || a.RunId     == query.RunId))
+                    && (query.RunId == null || a.RunId == query.RunId))
                 .ToList();
 
             return Task.FromResult<IReadOnlyList<AccountSummaryDto>>(results);
         }
     }
 
-    public Task<AccountSummaryDto?> UpdateCustodianDetailsAsync(
+    public async Task<AccountSummaryDto?> UpdateCustodianDetailsAsync(
         Guid accountId,
         UpdateCustodianAccountDetailsRequest request,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        AccountSummaryDto? updated;
+        (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
-                return Task.FromResult<AccountSummaryDto?>(null);
+            {
+                return null;
+            }
 
-            var updated = stored.Summary with { CustodianDetails = request.Details };
+            updated = stored.Summary with { CustodianDetails = request.Details };
             _accounts[accountId] = stored.WithSummary(updated);
-            return Task.FromResult<AccountSummaryDto?>(updated);
+            snapshot = CaptureSnapshotLocked();
         }
+
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return updated;
     }
 
-    public Task<AccountSummaryDto?> UpdateBankDetailsAsync(
+    public async Task<AccountSummaryDto?> UpdateBankDetailsAsync(
         Guid accountId,
         UpdateBankAccountDetailsRequest request,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        AccountSummaryDto? updated;
+        (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
-                return Task.FromResult<AccountSummaryDto?>(null);
+            {
+                return null;
+            }
 
-            var updated = stored.Summary with { BankDetails = request.Details };
+            updated = stored.Summary with { BankDetails = request.Details };
             _accounts[accountId] = stored.WithSummary(updated);
-            return Task.FromResult<AccountSummaryDto?>(updated);
+            snapshot = CaptureSnapshotLocked();
         }
+
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return updated;
     }
 
-    public Task<AccountSummaryDto?> DeactivateAccountAsync(
+    public async Task<AccountSummaryDto?> DeactivateAccountAsync(
         Guid accountId, string deactivatedBy, CancellationToken ct = default)
     {
+        AccountSummaryDto? updated;
+        (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
-                return Task.FromResult<AccountSummaryDto?>(null);
+            {
+                return null;
+            }
 
-            var updated = stored.Summary with
+            updated = stored.Summary with
             {
                 IsActive = false,
                 EffectiveTo = DateTimeOffset.UtcNow
             };
             _accounts[accountId] = stored.WithSummary(updated);
-            return Task.FromResult<AccountSummaryDto?>(updated);
+            snapshot = CaptureSnapshotLocked();
         }
-    }
 
-    // ── Fund-level multi-account views ────────────────────────────────────────────
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return updated;
+    }
 
     public Task<FundAccountsDto> GetFundAccountsAsync(
         Guid fundId, CancellationToken ct = default)
@@ -188,9 +234,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         }
     }
 
-    // ── Balance snapshots ─────────────────────────────────────────────────────────
-
-    public Task<AccountBalanceSnapshotDto> RecordBalanceSnapshotAsync(
+    public async Task<AccountBalanceSnapshotDto> RecordBalanceSnapshotAsync(
         RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -209,13 +253,18 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             DateTimeOffset.UtcNow,
             request.ExternalReference);
 
+        (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
+            {
                 stored.Snapshots.Add(dto);
+                snapshot = CaptureSnapshotLocked();
+            }
         }
 
-        return Task.FromResult(dto);
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return dto;
     }
 
     public Task<IReadOnlyList<AccountBalanceSnapshotDto>> GetBalanceHistoryAsync(
@@ -225,11 +274,13 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
+            {
                 return Task.FromResult<IReadOnlyList<AccountBalanceSnapshotDto>>([]);
+            }
 
             var results = stored.Snapshots
                 .Where(s => (fromDate == null || s.AsOfDate >= fromDate)
-                         && (toDate   == null || s.AsOfDate <= toDate))
+                         && (toDate == null || s.AsOfDate <= toDate))
                 .OrderByDescending(s => s.AsOfDate)
                 .ToList();
 
@@ -243,7 +294,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
+            {
                 return Task.FromResult<AccountBalanceSnapshotDto?>(null);
+            }
 
             var latest = stored.Snapshots
                 .OrderByDescending(s => s.AsOfDate)
@@ -254,9 +307,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         }
     }
 
-    // ── Statement ingestion ───────────────────────────────────────────────────────
-
-    public Task<CustodianStatementBatchDto> IngestCustodianStatementAsync(
+    public async Task<CustodianStatementBatchDto> IngestCustodianStatementAsync(
         IngestCustodianStatementRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -271,19 +322,22 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             DateTimeOffset.UtcNow,
             request.LoadedBy);
 
+        (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
                 stored.CustodianBatches.Add(batch);
                 stored.CustodianPositions.AddRange(request.Lines);
+                snapshot = CaptureSnapshotLocked();
             }
         }
 
-        return Task.FromResult(batch);
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return batch;
     }
 
-    public Task<BankStatementBatchDto> IngestBankStatementAsync(
+    public async Task<BankStatementBatchDto> IngestBankStatementAsync(
         IngestBankStatementRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -297,16 +351,19 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             DateTimeOffset.UtcNow,
             request.LoadedBy);
 
+        (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
                 stored.BankBatches.Add(batch);
                 stored.BankLines.AddRange(request.Lines);
+                snapshot = CaptureSnapshotLocked();
             }
         }
 
-        return Task.FromResult(batch);
+        await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        return batch;
     }
 
     public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
@@ -315,7 +372,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
+            {
                 return Task.FromResult<IReadOnlyList<CustodianPositionLineDto>>([]);
+            }
 
             var results = stored.CustodianPositions
                 .Where(p => p.AsOfDate == asOfDate)
@@ -332,11 +391,13 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
+            {
                 return Task.FromResult<IReadOnlyList<BankStatementLineDto>>([]);
+            }
 
             var results = stored.BankLines
                 .Where(l => (fromDate == null || l.StatementDate >= fromDate)
-                         && (toDate   == null || l.StatementDate <= toDate))
+                         && (toDate == null || l.StatementDate <= toDate))
                 .OrderByDescending(l => l.StatementDate)
                 .ToList();
 
@@ -344,9 +405,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         }
     }
 
-    // ── Reconciliation ────────────────────────────────────────────────────────────
-
-    public Task<AccountReconciliationRunDto> ReconcileAccountAsync(
+    public async Task<AccountReconciliationRunDto> ReconcileAccountAsync(
         ReconcileAccountRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -357,10 +416,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         lock (_gate)
         {
             if (!_accounts.TryGetValue(request.AccountId, out var stored))
-                throw new InvalidOperationException(
-                    $"Account {request.AccountId} not found.");
+            {
+                throw new InvalidOperationException($"Account {request.AccountId} not found.");
+            }
 
-            snapshot  = stored.Snapshots
+            snapshot = stored.Snapshots
                 .Where(s => s.AsOfDate == request.AsOfDate)
                 .OrderByDescending(s => s.RecordedAt)
                 .FirstOrDefault();
@@ -370,32 +430,30 @@ public sealed class InMemoryFundAccountService : IFundAccountService
                 .ToList();
         }
 
-        var runId     = Guid.NewGuid();
-        var results   = new List<AccountReconciliationResultDto>();
-        var now       = DateTimeOffset.UtcNow;
+        var runId = Guid.NewGuid();
+        var results = new List<AccountReconciliationResultDto>();
+        var now = DateTimeOffset.UtcNow;
 
-        // Cash check
         if (snapshot is not null)
         {
-            var isMatch    = true;
-            var cashResult = new AccountReconciliationResultDto(
-                Guid.NewGuid(), runId,
+            results.Add(new AccountReconciliationResultDto(
+                Guid.NewGuid(),
+                runId,
                 CheckLabel: "CashBalance",
-                IsMatch: isMatch,
+                IsMatch: true,
                 Category: "Cash",
-                Status: isMatch ? "Matched" : "Break",
+                Status: "Matched",
                 ExpectedAmount: snapshot.CashBalance,
                 ActualAmount: snapshot.CashBalance,
                 Variance: 0m,
-                Reason: "Cash balance matches internal ledger");
-            results.Add(cashResult);
+                Reason: "Cash balance matches internal ledger"));
         }
 
-        // Position count check
         if (positions.Count > 0)
         {
             results.Add(new AccountReconciliationResultDto(
-                Guid.NewGuid(), runId,
+                Guid.NewGuid(),
+                runId,
                 CheckLabel: $"PositionCount ({positions.Count} lines)",
                 IsMatch: true,
                 Category: "Positions",
@@ -422,16 +480,19 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             CompletedAt: now,
             request.RequestedBy);
 
+        (long Version, string Json)? snapshotToPersist = null;
         lock (_gate)
         {
             if (_accounts.TryGetValue(request.AccountId, out var stored))
             {
                 stored.ReconciliationRuns.Add(run);
                 stored.ReconciliationResults.AddRange(results);
+                snapshotToPersist = CaptureSnapshotLocked();
             }
         }
 
-        return Task.FromResult(run);
+        await PersistSnapshotAsync(snapshotToPersist, ct).ConfigureAwait(false);
+        return run;
     }
 
     public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
@@ -440,10 +501,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService
         lock (_gate)
         {
             if (!_accounts.TryGetValue(accountId, out var stored))
+            {
                 return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>([]);
+            }
 
-            return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>(
-                stored.ReconciliationRuns.AsReadOnly());
+            return Task.FromResult<IReadOnlyList<AccountReconciliationRunDto>>(stored.ReconciliationRuns.AsReadOnly());
         }
     }
 
@@ -458,6 +520,77 @@ public sealed class InMemoryFundAccountService : IFundAccountService
                 .ToList();
 
             return Task.FromResult<IReadOnlyList<AccountReconciliationResultDto>>(results);
+        }
+    }
+
+    private (long Version, string Json)? CaptureSnapshotLocked()
+    {
+        if (_persistencePath is null)
+        {
+            return null;
+        }
+
+        _stateVersion++;
+        var json = JsonSerializer.Serialize(
+            new PersistedState(
+                Version: 1,
+                Accounts: _accounts.Values.ToList()),
+            JsonOptions);
+
+        return (_stateVersion, json);
+    }
+
+    private async Task PersistSnapshotAsync((long Version, string Json)? snapshot, CancellationToken ct)
+    {
+        if (snapshot is null || _persistencePath is null)
+        {
+            return;
+        }
+
+        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (snapshot.Value.Version <= _persistedVersion)
+            {
+                return;
+            }
+
+            await AtomicFileWriter.WriteAsync(_persistencePath, snapshot.Value.Json, ct).ConfigureAwait(false);
+            _persistedVersion = snapshot.Value.Version;
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
+
+    private void LoadState()
+    {
+        if (_persistencePath is null || !File.Exists(_persistencePath))
+        {
+            return;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(_persistencePath);
+            var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
+            if (state is null)
+            {
+                return;
+            }
+
+            foreach (var account in state.Accounts)
+            {
+                _accounts[account.Summary.AccountId] = account;
+            }
+
+            _stateVersion = 1;
+            _persistedVersion = 1;
+        }
+        catch (Exception ex) when (ex is IOException or JsonException)
+        {
+            // Preserve startup availability for malformed or missing local snapshots.
         }
     }
 }

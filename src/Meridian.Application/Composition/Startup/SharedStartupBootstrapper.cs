@@ -11,6 +11,7 @@ using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
 using Meridian.Storage;
 using Meridian.Storage.Services;
+using Meridian.Contracts.Configuration;
 using Serilog;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using DeploymentContext = Meridian.Application.Config.DeploymentContext;
@@ -122,12 +123,14 @@ public static class SharedStartupHelpers
             {
                 Console.Error.WriteLine($"[Warning] Configuration file not found: {path}");
                 Console.Error.WriteLine("Using default configuration. Copy config/appsettings.sample.json to config/appsettings.json to customize.");
-                return new AppConfig();
+                return new AppConfig(DataRoot: MeridianPathDefaults.ResolveDataRoot(path, null));
             }
 
             var json = File.ReadAllText(path);
             var cfg = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read);
-            return cfg ?? new AppConfig();
+            var configuredDataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, cfg?.DataRoot);
+            var resolvedDataRoot = MeridianPathDefaults.ResolveDataRoot(path, configuredDataRoot);
+            return (cfg ?? new AppConfig()) with { DataRoot = resolvedDataRoot };
         }
         catch (JsonException ex)
         {
@@ -138,7 +141,7 @@ public static class SharedStartupHelpers
             Console.Error.WriteLine("    2. Check for trailing commas or missing quotes");
             Console.Error.WriteLine("    3. Compare against appsettings.sample.json");
             Console.Error.WriteLine("    4. Run: dotnet user-secrets init (for sensitive data)");
-            return new AppConfig();
+            return new AppConfig(DataRoot: MeridianPathDefaults.ResolveDataRoot(path, null));
         }
         catch (UnauthorizedAccessException)
         {
@@ -157,7 +160,7 @@ public static class SharedStartupHelpers
             Console.Error.WriteLine($"[Error] Failed to load configuration: {ex.Message}");
             Console.Error.WriteLine("Using default configuration.");
             Console.Error.WriteLine("For detailed help, see HELP.md or run with --help");
-            return new AppConfig();
+            return new AppConfig(DataRoot: MeridianPathDefaults.ResolveDataRoot(path, null));
         }
     }
 
@@ -220,10 +223,12 @@ internal static class CommandDispatchPlanner
         ILogger log,
         ConfigurationService configService)
     {
-        var symbolService = new SymbolManagementService(new ConfigStore(cfgPath), cfg.DataRoot, log);
+        var store = new ConfigStore(cfgPath);
+        var dataRoot = store.GetDataRoot(cfg);
+        var symbolService = new SymbolManagementService(store, dataRoot, log);
         var storageSearchService = new StorageSearchService(
-            cfg.Storage?.ToStorageOptions(cfg.DataRoot, cfg.Compress ?? false)
-            ?? new StorageOptions { RootPath = cfg.DataRoot });
+            cfg.Storage?.ToStorageOptions(dataRoot, cfg.Compress ?? false)
+            ?? new StorageOptions { RootPath = dataRoot });
 
         return new CommandDispatchPlan(new CommandDispatcher(
             new HelpCommand(),
@@ -237,9 +242,9 @@ internal static class CommandDispatchPlanner
             new PackageCommands(cfg, log),
             new EtlCommands(cfgPath, log),
             new ConfigPresetCommand(new AutoConfigurationService(), log),
-            new QueryCommand(new HistoricalDataQueryService(cfg.DataRoot), log),
+            new QueryCommand(new HistoricalDataQueryService(dataRoot), log),
             new CatalogCommand(storageSearchService, log),
-            new GenerateLoaderCommand(cfg.DataRoot, log),
+            new GenerateLoaderCommand(dataRoot, log),
             new WalRepairCommand(cfg, log),
             // Security Master ingest: importService is null until the full host configures Postgres.
             new SecurityMasterCommands(importService: null, log)));

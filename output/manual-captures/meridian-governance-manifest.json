@@ -1,0 +1,71 @@
+{
+  "title": "Meridian Governance Manual",
+  "subtitle": "Fund operations, alerts, and control surfaces",
+  "author": "Codex",
+  "version": "0.1",
+  "date": "2026-04-07",
+  "intro": [
+    "This manual covers the governance-oriented pages in Meridian that help operators inspect fund operations, notification posture, and control settings.",
+    "Screenshots were captured from the Windows WPF shell in fixture mode on April 7, 2026. Only healthy governance pages are included in this manual; fixture-mode error pages were intentionally excluded."
+  ],
+  "sections": [
+    {
+      "heading": "Governance Workspace",
+      "summary": "Use Governance as the operator-wide control surface for trust, audit, and fund-operations tasks.",
+      "steps": [
+        {
+          "title": "Start in the Governance workspace",
+          "body": "Open Governance to see the high-level quick actions for accounts, banking, portfolio, cash and financing, trial balance, reconciliation, audit trail, data quality, diagnostics, notifications, and settings. This is the best landing page when you need a control-oriented operating view across the platform.",
+          "notes": [
+            "The quick actions row is the fastest way to jump into the specific fund-operations screen you need.",
+            "Use the operational focus lanes to decide whether the next task is a fund-ops review, provider/system health review, or alert review."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/01-governance-shell.png",
+          "caption": "Governance workspace with quick actions for oversight and control tasks."
+        }
+      ]
+    },
+    {
+      "heading": "Fund Operations",
+      "summary": "Use the fund-oriented pages when account routing and operational coverage need review.",
+      "steps": [
+        {
+          "title": "Review fund accounts and provider bindings",
+          "body": "Open Fund Accounts to inspect account queues, scoped provider bindings, and route previews. This page helps operators confirm which brokerage, custody, bank, or related account structures are available for a selected fund profile.",
+          "notes": [
+            "Use Refresh Accounts when the account set has changed.",
+            "Use Refresh Routing when provider bindings or effective routes need to be recalculated."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/03-fund-accounts.png",
+          "caption": "Fund Accounts page with queue, bindings, and effective route preview panels."
+        }
+      ]
+    },
+    {
+      "heading": "Alerts And Operator Controls",
+      "summary": "Use notifications and settings together when an operator needs to respond to issues or adjust control posture.",
+      "steps": [
+        {
+          "title": "Use Notification Center to triage alerts",
+          "body": "Open Notification Center to review active alerts, grouped alert categories, notification history, and notification preferences. This page is the central place to acknowledge issues and verify what Meridian has already surfaced to the operator.",
+          "notes": [
+            "Use Mark All Read or Clear All only after you understand what the alert history is telling you.",
+            "The filter row lets you narrow the view to Errors, Warnings, Info, or Success messages."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/05-notification-center.png",
+          "caption": "Notification Center with alert grouping, history, and preference controls."
+        },
+        {
+          "title": "Open Settings for shared control changes",
+          "body": "Use Settings when governance work turns into a configuration task. From here you can reach Add Provider, Configure Storage, Credential Vault, and Setup Wizard, all of which affect the wider operator environment.",
+          "notes": [
+            "Settings is the right follow-up screen when an alert points to credentials, storage, or onboarding problems.",
+            "Treat Settings as the shared control plane for fixes that affect multiple workflows."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/06-settings.png",
+          "caption": "Settings page used to reach shared configuration controls from governance workflows."
+        }
+      ]
+    }
+  ]
+}

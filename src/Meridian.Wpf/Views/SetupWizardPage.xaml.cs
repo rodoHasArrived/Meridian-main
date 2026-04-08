@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Contracts.Configuration;
 using WpfServices = Meridian.Wpf.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
@@ -22,7 +23,8 @@ public partial class SetupWizardPage : Page
         "Stooq",
         "NasdaqDataLink",
         "Polygon",
-        "Alpaca"
+        "Alpaca",
+        "Robinhood"
     };
 
     private readonly ConnectionService _connectionService;
@@ -120,7 +122,7 @@ public partial class SetupWizardPage : Page
 
             ProviderCombo.SelectedItem = dataSource;
 
-            var storageBase = root["Storage"]?["BaseDirectory"]?.GetValue<string>() ?? "data";
+            var storageBase = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json);
             StorageLocationTextBox.Text = storageBase;
 
             ConfigStatusText.Text = "Loaded existing configuration.";
@@ -328,9 +330,11 @@ public partial class SetupWizardPage : Page
             }
 
             rootNode["DataSource"] = provider;
+            rootNode["DataRoot"] = storageLocation;
 
             var storageNode = rootNode["Storage"] as JsonObject ?? new JsonObject();
-            storageNode["BaseDirectory"] = storageLocation;
+            storageNode.Remove("BaseDirectory");
+            storageNode.Remove("baseDirectory");
             rootNode["Storage"] = storageNode;
 
             var backfillNode = rootNode["Backfill"] as JsonObject ?? new JsonObject();

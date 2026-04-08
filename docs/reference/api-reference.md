@@ -176,15 +176,19 @@ curl http://localhost:8080/api/data/quotes/SPY
 **Run a historical backfill:**
 
 ```bash
+cat <<'JSON' > /tmp/backfill-request.json
+{
+  "provider": "stooq",
+  "symbols": ["SPY", "AAPL"],
+  "from": "2024-01-01",
+  "to": "2024-01-31"
+}
+JSON
+
 curl -X POST http://localhost:8080/api/backfill/run \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: your-key" \
-  -d '{
-    "provider": "stooq",
-    "symbols": ["SPY", "AAPL"],
-    "from": "2024-01-01",
-    "to": "2024-01-31"
-  }'
+  --data-binary @/tmp/backfill-request.json
 ```
 
 **Check data quality for a symbol:**
@@ -225,6 +229,8 @@ All endpoints return errors in a consistent format:
 | Packaging | 6 | Portable data package creation, import, validation, listing |
 | Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
+| Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
+| Execution | 16 | Execution blotter, keyed position actions, orders, health, audit, controls |
 | Failover | 7 | Failover rules, health, force failover |
 | Interactive Brokers | 3 | IB-specific status, error codes, API limits |
 | Symbol Mapping | 5 | Cross-provider symbol mappings, CSV import |
@@ -346,6 +352,50 @@ Checkpoint endpoints expose the persisted job state that enables backfill operat
 | GET | `/api/providers/catalog/{providerId}` | Single provider catalog entry |
 | GET | `/api/providers/latency` | Latency statistics |
 | GET | `/api/connections` | Connection health summary |
+
+Provider catalog responses expose capability flags such as `supportsOptionsChain` and `supportsBrokerage`, which desktop setup flows can use to distinguish data feeds from broker-backed options providers like Robinhood.
+
+### Options (`/api/options/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/options/expirations/{underlyingSymbol}` | Available expirations for an underlying |
+| GET | `/api/options/strikes/{underlyingSymbol}/{expiration}` | Available strikes for a specific expiration |
+| GET | `/api/options/chains/{underlyingSymbol}` | Cached or fetched option chain snapshots |
+| GET | `/api/options/quotes/{underlyingSymbol}` | Cached option quotes for an underlying |
+| GET | `/api/options/summary` | Options summary plus active provider identity, mode, and fallback state |
+| GET | `/api/options/underlyings` | Tracked option underlyings |
+| POST | `/api/options/refresh` | Refresh a specific option chain snapshot |
+
+`/api/options/summary` now includes:
+
+- `providerId` and `providerDisplayName` for the active provider
+- `providerMode` with `Configured`, `Fallback`, or `Unavailable`
+- `isFallbackProvider` to distinguish synthetic fallback from live providers
+- `providerStatusMessage` for UI-ready status text
+
+### Execution (`/api/execution/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/execution/account` | Account-level execution snapshot |
+| GET | `/api/execution/positions` | Legacy paper-trading positions list |
+| GET | `/api/execution/positions/blotter` | Broker-aware blotter snapshot used by desktop position views |
+| POST | `/api/execution/positions/actions/close` | Submit a keyed close action for a blotter position |
+| POST | `/api/execution/positions/actions/upsize` | Submit a keyed upsize action for a blotter position |
+| POST | `/api/execution/positions/{symbol}/close` | Legacy symbol-based close action; rejects ambiguous matches |
+| GET | `/api/execution/orders` | Open orders |
+| POST | `/api/execution/orders/submit` | Submit an order |
+| POST | `/api/execution/orders/{orderId}/cancel` | Cancel a single order |
+| POST | `/api/execution/orders/cancel-all` | Cancel all open orders |
+| GET | `/api/execution/portfolio` | Portfolio snapshot |
+| GET | `/api/execution/health` | Gateway health and live-connection summary |
+| GET | `/api/execution/capabilities` | Order-gateway capabilities |
+| GET | `/api/execution/audit` | Operator audit trail |
+| GET | `/api/execution/controls` | Execution operator controls snapshot |
+| POST | `/api/execution/controls/circuit-breaker` | Open or close the execution circuit breaker |
+
+`/api/execution/positions/blotter` is the preferred position endpoint for desktop execution surfaces because it returns broker-backed/live state, a source label, a status message, and keyed position metadata needed for broker option actions.
 
 ### Failover (`/api/failover/*`)
 
@@ -487,7 +537,7 @@ When adding or changing public APIs:
 ---
 
 **Version:** 1.6.2
-**Last Updated:** 2026-03-16
+**Last Updated:** 2026-04-07
 **Audience:** Contributors maintaining the HTTP API surface and AI assistants working on endpoint documentation.
 
 

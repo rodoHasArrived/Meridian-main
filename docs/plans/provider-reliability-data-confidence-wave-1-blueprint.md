@@ -20,6 +20,7 @@ This blueprint turns the active Wave 1 scope into a concrete delivery plan groun
 ### In scope
 
 - Polygon replay coverage across feeds and edge cases.
+- Robinhood execution-adjacent provider confidence across brokerage submit, quote polling, historical daily bars, and symbol search evidence.
 - Interactive Brokers runtime and bootstrap validation against real vendor surfaces.
 - NYSE shared-lifecycle and Level 2 depth coverage.
 - StockSharp connector examples and validated adapter guidance.
@@ -32,6 +33,7 @@ This blueprint turns the active Wave 1 scope into a concrete delivery plan groun
 
 - Broad live-broker rollout or general live-trading readiness claims.
 - New provider families or speculative connector expansion.
+- Historical-only and Security Master support providers such as FRED and EDGAR; they remain inventoried but are not part of the execution-oriented Wave 1 exit gate.
 - Workstation shell, cockpit, or governance product work outside the evidence surfaces needed to close this gate.
 - Optional research tracks such as L3 inference, QuantScript expansion, or multi-instance scale-out.
 
@@ -41,6 +43,7 @@ This blueprint turns the active Wave 1 scope into a concrete delivery plan groun
 - Real-vendor checks are explicit runtime evidence, not something implied by the default build.
 - The minimum StockSharp validated-adapter set for this wave is `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers`, because those package surfaces are already represented in Meridian's current StockSharp support.
 - Polygon remains a replay and streaming-confidence target, not a Level 2 depth target.
+- Robinhood is in scope because it already participates in quote, historical, symbol-search, and stable execution seams; FRED and EDGAR stay in inventory/status docs unless their non-execution surfaces materially change.
 - Raw runtime artifacts should be archived under `artifacts/provider-validation/` with the docs carrying the human-readable summary and gate result.
 
 ---
@@ -53,6 +56,7 @@ Wave 1 already has the right architectural anchors in code:
 
 - Streaming provider seams exist through [`src/Meridian.ProviderSdk/IMarketDataClient.cs`](../../src/Meridian.ProviderSdk/IMarketDataClient.cs), [`src/Meridian.ProviderSdk/IDataSource.cs`](../../src/Meridian.ProviderSdk/IDataSource.cs), and [`src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs`](../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs).
 - Polygon replay and parser coverage already flows through [`src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs`](../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs) and [`tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs).
+- Robinhood execution-adjacent coverage already flows through [`src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs`](../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs), [`src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs`](../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs), [`tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs), [`tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs), and the stable-seam execution path in [`tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs`](../../tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs).
 - Interactive Brokers bootstrap guidance already exists through [`src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs`](../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs), [`src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.IBApi.cs`](../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.IBApi.cs), [`src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs`](../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs), and [`docs/providers/interactive-brokers-setup.md`](../providers/interactive-brokers-setup.md).
 - NYSE lifecycle and transport already center on [`src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs`](../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs), [`src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs`](../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs), and [`tests/Meridian.Tests/Infrastructure/Providers/NyseSharedLifecycleTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/NyseSharedLifecycleTests.cs).
 - StockSharp adapter capability and conversion seams are already in [`src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorFactory.cs`](../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorFactory.cs), [`src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorCapabilities.cs`](../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorCapabilities.cs), [`src/Meridian.Infrastructure/Adapters/StockSharp/Converters/MessageConverter.cs`](../../src/Meridian.Infrastructure/Adapters/StockSharp/Converters/MessageConverter.cs), and [`docs/providers/stocksharp-connectors.md`](../providers/stocksharp-connectors.md).
@@ -62,6 +66,7 @@ Wave 1 already has the right architectural anchors in code:
 ### Current gaps this wave must close
 
 - Polygon replay evidence is strong, but the matrix still treats reconnect and rate-limit runtime proof as partial.
+- Robinhood has stable-seam execution and provider-suite coverage, but reconnect, cancellation, and rate-limit behavior are still only partially evidenced because the adapter relies on an unofficial broker API and polling-oriented quote surfaces.
 - IB guidance is explicit, but the repo still needs a clearer line between simulation mode, compile-only smoke mode, and real vendor bootstrap evidence.
 - NYSE has lifecycle and parser coverage, but auth failure, rate-limit, cancellation, and reconnect/resubscribe proof are not yet equally explicit in the matrix.
 - StockSharp examples and capability tests exist, but the repo still needs a stronger definition of which adapters Meridian is prepared to call validated.
@@ -71,15 +76,16 @@ Wave 1 already has the right architectural anchors in code:
 
 ### Delivery shape
 
-Wave 1 should be executed as seven tightly coupled tracks:
+Wave 1 should be executed as eight tightly coupled tracks:
 
 1. Polygon replay closure.
-2. IB runtime and bootstrap validation.
-3. NYSE lifecycle-depth and transport hardening.
-4. StockSharp validated-adapter closure.
-5. Backfill checkpoint and gap-detection reliability.
-6. Parquet L2 flush-path hardening and ADR-014 cleanup.
-7. Evidence-document synchronization and exit-gate review.
+2. Robinhood execution-readiness closure.
+3. IB runtime and bootstrap validation.
+4. NYSE lifecycle-depth and transport hardening.
+5. StockSharp validated-adapter closure.
+6. Backfill checkpoint and gap-detection reliability.
+7. Parquet L2 flush-path hardening and ADR-014 cleanup.
+8. Evidence-document synchronization and exit-gate review.
 
 ---
 
@@ -129,7 +135,22 @@ Done when:
 - Polygon replay coverage is broader across feed variants and edge cases.
 - The validation matrix shows exactly what is replay-proven versus runtime-bounded.
 
-### 2. Interactive Brokers runtime and bootstrap validation
+### 2. Robinhood execution-readiness closure
+
+Use [`src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs`](../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs), [`src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs`](../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs), [`tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs), and [`tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs`](../../tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs) as the baseline.
+
+Required additions:
+
+- Keep the stable execution seam, quote-polling path, historical daily bars, and symbol-search behavior aligned as one supported Robinhood surface instead of letting those claims drift independently.
+- Capture runtime evidence for reconnect, cancellation, and throttling behavior from a real broker session because the adapter has no public websocket replay seam to substitute for that proof.
+- Keep the unofficial API boundary explicit in docs and operator guidance so Wave 1 closes evidence gaps without overstating vendor-supported live readiness.
+
+Done when:
+
+- Robinhood's matrix row distinguishes clearly between stable-seam proof already in repo and remaining live-session proof still bounded by the unofficial broker surface.
+- The provider baseline, validation matrix, and production-status docs all point at the same Robinhood evidence set.
+
+### 3. Interactive Brokers runtime and bootstrap validation
 
 Use [`docs/providers/interactive-brokers-setup.md`](../providers/interactive-brokers-setup.md), [`src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs`](../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs), and [`tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs) as the baseline.
 
@@ -144,7 +165,7 @@ Done when:
 - The smoke path, setup guide, and runtime evidence all point at the same tested bootstrap rules.
 - The validation matrix stops implying live readiness where only guidance or compile-only proof exists.
 
-### 3. NYSE lifecycle-depth coverage and transport hardening
+### 4. NYSE lifecycle-depth coverage and transport hardening
 
 Use [`src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs`](../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs), [`tests/Meridian.Tests/Infrastructure/Providers/NyseSharedLifecycleTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/NyseSharedLifecycleTests.cs), and [`tests/Meridian.Tests/Infrastructure/Providers/NyseTaqCollectorIntegrationTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/NyseTaqCollectorIntegrationTests.cs).
 
@@ -159,7 +180,7 @@ Done when:
 - NYSE depth and shared-lifecycle behavior are represented by executable evidence rather than implied by code shape.
 - Disconnect and reconnect paths do not leave orphaned send or resubscribe work behind.
 
-### 4. StockSharp connector examples and validated adapters
+### 5. StockSharp connector examples and validated adapters
 
 Use [`docs/providers/stocksharp-connectors.md`](../providers/stocksharp-connectors.md), [`src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorFactory.cs`](../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorFactory.cs), and [`tests/Meridian.Tests/Infrastructure/Providers/StockSharpConnectorFactoryTests.cs`](../../tests/Meridian.Tests/Infrastructure/Providers/StockSharpConnectorFactoryTests.cs).
 
@@ -175,7 +196,7 @@ Done when:
 - Meridian can point to a specific validated adapter set instead of a generic StockSharp umbrella claim.
 - Example config and factory capabilities are synchronized.
 
-### 5. Backfill checkpoint reliability and gap detection
+### 6. Backfill checkpoint reliability and gap detection
 
 Use [`src/Meridian.Application/Backfill/BackfillStatusStore.cs`](../../src/Meridian.Application/Backfill/BackfillStatusStore.cs), [`tests/Meridian.Tests/Application/Backfill/BackfillStatusStoreTests.cs`](../../tests/Meridian.Tests/Application/Backfill/BackfillStatusStoreTests.cs), [`tests/Meridian.Tests/Application/Backfill/GapBackfillServiceTests.cs`](../../tests/Meridian.Tests/Application/Backfill/GapBackfillServiceTests.cs), and [`tests/Meridian.Tests/Application/Services/DataQuality/GapAnalyzerTests.cs`](../../tests/Meridian.Tests/Application/Services/DataQuality/GapAnalyzerTests.cs).
 
@@ -190,7 +211,7 @@ Done when:
 - Checkpoint and gap claims are backed by representative provider and date-window evidence instead of assumptions.
 - The matrix and roadmap can state exactly which ranges and restart cases were validated.
 
-### 6. Parquet flush-path hardening and ADR-014 cleanup for L2 snapshot persistence
+### 7. Parquet flush-path hardening and ADR-014 cleanup for L2 snapshot persistence
 
 Use [`src/Meridian.Storage/Sinks/ParquetStorageSink.cs`](../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs) and [`tests/Meridian.Tests/Storage/ParquetStorageSinkTests.cs`](../../tests/Meridian.Tests/Storage/ParquetStorageSinkTests.cs).
 
@@ -205,7 +226,7 @@ Done when:
 - L2 snapshot persistence has executable flush-path evidence.
 - No Wave 1 storage doc implies guarantees that only exist for trade events.
 
-### 7. Evidence synchronization and exit-gate review
+### 8. Evidence synchronization and exit-gate review
 
 Use [`docs/providers/provider-confidence-baseline.md`](../providers/provider-confidence-baseline.md), [`docs/status/provider-validation-matrix.md`](../status/provider-validation-matrix.md), [`docs/status/ROADMAP.md`](../status/ROADMAP.md), and [`docs/status/production-status.md`](../status/production-status.md).
 
@@ -226,6 +247,7 @@ Done when:
 ## Edge Cases and Risks
 
 - Polygon status frames, delayed plans, and entitlement-dependent feeds can easily look "validated" unless the docs keep replay proof separate from live-vendor proof.
+- Robinhood can look more live-validated than it really is if stable execution tests and polling-path unit coverage are allowed to stand in for reconnect or throttling evidence from a real broker session.
 - IB version-window drift will cause misleading setup guidance if `IBApiVersionValidator`, smoke-build instructions, and runtime logs are not updated together.
 - NYSE reconnect behavior is easy to overstate because lifecycle tests and transport shutdown behavior are related but not identical proof.
 - StockSharp can look broader than it really is if named connectors in docs outrun the packages Meridian actually references.
@@ -240,6 +262,8 @@ Run the narrowest suites that match the touched slice:
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PolygonRecordedSessionReplayTests|FullyQualifiedName~PolygonMessageParsingTests|FullyQualifiedName~PolygonSubscriptionTests|FullyQualifiedName~PolygonMarketDataClientTests"
+
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~RobinhoodBrokerageGatewayTests|FullyQualifiedName~RobinhoodMarketDataClientTests|FullyQualifiedName~RobinhoodHistoricalDataProviderTests|FullyQualifiedName~RobinhoodSymbolSearchProviderTests|FullyQualifiedName~RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam"
 
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~NyseSharedLifecycleTests|FullyQualifiedName~NyseMarketDataClientTests|FullyQualifiedName~NYSEMessageParsingTests|FullyQualifiedName~NyseTaqCollectorIntegrationTests"
 
@@ -257,6 +281,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 Manual or runtime evidence should additionally capture:
 
 - Polygon live-path notes when plan-tier or entitlement behavior matters.
+- Robinhood broker-session notes for quote polling, token/auth handling, cancellation, reconnect behavior, and throttling boundaries.
 - IB TWS or Gateway bootstrap logs, server-version validation output, and entitlement notes.
 - NYSE auth/connectivity and depth entitlement evidence where available.
 - StockSharp validated-adapter runtime notes for the selected baseline connectors.
@@ -266,5 +291,6 @@ Manual or runtime evidence should additionally capture:
 ## Open Questions
 
 - Should NYSE premium depth be mandatory for the Wave 1 exit gate, or acceptable as an explicitly bounded entitlement-dependent path?
+- For Robinhood, is one current broker-session artifact per major flow enough for Wave 1, or do we want separate runtime evidence for quotes, brokerage submit/cancel, and throttling?
 - Do we want runtime evidence committed directly under `artifacts/provider-validation/`, or summarized there with larger logs kept outside the repo and referenced by path?
 - Is one validated runtime artifact per StockSharp baseline adapter sufficient, or does this wave require both historical and streaming evidence for each validated adapter?

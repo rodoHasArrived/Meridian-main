@@ -57,6 +57,9 @@ public sealed class ConfigService : ConfigServiceBase
 
     public override string ConfigPath => FirstRunService.Instance.ConfigFilePath;
 
+    public string ResolveDataRoot(AppConfigDto? config = null)
+        => MeridianPathDefaults.ResolveDataRoot(ConfigPath, config?.DataRoot);
+
     private ConfigService()
     {
     }
@@ -292,7 +295,9 @@ public sealed class ConfigService : ConfigServiceBase
                 return new AppConfigDto();
             }
 
-            return JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();
+            var config = JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();
+            config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
+            return config;
         }
         catch (Exception ex)
         {
@@ -310,6 +315,10 @@ public sealed class ConfigService : ConfigServiceBase
             {
                 Directory.CreateDirectory(directory);
             }
+
+            config.DataRoot = string.IsNullOrWhiteSpace(config.DataRoot)
+                ? MeridianPathDefaults.DefaultDataRoot
+                : config.DataRoot;
 
             var json = JsonSerializer.Serialize(config, SharedJsonOptions);
             await File.WriteAllTextAsync(ConfigPath, json, ct);

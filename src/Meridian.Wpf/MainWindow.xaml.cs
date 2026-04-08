@@ -39,6 +39,7 @@ public partial class MainWindow : Window
     private readonly AlertService _alertService;
     private readonly WpfServices.WorkspaceService _workspaceService;
     private readonly WpfServices.FundContextService _fundContextService;
+    private readonly WpfServices.WorkstationOperatingContextService _operatingContextService;
 
     private static readonly string WindowStateFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -50,7 +51,8 @@ public partial class MainWindow : Window
         WpfServices.NavigationService navigationService,
         WpfServices.KeyboardShortcutService keyboardShortcutService,
         WpfServices.NotificationService notificationService,
-        WpfServices.FundContextService fundContextService)
+        WpfServices.FundContextService fundContextService,
+        WpfServices.WorkstationOperatingContextService operatingContextService)
     {
         InitializeComponent();
 
@@ -62,6 +64,7 @@ public partial class MainWindow : Window
         _alertService = AlertService.Instance;
         _workspaceService = WpfServices.WorkspaceService.Instance;
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
+        _operatingContextService = operatingContextService ?? throw new ArgumentNullException(nameof(operatingContextService));
         DataContext = _viewModel;
 
         // Subscribe to keyboard shortcuts
@@ -76,8 +79,10 @@ public partial class MainWindow : Window
 
         // Subscribe to alert events for guided remediation
         _alertService.AlertRaised += OnAlertRaised;
-        _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _fundContextService.FundSwitchRequested += OnFundSwitchRequested;
+        _operatingContextService.ActiveContextChanging += OnActiveContextChanging;
+        _operatingContextService.ActiveContextChanged += OnActiveContextChanged;
+        _operatingContextService.ContextSwitchRequested += OnContextSwitchRequested;
 
         // Subscribe to launch args forwarded from secondary instances (jump-list re-launches).
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived += OnLaunchArgsReceived;
@@ -122,6 +127,7 @@ public partial class MainWindow : Window
 
         await _workspaceService.LoadWorkspacesAsync();
         await _fundContextService.LoadAsync();
+        await _operatingContextService.LoadAsync();
         await SynchronizeLastSelectedFundAsync();
 
         RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
@@ -145,8 +151,10 @@ public partial class MainWindow : Window
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
         _alertService.AlertRaised -= OnAlertRaised;
-        _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _fundContextService.FundSwitchRequested -= OnFundSwitchRequested;
+        _operatingContextService.ActiveContextChanging -= OnActiveContextChanging;
+        _operatingContextService.ActiveContextChanged -= OnActiveContextChanged;
+        _operatingContextService.ContextSwitchRequested -= OnContextSwitchRequested;
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived -= OnLaunchArgsReceived;
 
         // Clipboard watcher cleanup
@@ -423,16 +431,16 @@ public partial class MainWindow : Window
     /// <summary>
      /// Restores the last workspace session state (active workspace, last page, etc.)
      /// </summary>
-    private async Task RestoreWorkspaceSessionForFundAsync(FundProfileDetail profile, CancellationToken ct = default)
+    private async Task RestoreWorkspaceSessionForContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
     {
         try
         {
             await _workspaceService.LoadWorkspacesAsync();
 
-            var session = _workspaceService.GetLastSessionState(profile.FundProfileId);
+            var session = _workspaceService.GetLastSessionStateForContext(context.ContextKey);
             var targetWorkspaceId = !string.IsNullOrWhiteSpace(session?.ActiveWorkspaceId)
                 ? session!.ActiveWorkspaceId
-                : profile.DefaultWorkspaceId;
+                : context.DefaultWorkspaceId;
 
             if (!string.IsNullOrWhiteSpace(targetWorkspaceId))
             {
@@ -441,7 +449,7 @@ public partial class MainWindow : Window
 
             var targetPageTag = !string.IsNullOrWhiteSpace(session?.ActivePageTag)
                 ? session!.ActivePageTag
-                : profile.DefaultLandingPageTag;
+                : context.DefaultLandingPageTag;
 
             if (string.IsNullOrWhiteSpace(targetPageTag))
             {
@@ -463,18 +471,21 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (_fundContextService.CurrentFundProfile is null && RootFrame.Content is not MainPage)
+            if (_operatingContextService.CurrentContext is null &&
+                _fundContextService.CurrentFundProfile is null &&
+                RootFrame.Content is not MainPage)
             {
                 return;
             }
 
-            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
+            var operatingContextKey = _operatingContextService.CurrentContext?.ContextKey
+                ?? _fundContextService.CurrentFundProfile?.FundProfileId;
             var currentPage = _navigationService.GetCurrentPageTag();
             var activeWorkspace = _workspaceService.ActiveWorkspace;
 
             // Preserve per-page filter state and open-pages list that were accumulated
             // during the session by the individual pages via UpdatePageFilterState().
-            var existing = _workspaceService.GetLastSessionState(fundProfileId);
+            var existing = _workspaceService.GetLastSessionStateForContext(operatingContextKey);
 
             var session = new Ui.Services.SessionState
             {
@@ -493,7 +504,7 @@ public partial class MainWindow : Window
             };
 
             // Fire-and-forget since we're closing
-            _ = _workspaceService.SaveSessionStateAsync(session, fundProfileId);
+            _ = _workspaceService.SaveSessionStateAsync(session, operatingContextKey);
         }
         catch (Exception)
         {
@@ -503,26 +514,37 @@ public partial class MainWindow : Window
     private async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId) &&
-            !string.IsNullOrWhiteSpace(_workspaceService.LastSelectedFundProfileId))
+            !string.IsNullOrWhiteSpace(_workspaceService.LastSelectedOperatingContextKey))
         {
-            await _fundContextService.SetLastSelectedFundProfileIdAsync(_workspaceService.LastSelectedFundProfileId, ct);
+            await _fundContextService.SetLastSelectedFundProfileIdAsync(_workspaceService.LastSelectedOperatingContextKey, ct);
         }
-        else if (string.IsNullOrWhiteSpace(_workspaceService.LastSelectedFundProfileId) &&
+        else if (string.IsNullOrWhiteSpace(_workspaceService.LastSelectedOperatingContextKey) &&
                  !string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId))
         {
-            await _workspaceService.SetLastSelectedFundProfileIdAsync(_fundContextService.LastSelectedFundProfileId, ct);
+            await _workspaceService.SetLastSelectedOperatingContextKeyAsync(_fundContextService.LastSelectedFundProfileId, ct);
         }
     }
 
-    private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
+    private void OnActiveContextChanging(object? sender, WorkstationOperatingContextChangingEventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {
-            _ = Dispatcher.InvokeAsync(() => OnActiveFundProfileChanged(sender, e));
+            _ = Dispatcher.InvokeAsync(() => OnActiveContextChanging(sender, e));
             return;
         }
 
-        await EnterFundAsync(e.Profile);
+        SaveWorkspaceSession();
+    }
+
+    private async void OnActiveContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnActiveContextChanged(sender, e));
+            return;
+        }
+
+        await EnterOperatingContextAsync(e.Context);
     }
 
     private async void OnFundSwitchRequested(object? sender, EventArgs e)
@@ -533,29 +555,43 @@ public partial class MainWindow : Window
             return;
         }
 
-        await ShowFundSelectionAsync(saveCurrentSession: true);
+        await ShowContextSelectionAsync(saveCurrentSession: true);
     }
 
-    private async Task EnterFundAsync(FundProfileDetail profile, CancellationToken ct = default)
+    private async void OnContextSwitchRequested(object? sender, EventArgs e)
     {
-        await _workspaceService.SetLastSelectedFundProfileIdAsync(profile.FundProfileId, ct);
-        RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnContextSwitchRequested(sender, e));
+            return;
+        }
+
+        await ShowContextSelectionAsync(saveCurrentSession: true);
+    }
+
+    private async Task EnterOperatingContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
+    {
+        await _workspaceService.SetLastSelectedOperatingContextKeyAsync(context.ContextKey, ct);
+        if (RootFrame.Content is not MainPage)
+        {
+            RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
+        }
+
         EnsureShellVisibleOnStartup();
 
         _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(async () =>
         {
-            await RestoreWorkspaceSessionForFundAsync(profile, ct);
+            await RestoreWorkspaceSessionForContextAsync(context, ct);
         }));
     }
 
-    private async Task ShowFundSelectionAsync(bool saveCurrentSession, CancellationToken ct = default)
+    private async Task ShowContextSelectionAsync(bool saveCurrentSession, CancellationToken ct = default)
     {
         if (saveCurrentSession)
         {
             SaveWorkspaceSession();
         }
 
-        _fundContextService.ClearCurrentFund();
         await _workspaceService.LoadWorkspacesAsync(ct);
         RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
         EnsureShellVisibleOnStartup();

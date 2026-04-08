@@ -1,9 +1,9 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-06
+**Last Updated:** 2026-04-07
 **Status:** Combined stakeholder-facing roadmap refresh
 
-This document is the shortest complete entry point into Meridian's current roadmap. It combines the active roadmap refresh, the highest-value opportunities, and the target end-state product story into one repo-grounded snapshot. `ROADMAP.md` remains the authoritative wave-structured roadmap.
+This document is the shortest complete entry point into Meridian's current roadmap. It combines the active roadmap refresh, the highest-value opportunities, and the target end-state product story into one repo-grounded snapshot. [`ROADMAP.md`](ROADMAP.md) remains the authoritative wave-structured roadmap.
 
 Use this with:
 
@@ -16,7 +16,7 @@ Use this with:
 
 ## Summary
 
-Meridian is no longer mainly blocked on missing platform foundations. The repo already has a strong ingestion, storage, replay, backtesting, execution, and workstation baseline, plus visible governance seams. April 5-6 backlog and evidence updates strengthen that picture, but they do not change the delivery order: the roadmap priority is still to close trust gaps, finish workflow continuity, and turn the product surfaces already in code into a genuinely operator-ready trading workstation and fund-operations platform.
+Meridian is no longer mainly blocked on missing platform foundations. The repo already has a strong ingestion, storage, replay, backtesting, execution, and workstation baseline, plus visible governance seams. The April 7 roadmap refresh reconciles the active planning set around the same delivery order: close trust gaps, finish workflow continuity, and turn the product surfaces already in code into a genuinely operator-ready trading workstation and fund-operations platform.
 
 ---
 
@@ -29,16 +29,16 @@ Meridian is no longer mainly blocked on missing platform foundations. The repo a
 - Research, Trading, Data Operations, and Governance each have real workflows in code, not only route placeholders.
 - Shared run, portfolio, and ledger read services exist and already feed workstation surfaces.
 - WPF shell modernization is complete and run-centered workstation pages are active in the desktop app.
-- Recent supporting momentum includes the new desktop Quickstart panel, standalone WPF export workflow, and cleared pre-existing test failures.
+- Security Master now acts as the authoritative instrument-definition seam across WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance surfaces.
 - Security Master, reconciliation, direct lending, and governance-facing endpoints are already present in the repo.
 
 ### What Is Partial
 
-- Provider trust is still uneven across key providers even after stronger IB, NYSE, and StockSharp test evidence landed on April 6.
+- Provider trust is still uneven across key providers even after stronger test evidence landed in the active validation set.
 - Backfill reliability needs stronger evidence across representative windows.
 - The web cockpit is real, but not yet fully hardened as a daily operator surface.
 - Shared run continuity is present, but not yet equally deep across every workspace and mode.
-- Security Master and governance workflows are visible, but not yet fully productized as the main cross-workspace governance seam.
+- Governance workflows now build on a delivered Security Master seam, but multi-ledger, cash-flow, reconciliation, and reporting are not yet fully productized.
 - WPF still needs deeper workflow-first page work and MVVM extraction on high-traffic surfaces.
 
 ---
@@ -57,9 +57,9 @@ The paper-trading cockpit should now move from "implemented" to "dependable."
 
 Research, trading, portfolio, ledger, and governance should all keep converging on the same run-centered seam.
 
-### 4. Productize Security Master and governance
+### 4. Productize governance on top of Security Master
 
-Security Master, multi-ledger, reconciliation, cash-flow, and reporting are now differentiated product opportunities on the main delivery path, not speculative ideas or a separate future track.
+Security Master is already the authoritative seam; the next opportunity is turning that seam into deeper account/entity, multi-ledger, cash-flow, reconciliation, and reporting workflows.
 
 ### 5. Keep architecture simple while the UX expands
 
@@ -96,7 +96,7 @@ Shared run, portfolio, ledger, and reconciliation continuity across workspaces.
 
 ### Wave 4
 
-Security Master and governance productization.
+Governance productization on top of the delivered Security Master seam.
 
 ### Wave 5
 

@@ -48,6 +48,8 @@ public sealed class SettingsConfigurationServiceTests
             provider.RequiredEnvVars.Should().Equal("DEMO_API_KEY");
             provider.SupportsStreaming.Should().BeTrue();
             provider.SupportsHistorical.Should().BeFalse();
+            provider.SupportsOptions.Should().BeFalse();
+            provider.SupportsBrokerage.Should().BeFalse();
             provider.RateLimitPerMinute.Should().Be(120);
         }
         finally
@@ -162,6 +164,7 @@ public sealed class SettingsConfigurationServiceTests
     [Theory]
     [InlineData("nasdaq", ProviderTier.LimitedFree)]
     [InlineData("ibkr", ProviderTier.FreeWithAccount)]
+    [InlineData("robinhood", ProviderTier.FreeWithAccount)]
     public void GetProviderCatalog_MapsRuntimeProviderIdsToExpectedTier(string providerId, ProviderTier expectedTier)
     {
         var entry = new Meridian.Contracts.Api.ProviderCatalogEntry
@@ -189,5 +192,57 @@ public sealed class SettingsConfigurationServiceTests
             ProviderCatalog.RuntimeCatalogProvider = null;
             ProviderCatalog.RuntimeCatalogEntryProvider = null;
         }
+    }
+
+    [Fact]
+    public void GetProviderCatalog_MapsOptionsAndBrokerageCapabilities()
+    {
+        var entry = new Meridian.Contracts.Api.ProviderCatalogEntry
+        {
+            ProviderId = "robinhood-demo",
+            DisplayName = "Robinhood Demo",
+            Description = "Options and brokerage",
+            ProviderType = ProviderTypeKind.Streaming,
+            RequiresCredentials = true,
+            CredentialFields = new[]
+            {
+                new CredentialFieldInfo("AccessToken", "ROBINHOOD_ACCESS_TOKEN", "Access Token", true)
+            },
+            Capabilities = new CapabilityInfo
+            {
+                SupportsOptionsChain = true,
+                SupportsBrokerage = true
+            }
+        };
+
+        try
+        {
+            ProviderCatalog.InitializeFromRegistry(
+                () => new[] { entry },
+                id => id == entry.ProviderId ? entry : null);
+
+            var provider = SettingsConfigurationService.Instance.GetProviderCatalog().Single();
+            provider.SupportsOptions.Should().BeTrue();
+            provider.SupportsBrokerage.Should().BeTrue();
+        }
+        finally
+        {
+            ProviderCatalog.RuntimeCatalogProvider = null;
+            ProviderCatalog.RuntimeCatalogEntryProvider = null;
+        }
+    }
+
+    [Fact]
+    public void GetProviderCatalog_StaticFallbackIncludesRobinhoodCapabilities()
+    {
+        ProviderCatalog.RuntimeCatalogProvider = null;
+        ProviderCatalog.RuntimeCatalogEntryProvider = null;
+
+        var provider = SettingsConfigurationService.Instance.GetProviderCatalog()
+            .Single(item => item.Id == "robinhood");
+
+        provider.SupportsOptions.Should().BeTrue();
+        provider.SupportsBrokerage.Should().BeTrue();
+        provider.RequiredEnvVars.Should().Contain("ROBINHOOD_ACCESS_TOKEN");
     }
 }

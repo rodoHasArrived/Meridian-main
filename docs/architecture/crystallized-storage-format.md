@@ -230,7 +230,7 @@ Eight naming conventions are supported. Select the one that best fits your acces
 - Extension: `.jsonl` (compressed: `.jsonl.gz`, `.jsonl.zst`, `.jsonl.lz4`)
 
 **Example (bar):**
-```json
+```jsonl
 {"timestamp":"2026-01-15T09:30:00Z","open":185.50,"high":186.20,"low":185.40,"close":186.00,"volume":1250000}
 {"timestamp":"2026-01-15T09:31:00Z","open":186.00,"high":186.50,"low":185.90,"close":186.30,"volume":890000}
 ```
@@ -532,8 +532,10 @@ The system supports pluggable storage sinks discovered via `StorageSinkRegistry`
 `CompositeSink` fans out events to multiple sinks simultaneously — for example writing JSONL and Parquet at the same time — without modifying the `EventPipeline`. It includes per-sink circuit-breaker health tracking to isolate failures in one sink from others.
 
 ```json
-"Storage": {
-  "ActiveSinks": ["jsonl", "parquet"]
+{
+  "Storage": {
+    "ActiveSinks": ["jsonl", "parquet"]
+  }
 }
 ```
 

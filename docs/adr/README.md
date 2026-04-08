@@ -26,7 +26,7 @@ An ADR is a document that captures an important architectural decision along wit
 | [ADR-014](014-json-source-generators.md) | JSON Source Generators | Accepted | `MarketDataJsonContext` |
 | [ADR-015](015-strategy-execution-contract.md) | Strategy Execution Contract | Accepted | `IOrderGateway`, `IExecutionContext` |
 | [ADR-016](016-platform-architecture-migration.md) | Platform Architecture Migration Mandate | Accepted | `Meridian.Execution`, `Meridian.Risk`, `Meridian.Strategies`, `Meridian.QuantScript` |
-| [ADR-015-platform-restructuring](ADR-015-platform-restructuring.md) | Platform Restructuring (historical) | **Superseded** | Superseded by ADR-015 and ADR-016 |
+| [ADR-015-platform-restructuring](../../archive/docs/migrations/ADR-015-platform-restructuring.md) | Platform Restructuring (historical) | **Superseded** | Archived in migration docs; superseded by ADR-015 and ADR-016 |
 
 ## ADR Dependencies
 
@@ -82,4 +82,4 @@ This ensures documented decisions remain in sync with actual code.
 
 ---
 
-*Last Updated: 2026-04-03*
+*Last Updated: 2026-04-07*

@@ -103,6 +103,7 @@
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
                                             </StackPanel>
                                             <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding CapabilitySummary}" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,6,0,0" />
                                         </StackPanel>
                                     </Button>
                                 </DataTemplate>

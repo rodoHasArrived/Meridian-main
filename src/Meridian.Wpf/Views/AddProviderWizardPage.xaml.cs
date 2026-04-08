@@ -446,7 +446,10 @@ public partial class AddProviderWizardPage : Page
         var providerName = _selectedProvider?.DisplayName
             ?? ProviderFamilyIdBox.Text.TrimOrNull()
             ?? "Select a relationship";
-        var providerDescription = _selectedProvider?.Description
+        var providerDescription = _selectedProvider is null
+            ? null
+            : $"{_selectedProvider.Description} Capabilities: {DescribeProviderCapabilities(_selectedProvider)}";
+        providerDescription ??= _selectedProvider?.Description
             ?? "Manual provider family. Meridian will persist the relationship even if the provider is not in the catalog yet.";
         var scopeSummary = string.Join(" | ", new[]
             {
@@ -472,6 +475,25 @@ public partial class AddProviderWizardPage : Page
 
     private static Guid? ParseGuid(string value)
         => Guid.TryParse(value?.Trim(), out var parsed) ? parsed : null;
+
+    private static string DescribeProviderCapabilities(ProviderCatalogEntry entry)
+    {
+        var capabilities = new List<string>();
+        if (entry.SupportsStreaming)
+            capabilities.Add("Streaming");
+        if (entry.SupportsHistorical)
+            capabilities.Add("Historical");
+        if (entry.SupportsSymbolSearch)
+            capabilities.Add("Symbol Search");
+        if (entry.SupportsOptions)
+            capabilities.Add("Options");
+        if (entry.SupportsBrokerage)
+            capabilities.Add("Brokerage");
+
+        return capabilities.Count == 0
+            ? "Not advertised"
+            : string.Join(", ", capabilities);
+    }
 
     private static string ToDisplayLabel(string value)
         => string.Concat(value.Select((character, index) =>
@@ -548,6 +570,7 @@ internal sealed class ProviderCatalogViewModel
         Id = entry.Id;
         DisplayName = entry.DisplayName;
         Description = entry.Description;
+        CapabilitySummary = $"Capabilities: {DescribeProviderCapabilities(entry)}";
         TierLabel = entry.Tier.ToString().ToUpperInvariant();
         TierBrush = entry.Tier switch
         {
@@ -568,9 +591,29 @@ internal sealed class ProviderCatalogViewModel
     public string Id { get; }
     public string DisplayName { get; }
     public string Description { get; }
+    public string CapabilitySummary { get; }
     public string TierLabel { get; }
     public Brush TierBrush { get; }
     public Brush CredentialStatusBrush { get; }
+
+    private static string DescribeProviderCapabilities(ProviderCatalogEntry entry)
+    {
+        var capabilities = new List<string>();
+        if (entry.SupportsStreaming)
+            capabilities.Add("Streaming");
+        if (entry.SupportsHistorical)
+            capabilities.Add("Historical");
+        if (entry.SupportsSymbolSearch)
+            capabilities.Add("Symbol Search");
+        if (entry.SupportsOptions)
+            capabilities.Add("Options");
+        if (entry.SupportsBrokerage)
+            capabilities.Add("Brokerage");
+
+        return capabilities.Count == 0
+            ? "Not advertised"
+            : string.Join(", ", capabilities);
+    }
 }
 
 internal static class AddProviderWizardTextExtensions

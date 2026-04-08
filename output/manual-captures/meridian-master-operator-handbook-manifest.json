@@ -1,0 +1,448 @@
+{
+  "title": "Meridian Master Operator Handbook",
+  "subtitle": "Internal operator edition - end-to-end onboarding and workflow guide",
+  "author": "Codex",
+  "version": "0.2",
+  "date": "2026-04-07",
+  "includeTableOfContents": true,
+  "intro": [
+    "Document ID: MOP-HBK-001",
+    "Classification: Internal operator handbook",
+    "Audience: Meridian desktop operators, implementation staff, and support reviewers",
+    "Scope: Windows WPF desktop shell plus verified host and troubleshooting commands documented in the Meridian repository",
+    "This handbook combines Meridian's quick-start, platform-overview, data-operations, research-and-trading, and governance manuals into a single controlled operator guide.",
+    "Use the early chapters when you are setting up a workstation for the first time. Return to the later chapters as role-based reference material once the platform is configured and running.",
+    "Screenshots were captured from the Windows WPF shell in fixture mode on April 7, 2026. Layout and labels should match the desktop product, but live metrics, counts, and connectivity state will differ in a connected environment."
+  ],
+  "sections": [
+    {
+      "heading": "Document Control",
+      "summary": "Use this page as the handbook's front matter and control reference.",
+      "steps": [
+        {
+          "title": "Handbook purpose",
+          "body": "This handbook is intended to give Meridian operators one primary desktop reference for first-run setup, platform navigation, workflow execution, and practical troubleshooting. It is written as an internal working document rather than a marketing overview.",
+          "notes": [
+            "Primary product surface: src/Meridian.Wpf on Windows.",
+            "Supporting verified command surface: src/Meridian via dotnet run and documented make targets.",
+            "Configuration root for the desktop shell: %LocalAppData%\\Meridian\\appsettings.json."
+          ]
+        },
+        {
+          "title": "How to use this handbook",
+          "body": "Read Part 1 through Part 2 in sequence during workstation setup. Once Meridian is running, use Parts 3 through 6 as workflow chapters and use the appendices as a fast reference for commands, paths, and fault isolation.",
+          "notes": [
+            "When a live environment differs from the screenshots, trust the repo-verified commands and page labels over sample counts shown in fixture mode.",
+            "Use the appendices when you need a command or a troubleshooting step without rereading the whole handbook."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Revision History",
+      "summary": "Track handbook changes here so future updates can build on the same document instead of branching into separate reference packs.",
+      "steps": [
+        {
+          "title": "Current revision record",
+          "body": "Version 0.2 is the first formalized master handbook edition. It consolidates the separate quick-start, platform overview, data operations, research and trading, and governance manuals into one stitched operator guide and adds handbook front matter plus appendices.",
+          "notes": [
+            "Revision date: 2026-04-07.",
+            "Prepared by: Codex.",
+            "Distribution: internal working copy."
+          ]
+        },
+        {
+          "title": "Source documents folded into this edition",
+          "body": "This handbook was assembled from the previously generated Meridian Desktop Quick Start Manual, Platform Overview Manual, Data Operations Manual, Research And Trading Manual, and Governance Manual.",
+          "notes": [
+            "Version 0.1: initial stitched master handbook.",
+            "Version 0.2: formal cover metadata, document-control front matter, revision history, and CLI plus troubleshooting appendices added."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Part 1 - Quick Start Setup",
+      "summary": "Use these steps in order when bringing a new Meridian desktop workstation online for the first time.",
+      "steps": [
+        {
+          "title": "Review the built-in quick start",
+          "body": "Open Meridian and use the Help & Getting Started page to confirm the onboarding sequence: Provider, Credentials, Symbols, Storage, and Start. This gives you a stable checklist before you begin changing anything.",
+          "notes": [
+            "Press F1 to open Help.",
+            "The shortcut list shows Ctrl + , for Settings and Ctrl + S for Start Collector."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/07-help.png",
+          "caption": "Help & Getting Started page with the built-in quick-start sequence."
+        },
+        {
+          "title": "Open Settings and launch setup tools",
+          "body": "Open the Settings page and use the Quick Actions row to reach Add Provider, Configure Storage, Credential Vault, and Setup Wizard. Settings is the control surface that ties the first-run experience together.",
+          "notes": [
+            "The Credential Vault status colors are green for configured, yellow for partial, and red for missing.",
+            "Use Setup Wizard if you want Meridian to guide backend connection, preset selection, provider choice, storage path, and optional API keys."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/06-settings.png",
+          "caption": "Settings page with quick actions for provider, storage, credentials, and setup."
+        },
+        {
+          "title": "Choose a provider and verify connectivity",
+          "body": "Open the Providers page from Data Operations or Settings. Select the market-data provider you plan to use, then run Configure, Validate, or Test Connections so Meridian can verify credentials and connectivity before collection or backfill begins.",
+          "notes": [
+            "For Alpaca, configure ALPACA_KEY_ID and ALPACA_SECRET_KEY.",
+            "For Polygon, configure POLYGON_API_KEY.",
+            "Interactive Brokers requires TWS or IB Gateway plus host and port settings from the provider setup guide."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/02-providers.png",
+          "caption": "Providers page showing the main connectivity and validation controls."
+        },
+        {
+          "title": "Set the default data-source routing",
+          "body": "Open Data Sources Configuration and choose the default real-time and historical sources Meridian should prefer. Enable automatic failover if you want Meridian to switch to a secondary provider when the primary source becomes unavailable.",
+          "notes": [
+            "If the source drop-downs are empty, finish provider configuration first.",
+            "Keep failover timeout values conservative on first run until you understand provider latency and entitlement limits."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/05-data-sources.png",
+          "caption": "Data Sources Configuration page for default routing and failover behavior."
+        },
+        {
+          "title": "Confirm storage and initial symbol coverage",
+          "body": "Open Storage Management and review the data directory, naming convention, and compression. Then return to Data Operations and use Manage Symbols to create the initial subscription list Meridian should collect and archive.",
+          "notes": [
+            "Desktop runtime config lives under %LocalAppData%\\\\Meridian, so a relative DataRoot such as data resolves from that location.",
+            "Start with a small test set such as AAPL, MSFT, and SPY while you validate the workflow."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/06-storage.png",
+          "caption": "Storage Management page showing directory, naming convention, and compression settings."
+        },
+        {
+          "title": "Start the collector and confirm healthy status",
+          "body": "Open Dashboard and start the collector. Watch the status cards and quick actions area so you can confirm Meridian is running, publishing events, and not reporting dropped data, integrity issues, or missing historical coverage.",
+          "notes": [
+            "If the backend is offline, use the Setup Wizard Start Backend action or restart the desktop app.",
+            "CLI fallback: dotnet run --project src/Meridian/Meridian.csproj -- --validate-config checks the active configuration without starting collection.",
+            "CLI fallback: dotnet run --project src/Meridian/Meridian.csproj -- --show-config prints the effective configuration Meridian is using."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/01-dashboard.png",
+          "caption": "Dashboard after setup, where the collector can be started and monitored."
+        }
+      ]
+    },
+    {
+      "heading": "Part 2 - Navigate The Platform",
+      "summary": "Once the workstation is running, use the shell and workspace surfaces to move into the right operating context quickly.",
+      "steps": [
+        {
+          "title": "Use the Workspaces page to switch contexts",
+          "body": "Open Workspaces when you want to move between Meridian's functional operating modes. Workspace templates group related pages, layouts, and navigation paths for research, trading, data operations, and governance.",
+          "notes": [
+            "Use Activate to switch into a workspace.",
+            "Use Capture Current to save the current session layout if you want to preserve a working setup."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/02-workspaces.png",
+          "caption": "Workspaces page used to activate or capture workstation layouts."
+        },
+        {
+          "title": "Open the Research workspace",
+          "body": "Use the Research workspace for idea generation, backtests, strategy comparison, and exploratory analysis. It is the right starting point when you are testing hypotheses or reviewing model behavior before deployment.",
+          "notes": [
+            "Expect links to backtesting, strategy runs, and QuantScript-style exploratory tools.",
+            "Research work is usually upstream of the Trading workspace."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/03-research-workspace.png",
+          "caption": "Research workspace overview."
+        },
+        {
+          "title": "Open the Trading workspace",
+          "body": "Use the Trading workspace for live operational views such as blotters, position monitoring, and risk checks. This is where operators move once a strategy, run, or portfolio needs hands-on supervision.",
+          "notes": [
+            "Trading surfaces emphasize current state and controls instead of configuration.",
+            "Use this workspace after research outputs are ready for operational review."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/04-trading-workspace.png",
+          "caption": "Trading workspace overview."
+        },
+        {
+          "title": "Open the Data Operations workspace",
+          "body": "Use Data Operations for provider setup, backfill, symbol coverage, and storage posture. This workspace is the operational control center for market-data ingestion and archive maintenance.",
+          "notes": [
+            "If a feed is missing or an archive job needs review, start here.",
+            "This workspace complements the quick-start setup workflow."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/05-data-operations-workspace.png",
+          "caption": "Data Operations workspace overview."
+        },
+        {
+          "title": "Open the Governance workspace",
+          "body": "Use Governance for oversight, diagnostics, audit posture, notifications, and fund-operations support screens. It helps centralize trust and control tasks that cut across the rest of the platform.",
+          "notes": [
+            "Governance surfaces are useful when you need an operator-wide control view rather than a single workflow view.",
+            "Use it alongside Settings when controls or credentials change."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-overview/06-governance-workspace.png",
+          "caption": "Governance workspace overview."
+        }
+      ]
+    },
+    {
+      "heading": "Part 3 - Data Operations Playbook",
+      "summary": "Use this chapter as the operational reference for providers, provider health, backfills, and archive posture.",
+      "steps": [
+        {
+          "title": "Begin in Data Operations",
+          "body": "Open the Data Operations workspace to reach the main controls for providers, backfills, symbols, storage, and collection sessions. This workspace is the fastest way to orient around data-ingestion responsibilities.",
+          "notes": [
+            "Use the quick actions row to jump directly into the page you need.",
+            "The operational focus cards are useful when you want to review provider posture or storage before making changes."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/01-data-operations-shell.png",
+          "caption": "Data Operations workspace with its main quick actions."
+        },
+        {
+          "title": "Configure providers and test integrations",
+          "body": "Open Data Providers to review the configured streaming and backfill sources. Use Configure for provider-specific settings, then use Validate or Test Connections to confirm that credentials, routing, and network posture are usable before data collection begins.",
+          "notes": [
+            "Typical operator-managed providers shown here include Interactive Brokers, Alpaca, Polygon, StockSharp, and NYSE.",
+            "Validate provider setup before you schedule backfills or expand symbol coverage."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/02-providers.png",
+          "caption": "Data Providers page used to configure and test market-data integrations."
+        },
+        {
+          "title": "Review provider health before critical collection windows",
+          "body": "Open Provider Health after configuration changes or before market open. This page summarizes connected and disconnected providers, latency, and recent connection activity so you can catch degraded posture early.",
+          "notes": [
+            "Refresh the page after changing credentials or restarting a backend service.",
+            "Connection History helps explain recent disconnects or retries."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/03-provider-health.png",
+          "caption": "Provider Health page with connectivity and latency summary tiles."
+        },
+        {
+          "title": "Plan and launch historical backfills",
+          "body": "Open Historical Data Backfill when you need to repair gaps, update a symbol set, or build an archive from scratch. Choose the provider, symbol list, provider-priority fallback order, and granularity before launching a job.",
+          "notes": [
+            "Backfill Wizard is a good starting point for first-time operators.",
+            "Use Fill All Gaps or Update to Latest after the initial archive is established."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/04-backfill.png",
+          "caption": "Historical Data Backfill page with workflow and scheduling controls."
+        },
+        {
+          "title": "Review storage directory, layout, and compression",
+          "body": "Open Storage Management to confirm where Meridian writes data, how files are organized, and which compression format is active. The file-structure preview helps operators understand exactly what the archive will look like on disk.",
+          "notes": [
+            "Symbol-based layout and gzip are the default posture shown in the fixture screenshot.",
+            "If you need a different disk or mount point, change the data directory before large backfills."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-data-operations/06-storage.png",
+          "caption": "Storage Management page showing archive path, naming convention, and compression."
+        }
+      ]
+    },
+    {
+      "heading": "Part 4 - Research Playbook",
+      "summary": "Use the research surfaces to define, run, and review strategy experiments before operational deployment.",
+      "steps": [
+        {
+          "title": "Begin in the Research workspace",
+          "body": "Open the Research workspace to reach the strategy-analysis surfaces Meridian groups together for exploration and review. This workspace is the best entry point when you are moving from an idea into a testable run.",
+          "notes": [
+            "Use the workspace shell to move into backtesting, strategy-run review, and notebook analysis.",
+            "Research typically feeds Trading once a run is ready for operational supervision."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/01-research-shell.png",
+          "caption": "Research workspace overview."
+        },
+        {
+          "title": "Configure and inspect a backtest",
+          "body": "Open Backtest Workstation to define symbols, date ranges, capital assumptions, margin assumptions, and data-root inputs for a simulation. The workstation is designed to keep configuration, equity-curve output, and summary metrics visible together.",
+          "notes": [
+            "Use the left-side configuration panel to set symbols, dates, and capital assumptions.",
+            "Run Browser, Latest Detail, Latest Portfolio, and Latest Ledger provide jump-off points after a run completes."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/02-backtest.png",
+          "caption": "Backtest Workstation with configuration, equity-curve, and summary panes."
+        },
+        {
+          "title": "Review completed strategy runs",
+          "body": "Open Strategy Run Browser to filter, compare, and drill into completed runs. It is the fastest way to move from raw backtest execution into result review and side-by-side analysis.",
+          "notes": [
+            "If no runs are listed yet, complete a backtest first.",
+            "Use filters and compare actions to narrow the review set."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/03-strategy-runs.png",
+          "caption": "Strategy Run Browser used to browse and compare completed runs."
+        },
+        {
+          "title": "Use QuantScript for notebook-style exploration",
+          "body": "Open QuantScript Notebook when you need an interactive analysis surface for ad hoc investigation, charting, and scripted experiments. It combines code cells, console output, and charts inside one workspace.",
+          "notes": [
+            "Use Run All to execute the notebook end to end.",
+            "Use New Notebook and Save to manage multiple analysis notebooks."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/04-quant-script.png",
+          "caption": "QuantScript Notebook for interactive scripting and chart preview."
+        }
+      ]
+    },
+    {
+      "heading": "Part 5 - Trading Playbook",
+      "summary": "Move into the trading surfaces when a strategy or portfolio needs active supervision and risk review.",
+      "steps": [
+        {
+          "title": "Switch into the Trading workspace",
+          "body": "Open the Trading workspace when you need a cockpit for operational supervision rather than research. It serves as the umbrella view for blotters, positions, and risk controls.",
+          "notes": [
+            "Use the workspace as a starting point before opening more detailed operational pages.",
+            "Trading pages focus on current state and actions, not just analysis."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/05-trading-shell.png",
+          "caption": "Trading workspace overview."
+        },
+        {
+          "title": "Inspect current positions in the blotter",
+          "body": "Open Position Blotter to review positions, marks, quantities, sides, unrealized PnL, and status. This is the page to use when you need a tabular operational view of what is currently held.",
+          "notes": [
+            "Use the filter controls to narrow the set you want to inspect.",
+            "Upsize, Terminate, and Refresh provide direct operating actions from the blotter."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/06-position-blotter.png",
+          "caption": "Position Blotter with table columns for current position review."
+        },
+        {
+          "title": "Review portfolio and run risk",
+          "body": "Open Portfolio Risk to inspect net exposure, drawdown, Sharpe-style metrics, and historical-risk visuals for a selected run or portfolio. It is the right page for a final risk pass before operational action.",
+          "notes": [
+            "If no run is selected yet, use Run Browser to choose one first.",
+            "Use the top navigation to switch between run, portfolio, and cash-flow views."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-research-and-trading/07-run-risk.png",
+          "caption": "Portfolio Risk page with exposure and historical-risk panels."
+        }
+      ]
+    },
+    {
+      "heading": "Part 6 - Governance And Shared Controls",
+      "summary": "Use governance surfaces when you need an operator-wide control view across fund operations, alerts, diagnostics, and shared settings.",
+      "steps": [
+        {
+          "title": "Start in the Governance workspace",
+          "body": "Open Governance to see the high-level quick actions for accounts, banking, portfolio, cash and financing, trial balance, reconciliation, audit trail, data quality, diagnostics, notifications, and settings. This is the best landing page when you need a control-oriented operating view across the platform.",
+          "notes": [
+            "The quick actions row is the fastest way to jump into the specific fund-operations screen you need.",
+            "Use the operational focus lanes to decide whether the next task is a fund-ops review, provider or system health review, or alert review."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/01-governance-shell.png",
+          "caption": "Governance workspace with quick actions for oversight and control tasks."
+        },
+        {
+          "title": "Review fund accounts and provider bindings",
+          "body": "Open Fund Accounts to inspect account queues, scoped provider bindings, and route previews. This page helps operators confirm which brokerage, custody, bank, or related account structures are available for a selected fund profile.",
+          "notes": [
+            "Use Refresh Accounts when the account set has changed.",
+            "Use Refresh Routing when provider bindings or effective routes need to be recalculated."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/03-fund-accounts.png",
+          "caption": "Fund Accounts page with queue, bindings, and effective route preview panels."
+        },
+        {
+          "title": "Use Notification Center to triage alerts",
+          "body": "Open Notification Center to review active alerts, grouped alert categories, notification history, and notification preferences. This page is the central place to acknowledge issues and verify what Meridian has already surfaced to the operator.",
+          "notes": [
+            "Use Mark All Read or Clear All only after you understand what the alert history is telling you.",
+            "The filter row lets you narrow the view to Errors, Warnings, Info, or Success messages."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/05-notification-center.png",
+          "caption": "Notification Center with alert grouping, history, and preference controls."
+        },
+        {
+          "title": "Open Settings for shared control changes",
+          "body": "Use Settings when governance work turns into a configuration task. From here you can reach Add Provider, Configure Storage, Credential Vault, and Setup Wizard, all of which affect the wider operator environment.",
+          "notes": [
+            "Settings is the right follow-up screen when an alert points to credentials, storage, or onboarding problems.",
+            "Treat Settings as the shared control plane for fixes that affect multiple workflows."
+          ],
+          "image": "../../artifacts/desktop-manuals/screenshots/manual-governance/06-settings.png",
+          "caption": "Settings page used to reach shared configuration controls from governance workflows."
+        }
+      ]
+    },
+    {
+      "heading": "Appendix A - Verified CLI Quick Reference",
+      "summary": "These commands are grounded in docs/HELP.md and the repository's verified entry points.",
+      "steps": [
+        {
+          "title": "Launch and orientation commands",
+          "body": "Use these commands when you need to start Meridian or discover the available host surfaces from a terminal.",
+          "notes": [
+            "Windows WPF desktop shell: dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true",
+            "Main CLI help: dotnet run --project src/Meridian/Meridian.csproj -- --help",
+            "Web dashboard: dotnet run --project src/Meridian/Meridian.csproj -- --http-port 8080",
+            "Make shortcuts overview: make help"
+          ]
+        },
+        {
+          "title": "Configuration and diagnostics commands",
+          "body": "Use these commands when validating configuration, checking credentials, or confirming whether the host can reach its dependencies before a desktop session starts.",
+          "notes": [
+            "Quick-start wizard: dotnet run --project src/Meridian/Meridian.csproj -- --quickstart",
+            "Validate configuration: dotnet run --project src/Meridian/Meridian.csproj -- --validate-config",
+            "Show effective configuration: dotnet run --project src/Meridian/Meridian.csproj -- --show-config",
+            "Validate credentials: dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials",
+            "Connectivity self-test: dotnet run --project src/Meridian/Meridian.csproj -- --selftest",
+            "Extended diagnostics: dotnet run --project src/Meridian/Meridian.csproj -- --diagnostics"
+          ]
+        },
+        {
+          "title": "Symbol and backfill commands",
+          "body": "Use these commands when a desktop workflow points you back to the host for bulk symbol management or historical collection tasks.",
+          "notes": [
+            "List symbols: dotnet run --project src/Meridian/Meridian.csproj -- --symbols",
+            "Add symbols: dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add AAPL,MSFT",
+            "Remove symbols: dotnet run --project src/Meridian/Meridian.csproj -- --symbols-remove TSLA",
+            "Backfill date range: dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-01-01 --backfill-to 2025-12-31",
+            "Resume interrupted backfill: dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backfill-symbols QQQ"
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Appendix B - Troubleshooting Notes",
+      "summary": "Use this checklist when a workstation or provider flow does not behave as expected.",
+      "steps": [
+        {
+          "title": "Configuration and startup checklist",
+          "body": "Start by confirming that Meridian is pointing at the right configuration root and that the desktop host can read valid provider and storage settings.",
+          "notes": [
+            "Desktop configuration path precedence uses the external desktop config root under %LocalAppData%\\Meridian\\appsettings.json.",
+            "If configuration seems stale, run --show-config and confirm the effective values before changing UI settings.",
+            "If a provider page looks empty, validate credentials and reopen the desktop shell."
+          ]
+        },
+        {
+          "title": "Common issues and first responses",
+          "body": "These are the most common operator and developer-facing faults currently called out in Meridian's help documentation.",
+          "notes": [
+            "Build failures: run dotnet restore Meridian.sln before rebuilding and confirm the .NET 9 SDK is installed.",
+            "Provider connectivity issues: run dotnet run --project src/Meridian/Meridian.csproj -- --selftest.",
+            "Missing configuration: confirm config/appsettings.json exists for repo-host scenarios and that desktop settings exist under %LocalAppData%\\Meridian for desktop runtime scenarios.",
+            "WPF test failures on Linux or macOS: WPF tests require Windows; use /p:EnableWindowsTargeting=true or skip WPF-specific test filters when appropriate.",
+            "Need deeper inspection: rerun the host with --diagnostics."
+          ]
+        },
+        {
+          "title": "Key paths to verify during incidents",
+          "body": "When an issue spans desktop and host behavior, verify these paths first so you know whether the problem belongs to the shell, the host, or the surrounding docs and support materials.",
+          "notes": [
+            "Main host executable project: src/Meridian/",
+            "Desktop shell project: src/Meridian.Wpf/",
+            "Primary repo docs: docs/README.md and docs/HELP.md",
+            "Roadmap and feature status: docs/status/ROADMAP.md and docs/status/FEATURE_INVENTORY.md"
+          ]
+        }
+      ]
+    }
+  ]
+}

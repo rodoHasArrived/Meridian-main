@@ -513,7 +513,7 @@ public sealed class BackfillService
     {
         var configService = new ConfigService();
         var config = await configService.LoadConfigAsync(ct);
-        var dataRoot = config?.DataRoot ?? "data";
+        var dataRoot = configService.ResolveDataRoot(config);
 
         // Try reading from local storage first
         var bars = await ReadStoredBarsAsync(dataRoot, symbol, fromDate, toDate, ct);

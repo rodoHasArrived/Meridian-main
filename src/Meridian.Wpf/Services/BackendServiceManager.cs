@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -59,7 +60,20 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         return null;
     }
 
-    protected override int? StartProcess(string executablePath, string workingDirectory)
+    protected override IReadOnlyList<string> GetProcessArguments(string executablePath)
+        => ["--config", FirstRunService.Instance.ConfigFilePath];
+
+    protected override IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
+        => new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["MDC_CONFIG_PATH"] = FirstRunService.Instance.ConfigFilePath
+        };
+
+    protected override int? StartProcess(
+        string executablePath,
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IReadOnlyDictionary<string, string?> environmentVariables)
     {
         var processStartInfo = new ProcessStartInfo
         {
@@ -68,6 +82,23 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
             UseShellExecute = false,
             CreateNoWindow = true
         };
+
+        foreach (var argument in arguments)
+        {
+            processStartInfo.ArgumentList.Add(argument);
+        }
+
+        foreach (var environmentVariable in environmentVariables)
+        {
+            if (environmentVariable.Value == null)
+            {
+                processStartInfo.Environment.Remove(environmentVariable.Key);
+            }
+            else
+            {
+                processStartInfo.Environment[environmentVariable.Key] = environmentVariable.Value;
+            }
+        }
 
         var process = Process.Start(processStartInfo);
         return process?.Id;

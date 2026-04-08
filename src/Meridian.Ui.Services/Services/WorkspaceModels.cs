@@ -120,11 +120,24 @@ public sealed class WorkstationLayoutState
     public string LayoutId { get; set; } = "default";
     public string DisplayName { get; set; } = "Default Layout";
     public string ActivePaneId { get; set; } = "pane-1";
+    public string? OperatingContextKey { get; set; }
+    public BoundedWindowMode WindowMode { get; set; } = BoundedWindowMode.DockFloat;
+    public string? LayoutPresetId { get; set; }
     public string? DockLayoutXml { get; set; }
     public List<WorkstationPaneState> Panes { get; set; } = new();
     public List<FloatingWorkspaceWindowState> FloatingWindows { get; set; } = new();
     public Dictionary<string, string> LayoutContext { get; set; } = new();
     public DateTime SavedAt { get; set; }
+}
+
+/// <summary>
+/// Bounded workstation shell mode for one-shell dock and float behavior.
+/// </summary>
+public enum BoundedWindowMode : byte
+{
+    Focused,
+    DockFloat,
+    WorkbenchPreset
 }
 
 /// <summary>

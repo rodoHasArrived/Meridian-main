@@ -65,14 +65,14 @@ Expected categories:
 2. Review current controls with `GET /api/execution/controls`.
 3. Open the circuit breaker immediately if routing must stop:
 
-```json
+```http
 POST /api/execution/controls/circuit-breaker
 { "isOpen": true, "reason": "Manual halt" }
 ```
 
 4. Create a scoped live-promotion override before approving `Paper -> Live`:
 
-```json
+```http
 POST /api/execution/controls/manual-overrides
 {
   "kind": "AllowLivePromotion",
@@ -85,7 +85,7 @@ POST /api/execution/controls/manual-overrides
 
 5. Approve the promotion:
 
-```json
+```http
 POST /api/promotion/approve
 {
   "runId": "run-456",

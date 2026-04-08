@@ -79,6 +79,11 @@ public sealed class BackfillCoordinator : IDisposable
     public BackfillResult? TryReadLast() => _lastRun ?? _store.TryLoadBackfillStatus();
 
     /// <summary>
+    /// Returns whether a backfill run is currently active.
+    /// </summary>
+    public bool IsActive => _gate.CurrentCount == 0;
+
+    /// <summary>
     /// Returns the per-symbol checkpoint map saved during the last backfill run,
     /// or <c>null</c> when no checkpoints have been persisted yet.
     /// </summary>
@@ -110,7 +115,7 @@ public sealed class BackfillCoordinator : IDisposable
         return new
         {
             lastRun = _lastRun,
-            isActive = _gate.CurrentCount == 0,
+            isActive = IsActive,
             timestamp = DateTimeOffset.UtcNow
         };
     }
@@ -175,8 +180,9 @@ public sealed class BackfillCoordinator : IDisposable
         {
             var cfg = _store.Load();
             var compressionEnabled = cfg.Compress ?? false;
-            var storageOpt = cfg.Storage?.ToStorageOptions(cfg.DataRoot, compressionEnabled)
-                ?? StorageProfilePresets.CreateFromProfile(null, cfg.DataRoot, compressionEnabled);
+            var dataRoot = _store.GetDataRoot(cfg);
+            var storageOpt = cfg.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
+                ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
 
             var policy = new JsonlStoragePolicy(storageOpt);
             await using var sink = new JsonlStorageSink(storageOpt, policy);

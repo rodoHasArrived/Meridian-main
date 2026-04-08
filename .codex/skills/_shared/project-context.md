@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-03-27 (UTC)
+> Last verified: 2026-04-07 (UTC)
 > Canonical deep reference: `.claude/skills/_shared/project-context.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, commands, and architecture when a skill needs repository grounding without repeating the same facts in every `SKILL.md`.
@@ -46,6 +46,13 @@ Prefer the narrowest validation command that matches the files being changed.
 - `src/Meridian.Ui/`, `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`: web UI and shared UI services
 - `src/Meridian.Wpf/`: WPF desktop app — included in solution build (full WPF on Windows, CI stub on Linux/macOS)
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects (all included in solution; Meridian.Wpf.Tests builds full tests on Windows, empty stub on Linux/macOS)
+
+## Desktop Persistence Baseline
+
+- Installed WPF builds store runtime config at `%LocalAppData%\Meridian\appsettings.json`; the repo-local `config/appsettings.json` path is the normal CLI, server, and development config surface.
+- Relative `DataRoot` values resolve from the active config file base via `MeridianPathDefaults.ResolveDataRoot`, not from the executable directory.
+- `Storage.BaseDirectory` is legacy migration input only; new code and docs should prefer top-level `DataRoot`.
+- Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs, collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under the resolved external config and data roots so upgrades do not depend on the install directory.
 
 ## Key Abstractions
 
