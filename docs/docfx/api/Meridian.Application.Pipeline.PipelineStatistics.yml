@@ -1,0 +1,868 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.PipelineStatistics
+  commentId: T:Meridian.Application.Pipeline.PipelineStatistics
+  id: PipelineStatistics
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.PipelineStatistics.#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.Int64,System.Int32,System.Double,System.Double,System.TimeSpan,System.DateTimeOffset,System.Boolean)
+  - Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs
+  - Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount
+  - Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize
+  - Meridian.Application.Pipeline.PipelineStatistics.DroppedCount
+  - Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned
+  - Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize
+  - Meridian.Application.Pipeline.PipelineStatistics.PublishedCount
+  - Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity
+  - Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization
+  - Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush
+  - Meridian.Application.Pipeline.PipelineStatistics.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: PipelineStatistics
+  nameWithType: PipelineStatistics
+  fullName: Meridian.Application.Pipeline.PipelineStatistics
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PipelineStatistics
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1057
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Snapshot of pipeline performance statistics.
+  example: []
+  syntax:
+    content: 'public readonly record struct PipelineStatistics : IEquatable<PipelineStatistics>'
+    content.vb: Public Structure PipelineStatistics Implements IEquatable(Of PipelineStatistics)
+  implements:
+  - System.IEquatable{Meridian.Application.Pipeline.PipelineStatistics}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Pipeline.PipelineStatistics.#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.Int64,System.Int32,System.Double,System.Double,System.TimeSpan,System.DateTimeOffset,System.Boolean)
+  commentId: M:Meridian.Application.Pipeline.PipelineStatistics.#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.Int64,System.Int32,System.Double,System.Double,System.TimeSpan,System.DateTimeOffset,System.Boolean)
+  id: '#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.Int64,System.Int32,System.Double,System.Double,System.TimeSpan,System.DateTimeOffset,System.Boolean)'
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: PipelineStatistics(long, long, long, int, long, int, double, double, TimeSpan, DateTimeOffset, bool)
+  nameWithType: PipelineStatistics.PipelineStatistics(long, long, long, int, long, int, double, double, TimeSpan, DateTimeOffset, bool)
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.PipelineStatistics(long, long, long, int, long, int, double, double, System.TimeSpan, System.DateTimeOffset, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1057
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Snapshot of pipeline performance statistics.
+  example: []
+  syntax:
+    content: public PipelineStatistics(long PublishedCount, long DroppedCount, long ConsumedCount, int CurrentQueueSize, long PeakQueueSize, int QueueCapacity, double QueueUtilization, double AverageProcessingTimeUs, TimeSpan TimeSinceLastFlush, DateTimeOffset Timestamp, bool HighWaterMarkWarned = false)
+    parameters:
+    - id: PublishedCount
+      type: System.Int64
+    - id: DroppedCount
+      type: System.Int64
+    - id: ConsumedCount
+      type: System.Int64
+    - id: CurrentQueueSize
+      type: System.Int32
+    - id: PeakQueueSize
+      type: System.Int64
+    - id: QueueCapacity
+      type: System.Int32
+    - id: QueueUtilization
+      type: System.Double
+    - id: AverageProcessingTimeUs
+      type: System.Double
+    - id: TimeSinceLastFlush
+      type: System.TimeSpan
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: HighWaterMarkWarned
+      type: System.Boolean
+    content.vb: Public Sub New(PublishedCount As Long, DroppedCount As Long, ConsumedCount As Long, CurrentQueueSize As Integer, PeakQueueSize As Long, QueueCapacity As Integer, QueueUtilization As Double, AverageProcessingTimeUs As Double, TimeSinceLastFlush As TimeSpan, Timestamp As DateTimeOffset, HighWaterMarkWarned As Boolean = False)
+  overload: Meridian.Application.Pipeline.PipelineStatistics.#ctor*
+  nameWithType.vb: PipelineStatistics.New(Long, Long, Long, Integer, Long, Integer, Double, Double, TimeSpan, DateTimeOffset, Boolean)
+  fullName.vb: Meridian.Application.Pipeline.PipelineStatistics.New(Long, Long, Long, Integer, Long, Integer, Double, Double, System.TimeSpan, System.DateTimeOffset, Boolean)
+  name.vb: New(Long, Long, Long, Integer, Long, Integer, Double, Double, TimeSpan, DateTimeOffset, Boolean)
+- uid: Meridian.Application.Pipeline.PipelineStatistics.PublishedCount
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.PublishedCount
+  id: PublishedCount
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: PublishedCount
+  nameWithType: PipelineStatistics.PublishedCount
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.PublishedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1058
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public long PublishedCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property PublishedCount As Long
+  overload: Meridian.Application.Pipeline.PipelineStatistics.PublishedCount*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.DroppedCount
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.DroppedCount
+  id: DroppedCount
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: DroppedCount
+  nameWithType: PipelineStatistics.DroppedCount
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.DroppedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DroppedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1059
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public long DroppedCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DroppedCount As Long
+  overload: Meridian.Application.Pipeline.PipelineStatistics.DroppedCount*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount
+  id: ConsumedCount
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: ConsumedCount
+  nameWithType: PipelineStatistics.ConsumedCount
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsumedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1060
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public long ConsumedCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ConsumedCount As Long
+  overload: Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize
+  id: CurrentQueueSize
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: CurrentQueueSize
+  nameWithType: PipelineStatistics.CurrentQueueSize
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentQueueSize
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1061
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int CurrentQueueSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CurrentQueueSize As Integer
+  overload: Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize
+  id: PeakQueueSize
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: PeakQueueSize
+  nameWithType: PipelineStatistics.PeakQueueSize
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeakQueueSize
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1062
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public long PeakQueueSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property PeakQueueSize As Long
+  overload: Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity
+  id: QueueCapacity
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: QueueCapacity
+  nameWithType: PipelineStatistics.QueueCapacity
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueCapacity
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1063
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int QueueCapacity { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property QueueCapacity As Integer
+  overload: Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization
+  id: QueueUtilization
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: QueueUtilization
+  nameWithType: PipelineStatistics.QueueUtilization
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueUtilization
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1064
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public double QueueUtilization { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property QueueUtilization As Double
+  overload: Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs
+  id: AverageProcessingTimeUs
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageProcessingTimeUs
+  nameWithType: PipelineStatistics.AverageProcessingTimeUs
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageProcessingTimeUs
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1065
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public double AverageProcessingTimeUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageProcessingTimeUs As Double
+  overload: Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush
+  id: TimeSinceLastFlush
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: TimeSinceLastFlush
+  nameWithType: PipelineStatistics.TimeSinceLastFlush
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeSinceLastFlush
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1066
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public TimeSpan TimeSinceLastFlush { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TimeSinceLastFlush As TimeSpan
+  overload: Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.Timestamp
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: PipelineStatistics.Timestamp
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1067
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Pipeline.PipelineStatistics.Timestamp*
+- uid: Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned
+  commentId: P:Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned
+  id: HighWaterMarkWarned
+  parent: Meridian.Application.Pipeline.PipelineStatistics
+  langs:
+  - csharp
+  - vb
+  name: HighWaterMarkWarned
+  nameWithType: PipelineStatistics.HighWaterMarkWarned
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighWaterMarkWarned
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1068
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public bool HighWaterMarkWarned { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HighWaterMarkWarned As Boolean
+  overload: Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned*
+references:
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.IEquatable{Meridian.Application.Pipeline.PipelineStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Pipeline.PipelineStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PipelineStatistics>
+  nameWithType: IEquatable<PipelineStatistics>
+  fullName: System.IEquatable<Meridian.Application.Pipeline.PipelineStatistics>
+  nameWithType.vb: IEquatable(Of PipelineStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Pipeline.PipelineStatistics)
+  name.vb: IEquatable(Of PipelineStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Pipeline.PipelineStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.#ctor
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics__ctor_System_Int64_System_Int64_System_Int64_System_Int32_System_Int64_System_Int32_System_Double_System_Double_System_TimeSpan_System_DateTimeOffset_System_Boolean_
+  name: PipelineStatistics
+  nameWithType: PipelineStatistics.PipelineStatistics
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.PipelineStatistics
+  nameWithType.vb: PipelineStatistics.New
+  fullName.vb: Meridian.Application.Pipeline.PipelineStatistics.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Pipeline.PipelineStatistics.PublishedCount*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.PublishedCount
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_PublishedCount
+  name: PublishedCount
+  nameWithType: PipelineStatistics.PublishedCount
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.PublishedCount
+- uid: Meridian.Application.Pipeline.PipelineStatistics.DroppedCount*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.DroppedCount
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_DroppedCount
+  name: DroppedCount
+  nameWithType: PipelineStatistics.DroppedCount
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.DroppedCount
+- uid: Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_ConsumedCount
+  name: ConsumedCount
+  nameWithType: PipelineStatistics.ConsumedCount
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.ConsumedCount
+- uid: Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_CurrentQueueSize
+  name: CurrentQueueSize
+  nameWithType: PipelineStatistics.CurrentQueueSize
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.CurrentQueueSize
+- uid: Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_PeakQueueSize
+  name: PeakQueueSize
+  nameWithType: PipelineStatistics.PeakQueueSize
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.PeakQueueSize
+- uid: Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_QueueCapacity
+  name: QueueCapacity
+  nameWithType: PipelineStatistics.QueueCapacity
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.QueueCapacity
+- uid: Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_QueueUtilization
+  name: QueueUtilization
+  nameWithType: PipelineStatistics.QueueUtilization
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.QueueUtilization
+- uid: Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_AverageProcessingTimeUs
+  name: AverageProcessingTimeUs
+  nameWithType: PipelineStatistics.AverageProcessingTimeUs
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.AverageProcessingTimeUs
+- uid: Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_TimeSinceLastFlush
+  name: TimeSinceLastFlush
+  nameWithType: PipelineStatistics.TimeSinceLastFlush
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.TimeSinceLastFlush
+- uid: Meridian.Application.Pipeline.PipelineStatistics.Timestamp*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.Timestamp
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_Timestamp
+  name: Timestamp
+  nameWithType: PipelineStatistics.Timestamp
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.Timestamp
+- uid: Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned*
+  commentId: Overload:Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned
+  href: Meridian.Application.Pipeline.PipelineStatistics.html#Meridian_Application_Pipeline_PipelineStatistics_HighWaterMarkWarned
+  name: HighWaterMarkWarned
+  nameWithType: PipelineStatistics.HighWaterMarkWarned
+  fullName: Meridian.Application.Pipeline.PipelineStatistics.HighWaterMarkWarned

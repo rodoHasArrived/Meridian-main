@@ -1,0 +1,129 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  id: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.CanonicalizationMetrics
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher
+  - Meridian.Application.Canonicalization.ConditionCodeMapper
+  - Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+  - Meridian.Application.Canonicalization.EventCanonicalizer
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  - Meridian.Application.Canonicalization.IEventCanonicalizer
+  - Meridian.Application.Canonicalization.ProviderParitySnapshot
+  - Meridian.Application.Canonicalization.VenueMicMapper
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  commentId: T:Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html
+  name: ICanonicalizationMetrics
+  nameWithType: ICanonicalizationMetrics
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+- uid: Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+  commentId: T:Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+  href: Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics.html
+  name: DefaultCanonicalizationMetrics
+  nameWithType: DefaultCanonicalizationMetrics
+  fullName: Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetrics
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationMetrics
+  href: Meridian.Application.Canonicalization.CanonicalizationMetrics.html
+  name: CanonicalizationMetrics
+  nameWithType: CanonicalizationMetrics
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetrics
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html
+  name: CanonicalizationSnapshot
+  nameWithType: CanonicalizationSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+- uid: Meridian.Application.Canonicalization.ProviderParitySnapshot
+  commentId: T:Meridian.Application.Canonicalization.ProviderParitySnapshot
+  href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html
+  name: ProviderParitySnapshot
+  nameWithType: ProviderParitySnapshot
+  fullName: Meridian.Application.Canonicalization.ProviderParitySnapshot
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizingPublisher
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html
+  name: CanonicalizingPublisher
+  nameWithType: CanonicalizingPublisher
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html
+  name: CanonicalizationMetricsSnapshot
+  nameWithType: CanonicalizationMetricsSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+- uid: Meridian.Application.Canonicalization.ConditionCodeMapper
+  commentId: T:Meridian.Application.Canonicalization.ConditionCodeMapper
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.ConditionCodeMapper.html
+  name: ConditionCodeMapper
+  nameWithType: ConditionCodeMapper
+  fullName: Meridian.Application.Canonicalization.ConditionCodeMapper
+- uid: Meridian.Application.Canonicalization.EventCanonicalizer
+  commentId: T:Meridian.Application.Canonicalization.EventCanonicalizer
+  href: Meridian.Application.Canonicalization.EventCanonicalizer.html
+  name: EventCanonicalizer
+  nameWithType: EventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.EventCanonicalizer
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer
+  commentId: T:Meridian.Application.Canonicalization.IEventCanonicalizer
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.IEventCanonicalizer.html
+  name: IEventCanonicalizer
+  nameWithType: IEventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer
+- uid: Meridian.Application.Canonicalization.VenueMicMapper
+  commentId: T:Meridian.Application.Canonicalization.VenueMicMapper
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.VenueMicMapper.html
+  name: VenueMicMapper
+  nameWithType: VenueMicMapper
+  fullName: Meridian.Application.Canonicalization.VenueMicMapper
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html

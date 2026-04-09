@@ -1,0 +1,860 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.WideSpreadAlert
+  commentId: T:Meridian.Application.Monitoring.WideSpreadAlert
+  id: WideSpreadAlert
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.WideSpreadAlert.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.String,System.Double,System.String,System.DateTimeOffset,System.Int32)
+  - Meridian.Application.Monitoring.WideSpreadAlert.AskPrice
+  - Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps
+  - Meridian.Application.Monitoring.WideSpreadAlert.BidPrice
+  - Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount
+  - Meridian.Application.Monitoring.WideSpreadAlert.Provider
+  - Meridian.Application.Monitoring.WideSpreadAlert.Reason
+  - Meridian.Application.Monitoring.WideSpreadAlert.Spread
+  - Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps
+  - Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent
+  - Meridian.Application.Monitoring.WideSpreadAlert.Symbol
+  - Meridian.Application.Monitoring.WideSpreadAlert.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: WideSpreadAlert
+  nameWithType: WideSpreadAlert
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WideSpreadAlert
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 370
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a wide spread condition.
+  example: []
+  syntax:
+    content: 'public readonly record struct WideSpreadAlert : IEquatable<WideSpreadAlert>'
+    content.vb: Public Structure WideSpreadAlert Implements IEquatable(Of WideSpreadAlert)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.WideSpreadAlert}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.String,System.Double,System.String,System.DateTimeOffset,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.WideSpreadAlert.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.String,System.Double,System.String,System.DateTimeOffset,System.Int32)
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Double,System.String,System.Double,System.String,System.DateTimeOffset,System.Int32)'
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: WideSpreadAlert(string, decimal, decimal, decimal, double, double, string, double, string?, DateTimeOffset, int)
+  nameWithType: WideSpreadAlert.WideSpreadAlert(string, decimal, decimal, decimal, double, double, string, double, string?, DateTimeOffset, int)
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.WideSpreadAlert(string, decimal, decimal, decimal, double, double, string, double, string?, System.DateTimeOffset, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 370
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a wide spread condition.
+  example: []
+  syntax:
+    content: public WideSpreadAlert(string Symbol, decimal BidPrice, decimal AskPrice, decimal Spread, double SpreadBps, double SpreadPercent, string Reason, double AverageSpreadBps, string? Provider, DateTimeOffset Timestamp, int ConsecutiveWideCount)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: BidPrice
+      type: System.Decimal
+    - id: AskPrice
+      type: System.Decimal
+    - id: Spread
+      type: System.Decimal
+    - id: SpreadBps
+      type: System.Double
+    - id: SpreadPercent
+      type: System.Double
+    - id: Reason
+      type: System.String
+    - id: AverageSpreadBps
+      type: System.Double
+    - id: Provider
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: ConsecutiveWideCount
+      type: System.Int32
+    content.vb: Public Sub New(Symbol As String, BidPrice As Decimal, AskPrice As Decimal, Spread As Decimal, SpreadBps As Double, SpreadPercent As Double, Reason As String, AverageSpreadBps As Double, Provider As String, Timestamp As DateTimeOffset, ConsecutiveWideCount As Integer)
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.#ctor*
+  nameWithType.vb: WideSpreadAlert.New(String, Decimal, Decimal, Decimal, Double, Double, String, Double, String, DateTimeOffset, Integer)
+  fullName.vb: Meridian.Application.Monitoring.WideSpreadAlert.New(String, Decimal, Decimal, Decimal, Double, Double, String, Double, String, System.DateTimeOffset, Integer)
+  name.vb: New(String, Decimal, Decimal, Decimal, Double, Double, String, Double, String, DateTimeOffset, Integer)
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Symbol
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: WideSpreadAlert.Symbol
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 371
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.Symbol*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.BidPrice
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.BidPrice
+  id: BidPrice
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: BidPrice
+  nameWithType: WideSpreadAlert.BidPrice
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.BidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPrice
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal BidPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BidPrice As Decimal
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.BidPrice*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.AskPrice
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.AskPrice
+  id: AskPrice
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: AskPrice
+  nameWithType: WideSpreadAlert.AskPrice
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.AskPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPrice
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal AskPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AskPrice As Decimal
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.AskPrice*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Spread
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.Spread
+  id: Spread
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: Spread
+  nameWithType: WideSpreadAlert.Spread
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Spread
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Spread
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal Spread { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Spread As Decimal
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.Spread*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps
+  id: SpreadBps
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: SpreadBps
+  nameWithType: WideSpreadAlert.SpreadBps
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadBps
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 375
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double SpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SpreadBps As Double
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent
+  id: SpreadPercent
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: SpreadPercent
+  nameWithType: WideSpreadAlert.SpreadPercent
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadPercent
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double SpreadPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SpreadPercent As Double
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Reason
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.Reason
+  id: Reason
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: WideSpreadAlert.Reason
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.Reason*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps
+  id: AverageSpreadBps
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: AverageSpreadBps
+  nameWithType: WideSpreadAlert.AverageSpreadBps
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageSpreadBps
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double AverageSpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageSpreadBps As Double
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Provider
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: WideSpreadAlert.Provider
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 379
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.Provider*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Timestamp
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: WideSpreadAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.Timestamp*
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount
+  commentId: P:Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount
+  id: ConsecutiveWideCount
+  parent: Meridian.Application.Monitoring.WideSpreadAlert
+  langs:
+  - csharp
+  - vb
+  name: ConsecutiveWideCount
+  nameWithType: WideSpreadAlert.ConsecutiveWideCount
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsecutiveWideCount
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int ConsecutiveWideCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ConsecutiveWideCount As Integer
+  overload: Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.WideSpreadAlert}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.WideSpreadAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<WideSpreadAlert>
+  nameWithType: IEquatable<WideSpreadAlert>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.WideSpreadAlert>
+  nameWithType.vb: IEquatable(Of WideSpreadAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.WideSpreadAlert)
+  name.vb: IEquatable(Of WideSpreadAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.WideSpreadAlert
+    name: WideSpreadAlert
+    href: Meridian.Application.Monitoring.WideSpreadAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.WideSpreadAlert
+    name: WideSpreadAlert
+    href: Meridian.Application.Monitoring.WideSpreadAlert.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.#ctor
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert__ctor_System_String_System_Decimal_System_Decimal_System_Decimal_System_Double_System_Double_System_String_System_Double_System_String_System_DateTimeOffset_System_Int32_
+  name: WideSpreadAlert
+  nameWithType: WideSpreadAlert.WideSpreadAlert
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.WideSpreadAlert
+  nameWithType.vb: WideSpreadAlert.New
+  fullName.vb: Meridian.Application.Monitoring.WideSpreadAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.Symbol
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_Symbol
+  name: Symbol
+  nameWithType: WideSpreadAlert.Symbol
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Symbol
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.BidPrice*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.BidPrice
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_BidPrice
+  name: BidPrice
+  nameWithType: WideSpreadAlert.BidPrice
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.BidPrice
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.AskPrice*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.AskPrice
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_AskPrice
+  name: AskPrice
+  nameWithType: WideSpreadAlert.AskPrice
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.AskPrice
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Spread*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.Spread
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_Spread
+  name: Spread
+  nameWithType: WideSpreadAlert.Spread
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Spread
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_SpreadBps
+  name: SpreadBps
+  nameWithType: WideSpreadAlert.SpreadBps
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.SpreadBps
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_SpreadPercent
+  name: SpreadPercent
+  nameWithType: WideSpreadAlert.SpreadPercent
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.SpreadPercent
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Reason*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.Reason
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_Reason
+  name: Reason
+  nameWithType: WideSpreadAlert.Reason
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Reason
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_AverageSpreadBps
+  name: AverageSpreadBps
+  nameWithType: WideSpreadAlert.AverageSpreadBps
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.AverageSpreadBps
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.Provider
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_Provider
+  name: Provider
+  nameWithType: WideSpreadAlert.Provider
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Provider
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.Timestamp
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_Timestamp
+  name: Timestamp
+  nameWithType: WideSpreadAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.Timestamp
+- uid: Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount*
+  commentId: Overload:Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount
+  href: Meridian.Application.Monitoring.WideSpreadAlert.html#Meridian_Application_Monitoring_WideSpreadAlert_ConsecutiveWideCount
+  name: ConsecutiveWideCount
+  nameWithType: WideSpreadAlert.ConsecutiveWideCount
+  fullName: Meridian.Application.Monitoring.WideSpreadAlert.ConsecutiveWideCount

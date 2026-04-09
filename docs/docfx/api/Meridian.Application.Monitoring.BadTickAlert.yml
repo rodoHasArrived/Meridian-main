@@ -1,0 +1,794 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.BadTickAlert
+  commentId: T:Meridian.Application.Monitoring.BadTickAlert
+  id: BadTickAlert
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.BadTickAlert.#ctor(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,Meridian.Application.Monitoring.BadTickReason[],System.Decimal,System.String,System.DateTimeOffset,System.Int64)
+  - Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession
+  - Meridian.Application.Monitoring.BadTickAlert.DetectedAt
+  - Meridian.Application.Monitoring.BadTickAlert.Price
+  - Meridian.Application.Monitoring.BadTickAlert.Provider
+  - Meridian.Application.Monitoring.BadTickAlert.Reasons
+  - Meridian.Application.Monitoring.BadTickAlert.ReferencePrice
+  - Meridian.Application.Monitoring.BadTickAlert.Size
+  - Meridian.Application.Monitoring.BadTickAlert.Symbol
+  - Meridian.Application.Monitoring.BadTickAlert.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: BadTickAlert
+  nameWithType: BadTickAlert
+  fullName: Meridian.Application.Monitoring.BadTickAlert
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BadTickAlert
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a bad tick condition.
+  example: []
+  syntax:
+    content: 'public readonly record struct BadTickAlert : IEquatable<BadTickAlert>'
+    content.vb: Public Structure BadTickAlert Implements IEquatable(Of BadTickAlert)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.BadTickAlert}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.BadTickAlert.#ctor(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,Meridian.Application.Monitoring.BadTickReason[],System.Decimal,System.String,System.DateTimeOffset,System.Int64)
+  commentId: M:Meridian.Application.Monitoring.BadTickAlert.#ctor(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,Meridian.Application.Monitoring.BadTickReason[],System.Decimal,System.String,System.DateTimeOffset,System.Int64)
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,Meridian.Application.Monitoring.BadTickReason[],System.Decimal,System.String,System.DateTimeOffset,System.Int64)'
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: BadTickAlert(string, decimal, decimal, DateTimeOffset, BadTickReason[], decimal, string?, DateTimeOffset, long)
+  nameWithType: BadTickAlert.BadTickAlert(string, decimal, decimal, DateTimeOffset, BadTickReason[], decimal, string?, DateTimeOffset, long)
+  fullName: Meridian.Application.Monitoring.BadTickAlert.BadTickAlert(string, decimal, decimal, System.DateTimeOffset, Meridian.Application.Monitoring.BadTickReason[], decimal, string?, System.DateTimeOffset, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a bad tick condition.
+  example: []
+  syntax:
+    content: public BadTickAlert(string Symbol, decimal Price, decimal Size, DateTimeOffset Timestamp, BadTickReason[] Reasons, decimal ReferencePrice, string? Provider, DateTimeOffset DetectedAt, long BadTickCountInSession)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Decimal
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Reasons
+      type: Meridian.Application.Monitoring.BadTickReason[]
+    - id: ReferencePrice
+      type: System.Decimal
+    - id: Provider
+      type: System.String
+    - id: DetectedAt
+      type: System.DateTimeOffset
+    - id: BadTickCountInSession
+      type: System.Int64
+    content.vb: Public Sub New(Symbol As String, Price As Decimal, Size As Decimal, Timestamp As DateTimeOffset, Reasons As BadTickReason(), ReferencePrice As Decimal, Provider As String, DetectedAt As DateTimeOffset, BadTickCountInSession As Long)
+  overload: Meridian.Application.Monitoring.BadTickAlert.#ctor*
+  nameWithType.vb: BadTickAlert.New(String, Decimal, Decimal, DateTimeOffset, BadTickReason(), Decimal, String, DateTimeOffset, Long)
+  fullName.vb: Meridian.Application.Monitoring.BadTickAlert.New(String, Decimal, Decimal, System.DateTimeOffset, Meridian.Application.Monitoring.BadTickReason(), Decimal, String, System.DateTimeOffset, Long)
+  name.vb: New(String, Decimal, Decimal, DateTimeOffset, BadTickReason(), Decimal, String, DateTimeOffset, Long)
+- uid: Meridian.Application.Monitoring.BadTickAlert.Symbol
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: BadTickAlert.Symbol
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 602
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.BadTickAlert.Symbol*
+- uid: Meridian.Application.Monitoring.BadTickAlert.Price
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.Price
+  id: Price
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: BadTickAlert.Price
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 603
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Application.Monitoring.BadTickAlert.Price*
+- uid: Meridian.Application.Monitoring.BadTickAlert.Size
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.Size
+  id: Size
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: BadTickAlert.Size
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 604
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal Size { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Size As Decimal
+  overload: Meridian.Application.Monitoring.BadTickAlert.Size*
+- uid: Meridian.Application.Monitoring.BadTickAlert.Timestamp
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: BadTickAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 605
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.BadTickAlert.Timestamp*
+- uid: Meridian.Application.Monitoring.BadTickAlert.Reasons
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.Reasons
+  id: Reasons
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: Reasons
+  nameWithType: BadTickAlert.Reasons
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Reasons
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reasons
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 606
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public BadTickReason[] Reasons { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason[]
+    content.vb: Public Property Reasons As BadTickReason()
+  overload: Meridian.Application.Monitoring.BadTickAlert.Reasons*
+- uid: Meridian.Application.Monitoring.BadTickAlert.ReferencePrice
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.ReferencePrice
+  id: ReferencePrice
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: ReferencePrice
+  nameWithType: BadTickAlert.ReferencePrice
+  fullName: Meridian.Application.Monitoring.BadTickAlert.ReferencePrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReferencePrice
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 607
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public decimal ReferencePrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ReferencePrice As Decimal
+  overload: Meridian.Application.Monitoring.BadTickAlert.ReferencePrice*
+- uid: Meridian.Application.Monitoring.BadTickAlert.Provider
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: BadTickAlert.Provider
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 608
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.BadTickAlert.Provider*
+- uid: Meridian.Application.Monitoring.BadTickAlert.DetectedAt
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.DetectedAt
+  id: DetectedAt
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: DetectedAt
+  nameWithType: BadTickAlert.DetectedAt
+  fullName: Meridian.Application.Monitoring.BadTickAlert.DetectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedAt
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 609
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset DetectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property DetectedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.BadTickAlert.DetectedAt*
+- uid: Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession
+  commentId: P:Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession
+  id: BadTickCountInSession
+  parent: Meridian.Application.Monitoring.BadTickAlert
+  langs:
+  - csharp
+  - vb
+  name: BadTickCountInSession
+  nameWithType: BadTickAlert.BadTickCountInSession
+  fullName: Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BadTickCountInSession
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 610
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long BadTickCountInSession { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BadTickCountInSession As Long
+  overload: Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.BadTickAlert}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.BadTickAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BadTickAlert>
+  nameWithType: IEquatable<BadTickAlert>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.BadTickAlert>
+  nameWithType.vb: IEquatable(Of BadTickAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.BadTickAlert)
+  name.vb: IEquatable(Of BadTickAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.BadTickAlert
+    name: BadTickAlert
+    href: Meridian.Application.Monitoring.BadTickAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.BadTickAlert
+    name: BadTickAlert
+    href: Meridian.Application.Monitoring.BadTickAlert.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.BadTickAlert.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.#ctor
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert__ctor_System_String_System_Decimal_System_Decimal_System_DateTimeOffset_Meridian_Application_Monitoring_BadTickReason___System_Decimal_System_String_System_DateTimeOffset_System_Int64_
+  name: BadTickAlert
+  nameWithType: BadTickAlert.BadTickAlert
+  fullName: Meridian.Application.Monitoring.BadTickAlert.BadTickAlert
+  nameWithType.vb: BadTickAlert.New
+  fullName.vb: Meridian.Application.Monitoring.BadTickAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.BadTickReason[]
+  isExternal: true
+  href: Meridian.Application.Monitoring.BadTickReason.html
+  name: BadTickReason[]
+  nameWithType: BadTickReason[]
+  fullName: Meridian.Application.Monitoring.BadTickReason[]
+  nameWithType.vb: BadTickReason()
+  fullName.vb: Meridian.Application.Monitoring.BadTickReason()
+  name.vb: BadTickReason()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.BadTickReason
+    name: BadTickReason
+    href: Meridian.Application.Monitoring.BadTickReason.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.BadTickReason
+    name: BadTickReason
+    href: Meridian.Application.Monitoring.BadTickReason.html
+  - name: (
+  - name: )
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.BadTickAlert.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.Symbol
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_Symbol
+  name: Symbol
+  nameWithType: BadTickAlert.Symbol
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Symbol
+- uid: Meridian.Application.Monitoring.BadTickAlert.Price*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.Price
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_Price
+  name: Price
+  nameWithType: BadTickAlert.Price
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Price
+- uid: Meridian.Application.Monitoring.BadTickAlert.Size*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.Size
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_Size
+  name: Size
+  nameWithType: BadTickAlert.Size
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Size
+- uid: Meridian.Application.Monitoring.BadTickAlert.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.Timestamp
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_Timestamp
+  name: Timestamp
+  nameWithType: BadTickAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Timestamp
+- uid: Meridian.Application.Monitoring.BadTickAlert.Reasons*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.Reasons
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_Reasons
+  name: Reasons
+  nameWithType: BadTickAlert.Reasons
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Reasons
+- uid: Meridian.Application.Monitoring.BadTickAlert.ReferencePrice*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.ReferencePrice
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_ReferencePrice
+  name: ReferencePrice
+  nameWithType: BadTickAlert.ReferencePrice
+  fullName: Meridian.Application.Monitoring.BadTickAlert.ReferencePrice
+- uid: Meridian.Application.Monitoring.BadTickAlert.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.Provider
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_Provider
+  name: Provider
+  nameWithType: BadTickAlert.Provider
+  fullName: Meridian.Application.Monitoring.BadTickAlert.Provider
+- uid: Meridian.Application.Monitoring.BadTickAlert.DetectedAt*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.DetectedAt
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_DetectedAt
+  name: DetectedAt
+  nameWithType: BadTickAlert.DetectedAt
+  fullName: Meridian.Application.Monitoring.BadTickAlert.DetectedAt
+- uid: Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession*
+  commentId: Overload:Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession
+  href: Meridian.Application.Monitoring.BadTickAlert.html#Meridian_Application_Monitoring_BadTickAlert_BadTickCountInSession
+  name: BadTickCountInSession
+  nameWithType: BadTickAlert.BadTickCountInSession
+  fullName: Meridian.Application.Monitoring.BadTickAlert.BadTickCountInSession

@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory
+  commentId: T:Meridian.Application.Subscriptions.Models.TemplateCategory
+  id: TemplateCategory
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.TemplateCategory.Custom
+  - Meridian.Application.Subscriptions.Models.TemplateCategory.Index
+  - Meridian.Application.Subscriptions.Models.TemplateCategory.MarketCap
+  - Meridian.Application.Subscriptions.Models.TemplateCategory.Sector
+  langs:
+  - csharp
+  - vb
+  name: TemplateCategory
+  nameWithType: TemplateCategory
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TemplateCategory
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Categories for organizing subscription templates.
+  example: []
+  syntax:
+    content: 'public enum TemplateCategory : byte'
+    content.vb: Public Enum TemplateCategory As Byte
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory.Sector
+  commentId: F:Meridian.Application.Subscriptions.Models.TemplateCategory.Sector
+  id: Sector
+  parent: Meridian.Application.Subscriptions.Models.TemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Sector
+  nameWithType: TemplateCategory.Sector
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory.Sector
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sector
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Sector = 0
+    return:
+      type: Meridian.Application.Subscriptions.Models.TemplateCategory
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory.Index
+  commentId: F:Meridian.Application.Subscriptions.Models.TemplateCategory.Index
+  id: Index
+  parent: Meridian.Application.Subscriptions.Models.TemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Index
+  nameWithType: TemplateCategory.Index
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory.Index
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Index
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Index = 1
+    return:
+      type: Meridian.Application.Subscriptions.Models.TemplateCategory
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory.MarketCap
+  commentId: F:Meridian.Application.Subscriptions.Models.TemplateCategory.MarketCap
+  id: MarketCap
+  parent: Meridian.Application.Subscriptions.Models.TemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: MarketCap
+  nameWithType: TemplateCategory.MarketCap
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory.MarketCap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCap
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: MarketCap = 2
+    return:
+      type: Meridian.Application.Subscriptions.Models.TemplateCategory
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory.Custom
+  commentId: F:Meridian.Application.Subscriptions.Models.TemplateCategory.Custom
+  id: Custom
+  parent: Meridian.Application.Subscriptions.Models.TemplateCategory
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: TemplateCategory.Custom
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Custom = 3
+    return:
+      type: Meridian.Application.Subscriptions.Models.TemplateCategory
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory
+  commentId: T:Meridian.Application.Subscriptions.Models.TemplateCategory
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.TemplateCategory.html
+  name: TemplateCategory
+  nameWithType: TemplateCategory
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory

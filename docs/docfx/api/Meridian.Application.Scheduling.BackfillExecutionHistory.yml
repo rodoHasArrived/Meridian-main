@@ -1,0 +1,824 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory
+  commentId: T:Meridian.Application.Scheduling.BackfillExecutionHistory
+  id: BackfillExecutionHistory
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution(Meridian.Application.Scheduling.BackfillExecutionLog)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution(System.String)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange(System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions(System.Int32)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions(System.Int32)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  - Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary(System.Nullable{System.TimeSpan})
+  langs:
+  - csharp
+  - vb
+  name: BackfillExecutionHistory
+  nameWithType: BackfillExecutionHistory
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillExecutionHistory
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Manager for querying and analyzing execution history.
+  example: []
+  syntax:
+    content: public sealed class BackfillExecutionHistory
+    content.vb: Public NotInheritable Class BackfillExecutionHistory
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution(Meridian.Application.Scheduling.BackfillExecutionLog)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution(Meridian.Application.Scheduling.BackfillExecutionLog)
+  id: AddExecution(Meridian.Application.Scheduling.BackfillExecutionLog)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: AddExecution(BackfillExecutionLog)
+  nameWithType: BackfillExecutionHistory.AddExecution(BackfillExecutionLog)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution(Meridian.Application.Scheduling.BackfillExecutionLog)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddExecution
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Add an execution to the history.
+  example: []
+  syntax:
+    content: public void AddExecution(BackfillExecutionLog execution)
+    parameters:
+    - id: execution
+      type: Meridian.Application.Scheduling.BackfillExecutionLog
+    content.vb: Public Sub AddExecution(execution As BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution*
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution(System.String)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution(System.String)
+  id: GetExecution(System.String)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetExecution(string)
+  nameWithType: BackfillExecutionHistory.GetExecution(string)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecution
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get an execution by ID.
+  example: []
+  syntax:
+    content: public BackfillExecutionLog? GetExecution(string executionId)
+    parameters:
+    - id: executionId
+      type: System.String
+    return:
+      type: Meridian.Application.Scheduling.BackfillExecutionLog
+    content.vb: Public Function GetExecution(executionId As String) As BackfillExecutionLog
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution*
+  nameWithType.vb: BackfillExecutionHistory.GetExecution(String)
+  fullName.vb: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution(String)
+  name.vb: GetExecution(String)
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  id: GetExecutionsForSchedule(System.String,System.Int32)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetExecutionsForSchedule(string, int)
+  nameWithType: BackfillExecutionHistory.GetExecutionsForSchedule(string, int)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecutionsForSchedule
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get all executions for a schedule.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillExecutionLog> GetExecutionsForSchedule(string scheduleId, int limit = 50)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Function GetExecutionsForSchedule(scheduleId As String, limit As Integer = 50) As IReadOnlyList(Of BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule*
+  nameWithType.vb: BackfillExecutionHistory.GetExecutionsForSchedule(String, Integer)
+  fullName.vb: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule(String, Integer)
+  name.vb: GetExecutionsForSchedule(String, Integer)
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions(System.Int32)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions(System.Int32)
+  id: GetRecentExecutions(System.Int32)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetRecentExecutions(int)
+  nameWithType: BackfillExecutionHistory.GetRecentExecutions(int)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentExecutions
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get recent executions across all schedules.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillExecutionLog> GetRecentExecutions(int limit = 50)
+    parameters:
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Function GetRecentExecutions(limit As Integer = 50) As IReadOnlyList(Of BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions*
+  nameWithType.vb: BackfillExecutionHistory.GetRecentExecutions(Integer)
+  fullName.vb: Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions(Integer)
+  name.vb: GetRecentExecutions(Integer)
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions(System.Int32)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions(System.Int32)
+  id: GetFailedExecutions(System.Int32)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetFailedExecutions(int)
+  nameWithType: BackfillExecutionHistory.GetFailedExecutions(int)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFailedExecutions
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get failed executions.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillExecutionLog> GetFailedExecutions(int limit = 50)
+    parameters:
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Function GetFailedExecutions(limit As Integer = 50) As IReadOnlyList(Of BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions*
+  nameWithType.vb: BackfillExecutionHistory.GetFailedExecutions(Integer)
+  fullName.vb: Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions(Integer)
+  name.vb: GetFailedExecutions(Integer)
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange(System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange(System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  id: GetExecutionsInRange(System.DateTimeOffset,System.DateTimeOffset,System.Int32)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetExecutionsInRange(DateTimeOffset, DateTimeOffset, int)
+  nameWithType: BackfillExecutionHistory.GetExecutionsInRange(DateTimeOffset, DateTimeOffset, int)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange(System.DateTimeOffset, System.DateTimeOffset, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecutionsInRange
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get executions within a time range.
+  example: []
+  syntax:
+    content: public IReadOnlyList<BackfillExecutionLog> GetExecutionsInRange(DateTimeOffset from, DateTimeOffset to, int limit = 100)
+    parameters:
+    - id: from
+      type: System.DateTimeOffset
+    - id: to
+      type: System.DateTimeOffset
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Function GetExecutionsInRange(from As DateTimeOffset, [to] As DateTimeOffset, limit As Integer = 100) As IReadOnlyList(Of BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange*
+  nameWithType.vb: BackfillExecutionHistory.GetExecutionsInRange(DateTimeOffset, DateTimeOffset, Integer)
+  fullName.vb: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange(System.DateTimeOffset, System.DateTimeOffset, Integer)
+  name.vb: GetExecutionsInRange(DateTimeOffset, DateTimeOffset, Integer)
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  id: GetScheduleSummary(System.String,System.Int32)
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetScheduleSummary(string, int)
+  nameWithType: BackfillExecutionHistory.GetScheduleSummary(string, int)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScheduleSummary
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get aggregate statistics for a schedule.
+  example: []
+  syntax:
+    content: public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 30)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: recentCount
+      type: System.Int32
+    return:
+      type: Meridian.Application.Scheduling.ScheduleExecutionSummary
+    content.vb: Public Function GetScheduleSummary(scheduleId As String, recentCount As Integer = 30) As ScheduleExecutionSummary
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary*
+  nameWithType.vb: BackfillExecutionHistory.GetScheduleSummary(String, Integer)
+  fullName.vb: Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary(String, Integer)
+  name.vb: GetScheduleSummary(String, Integer)
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary(System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary(System.Nullable{System.TimeSpan})
+  id: GetSystemSummary(System.Nullable{System.TimeSpan})
+  parent: Meridian.Application.Scheduling.BackfillExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetSystemSummary(TimeSpan?)
+  nameWithType: BackfillExecutionHistory.GetSystemSummary(TimeSpan?)
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary(System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSystemSummary
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Get overall system statistics.
+  example: []
+  syntax:
+    content: public SystemExecutionSummary GetSystemSummary(TimeSpan? period = null)
+    parameters:
+    - id: period
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Application.Scheduling.SystemExecutionSummary
+    content.vb: Public Function GetSystemSummary(period As TimeSpan? = Nothing) As SystemExecutionSummary
+  overload: Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_AddExecution_Meridian_Application_Scheduling_BackfillExecutionLog_
+  name: AddExecution
+  nameWithType: BackfillExecutionHistory.AddExecution
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.AddExecution
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog
+  commentId: T:Meridian.Application.Scheduling.BackfillExecutionLog
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  name: BackfillExecutionLog
+  nameWithType: BackfillExecutionLog
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetExecution_System_String_
+  name: GetExecution
+  nameWithType: BackfillExecutionHistory.GetExecution
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecution
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetExecutionsForSchedule_System_String_System_Int32_
+  name: GetExecutionsForSchedule
+  nameWithType: BackfillExecutionHistory.GetExecutionsForSchedule
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsForSchedule
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillExecutionLog}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.BackfillExecutionLog}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<BackfillExecutionLog>
+  nameWithType: IReadOnlyList<BackfillExecutionLog>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Scheduling.BackfillExecutionLog>
+  nameWithType.vb: IReadOnlyList(Of BackfillExecutionLog)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Scheduling.BackfillExecutionLog)
+  name.vb: IReadOnlyList(Of BackfillExecutionLog)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillExecutionLog
+    name: BackfillExecutionLog
+    href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillExecutionLog
+    name: BackfillExecutionLog
+    href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetRecentExecutions_System_Int32_
+  name: GetRecentExecutions
+  nameWithType: BackfillExecutionHistory.GetRecentExecutions
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetRecentExecutions
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetFailedExecutions_System_Int32_
+  name: GetFailedExecutions
+  nameWithType: BackfillExecutionHistory.GetFailedExecutions
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetFailedExecutions
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetExecutionsInRange_System_DateTimeOffset_System_DateTimeOffset_System_Int32_
+  name: GetExecutionsInRange
+  nameWithType: BackfillExecutionHistory.GetExecutionsInRange
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetExecutionsInRange
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetScheduleSummary_System_String_System_Int32_
+  name: GetScheduleSummary
+  nameWithType: BackfillExecutionHistory.GetScheduleSummary
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetScheduleSummary
+- uid: Meridian.Application.Scheduling.ScheduleExecutionSummary
+  commentId: T:Meridian.Application.Scheduling.ScheduleExecutionSummary
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ScheduleExecutionSummary.html
+  name: ScheduleExecutionSummary
+  nameWithType: ScheduleExecutionSummary
+  fullName: Meridian.Application.Scheduling.ScheduleExecutionSummary
+- uid: Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary
+  href: Meridian.Application.Scheduling.BackfillExecutionHistory.html#Meridian_Application_Scheduling_BackfillExecutionHistory_GetSystemSummary_System_Nullable_System_TimeSpan__
+  name: GetSystemSummary
+  nameWithType: BackfillExecutionHistory.GetSystemSummary
+  fullName: Meridian.Application.Scheduling.BackfillExecutionHistory.GetSystemSummary
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Meridian.Application.Scheduling.SystemExecutionSummary
+  commentId: T:Meridian.Application.Scheduling.SystemExecutionSummary
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.SystemExecutionSummary.html
+  name: SystemExecutionSummary
+  nameWithType: SystemExecutionSummary
+  fullName: Meridian.Application.Scheduling.SystemExecutionSummary
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

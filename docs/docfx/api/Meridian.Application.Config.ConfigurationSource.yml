@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigurationSource
+  commentId: T:Meridian.Application.Config.ConfigurationSource
+  id: ConfigurationSource
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigurationSource.CommandLine
+  - Meridian.Application.Config.ConfigurationSource.Default
+  - Meridian.Application.Config.ConfigurationSource.Environment
+  - Meridian.Application.Config.ConfigurationSource.File
+  - Meridian.Application.Config.ConfigurationSource.Remote
+  - Meridian.Application.Config.ConfigurationSource.Runtime
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationSource
+  nameWithType: ConfigurationSource
+  fullName: Meridian.Application.Config.ConfigurationSource
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationSource
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Sources of configuration values.
+  example: []
+  syntax:
+    content: 'public enum ConfigurationSource : byte'
+    content.vb: Public Enum ConfigurationSource As Byte
+- uid: Meridian.Application.Config.ConfigurationSource.Default
+  commentId: F:Meridian.Application.Config.ConfigurationSource.Default
+  id: Default
+  parent: Meridian.Application.Config.ConfigurationSource
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: ConfigurationSource.Default
+  fullName: Meridian.Application.Config.ConfigurationSource.Default
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Default/hardcoded value.
+  example: []
+  syntax:
+    content: Default = 0
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+- uid: Meridian.Application.Config.ConfigurationSource.File
+  commentId: F:Meridian.Application.Config.ConfigurationSource.File
+  id: File
+  parent: Meridian.Application.Config.ConfigurationSource
+  langs:
+  - csharp
+  - vb
+  name: File
+  nameWithType: ConfigurationSource.File
+  fullName: Meridian.Application.Config.ConfigurationSource.File
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: File
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Loaded from configuration file.
+  example: []
+  syntax:
+    content: File = 1
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+- uid: Meridian.Application.Config.ConfigurationSource.Environment
+  commentId: F:Meridian.Application.Config.ConfigurationSource.Environment
+  id: Environment
+  parent: Meridian.Application.Config.ConfigurationSource
+  langs:
+  - csharp
+  - vb
+  name: Environment
+  nameWithType: ConfigurationSource.Environment
+  fullName: Meridian.Application.Config.ConfigurationSource.Environment
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Environment
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Loaded from environment variable.
+  example: []
+  syntax:
+    content: Environment = 2
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+- uid: Meridian.Application.Config.ConfigurationSource.Runtime
+  commentId: F:Meridian.Application.Config.ConfigurationSource.Runtime
+  id: Runtime
+  parent: Meridian.Application.Config.ConfigurationSource
+  langs:
+  - csharp
+  - vb
+  name: Runtime
+  nameWithType: ConfigurationSource.Runtime
+  fullName: Meridian.Application.Config.ConfigurationSource.Runtime
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Runtime
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Set at runtime via API.
+  example: []
+  syntax:
+    content: Runtime = 3
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+- uid: Meridian.Application.Config.ConfigurationSource.CommandLine
+  commentId: F:Meridian.Application.Config.ConfigurationSource.CommandLine
+  id: CommandLine
+  parent: Meridian.Application.Config.ConfigurationSource
+  langs:
+  - csharp
+  - vb
+  name: CommandLine
+  nameWithType: ConfigurationSource.CommandLine
+  fullName: Meridian.Application.Config.ConfigurationSource.CommandLine
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommandLine
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Loaded from command line arguments.
+  example: []
+  syntax:
+    content: CommandLine = 4
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+- uid: Meridian.Application.Config.ConfigurationSource.Remote
+  commentId: F:Meridian.Application.Config.ConfigurationSource.Remote
+  id: Remote
+  parent: Meridian.Application.Config.ConfigurationSource
+  langs:
+  - csharp
+  - vb
+  name: Remote
+  nameWithType: ConfigurationSource.Remote
+  fullName: Meridian.Application.Config.ConfigurationSource.Remote
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Remote
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Loaded from remote configuration service.
+  example: []
+  syntax:
+    content: Remote = 5
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.ConfigurationSource
+  commentId: T:Meridian.Application.Config.ConfigurationSource
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationSource.html
+  name: ConfigurationSource
+  nameWithType: ConfigurationSource
+  fullName: Meridian.Application.Config.ConfigurationSource

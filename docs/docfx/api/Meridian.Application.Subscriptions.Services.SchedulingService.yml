@@ -1,0 +1,1309 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService
+  commentId: T:Meridian.Application.Subscriptions.Services.SchedulingService
+  id: SchedulingService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.SchedulingService.#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync(Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync
+  - Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses
+  - Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules
+  - Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus(System.String)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule(System.String)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync(System.String,Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SchedulingService
+  nameWithType: SchedulingService
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchedulingService
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Service for scheduling symbol subscription enable/disable by time/date.
+  example: []
+  syntax:
+    content: 'public sealed class SchedulingService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class SchedulingService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)
+  id: '#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)'
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: SchedulingService(ConfigStore, string?, ILogger?)
+  nameWithType: SchedulingService.SchedulingService(ConfigStore, string?, ILogger?)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.SchedulingService(Meridian.Application.UI.ConfigStore, string?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public SchedulingService(ConfigStore configStore, string? schedulesPath = null, ILogger? log = null)
+    parameters:
+    - id: configStore
+      type: Meridian.Application.UI.ConfigStore
+    - id: schedulesPath
+      type: System.String
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(configStore As ConfigStore, schedulesPath As String = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.#ctor*
+  nameWithType.vb: SchedulingService.New(ConfigStore, String, ILogger)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.New(Meridian.Application.UI.ConfigStore, String, Serilog.ILogger)
+  name.vb: New(ConfigStore, String, ILogger)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: SchedulingService.InitializeAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Initialize the service and load existing schedules.
+  example: []
+  syntax:
+    content: public Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync*
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules
+  id: GetAllSchedules
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: GetAllSchedules()
+  nameWithType: SchedulingService.GetAllSchedules()
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSchedules
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get all schedules.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SubscriptionSchedule> GetAllSchedules()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+    content.vb: Public Function GetAllSchedules() As IReadOnlyList(Of SubscriptionSchedule)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules*
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule(System.String)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule(System.String)
+  id: GetSchedule(System.String)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: GetSchedule(string)
+  nameWithType: SchedulingService.GetSchedule(string)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSchedule
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get a specific schedule.
+  example: []
+  syntax:
+    content: public SubscriptionSchedule? GetSchedule(string scheduleId)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    return:
+      type: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    content.vb: Public Function GetSchedule(scheduleId As String) As SubscriptionSchedule
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule*
+  nameWithType.vb: SchedulingService.GetSchedule(String)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule(String)
+  name.vb: GetSchedule(String)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus(System.String)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus(System.String)
+  id: GetExecutionStatus(System.String)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: GetExecutionStatus(string)
+  nameWithType: SchedulingService.GetExecutionStatus(string)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecutionStatus
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get execution status for a schedule.
+  example: []
+  syntax:
+    content: public ScheduleExecutionStatus? GetExecutionStatus(string scheduleId)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+    content.vb: Public Function GetExecutionStatus(scheduleId As String) As ScheduleExecutionStatus
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus*
+  nameWithType.vb: SchedulingService.GetExecutionStatus(String)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus(String)
+  name.vb: GetExecutionStatus(String)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses
+  id: GetAllExecutionStatuses
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: GetAllExecutionStatuses()
+  nameWithType: SchedulingService.GetAllExecutionStatuses()
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllExecutionStatuses
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get all execution statuses.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ScheduleExecutionStatus> GetAllExecutionStatuses()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus}
+    content.vb: Public Function GetAllExecutionStatuses() As IReadOnlyList(Of ScheduleExecutionStatus)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses*
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync(Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync(Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  id: CreateScheduleAsync(Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: CreateScheduleAsync(CreateScheduleRequest, CancellationToken)
+  nameWithType: SchedulingService.CreateScheduleAsync(CreateScheduleRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync(Meridian.Application.Subscriptions.Models.CreateScheduleRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateScheduleAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Create a new schedule.
+  example: []
+  syntax:
+    content: public Task<SubscriptionSchedule> CreateScheduleAsync(CreateScheduleRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.CreateScheduleRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+    content.vb: Public Function CreateScheduleAsync(request As CreateScheduleRequest, ct As CancellationToken = Nothing) As Task(Of SubscriptionSchedule)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync*
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync(System.String,Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync(System.String,Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  id: UpdateScheduleAsync(System.String,Meridian.Application.Subscriptions.Models.CreateScheduleRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: UpdateScheduleAsync(string, CreateScheduleRequest, CancellationToken)
+  nameWithType: SchedulingService.UpdateScheduleAsync(string, CreateScheduleRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync(string, Meridian.Application.Subscriptions.Models.CreateScheduleRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateScheduleAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Update an existing schedule.
+  example: []
+  syntax:
+    content: public Task<SubscriptionSchedule?> UpdateScheduleAsync(string scheduleId, CreateScheduleRequest request, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.CreateScheduleRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+    content.vb: Public Function UpdateScheduleAsync(scheduleId As String, request As CreateScheduleRequest, ct As CancellationToken = Nothing) As Task(Of SubscriptionSchedule)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync*
+  nameWithType.vb: SchedulingService.UpdateScheduleAsync(String, CreateScheduleRequest, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync(String, Meridian.Application.Subscriptions.Models.CreateScheduleRequest, System.Threading.CancellationToken)
+  name.vb: UpdateScheduleAsync(String, CreateScheduleRequest, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: SetScheduleEnabledAsync(string, bool, CancellationToken)
+  nameWithType: SchedulingService.SetScheduleEnabledAsync(string, bool, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetScheduleEnabledAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Enable or disable a schedule.
+  example: []
+  syntax:
+    content: public Task<bool> SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: enabled
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function SetScheduleEnabledAsync(scheduleId As String, enabled As Boolean, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync*
+  nameWithType.vb: SchedulingService.SetScheduleEnabledAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: SetScheduleEnabledAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: DeleteScheduleAsync(string, CancellationToken)
+  nameWithType: SchedulingService.DeleteScheduleAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteScheduleAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Delete a schedule.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync*
+  nameWithType.vb: SchedulingService.DeleteScheduleAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteScheduleAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync(System.String,System.Threading.CancellationToken)
+  id: ExecuteNowAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteNowAsync(string, CancellationToken)
+  nameWithType: SchedulingService.ExecuteNowAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteNowAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Manually execute a schedule now.
+  example: []
+  syntax:
+    content: public Task<ScheduleExecutionStatus> ExecuteNowAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus}
+    content.vb: Public Function ExecuteNowAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of ScheduleExecutionStatus)
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync*
+  nameWithType.vb: SchedulingService.ExecuteNowAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync(String, System.Threading.CancellationToken)
+  name.vb: ExecuteNowAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync
+  commentId: M:Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Subscriptions.Services.SchedulingService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: SchedulingService.DisposeAsync()
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    startLine: 432
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.#ctor
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService__ctor_Meridian_Application_UI_ConfigStore_System_String_Serilog_ILogger_
+  name: SchedulingService
+  nameWithType: SchedulingService.SchedulingService
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.SchedulingService
+  nameWithType.vb: SchedulingService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.SchedulingService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: SchedulingService.InitializeAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_GetAllSchedules
+  name: GetAllSchedules
+  nameWithType: SchedulingService.GetAllSchedules
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllSchedules
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SubscriptionSchedule>
+  nameWithType: IReadOnlyList<SubscriptionSchedule>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.SubscriptionSchedule>
+  nameWithType.vb: IReadOnlyList(Of SubscriptionSchedule)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.SubscriptionSchedule)
+  name.vb: IReadOnlyList(Of SubscriptionSchedule)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    name: SubscriptionSchedule
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    name: SubscriptionSchedule
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_GetSchedule_System_String_
+  name: GetSchedule
+  nameWithType: SchedulingService.GetSchedule
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetSchedule
+- uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  commentId: T:Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.SubscriptionSchedule.html
+  name: SubscriptionSchedule
+  nameWithType: SubscriptionSchedule
+  fullName: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_GetExecutionStatus_System_String_
+  name: GetExecutionStatus
+  nameWithType: SchedulingService.GetExecutionStatus
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetExecutionStatus
+- uid: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus.html
+  name: ScheduleExecutionStatus
+  nameWithType: ScheduleExecutionStatus
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_GetAllExecutionStatuses
+  name: GetAllExecutionStatuses
+  nameWithType: SchedulingService.GetAllExecutionStatuses
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.GetAllExecutionStatuses
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ScheduleExecutionStatus>
+  nameWithType: IReadOnlyList<ScheduleExecutionStatus>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus>
+  nameWithType.vb: IReadOnlyList(Of ScheduleExecutionStatus)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus)
+  name.vb: IReadOnlyList(Of ScheduleExecutionStatus)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+    name: ScheduleExecutionStatus
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+    name: ScheduleExecutionStatus
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_CreateScheduleAsync_Meridian_Application_Subscriptions_Models_CreateScheduleRequest_System_Threading_CancellationToken_
+  name: CreateScheduleAsync
+  nameWithType: SchedulingService.CreateScheduleAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.CreateScheduleAsync
+- uid: Meridian.Application.Subscriptions.Models.CreateScheduleRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.CreateScheduleRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.CreateScheduleRequest.html
+  name: CreateScheduleRequest
+  nameWithType: CreateScheduleRequest
+  fullName: Meridian.Application.Subscriptions.Models.CreateScheduleRequest
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SubscriptionSchedule}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SubscriptionSchedule>
+  nameWithType: Task<SubscriptionSchedule>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SubscriptionSchedule>
+  nameWithType.vb: Task(Of SubscriptionSchedule)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SubscriptionSchedule)
+  name.vb: Task(Of SubscriptionSchedule)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    name: SubscriptionSchedule
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SubscriptionSchedule
+    name: SubscriptionSchedule
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_UpdateScheduleAsync_System_String_Meridian_Application_Subscriptions_Models_CreateScheduleRequest_System_Threading_CancellationToken_
+  name: UpdateScheduleAsync
+  nameWithType: SchedulingService.UpdateScheduleAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.UpdateScheduleAsync
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_SetScheduleEnabledAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: SetScheduleEnabledAsync
+  nameWithType: SchedulingService.SetScheduleEnabledAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.SetScheduleEnabledAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_DeleteScheduleAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteScheduleAsync
+  nameWithType: SchedulingService.DeleteScheduleAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.DeleteScheduleAsync
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_ExecuteNowAsync_System_String_System_Threading_CancellationToken_
+  name: ExecuteNowAsync
+  nameWithType: SchedulingService.ExecuteNowAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.ExecuteNowAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ScheduleExecutionStatus>
+  nameWithType: Task<ScheduleExecutionStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus>
+  nameWithType.vb: Task(Of ScheduleExecutionStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus)
+  name.vb: Task(Of ScheduleExecutionStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+    name: ScheduleExecutionStatus
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.ScheduleExecutionStatus
+    name: ScheduleExecutionStatus
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html#Meridian_Application_Subscriptions_Services_SchedulingService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: SchedulingService.DisposeAsync
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

@@ -1,0 +1,671 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.SampleDataGenerator
+  commentId: T:Meridian.Application.Services.SampleDataGenerator
+  id: SampleDataGenerator
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.SampleDataGenerator.#ctor(System.Nullable{System.Int32})
+  - Meridian.Application.Services.SampleDataGenerator.Generate(Meridian.Application.Services.SampleDataOptions)
+  - Meridian.Application.Services.SampleDataGenerator.GeneratePreview(Meridian.Application.Services.SampleDataOptions)
+  - Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync(Meridian.Application.Services.SampleDataOptions,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SampleDataGenerator
+  nameWithType: SampleDataGenerator
+  fullName: Meridian.Application.Services.SampleDataGenerator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SampleDataGenerator
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for generating sample market data for testing and development.
+
+    Implements QW-17: Sample Data Generator.
+  example: []
+  syntax:
+    content: public sealed class SampleDataGenerator
+    content.vb: Public NotInheritable Class SampleDataGenerator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.SampleDataGenerator.#ctor(System.Nullable{System.Int32})
+  commentId: M:Meridian.Application.Services.SampleDataGenerator.#ctor(System.Nullable{System.Int32})
+  id: '#ctor(System.Nullable{System.Int32})'
+  parent: Meridian.Application.Services.SampleDataGenerator
+  langs:
+  - csharp
+  - vb
+  name: SampleDataGenerator(int?)
+  nameWithType: SampleDataGenerator.SampleDataGenerator(int?)
+  fullName: Meridian.Application.Services.SampleDataGenerator.SampleDataGenerator(int?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public SampleDataGenerator(int? seed = null)
+    parameters:
+    - id: seed
+      type: System.Nullable{System.Int32}
+    content.vb: Public Sub New(seed As Integer? = Nothing)
+  overload: Meridian.Application.Services.SampleDataGenerator.#ctor*
+  nameWithType.vb: SampleDataGenerator.New(Integer?)
+  fullName.vb: Meridian.Application.Services.SampleDataGenerator.New(Integer?)
+  name.vb: New(Integer?)
+- uid: Meridian.Application.Services.SampleDataGenerator.Generate(Meridian.Application.Services.SampleDataOptions)
+  commentId: M:Meridian.Application.Services.SampleDataGenerator.Generate(Meridian.Application.Services.SampleDataOptions)
+  id: Generate(Meridian.Application.Services.SampleDataOptions)
+  parent: Meridian.Application.Services.SampleDataGenerator
+  langs:
+  - csharp
+  - vb
+  name: Generate(SampleDataOptions)
+  nameWithType: SampleDataGenerator.Generate(SampleDataOptions)
+  fullName: Meridian.Application.Services.SampleDataGenerator.Generate(Meridian.Application.Services.SampleDataOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Generate
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates sample market data based on the provided options.
+  example: []
+  syntax:
+    content: public SampleDataResult Generate(SampleDataOptions options)
+    parameters:
+    - id: options
+      type: Meridian.Application.Services.SampleDataOptions
+    return:
+      type: Meridian.Application.Services.SampleDataResult
+    content.vb: Public Function Generate(options As SampleDataOptions) As SampleDataResult
+  overload: Meridian.Application.Services.SampleDataGenerator.Generate*
+- uid: Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync(Meridian.Application.Services.SampleDataOptions,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync(Meridian.Application.Services.SampleDataOptions,System.String,System.Threading.CancellationToken)
+  id: GenerateToFileAsync(Meridian.Application.Services.SampleDataOptions,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.SampleDataGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateToFileAsync(SampleDataOptions, string, CancellationToken)
+  nameWithType: SampleDataGenerator.GenerateToFileAsync(SampleDataOptions, string, CancellationToken)
+  fullName: Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync(Meridian.Application.Services.SampleDataOptions, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateToFileAsync
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates sample data and writes it to JSONL files.
+  example: []
+  syntax:
+    content: public Task<SampleDataResult> GenerateToFileAsync(SampleDataOptions options, string outputPath, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Application.Services.SampleDataOptions
+    - id: outputPath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.SampleDataResult}
+    content.vb: Public Function GenerateToFileAsync(options As SampleDataOptions, outputPath As String, ct As CancellationToken = Nothing) As Task(Of SampleDataResult)
+  overload: Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync*
+  nameWithType.vb: SampleDataGenerator.GenerateToFileAsync(SampleDataOptions, String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync(Meridian.Application.Services.SampleDataOptions, String, System.Threading.CancellationToken)
+  name.vb: GenerateToFileAsync(SampleDataOptions, String, CancellationToken)
+- uid: Meridian.Application.Services.SampleDataGenerator.GeneratePreview(Meridian.Application.Services.SampleDataOptions)
+  commentId: M:Meridian.Application.Services.SampleDataGenerator.GeneratePreview(Meridian.Application.Services.SampleDataOptions)
+  id: GeneratePreview(Meridian.Application.Services.SampleDataOptions)
+  parent: Meridian.Application.Services.SampleDataGenerator
+  langs:
+  - csharp
+  - vb
+  name: GeneratePreview(SampleDataOptions)
+  nameWithType: SampleDataGenerator.GeneratePreview(SampleDataOptions)
+  fullName: Meridian.Application.Services.SampleDataGenerator.GeneratePreview(Meridian.Application.Services.SampleDataOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratePreview
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a preview of sample data (limited events).
+  example: []
+  syntax:
+    content: public SampleDataPreview GeneratePreview(SampleDataOptions options)
+    parameters:
+    - id: options
+      type: Meridian.Application.Services.SampleDataOptions
+    return:
+      type: Meridian.Application.Services.SampleDataPreview
+    content.vb: Public Function GeneratePreview(options As SampleDataOptions) As SampleDataPreview
+  overload: Meridian.Application.Services.SampleDataGenerator.GeneratePreview*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.SampleDataGenerator.#ctor*
+  commentId: Overload:Meridian.Application.Services.SampleDataGenerator.#ctor
+  href: Meridian.Application.Services.SampleDataGenerator.html#Meridian_Application_Services_SampleDataGenerator__ctor_System_Nullable_System_Int32__
+  name: SampleDataGenerator
+  nameWithType: SampleDataGenerator.SampleDataGenerator
+  fullName: Meridian.Application.Services.SampleDataGenerator.SampleDataGenerator
+  nameWithType.vb: SampleDataGenerator.New
+  fullName.vb: Meridian.Application.Services.SampleDataGenerator.New
+  name.vb: New
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.SampleDataGenerator.Generate*
+  commentId: Overload:Meridian.Application.Services.SampleDataGenerator.Generate
+  href: Meridian.Application.Services.SampleDataGenerator.html#Meridian_Application_Services_SampleDataGenerator_Generate_Meridian_Application_Services_SampleDataOptions_
+  name: Generate
+  nameWithType: SampleDataGenerator.Generate
+  fullName: Meridian.Application.Services.SampleDataGenerator.Generate
+- uid: Meridian.Application.Services.SampleDataOptions
+  commentId: T:Meridian.Application.Services.SampleDataOptions
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.SampleDataOptions.html
+  name: SampleDataOptions
+  nameWithType: SampleDataOptions
+  fullName: Meridian.Application.Services.SampleDataOptions
+- uid: Meridian.Application.Services.SampleDataResult
+  commentId: T:Meridian.Application.Services.SampleDataResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.SampleDataResult.html
+  name: SampleDataResult
+  nameWithType: SampleDataResult
+  fullName: Meridian.Application.Services.SampleDataResult
+- uid: Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync*
+  commentId: Overload:Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync
+  href: Meridian.Application.Services.SampleDataGenerator.html#Meridian_Application_Services_SampleDataGenerator_GenerateToFileAsync_Meridian_Application_Services_SampleDataOptions_System_String_System_Threading_CancellationToken_
+  name: GenerateToFileAsync
+  nameWithType: SampleDataGenerator.GenerateToFileAsync
+  fullName: Meridian.Application.Services.SampleDataGenerator.GenerateToFileAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.SampleDataResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.SampleDataResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SampleDataResult>
+  nameWithType: Task<SampleDataResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.SampleDataResult>
+  nameWithType.vb: Task(Of SampleDataResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.SampleDataResult)
+  name.vb: Task(Of SampleDataResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.SampleDataResult
+    name: SampleDataResult
+    href: Meridian.Application.Services.SampleDataResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.SampleDataResult
+    name: SampleDataResult
+    href: Meridian.Application.Services.SampleDataResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.SampleDataGenerator.GeneratePreview*
+  commentId: Overload:Meridian.Application.Services.SampleDataGenerator.GeneratePreview
+  href: Meridian.Application.Services.SampleDataGenerator.html#Meridian_Application_Services_SampleDataGenerator_GeneratePreview_Meridian_Application_Services_SampleDataOptions_
+  name: GeneratePreview
+  nameWithType: SampleDataGenerator.GeneratePreview
+  fullName: Meridian.Application.Services.SampleDataGenerator.GeneratePreview
+- uid: Meridian.Application.Services.SampleDataPreview
+  commentId: T:Meridian.Application.Services.SampleDataPreview
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.SampleDataPreview.html
+  name: SampleDataPreview
+  nameWithType: SampleDataPreview
+  fullName: Meridian.Application.Services.SampleDataPreview

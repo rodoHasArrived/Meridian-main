@@ -1,0 +1,1059 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  id: PriceContinuityChecker
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.#ctor(Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice(System.String,System.Decimal,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics(System.String,System.String)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols(System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.OnDiscontinuity
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset(System.String,System.String)
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll
+  langs:
+  - csharp
+  - vb
+  name: PriceContinuityChecker
+  nameWithType: PriceContinuityChecker
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceContinuityChecker
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Validates price continuity to detect gap moves, splits, or erroneous data.
+
+    Implements DQ-16: Price Continuity Checker.
+  example: []
+  syntax:
+    content: 'public sealed class PriceContinuityChecker : IDisposable'
+    content.vb: Public NotInheritable Class PriceContinuityChecker Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.OnDiscontinuity
+  commentId: E:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.OnDiscontinuity
+  id: OnDiscontinuity
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: OnDiscontinuity
+  nameWithType: PriceContinuityChecker.OnDiscontinuity
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.OnDiscontinuity
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnDiscontinuity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when a price discontinuity is detected.
+  example: []
+  syntax:
+    content: public event Action<PriceDiscontinuityEvent>? OnDiscontinuity
+    return:
+      type: System.Action{Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent}
+    content.vb: Public Event OnDiscontinuity As Action(Of PriceDiscontinuityEvent)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.#ctor(Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.#ctor(Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig)'
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: PriceContinuityChecker(PriceContinuityConfig?)
+  nameWithType: PriceContinuityChecker.PriceContinuityChecker(PriceContinuityConfig?)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.PriceContinuityChecker(Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public PriceContinuityChecker(PriceContinuityConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+    content.vb: Public Sub New(config As PriceContinuityConfig = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.#ctor*
+  nameWithType.vb: PriceContinuityChecker.New(PriceContinuityConfig)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.New(Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig)
+  name.vb: New(PriceContinuityConfig)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice(System.String,System.Decimal,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice(System.String,System.Decimal,System.DateTimeOffset,System.String)
+  id: CheckPrice(System.String,System.Decimal,System.DateTimeOffset,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: CheckPrice(string, decimal, DateTimeOffset, string?)
+  nameWithType: PriceContinuityChecker.CheckPrice(string, decimal, DateTimeOffset, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice(string, decimal, System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Checks price continuity for a trade.
+  example: []
+  syntax:
+    content: public PriceContinuityResult CheckPrice(string symbol, decimal price, DateTimeOffset timestamp, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: price
+      type: System.Decimal
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+    content.vb: Public Function CheckPrice(symbol As String, price As Decimal, timestamp As DateTimeOffset, provider As String = Nothing) As PriceContinuityResult
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice*
+  nameWithType.vb: PriceContinuityChecker.CheckPrice(String, Decimal, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice(String, Decimal, System.DateTimeOffset, String)
+  name.vb: CheckPrice(String, Decimal, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  id: CheckBar(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: CheckBar(string, decimal, decimal, decimal, decimal, DateTimeOffset, string?)
+  nameWithType: PriceContinuityChecker.CheckBar(string, decimal, decimal, decimal, decimal, DateTimeOffset, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar(string, decimal, decimal, decimal, decimal, System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckBar
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Checks price continuity for a bar.
+  example: []
+  syntax:
+    content: public PriceContinuityResult CheckBar(string symbol, decimal open, decimal high, decimal low, decimal close, DateTimeOffset timestamp, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: open
+      type: System.Decimal
+    - id: high
+      type: System.Decimal
+    - id: low
+      type: System.Decimal
+    - id: close
+      type: System.Decimal
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+    content.vb: Public Function CheckBar(symbol As String, open As Decimal, high As Decimal, low As Decimal, close As Decimal, timestamp As DateTimeOffset, provider As String = Nothing) As PriceContinuityResult
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar*
+  nameWithType.vb: PriceContinuityChecker.CheckBar(String, Decimal, Decimal, Decimal, Decimal, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar(String, Decimal, Decimal, Decimal, Decimal, System.DateTimeOffset, String)
+  name.vb: CheckBar(String, Decimal, Decimal, Decimal, Decimal, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  id: CheckQuote(System.String,System.Decimal,System.Decimal,System.DateTimeOffset,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: CheckQuote(string, decimal, decimal, DateTimeOffset, string?)
+  nameWithType: PriceContinuityChecker.CheckQuote(string, decimal, decimal, DateTimeOffset, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote(string, decimal, decimal, System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckQuote
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Checks quote prices for continuity.
+  example: []
+  syntax:
+    content: public PriceContinuityResult CheckQuote(string symbol, decimal bidPrice, decimal askPrice, DateTimeOffset timestamp, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: bidPrice
+      type: System.Decimal
+    - id: askPrice
+      type: System.Decimal
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+    content.vb: Public Function CheckQuote(symbol As String, bidPrice As Decimal, askPrice As Decimal, timestamp As DateTimeOffset, provider As String = Nothing) As PriceContinuityResult
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote*
+  nameWithType.vb: PriceContinuityChecker.CheckQuote(String, Decimal, Decimal, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote(String, Decimal, Decimal, System.DateTimeOffset, String)
+  name.vb: CheckQuote(String, Decimal, Decimal, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: PriceContinuityChecker.GetStatistics()
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets statistics for price continuity checking.
+  example: []
+  syntax:
+    content: public PriceContinuityStatistics GetStatistics()
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityStatistics
+    content.vb: Public Function GetStatistics() As PriceContinuityStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics(System.String,System.String)
+  id: GetSymbolStatistics(System.String,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolStatistics(string, string?)
+  nameWithType: PriceContinuityChecker.GetSymbolStatistics(string, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets statistics for a specific symbol.
+  example: []
+  syntax:
+    content: public SymbolPriceStatistics? GetSymbolStatistics(string symbol, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+    content.vb: Public Function GetSymbolStatistics(symbol As String, provider As String = Nothing) As SymbolPriceStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics*
+  nameWithType.vb: PriceContinuityChecker.GetSymbolStatistics(String, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics(String, String)
+  name.vb: GetSymbolStatistics(String, String)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols(System.Int32)
+  id: GetTopDiscontinuitySymbols(System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: GetTopDiscontinuitySymbols(int)
+  nameWithType: PriceContinuityChecker.GetTopDiscontinuitySymbols(int)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTopDiscontinuitySymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets symbols with the most discontinuities.
+  example: []
+  syntax:
+    content: public IReadOnlyList<(string Symbol, int Count)> GetTopDiscontinuitySymbols(int count = 10)
+    parameters:
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.String,System.Int32}}
+    content.vb: Public Function GetTopDiscontinuitySymbols(count As Integer = 10) As IReadOnlyList(Of (Symbol As String, Count As Integer))
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols*
+  nameWithType.vb: PriceContinuityChecker.GetTopDiscontinuitySymbols(Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols(Integer)
+  name.vb: GetTopDiscontinuitySymbols(Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset(System.String,System.String)
+  id: Reset(System.String,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: Reset(string, string?)
+  nameWithType: PriceContinuityChecker.Reset(string, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets tracking for a symbol.
+  example: []
+  syntax:
+    content: public void Reset(string symbol, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    content.vb: Public Sub Reset(symbol As String, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset*
+  nameWithType.vb: PriceContinuityChecker.Reset(String, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset(String, String)
+  name.vb: Reset(String, String)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll
+  id: ResetAll
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: ResetAll()
+  nameWithType: PriceContinuityChecker.ResetAll()
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetAll
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets all tracking.
+  example: []
+  syntax:
+    content: public void ResetAll()
+    content.vb: Public Sub ResetAll()
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: PriceContinuityChecker.Dispose()
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<PriceDiscontinuityEvent>
+  nameWithType: Action<PriceDiscontinuityEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent>
+  nameWithType.vb: Action(Of PriceDiscontinuityEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent)
+  name.vb: Action(Of PriceDiscontinuityEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+    name: PriceDiscontinuityEvent
+    href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+    name: PriceDiscontinuityEvent
+    href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker__ctor_Meridian_Application_Monitoring_DataQuality_PriceContinuityConfig_
+  name: PriceContinuityChecker
+  nameWithType: PriceContinuityChecker.PriceContinuityChecker
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.PriceContinuityChecker
+  nameWithType.vb: PriceContinuityChecker.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig.html
+  name: PriceContinuityConfig
+  nameWithType: PriceContinuityConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityConfig
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_CheckPrice_System_String_System_Decimal_System_DateTimeOffset_System_String_
+  name: CheckPrice
+  nameWithType: PriceContinuityChecker.CheckPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckPrice
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.html
+  name: PriceContinuityResult
+  nameWithType: PriceContinuityResult
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_CheckBar_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_DateTimeOffset_System_String_
+  name: CheckBar
+  nameWithType: PriceContinuityChecker.CheckBar
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckBar
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_CheckQuote_System_String_System_Decimal_System_Decimal_System_DateTimeOffset_System_String_
+  name: CheckQuote
+  nameWithType: PriceContinuityChecker.CheckQuote
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.CheckQuote
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_GetStatistics
+  name: GetStatistics
+  nameWithType: PriceContinuityChecker.GetStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityStatistics.html
+  name: PriceContinuityStatistics
+  nameWithType: PriceContinuityStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_GetSymbolStatistics_System_String_System_String_
+  name: GetSymbolStatistics
+  nameWithType: PriceContinuityChecker.GetSymbolStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetSymbolStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html
+  name: SymbolPriceStatistics
+  nameWithType: SymbolPriceStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_GetTopDiscontinuitySymbols_System_Int32_
+  name: GetTopDiscontinuitySymbols
+  nameWithType: PriceContinuityChecker.GetTopDiscontinuitySymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.GetTopDiscontinuitySymbols
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.String,System.Int32}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.String,System.Int32}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<(string Symbol, int Count)>
+  nameWithType: IReadOnlyList<(string Symbol, int Count)>
+  fullName: System.Collections.Generic.IReadOnlyList<(string Symbol, int Count)>
+  nameWithType.vb: IReadOnlyList(Of (Symbol As String, Count As Integer))
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of (Symbol As String, Count As Integer))
+  name.vb: IReadOnlyList(Of (Symbol As String, Count As Integer))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32}.Symbol
+    name: Symbol
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32-.symbol
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32}.Count
+    name: Count
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32-.count
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.Int32}.Symbol
+    name: Symbol
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32-.symbol
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32}.Count
+    name: Count
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32-.count
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_Reset_System_String_System_String_
+  name: Reset
+  nameWithType: PriceContinuityChecker.Reset
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Reset
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_ResetAll
+  name: ResetAll
+  nameWithType: PriceContinuityChecker.ResetAll
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.ResetAll
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.html#Meridian_Application_Monitoring_DataQuality_PriceContinuityChecker_Dispose
+  name: Dispose
+  nameWithType: PriceContinuityChecker.Dispose
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityChecker.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

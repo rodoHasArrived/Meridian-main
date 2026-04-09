@@ -1,0 +1,223 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  id: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.ApplyTemplateResult
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  - Meridian.Application.Subscriptions.Services.AutoResubscribePolicy
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionService
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+  - Meridian.Application.Subscriptions.Services.PortfolioImportService
+  - Meridian.Application.Subscriptions.Services.ProviderStatus
+  - Meridian.Application.Subscriptions.Services.SchedulingService
+  - Meridian.Application.Subscriptions.Services.SymbolAddOptions
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService
+  - Meridian.Application.Subscriptions.Services.SymbolOperationResult
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService
+  - Meridian.Application.Subscriptions.Services.SymbolStatusReport
+  - Meridian.Application.Subscriptions.Services.TemplateService
+  - Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribePolicy
+  commentId: T:Meridian.Application.Subscriptions.Services.AutoResubscribePolicy
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribePolicy.html
+  name: AutoResubscribePolicy
+  nameWithType: AutoResubscribePolicy
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribePolicy
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  commentId: T:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html
+  name: AutoResubscribeOptions
+  nameWithType: AutoResubscribeOptions
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  commentId: T:Meridian.Application.Subscriptions.Services.BatchOperationsService
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html
+  name: BatchOperationsService
+  nameWithType: BatchOperationsService
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionService
+  commentId: T:Meridian.Application.Subscriptions.Services.IndexSubscriptionService
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionService.html
+  name: IndexSubscriptionService
+  nameWithType: IndexSubscriptionService
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionService
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  commentId: T:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html
+  name: IndexSubscriptionStatus
+  nameWithType: IndexSubscriptionStatus
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  commentId: T:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html
+  name: MetadataEnrichmentService
+  nameWithType: MetadataEnrichmentService
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+- uid: Meridian.Application.Subscriptions.Services.PortfolioImportService
+  commentId: T:Meridian.Application.Subscriptions.Services.PortfolioImportService
+  href: Meridian.Application.Subscriptions.Services.PortfolioImportService.html
+  name: PortfolioImportService
+  nameWithType: PortfolioImportService
+  fullName: Meridian.Application.Subscriptions.Services.PortfolioImportService
+- uid: Meridian.Application.Subscriptions.Services.SchedulingService
+  commentId: T:Meridian.Application.Subscriptions.Services.SchedulingService
+  href: Meridian.Application.Subscriptions.Services.SchedulingService.html
+  name: SchedulingService
+  nameWithType: SchedulingService
+  fullName: Meridian.Application.Subscriptions.Services.SchedulingService
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html
+  name: SymbolImportExportService
+  nameWithType: SymbolImportExportService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolManagementService
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html
+  name: SymbolManagementService
+  nameWithType: SymbolManagementService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService
+- uid: Meridian.Application.Subscriptions.Services.SymbolOperationResult
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolOperationResult
+  href: Meridian.Application.Subscriptions.Services.SymbolOperationResult.html
+  name: SymbolOperationResult
+  nameWithType: SymbolOperationResult
+  fullName: Meridian.Application.Subscriptions.Services.SymbolOperationResult
+- uid: Meridian.Application.Subscriptions.Services.SymbolAddOptions
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolAddOptions
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.SymbolAddOptions.html
+  name: SymbolAddOptions
+  nameWithType: SymbolAddOptions
+  fullName: Meridian.Application.Subscriptions.Services.SymbolAddOptions
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  commentId: T:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html
+  name: MonitoredSymbolInfo
+  nameWithType: MonitoredSymbolInfo
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+  commentId: T:Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult.html
+  name: MonitoredSymbolsResult
+  nameWithType: MonitoredSymbolsResult
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo
+  commentId: T:Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo.html
+  name: ArchivedSymbolInfo
+  nameWithType: ArchivedSymbolInfo
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  commentId: T:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html
+  name: ArchivedSymbolsResult
+  nameWithType: ArchivedSymbolsResult
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+  commentId: T:Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions.html
+  name: ArchivedSymbolsOptions
+  nameWithType: ArchivedSymbolsOptions
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+- uid: Meridian.Application.Subscriptions.Services.SymbolStatusReport
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolStatusReport
+  href: Meridian.Application.Subscriptions.Services.SymbolStatusReport.html
+  name: SymbolStatusReport
+  nameWithType: SymbolStatusReport
+  fullName: Meridian.Application.Subscriptions.Services.SymbolStatusReport
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolSearchService
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html
+  name: SymbolSearchService
+  nameWithType: SymbolSearchService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService
+- uid: Meridian.Application.Subscriptions.Services.ProviderStatus
+  commentId: T:Meridian.Application.Subscriptions.Services.ProviderStatus
+  href: Meridian.Application.Subscriptions.Services.ProviderStatus.html
+  name: ProviderStatus
+  nameWithType: ProviderStatus
+  fullName: Meridian.Application.Subscriptions.Services.ProviderStatus
+- uid: Meridian.Application.Subscriptions.Services.TemplateService
+  commentId: T:Meridian.Application.Subscriptions.Services.TemplateService
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html
+  name: TemplateService
+  nameWithType: TemplateService
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService
+- uid: Meridian.Application.Subscriptions.Services.ApplyTemplateResult
+  commentId: T:Meridian.Application.Subscriptions.Services.ApplyTemplateResult
+  href: Meridian.Application.Subscriptions.Services.ApplyTemplateResult.html
+  name: ApplyTemplateResult
+  nameWithType: ApplyTemplateResult
+  fullName: Meridian.Application.Subscriptions.Services.ApplyTemplateResult
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService
+  commentId: T:Meridian.Application.Subscriptions.Services.WatchlistService
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html
+  name: WatchlistService
+  nameWithType: WatchlistService
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html

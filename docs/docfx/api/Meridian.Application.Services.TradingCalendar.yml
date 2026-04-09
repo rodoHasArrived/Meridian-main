@@ -1,0 +1,1241 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.TradingCalendar
+  commentId: T:Meridian.Application.Services.TradingCalendar
+  id: TradingCalendar
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.TradingCalendar.#ctor
+  - Meridian.Application.Services.TradingCalendar.AfterHoursClose
+  - Meridian.Application.Services.TradingCalendar.GetCurrentStatus
+  - Meridian.Application.Services.TradingCalendar.GetHalfDays(System.Int32)
+  - Meridian.Application.Services.TradingCalendar.GetHolidays(System.Int32)
+  - Meridian.Application.Services.TradingCalendar.GetNextTradingDay(System.DateOnly)
+  - Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay(System.DateOnly)
+  - Meridian.Application.Services.TradingCalendar.GetStatusAt(System.DateTimeOffset)
+  - Meridian.Application.Services.TradingCalendar.GetTimeUntilClose
+  - Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen
+  - Meridian.Application.Services.TradingCalendar.GetTradingDayCount(System.DateOnly,System.DateOnly)
+  - Meridian.Application.Services.TradingCalendar.GetTradingDays(System.DateOnly,System.DateOnly)
+  - Meridian.Application.Services.TradingCalendar.HalfDayClose
+  - Meridian.Application.Services.TradingCalendar.IsHalfDay(System.DateOnly)
+  - Meridian.Application.Services.TradingCalendar.IsTodayTradingDay
+  - Meridian.Application.Services.TradingCalendar.IsTradingDay(System.DateOnly)
+  - Meridian.Application.Services.TradingCalendar.PreMarketOpen
+  - Meridian.Application.Services.TradingCalendar.RegularMarketClose
+  - Meridian.Application.Services.TradingCalendar.RegularMarketOpen
+  langs:
+  - csharp
+  - vb
+  name: TradingCalendar
+  nameWithType: TradingCalendar
+  fullName: Meridian.Application.Services.TradingCalendar
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingCalendar
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Provides US market trading calendar functionality including:
+
+    - Market holidays (NYSE/NASDAQ)
+
+    - Half-day trading sessions
+
+    - Regular, pre-market, and after-hours session times
+
+    - Timezone-aware market status queries
+  example: []
+  syntax:
+    content: public sealed class TradingCalendar
+    content.vb: Public NotInheritable Class TradingCalendar
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.TradingCalendar.PreMarketOpen
+  commentId: F:Meridian.Application.Services.TradingCalendar.PreMarketOpen
+  id: PreMarketOpen
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: PreMarketOpen
+  nameWithType: TradingCalendar.PreMarketOpen
+  fullName: Meridian.Application.Services.TradingCalendar.PreMarketOpen
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreMarketOpen
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Pre-market session start time (4:00 AM ET).
+  example: []
+  syntax:
+    content: public static readonly TimeOnly PreMarketOpen
+    return:
+      type: System.TimeOnly
+    content.vb: Public Shared ReadOnly PreMarketOpen As TimeOnly
+- uid: Meridian.Application.Services.TradingCalendar.RegularMarketOpen
+  commentId: F:Meridian.Application.Services.TradingCalendar.RegularMarketOpen
+  id: RegularMarketOpen
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: RegularMarketOpen
+  nameWithType: TradingCalendar.RegularMarketOpen
+  fullName: Meridian.Application.Services.TradingCalendar.RegularMarketOpen
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegularMarketOpen
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Regular session start time (9:30 AM ET).
+  example: []
+  syntax:
+    content: public static readonly TimeOnly RegularMarketOpen
+    return:
+      type: System.TimeOnly
+    content.vb: Public Shared ReadOnly RegularMarketOpen As TimeOnly
+- uid: Meridian.Application.Services.TradingCalendar.RegularMarketClose
+  commentId: F:Meridian.Application.Services.TradingCalendar.RegularMarketClose
+  id: RegularMarketClose
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: RegularMarketClose
+  nameWithType: TradingCalendar.RegularMarketClose
+  fullName: Meridian.Application.Services.TradingCalendar.RegularMarketClose
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegularMarketClose
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Regular session end time (4:00 PM ET).
+  example: []
+  syntax:
+    content: public static readonly TimeOnly RegularMarketClose
+    return:
+      type: System.TimeOnly
+    content.vb: Public Shared ReadOnly RegularMarketClose As TimeOnly
+- uid: Meridian.Application.Services.TradingCalendar.HalfDayClose
+  commentId: F:Meridian.Application.Services.TradingCalendar.HalfDayClose
+  id: HalfDayClose
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: HalfDayClose
+  nameWithType: TradingCalendar.HalfDayClose
+  fullName: Meridian.Application.Services.TradingCalendar.HalfDayClose
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HalfDayClose
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Half-day session end time (1:00 PM ET).
+  example: []
+  syntax:
+    content: public static readonly TimeOnly HalfDayClose
+    return:
+      type: System.TimeOnly
+    content.vb: Public Shared ReadOnly HalfDayClose As TimeOnly
+- uid: Meridian.Application.Services.TradingCalendar.AfterHoursClose
+  commentId: F:Meridian.Application.Services.TradingCalendar.AfterHoursClose
+  id: AfterHoursClose
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: AfterHoursClose
+  nameWithType: TradingCalendar.AfterHoursClose
+  fullName: Meridian.Application.Services.TradingCalendar.AfterHoursClose
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AfterHoursClose
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: After-hours session end time (8:00 PM ET).
+  example: []
+  syntax:
+    content: public static readonly TimeOnly AfterHoursClose
+    return:
+      type: System.TimeOnly
+    content.vb: Public Shared ReadOnly AfterHoursClose As TimeOnly
+- uid: Meridian.Application.Services.TradingCalendar.#ctor
+  commentId: M:Meridian.Application.Services.TradingCalendar.#ctor
+  id: '#ctor'
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: TradingCalendar()
+  nameWithType: TradingCalendar.TradingCalendar()
+  fullName: Meridian.Application.Services.TradingCalendar.TradingCalendar()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Creates a new trading calendar with US market holidays.
+  example: []
+  syntax:
+    content: public TradingCalendar()
+    content.vb: Public Sub New()
+  overload: Meridian.Application.Services.TradingCalendar.#ctor*
+  nameWithType.vb: TradingCalendar.New()
+  fullName.vb: Meridian.Application.Services.TradingCalendar.New()
+  name.vb: New()
+- uid: Meridian.Application.Services.TradingCalendar.GetCurrentStatus
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetCurrentStatus
+  id: GetCurrentStatus
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentStatus()
+  nameWithType: TradingCalendar.GetCurrentStatus()
+  fullName: Meridian.Application.Services.TradingCalendar.GetCurrentStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentStatus
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the current market status.
+  example: []
+  syntax:
+    content: public MarketStatus GetCurrentStatus()
+    return:
+      type: Meridian.Application.Services.MarketStatus
+    content.vb: Public Function GetCurrentStatus() As MarketStatus
+  overload: Meridian.Application.Services.TradingCalendar.GetCurrentStatus*
+- uid: Meridian.Application.Services.TradingCalendar.GetStatusAt(System.DateTimeOffset)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetStatusAt(System.DateTimeOffset)
+  id: GetStatusAt(System.DateTimeOffset)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetStatusAt(DateTimeOffset)
+  nameWithType: TradingCalendar.GetStatusAt(DateTimeOffset)
+  fullName: Meridian.Application.Services.TradingCalendar.GetStatusAt(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusAt
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the market status at a specific time.
+  example: []
+  syntax:
+    content: public MarketStatus GetStatusAt(DateTimeOffset utcTime)
+    parameters:
+    - id: utcTime
+      type: System.DateTimeOffset
+    return:
+      type: Meridian.Application.Services.MarketStatus
+    content.vb: Public Function GetStatusAt(utcTime As DateTimeOffset) As MarketStatus
+  overload: Meridian.Application.Services.TradingCalendar.GetStatusAt*
+- uid: Meridian.Application.Services.TradingCalendar.IsTradingDay(System.DateOnly)
+  commentId: M:Meridian.Application.Services.TradingCalendar.IsTradingDay(System.DateOnly)
+  id: IsTradingDay(System.DateOnly)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: IsTradingDay(DateOnly)
+  nameWithType: TradingCalendar.IsTradingDay(DateOnly)
+  fullName: Meridian.Application.Services.TradingCalendar.IsTradingDay(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTradingDay
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Checks if a specific date is a trading day.
+  example: []
+  syntax:
+    content: public bool IsTradingDay(DateOnly date)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsTradingDay([date] As DateOnly) As Boolean
+  overload: Meridian.Application.Services.TradingCalendar.IsTradingDay*
+- uid: Meridian.Application.Services.TradingCalendar.IsHalfDay(System.DateOnly)
+  commentId: M:Meridian.Application.Services.TradingCalendar.IsHalfDay(System.DateOnly)
+  id: IsHalfDay(System.DateOnly)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: IsHalfDay(DateOnly)
+  nameWithType: TradingCalendar.IsHalfDay(DateOnly)
+  fullName: Meridian.Application.Services.TradingCalendar.IsHalfDay(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHalfDay
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Checks if a specific date is a half trading day.
+  example: []
+  syntax:
+    content: public bool IsHalfDay(DateOnly date)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsHalfDay([date] As DateOnly) As Boolean
+  overload: Meridian.Application.Services.TradingCalendar.IsHalfDay*
+- uid: Meridian.Application.Services.TradingCalendar.IsTodayTradingDay
+  commentId: M:Meridian.Application.Services.TradingCalendar.IsTodayTradingDay
+  id: IsTodayTradingDay
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: IsTodayTradingDay()
+  nameWithType: TradingCalendar.IsTodayTradingDay()
+  fullName: Meridian.Application.Services.TradingCalendar.IsTodayTradingDay()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTodayTradingDay
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Checks if today is a trading day.
+  example: []
+  syntax:
+    content: public bool IsTodayTradingDay()
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsTodayTradingDay() As Boolean
+  overload: Meridian.Application.Services.TradingCalendar.IsTodayTradingDay*
+- uid: Meridian.Application.Services.TradingCalendar.GetNextTradingDay(System.DateOnly)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetNextTradingDay(System.DateOnly)
+  id: GetNextTradingDay(System.DateOnly)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetNextTradingDay(DateOnly)
+  nameWithType: TradingCalendar.GetNextTradingDay(DateOnly)
+  fullName: Meridian.Application.Services.TradingCalendar.GetNextTradingDay(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextTradingDay
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the next trading day from a given date.
+  example: []
+  syntax:
+    content: public DateOnly GetNextTradingDay(DateOnly fromDate)
+    parameters:
+    - id: fromDate
+      type: System.DateOnly
+    return:
+      type: System.DateOnly
+    content.vb: Public Function GetNextTradingDay(fromDate As DateOnly) As DateOnly
+  overload: Meridian.Application.Services.TradingCalendar.GetNextTradingDay*
+- uid: Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay(System.DateOnly)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay(System.DateOnly)
+  id: GetPreviousTradingDay(System.DateOnly)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetPreviousTradingDay(DateOnly)
+  nameWithType: TradingCalendar.GetPreviousTradingDay(DateOnly)
+  fullName: Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPreviousTradingDay
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the previous trading day from a given date.
+  example: []
+  syntax:
+    content: public DateOnly GetPreviousTradingDay(DateOnly fromDate)
+    parameters:
+    - id: fromDate
+      type: System.DateOnly
+    return:
+      type: System.DateOnly
+    content.vb: Public Function GetPreviousTradingDay(fromDate As DateOnly) As DateOnly
+  overload: Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay*
+- uid: Meridian.Application.Services.TradingCalendar.GetTradingDays(System.DateOnly,System.DateOnly)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetTradingDays(System.DateOnly,System.DateOnly)
+  id: GetTradingDays(System.DateOnly,System.DateOnly)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetTradingDays(DateOnly, DateOnly)
+  nameWithType: TradingCalendar.GetTradingDays(DateOnly, DateOnly)
+  fullName: Meridian.Application.Services.TradingCalendar.GetTradingDays(System.DateOnly, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTradingDays
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a list of trading days within a date range.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DateOnly> GetTradingDays(DateOnly startDate, DateOnly endDate)
+    parameters:
+    - id: startDate
+      type: System.DateOnly
+    - id: endDate
+      type: System.DateOnly
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.DateOnly}
+    content.vb: Public Function GetTradingDays(startDate As DateOnly, endDate As DateOnly) As IReadOnlyList(Of DateOnly)
+  overload: Meridian.Application.Services.TradingCalendar.GetTradingDays*
+- uid: Meridian.Application.Services.TradingCalendar.GetTradingDayCount(System.DateOnly,System.DateOnly)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetTradingDayCount(System.DateOnly,System.DateOnly)
+  id: GetTradingDayCount(System.DateOnly,System.DateOnly)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetTradingDayCount(DateOnly, DateOnly)
+  nameWithType: TradingCalendar.GetTradingDayCount(DateOnly, DateOnly)
+  fullName: Meridian.Application.Services.TradingCalendar.GetTradingDayCount(System.DateOnly, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTradingDayCount
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the count of trading days within a date range.
+  example: []
+  syntax:
+    content: public int GetTradingDayCount(DateOnly startDate, DateOnly endDate)
+    parameters:
+    - id: startDate
+      type: System.DateOnly
+    - id: endDate
+      type: System.DateOnly
+    return:
+      type: System.Int32
+    content.vb: Public Function GetTradingDayCount(startDate As DateOnly, endDate As DateOnly) As Integer
+  overload: Meridian.Application.Services.TradingCalendar.GetTradingDayCount*
+- uid: Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen
+  id: GetTimeUntilOpen
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetTimeUntilOpen()
+  nameWithType: TradingCalendar.GetTimeUntilOpen()
+  fullName: Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTimeUntilOpen
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 265
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Gets the time until market open (regular session).
+
+    Returns null if market is currently open.
+  example: []
+  syntax:
+    content: public TimeSpan? GetTimeUntilOpen()
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Function GetTimeUntilOpen() As TimeSpan?
+  overload: Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen*
+- uid: Meridian.Application.Services.TradingCalendar.GetTimeUntilClose
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetTimeUntilClose
+  id: GetTimeUntilClose
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetTimeUntilClose()
+  nameWithType: TradingCalendar.GetTimeUntilClose()
+  fullName: Meridian.Application.Services.TradingCalendar.GetTimeUntilClose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTimeUntilClose
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Gets the time until market close.
+
+    Returns null if market is currently closed.
+  example: []
+  syntax:
+    content: public TimeSpan? GetTimeUntilClose()
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Function GetTimeUntilClose() As TimeSpan?
+  overload: Meridian.Application.Services.TradingCalendar.GetTimeUntilClose*
+- uid: Meridian.Application.Services.TradingCalendar.GetHolidays(System.Int32)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetHolidays(System.Int32)
+  id: GetHolidays(System.Int32)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetHolidays(int)
+  nameWithType: TradingCalendar.GetHolidays(int)
+  fullName: Meridian.Application.Services.TradingCalendar.GetHolidays(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHolidays
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets all holidays for a given year.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MarketHoliday> GetHolidays(int year)
+    parameters:
+    - id: year
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.MarketHoliday}
+    content.vb: Public Function GetHolidays(year As Integer) As IReadOnlyList(Of MarketHoliday)
+  overload: Meridian.Application.Services.TradingCalendar.GetHolidays*
+  nameWithType.vb: TradingCalendar.GetHolidays(Integer)
+  fullName.vb: Meridian.Application.Services.TradingCalendar.GetHolidays(Integer)
+  name.vb: GetHolidays(Integer)
+- uid: Meridian.Application.Services.TradingCalendar.GetHalfDays(System.Int32)
+  commentId: M:Meridian.Application.Services.TradingCalendar.GetHalfDays(System.Int32)
+  id: GetHalfDays(System.Int32)
+  parent: Meridian.Application.Services.TradingCalendar
+  langs:
+  - csharp
+  - vb
+  name: GetHalfDays(int)
+  nameWithType: TradingCalendar.GetHalfDays(int)
+  fullName: Meridian.Application.Services.TradingCalendar.GetHalfDays(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHalfDays
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets all half-days for a given year.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DateOnly> GetHalfDays(int year)
+    parameters:
+    - id: year
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.DateOnly}
+    content.vb: Public Function GetHalfDays(year As Integer) As IReadOnlyList(Of DateOnly)
+  overload: Meridian.Application.Services.TradingCalendar.GetHalfDays*
+  nameWithType.vb: TradingCalendar.GetHalfDays(Integer)
+  fullName.vb: Meridian.Application.Services.TradingCalendar.GetHalfDays(Integer)
+  name.vb: GetHalfDays(Integer)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.TimeOnly
+  commentId: T:System.TimeOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timeonly
+  name: TimeOnly
+  nameWithType: TimeOnly
+  fullName: System.TimeOnly
+- uid: Meridian.Application.Services.TradingCalendar.#ctor*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.#ctor
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar__ctor
+  name: TradingCalendar
+  nameWithType: TradingCalendar.TradingCalendar
+  fullName: Meridian.Application.Services.TradingCalendar.TradingCalendar
+  nameWithType.vb: TradingCalendar.New
+  fullName.vb: Meridian.Application.Services.TradingCalendar.New
+  name.vb: New
+- uid: Meridian.Application.Services.TradingCalendar.GetCurrentStatus*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetCurrentStatus
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetCurrentStatus
+  name: GetCurrentStatus
+  nameWithType: TradingCalendar.GetCurrentStatus
+  fullName: Meridian.Application.Services.TradingCalendar.GetCurrentStatus
+- uid: Meridian.Application.Services.MarketStatus
+  commentId: T:Meridian.Application.Services.MarketStatus
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.MarketStatus.html
+  name: MarketStatus
+  nameWithType: MarketStatus
+  fullName: Meridian.Application.Services.MarketStatus
+- uid: Meridian.Application.Services.TradingCalendar.GetStatusAt*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetStatusAt
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetStatusAt_System_DateTimeOffset_
+  name: GetStatusAt
+  nameWithType: TradingCalendar.GetStatusAt
+  fullName: Meridian.Application.Services.TradingCalendar.GetStatusAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Services.TradingCalendar.IsTradingDay*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.IsTradingDay
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_IsTradingDay_System_DateOnly_
+  name: IsTradingDay
+  nameWithType: TradingCalendar.IsTradingDay
+  fullName: Meridian.Application.Services.TradingCalendar.IsTradingDay
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.TradingCalendar.IsHalfDay*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.IsHalfDay
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_IsHalfDay_System_DateOnly_
+  name: IsHalfDay
+  nameWithType: TradingCalendar.IsHalfDay
+  fullName: Meridian.Application.Services.TradingCalendar.IsHalfDay
+- uid: Meridian.Application.Services.TradingCalendar.IsTodayTradingDay*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.IsTodayTradingDay
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_IsTodayTradingDay
+  name: IsTodayTradingDay
+  nameWithType: TradingCalendar.IsTodayTradingDay
+  fullName: Meridian.Application.Services.TradingCalendar.IsTodayTradingDay
+- uid: Meridian.Application.Services.TradingCalendar.GetNextTradingDay*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetNextTradingDay
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetNextTradingDay_System_DateOnly_
+  name: GetNextTradingDay
+  nameWithType: TradingCalendar.GetNextTradingDay
+  fullName: Meridian.Application.Services.TradingCalendar.GetNextTradingDay
+- uid: Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetPreviousTradingDay_System_DateOnly_
+  name: GetPreviousTradingDay
+  nameWithType: TradingCalendar.GetPreviousTradingDay
+  fullName: Meridian.Application.Services.TradingCalendar.GetPreviousTradingDay
+- uid: Meridian.Application.Services.TradingCalendar.GetTradingDays*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetTradingDays
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetTradingDays_System_DateOnly_System_DateOnly_
+  name: GetTradingDays
+  nameWithType: TradingCalendar.GetTradingDays
+  fullName: Meridian.Application.Services.TradingCalendar.GetTradingDays
+- uid: System.Collections.Generic.IReadOnlyList{System.DateOnly}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.DateOnly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DateOnly>
+  nameWithType: IReadOnlyList<DateOnly>
+  fullName: System.Collections.Generic.IReadOnlyList<System.DateOnly>
+  nameWithType.vb: IReadOnlyList(Of DateOnly)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of System.DateOnly)
+  name.vb: IReadOnlyList(Of DateOnly)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.TradingCalendar.GetTradingDayCount*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetTradingDayCount
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetTradingDayCount_System_DateOnly_System_DateOnly_
+  name: GetTradingDayCount
+  nameWithType: TradingCalendar.GetTradingDayCount
+  fullName: Meridian.Application.Services.TradingCalendar.GetTradingDayCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetTimeUntilOpen
+  name: GetTimeUntilOpen
+  nameWithType: TradingCalendar.GetTimeUntilOpen
+  fullName: Meridian.Application.Services.TradingCalendar.GetTimeUntilOpen
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.TradingCalendar.GetTimeUntilClose*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetTimeUntilClose
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetTimeUntilClose
+  name: GetTimeUntilClose
+  nameWithType: TradingCalendar.GetTimeUntilClose
+  fullName: Meridian.Application.Services.TradingCalendar.GetTimeUntilClose
+- uid: Meridian.Application.Services.TradingCalendar.GetHolidays*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetHolidays
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetHolidays_System_Int32_
+  name: GetHolidays
+  nameWithType: TradingCalendar.GetHolidays
+  fullName: Meridian.Application.Services.TradingCalendar.GetHolidays
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.MarketHoliday}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.MarketHoliday}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MarketHoliday>
+  nameWithType: IReadOnlyList<MarketHoliday>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.MarketHoliday>
+  nameWithType.vb: IReadOnlyList(Of MarketHoliday)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.MarketHoliday)
+  name.vb: IReadOnlyList(Of MarketHoliday)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.MarketHoliday
+    name: MarketHoliday
+    href: Meridian.Application.Services.MarketHoliday.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.MarketHoliday
+    name: MarketHoliday
+    href: Meridian.Application.Services.MarketHoliday.html
+  - name: )
+- uid: Meridian.Application.Services.TradingCalendar.GetHalfDays*
+  commentId: Overload:Meridian.Application.Services.TradingCalendar.GetHalfDays
+  href: Meridian.Application.Services.TradingCalendar.html#Meridian_Application_Services_TradingCalendar_GetHalfDays_System_Int32_
+  name: GetHalfDays
+  nameWithType: TradingCalendar.GetHalfDays
+  fullName: Meridian.Application.Services.TradingCalendar.GetHalfDays

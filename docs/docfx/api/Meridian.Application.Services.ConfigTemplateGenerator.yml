@@ -1,0 +1,873 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ConfigTemplateGenerator
+  commentId: T:Meridian.Application.Services.ConfigTemplateGenerator
+  id: ConfigTemplateGenerator
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig(Meridian.Application.Config.AppConfig,System.String)
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction
+  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
+  - Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates
+  - Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate(System.String)
+  - Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ConfigTemplateGenerator
+  nameWithType: ConfigTemplateGenerator
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigTemplateGenerator
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for generating configuration templates.
+
+    Implements QW-76: Config Template Generator.
+  example: []
+  syntax:
+    content: public sealed class ConfigTemplateGenerator
+    content.vb: Public NotInheritable Class ConfigTemplateGenerator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal
+  id: GenerateMinimal
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateMinimal()
+  nameWithType: ConfigTemplateGenerator.GenerateMinimal()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateMinimal
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a minimal configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateMinimal()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateMinimal() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull
+  id: GenerateFull
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateFull()
+  nameWithType: ConfigTemplateGenerator.GenerateFull()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateFull
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a full configuration template with all options.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateFull()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateFull() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca
+  id: GenerateAlpaca
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateAlpaca()
+  nameWithType: ConfigTemplateGenerator.GenerateAlpaca()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateAlpaca
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates an Alpaca-specific configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateAlpaca()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateAlpaca() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
+  id: GenerateStockSharp
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateStockSharp()
+  nameWithType: ConfigTemplateGenerator.GenerateStockSharp()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateStockSharp
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a StockSharp-specific configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateStockSharp()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateStockSharp() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
+  id: GenerateBackfill
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateBackfill()
+  nameWithType: ConfigTemplateGenerator.GenerateBackfill()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateBackfill
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a backfill-focused configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateBackfill()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateBackfill() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction
+  id: GenerateProduction
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateProduction()
+  nameWithType: ConfigTemplateGenerator.GenerateProduction()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateProduction
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a production configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateProduction()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateProduction() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker
+  id: GenerateDocker
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateDocker()
+  nameWithType: ConfigTemplateGenerator.GenerateDocker()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateDocker
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a Docker/container configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateDocker()
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateDocker() As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates
+  id: GetAllTemplates
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GetAllTemplates()
+  nameWithType: ConfigTemplateGenerator.GetAllTemplates()
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllTemplates
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets all available templates.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ConfigTemplate> GetAllTemplates()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.ConfigTemplate}
+    content.vb: Public Function GetAllTemplates() As IReadOnlyList(Of ConfigTemplate)
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates*
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate(System.String)
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate(System.String)
+  id: GetTemplate(System.String)
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GetTemplate(string)
+  nameWithType: ConfigTemplateGenerator.GetTemplate(string)
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTemplate
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a template by name.
+  example: []
+  syntax:
+    content: public ConfigTemplate? GetTemplate(string name)
+    parameters:
+    - id: name
+      type: System.String
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GetTemplate(name As String) As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate*
+  nameWithType.vb: ConfigTemplateGenerator.GetTemplate(String)
+  fullName.vb: Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate(String)
+  name.vb: GetTemplate(String)
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig(Meridian.Application.Config.AppConfig,System.String)
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig(Meridian.Application.Config.AppConfig,System.String)
+  id: GenerateFromConfig(Meridian.Application.Config.AppConfig,System.String)
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: GenerateFromConfig(AppConfig, string)
+  nameWithType: ConfigTemplateGenerator.GenerateFromConfig(AppConfig, string)
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig(Meridian.Application.Config.AppConfig, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateFromConfig
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a template based on current configuration.
+  example: []
+  syntax:
+    content: public ConfigTemplate GenerateFromConfig(AppConfig config, string name = "Custom")
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: name
+      type: System.String
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GenerateFromConfig(config As AppConfig, name As String = "Custom") As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig*
+  nameWithType.vb: ConfigTemplateGenerator.GenerateFromConfig(AppConfig, String)
+  fullName.vb: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig(Meridian.Application.Config.AppConfig, String)
+  name.vb: GenerateFromConfig(AppConfig, String)
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate(System.String)
+  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate(System.String)
+  id: ValidateTemplate(System.String)
+  parent: Meridian.Application.Services.ConfigTemplateGenerator
+  langs:
+  - csharp
+  - vb
+  name: ValidateTemplate(string)
+  nameWithType: ConfigTemplateGenerator.ValidateTemplate(string)
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateTemplate
+    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Validates a configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplateValidationResult ValidateTemplate(string json)
+    parameters:
+    - id: json
+      type: System.String
+    return:
+      type: Meridian.Application.Services.ConfigTemplateValidationResult
+    content.vb: Public Function ValidateTemplate(json As String) As ConfigTemplateValidationResult
+  overload: Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate*
+  nameWithType.vb: ConfigTemplateGenerator.ValidateTemplate(String)
+  fullName.vb: Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate(String)
+  name.vb: ValidateTemplate(String)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateMinimal
+  name: GenerateMinimal
+  nameWithType: ConfigTemplateGenerator.GenerateMinimal
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal
+- uid: Meridian.Application.Services.ConfigTemplate
+  commentId: T:Meridian.Application.Services.ConfigTemplate
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigTemplate.html
+  name: ConfigTemplate
+  nameWithType: ConfigTemplate
+  fullName: Meridian.Application.Services.ConfigTemplate
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateFull
+  name: GenerateFull
+  nameWithType: ConfigTemplateGenerator.GenerateFull
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateAlpaca
+  name: GenerateAlpaca
+  nameWithType: ConfigTemplateGenerator.GenerateAlpaca
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateStockSharp
+  name: GenerateStockSharp
+  nameWithType: ConfigTemplateGenerator.GenerateStockSharp
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateBackfill
+  name: GenerateBackfill
+  nameWithType: ConfigTemplateGenerator.GenerateBackfill
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateProduction
+  name: GenerateProduction
+  nameWithType: ConfigTemplateGenerator.GenerateProduction
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateDocker
+  name: GenerateDocker
+  nameWithType: ConfigTemplateGenerator.GenerateDocker
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateDocker
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GetAllTemplates
+  name: GetAllTemplates
+  nameWithType: ConfigTemplateGenerator.GetAllTemplates
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.ConfigTemplate}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.ConfigTemplate}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ConfigTemplate>
+  nameWithType: IReadOnlyList<ConfigTemplate>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.ConfigTemplate>
+  nameWithType.vb: IReadOnlyList(Of ConfigTemplate)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.ConfigTemplate)
+  name.vb: IReadOnlyList(Of ConfigTemplate)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.ConfigTemplate
+    name: ConfigTemplate
+    href: Meridian.Application.Services.ConfigTemplate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ConfigTemplate
+    name: ConfigTemplate
+    href: Meridian.Application.Services.ConfigTemplate.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GetTemplate_System_String_
+  name: GetTemplate
+  nameWithType: ConfigTemplateGenerator.GetTemplate
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateFromConfig_Meridian_Application_Config_AppConfig_System_String_
+  name: GenerateFromConfig
+  nameWithType: ConfigTemplateGenerator.GenerateFromConfig
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateFromConfig
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate*
+  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate
+  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_ValidateTemplate_System_String_
+  name: ValidateTemplate
+  nameWithType: ConfigTemplateGenerator.ValidateTemplate
+  fullName: Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate
+- uid: Meridian.Application.Services.ConfigTemplateValidationResult
+  commentId: T:Meridian.Application.Services.ConfigTemplateValidationResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigTemplateValidationResult.html
+  name: ConfigTemplateValidationResult
+  nameWithType: ConfigTemplateValidationResult
+  fullName: Meridian.Application.Services.ConfigTemplateValidationResult

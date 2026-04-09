@@ -1,0 +1,167 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.DataSourceType
+  commentId: T:Meridian.Application.Config.DataSourceType
+  id: DataSourceType
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.DataSourceType.Both
+  - Meridian.Application.Config.DataSourceType.Historical
+  - Meridian.Application.Config.DataSourceType.RealTime
+  langs:
+  - csharp
+  - vb
+  name: DataSourceType
+  nameWithType: DataSourceType
+  fullName: Meridian.Application.Config.DataSourceType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceType
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Type of data source.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<DataSourceType>))]
+
+      public enum DataSourceType : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of DataSourceType)))>
+
+      Public Enum DataSourceType As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Application.Config.DataSourceType}
+- uid: Meridian.Application.Config.DataSourceType.RealTime
+  commentId: F:Meridian.Application.Config.DataSourceType.RealTime
+  id: RealTime
+  parent: Meridian.Application.Config.DataSourceType
+  langs:
+  - csharp
+  - vb
+  name: RealTime
+  nameWithType: DataSourceType.RealTime
+  fullName: Meridian.Application.Config.DataSourceType.RealTime
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealTime
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Real-time streaming data (trades, quotes, market depth).
+  example: []
+  syntax:
+    content: RealTime = 0
+    return:
+      type: Meridian.Application.Config.DataSourceType
+- uid: Meridian.Application.Config.DataSourceType.Historical
+  commentId: F:Meridian.Application.Config.DataSourceType.Historical
+  id: Historical
+  parent: Meridian.Application.Config.DataSourceType
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: DataSourceType.Historical
+  fullName: Meridian.Application.Config.DataSourceType.Historical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Historical data (daily bars, minute bars, etc.).
+  example: []
+  syntax:
+    content: Historical = 1
+    return:
+      type: Meridian.Application.Config.DataSourceType
+- uid: Meridian.Application.Config.DataSourceType.Both
+  commentId: F:Meridian.Application.Config.DataSourceType.Both
+  id: Both
+  parent: Meridian.Application.Config.DataSourceType
+  langs:
+  - csharp
+  - vb
+  name: Both
+  nameWithType: DataSourceType.Both
+  fullName: Meridian.Application.Config.DataSourceType.Both
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Both
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Both real-time and historical data.
+  example: []
+  syntax:
+    content: Both = 2
+    return:
+      type: Meridian.Application.Config.DataSourceType
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.DataSourceType
+  commentId: T:Meridian.Application.Config.DataSourceType
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourceType.html
+  name: DataSourceType
+  nameWithType: DataSourceType
+  fullName: Meridian.Application.Config.DataSourceType

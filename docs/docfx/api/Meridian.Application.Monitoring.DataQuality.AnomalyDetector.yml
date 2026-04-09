@@ -1,0 +1,1385 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  id: AnomalyDetector
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.#ctor(Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly(System.String)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies(System.String,System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity(Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType(Meridian.Application.Monitoring.DataQuality.AnomalyType,System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate(System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies(System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies(System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.OnAnomalyDetected
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol(System.String)
+  - Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected
+  langs:
+  - csharp
+  - vb
+  name: AnomalyDetector
+  nameWithType: AnomalyDetector
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyDetector
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Detects anomalies in market data including price spikes, volume outliers,
+
+    stale data, and other data quality issues. Uses statistical methods for detection.
+  example: []
+  syntax:
+    content: 'public sealed class AnomalyDetector : IDisposable'
+    content.vb: Public NotInheritable Class AnomalyDetector Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.OnAnomalyDetected
+  commentId: E:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.OnAnomalyDetected
+  id: OnAnomalyDetected
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: OnAnomalyDetected
+  nameWithType: AnomalyDetector.OnAnomalyDetected
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.OnAnomalyDetected
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnAnomalyDetected
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when an anomaly is detected.
+  example: []
+  syntax:
+    content: public event Action<DataAnomaly>? OnAnomalyDetected
+    return:
+      type: System.Action{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Event OnAnomalyDetected As Action(Of DataAnomaly)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.#ctor(Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.#ctor(Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig)'
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: AnomalyDetector(AnomalyDetectionConfig?)
+  nameWithType: AnomalyDetector.AnomalyDetector(AnomalyDetectionConfig?)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AnomalyDetector(Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public AnomalyDetector(AnomalyDetectionConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+    content.vb: Public Sub New(config As AnomalyDetectionConfig = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.#ctor*
+  nameWithType.vb: AnomalyDetector.New(AnomalyDetectionConfig)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.New(Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig)
+  name.vb: New(AnomalyDetectionConfig)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  id: RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolLiquidity(string, LiquidityProfile)
+  nameWithType: AnomalyDetector.RegisterSymbolLiquidity(string, LiquidityProfile)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity(string, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolLiquidity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Registers a liquidity profile for a symbol, adjusting the stale data threshold
+
+    so that illiquid instruments do not generate false stale-data anomalies.
+  example: []
+  syntax:
+    content: public void RegisterSymbolLiquidity(string symbol, LiquidityProfile profile)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: profile
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    content.vb: Public Sub RegisterSymbolLiquidity(symbol As String, profile As LiquidityProfile)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity*
+  nameWithType.vb: AnomalyDetector.RegisterSymbolLiquidity(String, LiquidityProfile)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity(String, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  name.vb: RegisterSymbolLiquidity(String, LiquidityProfile)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  id: ProcessTrade(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: ProcessTrade(string, DateTimeOffset, decimal, decimal, string?)
+  nameWithType: AnomalyDetector.ProcessTrade(string, DateTimeOffset, decimal, decimal, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade(string, System.DateTimeOffset, decimal, decimal, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessTrade
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Processes a trade event for anomaly detection.
+  example: []
+  syntax:
+    content: public DataAnomaly? ProcessTrade(string symbol, DateTimeOffset timestamp, decimal price, decimal volume, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: price
+      type: System.Decimal
+    - id: volume
+      type: System.Decimal
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    content.vb: Public Function ProcessTrade(symbol As String, timestamp As DateTimeOffset, price As Decimal, volume As Decimal, provider As String = Nothing) As DataAnomaly
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade*
+  nameWithType.vb: AnomalyDetector.ProcessTrade(String, DateTimeOffset, Decimal, Decimal, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade(String, System.DateTimeOffset, Decimal, Decimal, String)
+  name.vb: ProcessTrade(String, DateTimeOffset, Decimal, Decimal, String)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  id: ProcessQuote(System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: ProcessQuote(string, DateTimeOffset, decimal, decimal, string?)
+  nameWithType: AnomalyDetector.ProcessQuote(string, DateTimeOffset, decimal, decimal, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote(string, System.DateTimeOffset, decimal, decimal, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessQuote
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Processes a quote event for anomaly detection.
+  example: []
+  syntax:
+    content: public DataAnomaly? ProcessQuote(string symbol, DateTimeOffset timestamp, decimal bidPrice, decimal askPrice, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: bidPrice
+      type: System.Decimal
+    - id: askPrice
+      type: System.Decimal
+    - id: provider
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    content.vb: Public Function ProcessQuote(symbol As String, timestamp As DateTimeOffset, bidPrice As Decimal, askPrice As Decimal, provider As String = Nothing) As DataAnomaly
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote*
+  nameWithType.vb: AnomalyDetector.ProcessQuote(String, DateTimeOffset, Decimal, Decimal, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote(String, System.DateTimeOffset, Decimal, Decimal, String)
+  name.vb: ProcessQuote(String, DateTimeOffset, Decimal, Decimal, String)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies(System.String,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies(System.String,System.Int32)
+  id: GetAnomalies(System.String,System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetAnomalies(string, int)
+  nameWithType: AnomalyDetector.GetAnomalies(string, int)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets all anomalies for a symbol.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> GetAnomalies(string symbol, int count = 100)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Function GetAnomalies(symbol As String, count As Integer = 100) As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies*
+  nameWithType.vb: AnomalyDetector.GetAnomalies(String, Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies(String, Integer)
+  name.vb: GetAnomalies(String, Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate(System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate(System.DateOnly)
+  id: GetAnomaliesForDate(System.DateOnly)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetAnomaliesForDate(DateOnly)
+  nameWithType: AnomalyDetector.GetAnomaliesForDate(DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAnomaliesForDate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets all anomalies for a date.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> GetAnomaliesForDate(DateOnly date)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Function GetAnomaliesForDate([date] As DateOnly) As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies(System.Int32)
+  id: GetRecentAnomalies(System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetRecentAnomalies(int)
+  nameWithType: AnomalyDetector.GetRecentAnomalies(int)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets recent anomalies across all symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> GetRecentAnomalies(int count = 100)
+    parameters:
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Function GetRecentAnomalies(count As Integer = 100) As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies*
+  nameWithType.vb: AnomalyDetector.GetRecentAnomalies(Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies(Integer)
+  name.vb: GetRecentAnomalies(Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType(Meridian.Application.Monitoring.DataQuality.AnomalyType,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType(Meridian.Application.Monitoring.DataQuality.AnomalyType,System.Int32)
+  id: GetAnomaliesByType(Meridian.Application.Monitoring.DataQuality.AnomalyType,System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetAnomaliesByType(AnomalyType, int)
+  nameWithType: AnomalyDetector.GetAnomaliesByType(AnomalyType, int)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType(Meridian.Application.Monitoring.DataQuality.AnomalyType, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAnomaliesByType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets anomalies by type.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> GetAnomaliesByType(AnomalyType type, int count = 100)
+    parameters:
+    - id: type
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Function GetAnomaliesByType(type As AnomalyType, count As Integer = 100) As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType*
+  nameWithType.vb: AnomalyDetector.GetAnomaliesByType(AnomalyType, Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType(Meridian.Application.Monitoring.DataQuality.AnomalyType, Integer)
+  name.vb: GetAnomaliesByType(AnomalyType, Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity(Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity(Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.Int32)
+  id: GetAnomaliesBySeverity(Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetAnomaliesBySeverity(AnomalySeverity, int)
+  nameWithType: AnomalyDetector.GetAnomaliesBySeverity(AnomalySeverity, int)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity(Meridian.Application.Monitoring.DataQuality.AnomalySeverity, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAnomaliesBySeverity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets anomalies by severity.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> GetAnomaliesBySeverity(AnomalySeverity severity, int count = 100)
+    parameters:
+    - id: severity
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Function GetAnomaliesBySeverity(severity As AnomalySeverity, count As Integer = 100) As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity*
+  nameWithType.vb: AnomalyDetector.GetAnomaliesBySeverity(AnomalySeverity, Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity(Meridian.Application.Monitoring.DataQuality.AnomalySeverity, Integer)
+  name.vb: GetAnomaliesBySeverity(AnomalySeverity, Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly(System.String)
+  id: AcknowledgeAnomaly(System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: AcknowledgeAnomaly(string)
+  nameWithType: AnomalyDetector.AcknowledgeAnomaly(string)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AcknowledgeAnomaly
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Acknowledges an anomaly (marks it as reviewed).
+  example: []
+  syntax:
+    content: public bool AcknowledgeAnomaly(string anomalyId)
+    parameters:
+    - id: anomalyId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function AcknowledgeAnomaly(anomalyId As String) As Boolean
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly*
+  nameWithType.vb: AnomalyDetector.AcknowledgeAnomaly(String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly(String)
+  name.vb: AcknowledgeAnomaly(String)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies(System.Int32)
+  id: GetUnacknowledgedAnomalies(System.Int32)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetUnacknowledgedAnomalies(int)
+  nameWithType: AnomalyDetector.GetUnacknowledgedAnomalies(int)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUnacknowledgedAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets unacknowledged anomalies.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataAnomaly> GetUnacknowledgedAnomalies(int count = 100)
+    parameters:
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+    content.vb: Public Function GetUnacknowledgedAnomalies(count As Integer = 100) As IReadOnlyList(Of DataAnomaly)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies*
+  nameWithType.vb: AnomalyDetector.GetUnacknowledgedAnomalies(Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies(Integer)
+  name.vb: GetUnacknowledgedAnomalies(Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: AnomalyDetector.GetStatistics()
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets anomaly detection statistics.
+  example: []
+  syntax:
+    content: public AnomalyStatistics GetStatistics()
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+    content.vb: Public Function GetStatistics() As AnomalyStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols
+  id: GetStaleSymbols
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: GetStaleSymbols()
+  nameWithType: AnomalyDetector.GetStaleSymbols()
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStaleSymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets symbols currently marked as stale (using per-symbol thresholds when registered).
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetStaleSymbols()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetStaleSymbols() As IReadOnlyList(Of String)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol(System.String)
+  id: ResetSymbol(System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: ResetSymbol(string)
+  nameWithType: AnomalyDetector.ResetSymbol(string)
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetSymbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets statistics for a symbol.
+  example: []
+  syntax:
+    content: public void ResetSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    content.vb: Public Sub ResetSymbol(symbol As String)
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol*
+  nameWithType.vb: AnomalyDetector.ResetSymbol(String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol(String)
+  name.vb: ResetSymbol(String)
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected
+  commentId: P:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected
+  id: TotalAnomaliesDetected
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: TotalAnomaliesDetected
+  nameWithType: AnomalyDetector.TotalAnomaliesDetected
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAnomaliesDetected
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Total anomalies detected.
+  example: []
+  syntax:
+    content: public long TotalAnomaliesDetected { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalAnomaliesDetected As Long
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected*
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose
+  commentId: M:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.DataQuality.AnomalyDetector
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: AnomalyDetector.Dispose()
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  commentId: T:System.Action{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<DataAnomaly>
+  nameWithType: Action<DataAnomaly>
+  fullName: System.Action<Meridian.Application.Monitoring.DataQuality.DataAnomaly>
+  nameWithType.vb: Action(Of DataAnomaly)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly)
+  name.vb: Action(Of DataAnomaly)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector__ctor_Meridian_Application_Monitoring_DataQuality_AnomalyDetectionConfig_
+  name: AnomalyDetector
+  nameWithType: AnomalyDetector.AnomalyDetector
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AnomalyDetector
+  nameWithType.vb: AnomalyDetector.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig.html
+  name: AnomalyDetectionConfig
+  nameWithType: AnomalyDetectionConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetectionConfig
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_RegisterSymbolLiquidity_System_String_Meridian_Contracts_Domain_Enums_LiquidityProfile_
+  name: RegisterSymbolLiquidity
+  nameWithType: AnomalyDetector.RegisterSymbolLiquidity
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.RegisterSymbolLiquidity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_ProcessTrade_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_String_
+  name: ProcessTrade
+  nameWithType: AnomalyDetector.ProcessTrade
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessTrade
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  name: DataAnomaly
+  nameWithType: DataAnomaly
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_ProcessQuote_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_String_
+  name: ProcessQuote
+  nameWithType: AnomalyDetector.ProcessQuote
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ProcessQuote
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetAnomalies_System_String_System_Int32_
+  name: GetAnomalies
+  nameWithType: AnomalyDetector.GetAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomalies
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataAnomaly>
+  nameWithType: IReadOnlyList<DataAnomaly>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataAnomaly>
+  nameWithType.vb: IReadOnlyList(Of DataAnomaly)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly)
+  name.vb: IReadOnlyList(Of DataAnomaly)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetAnomaliesForDate_System_DateOnly_
+  name: GetAnomaliesForDate
+  nameWithType: AnomalyDetector.GetAnomaliesForDate
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesForDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetRecentAnomalies_System_Int32_
+  name: GetRecentAnomalies
+  nameWithType: AnomalyDetector.GetRecentAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetRecentAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetAnomaliesByType_Meridian_Application_Monitoring_DataQuality_AnomalyType_System_Int32_
+  name: GetAnomaliesByType
+  nameWithType: AnomalyDetector.GetAnomaliesByType
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesByType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyType.html
+  name: AnomalyType
+  nameWithType: AnomalyType
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetAnomaliesBySeverity_Meridian_Application_Monitoring_DataQuality_AnomalySeverity_System_Int32_
+  name: GetAnomaliesBySeverity
+  nameWithType: AnomalyDetector.GetAnomaliesBySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetAnomaliesBySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.html
+  name: AnomalySeverity
+  nameWithType: AnomalySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_AcknowledgeAnomaly_System_String_
+  name: AcknowledgeAnomaly
+  nameWithType: AnomalyDetector.AcknowledgeAnomaly
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.AcknowledgeAnomaly
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetUnacknowledgedAnomalies_System_Int32_
+  name: GetUnacknowledgedAnomalies
+  nameWithType: AnomalyDetector.GetUnacknowledgedAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetUnacknowledgedAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetStatistics
+  name: GetStatistics
+  nameWithType: AnomalyDetector.GetStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics.html
+  name: AnomalyStatistics
+  nameWithType: AnomalyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_GetStaleSymbols
+  name: GetStaleSymbols
+  nameWithType: AnomalyDetector.GetStaleSymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.GetStaleSymbols
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_ResetSymbol_System_String_
+  name: ResetSymbol
+  nameWithType: AnomalyDetector.ResetSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.ResetSymbol
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_TotalAnomaliesDetected
+  name: TotalAnomaliesDetected
+  nameWithType: AnomalyDetector.TotalAnomaliesDetected
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.TotalAnomaliesDetected
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.html#Meridian_Application_Monitoring_DataQuality_AnomalyDetector_Dispose
+  name: Dispose
+  nameWithType: AnomalyDetector.Dispose
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyDetector.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

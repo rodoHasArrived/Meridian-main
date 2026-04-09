@@ -1,0 +1,904 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapStatistics
+  id: GapStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.#ctor(System.Int32,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32},System.Int32,System.String[],System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration
+  - Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps
+  langs:
+  - csharp
+  - vb
+  name: GapStatistics
+  nameWithType: GapStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 585
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gap statistics summary.
+  example: []
+  syntax:
+    content: 'public sealed record GapStatistics : IEquatable<GapStatistics>'
+    content.vb: Public NotInheritable Class GapStatistics Implements IEquatable(Of GapStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.GapStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.#ctor(System.Int32,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32},System.Int32,System.String[],System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.GapStatistics.#ctor(System.Int32,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32},System.Int32,System.String[],System.DateTimeOffset)
+  id: '#ctor(System.Int32,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.TimeSpan,System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32},System.Int32,System.String[],System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: GapStatistics(int, TimeSpan, TimeSpan, TimeSpan, TimeSpan, Dictionary<GapSeverity, int>, int, string[], DateTimeOffset)
+  nameWithType: GapStatistics.GapStatistics(int, TimeSpan, TimeSpan, TimeSpan, TimeSpan, Dictionary<GapSeverity, int>, int, string[], DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapStatistics(int, System.TimeSpan, System.TimeSpan, System.TimeSpan, System.TimeSpan, System.Collections.Generic.Dictionary<Meridian.Application.Monitoring.DataQuality.GapSeverity, int>, int, string[], System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 585
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gap statistics summary.
+  example: []
+  syntax:
+    content: public GapStatistics(int TotalGaps, TimeSpan TotalGapDuration, TimeSpan AverageGapDuration, TimeSpan MaxGapDuration, TimeSpan MinGapDuration, Dictionary<GapSeverity, int> GapsBySeverity, int SymbolsAffected, string[] MostAffectedSymbols, DateTimeOffset CalculatedAt)
+    parameters:
+    - id: TotalGaps
+      type: System.Int32
+    - id: TotalGapDuration
+      type: System.TimeSpan
+    - id: AverageGapDuration
+      type: System.TimeSpan
+    - id: MaxGapDuration
+      type: System.TimeSpan
+    - id: MinGapDuration
+      type: System.TimeSpan
+    - id: GapsBySeverity
+      type: System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32}
+    - id: SymbolsAffected
+      type: System.Int32
+    - id: MostAffectedSymbols
+      type: System.String[]
+    - id: CalculatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(TotalGaps As Integer, TotalGapDuration As TimeSpan, AverageGapDuration As TimeSpan, MaxGapDuration As TimeSpan, MinGapDuration As TimeSpan, GapsBySeverity As Dictionary(Of GapSeverity, Integer), SymbolsAffected As Integer, MostAffectedSymbols As String(), CalculatedAt As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.#ctor*
+  nameWithType.vb: GapStatistics.New(Integer, TimeSpan, TimeSpan, TimeSpan, TimeSpan, Dictionary(Of GapSeverity, Integer), Integer, String(), DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapStatistics.New(Integer, System.TimeSpan, System.TimeSpan, System.TimeSpan, System.TimeSpan, System.Collections.Generic.Dictionary(Of Meridian.Application.Monitoring.DataQuality.GapSeverity, Integer), Integer, String(), System.DateTimeOffset)
+  name.vb: New(Integer, TimeSpan, TimeSpan, TimeSpan, TimeSpan, Dictionary(Of GapSeverity, Integer), Integer, String(), DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: GapStatistics.TotalGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 586
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int TotalGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalGaps As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration
+  id: TotalGapDuration
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalGapDuration
+  nameWithType: GapStatistics.TotalGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGapDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 587
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan TotalGapDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalGapDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration
+  id: AverageGapDuration
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageGapDuration
+  nameWithType: GapStatistics.AverageGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageGapDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 588
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan AverageGapDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property AverageGapDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration
+  id: MaxGapDuration
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: MaxGapDuration
+  nameWithType: GapStatistics.MaxGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxGapDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 589
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan MaxGapDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MaxGapDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration
+  id: MinGapDuration
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: MinGapDuration
+  nameWithType: GapStatistics.MinGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinGapDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 590
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan MinGapDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MinGapDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity
+  id: GapsBySeverity
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: GapsBySeverity
+  nameWithType: GapStatistics.GapsBySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsBySeverity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 591
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public Dictionary<GapSeverity, int> GapsBySeverity { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32}
+    content.vb: Public Property GapsBySeverity As Dictionary(Of GapSeverity, Integer)
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected
+  id: SymbolsAffected
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: SymbolsAffected
+  nameWithType: GapStatistics.SymbolsAffected
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsAffected
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int SymbolsAffected { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolsAffected As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols
+  id: MostAffectedSymbols
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: MostAffectedSymbols
+  nameWithType: GapStatistics.MostAffectedSymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MostAffectedSymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 593
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string[] MostAffectedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property MostAffectedSymbols As String()
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols*
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt
+  commentId: P:Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt
+  id: CalculatedAt
+  parent: Meridian.Application.Monitoring.DataQuality.GapStatistics
+  langs:
+  - csharp
+  - vb
+  name: CalculatedAt
+  nameWithType: GapStatistics.CalculatedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatedAt
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
+    startLine: 594
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset CalculatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CalculatedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.GapStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.GapStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<GapStatistics>
+  nameWithType: IEquatable<GapStatistics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.GapStatistics>
+  nameWithType.vb: IEquatable(Of GapStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.GapStatistics)
+  name.vb: IEquatable(Of GapStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.GapStatistics
+    name: GapStatistics
+    href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.GapStatistics
+    name: GapStatistics
+    href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics__ctor_System_Int32_System_TimeSpan_System_TimeSpan_System_TimeSpan_System_TimeSpan_System_Collections_Generic_Dictionary_Meridian_Application_Monitoring_DataQuality_GapSeverity_System_Int32__System_Int32_System_String___System_DateTimeOffset_
+  name: GapStatistics
+  nameWithType: GapStatistics.GapStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapStatistics
+  nameWithType.vb: GapStatistics.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.GapStatistics.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{Meridian.Application.Monitoring.DataQuality.GapSeverity,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<GapSeverity, int>
+  nameWithType: Dictionary<GapSeverity, int>
+  fullName: System.Collections.Generic.Dictionary<Meridian.Application.Monitoring.DataQuality.GapSeverity, int>
+  nameWithType.vb: Dictionary(Of GapSeverity, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of Meridian.Application.Monitoring.DataQuality.GapSeverity, Integer)
+  name.vb: Dictionary(Of GapSeverity, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.GapSeverity
+    name: GapSeverity
+    href: Meridian.Application.Monitoring.DataQuality.GapSeverity.html
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.GapSeverity
+    name: GapSeverity
+    href: Meridian.Application.Monitoring.DataQuality.GapSeverity.html
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_TotalGaps
+  name: TotalGaps
+  nameWithType: GapStatistics.TotalGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGaps
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_TotalGapDuration
+  name: TotalGapDuration
+  nameWithType: GapStatistics.TotalGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.TotalGapDuration
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_AverageGapDuration
+  name: AverageGapDuration
+  nameWithType: GapStatistics.AverageGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.AverageGapDuration
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_MaxGapDuration
+  name: MaxGapDuration
+  nameWithType: GapStatistics.MaxGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.MaxGapDuration
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_MinGapDuration
+  name: MinGapDuration
+  nameWithType: GapStatistics.MinGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.MinGapDuration
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_GapsBySeverity
+  name: GapsBySeverity
+  nameWithType: GapStatistics.GapsBySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.GapsBySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_SymbolsAffected
+  name: SymbolsAffected
+  nameWithType: GapStatistics.SymbolsAffected
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.SymbolsAffected
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_MostAffectedSymbols
+  name: MostAffectedSymbols
+  nameWithType: GapStatistics.MostAffectedSymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.MostAffectedSymbols
+- uid: Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt
+  href: Meridian.Application.Monitoring.DataQuality.GapStatistics.html#Meridian_Application_Monitoring_DataQuality_GapStatistics_CalculatedAt
+  name: CalculatedAt
+  nameWithType: GapStatistics.CalculatedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.GapStatistics.CalculatedAt

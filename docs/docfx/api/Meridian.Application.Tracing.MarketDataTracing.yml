@@ -1,0 +1,1002 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Tracing.MarketDataTracing
+  commentId: T:Meridian.Application.Tracing.MarketDataTracing
+  id: MarketDataTracing
+  parent: Meridian.Application.Tracing
+  children:
+  - Meridian.Application.Tracing.MarketDataTracing.RecordError(System.Diagnostics.Activity,System.Exception)
+  - Meridian.Application.Tracing.MarketDataTracing.RecordEventCount(System.Diagnostics.Activity,System.Int32)
+  - Meridian.Application.Tracing.MarketDataTracing.RecordLatency(System.Diagnostics.Activity,System.TimeSpan)
+  - Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity(System.String,System.String,System.String,System.String)
+  - Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity(System.Int32)
+  - Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity(System.String,System.String)
+  - Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String)
+  - Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  - Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity(System.String,System.String)
+  - Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity(System.String,System.String)
+  - Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String)
+  - Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  - Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity
+  - Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity(System.String,System.String)
+  langs:
+  - csharp
+  - vb
+  name: MarketDataTracing
+  nameWithType: MarketDataTracing
+  fullName: Meridian.Application.Tracing.MarketDataTracing
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketDataTracing
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Tracing utilities for market data operations.
+  example: []
+  syntax:
+    content: public static class MarketDataTracing
+    content.vb: Public Module MarketDataTracing
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity(System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity(System.String,System.String)
+  id: StartReceiveActivity(System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartReceiveActivity(string, string)
+  nameWithType: MarketDataTracing.StartReceiveActivity(string, string)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartReceiveActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for receiving data from a market data provider.
+  example: []
+  syntax:
+    content: public static Activity? StartReceiveActivity(string providerName, string symbol)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartReceiveActivity(providerName As String, symbol As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity*
+  nameWithType.vb: MarketDataTracing.StartReceiveActivity(String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity(String, String)
+  name.vb: StartReceiveActivity(String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String)
+  id: StartProcessActivity(System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartProcessActivity(string, string)
+  nameWithType: MarketDataTracing.StartProcessActivity(string, string)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartProcessActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for processing a market event.
+  example: []
+  syntax:
+    content: public static Activity? StartProcessActivity(string eventType, string symbol)
+    parameters:
+    - id: eventType
+      type: System.String
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartProcessActivity(eventType As String, symbol As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity*
+  nameWithType.vb: MarketDataTracing.StartProcessActivity(String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(String, String)
+  name.vb: StartProcessActivity(String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  id: StartProcessActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartProcessActivity(string, string, ActivityContext)
+  nameWithType: MarketDataTracing.StartProcessActivity(string, string, ActivityContext)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(string, string, System.Diagnostics.ActivityContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartProcessActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: >-
+    Start a trace for processing a market event with an explicit parent context restored
+
+    after an async queue boundary.
+  example: []
+  syntax:
+    content: public static Activity? StartProcessActivity(string eventType, string symbol, ActivityContext parentContext)
+    parameters:
+    - id: eventType
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: parentContext
+      type: System.Diagnostics.ActivityContext
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartProcessActivity(eventType As String, symbol As String, parentContext As ActivityContext) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity*
+  nameWithType.vb: MarketDataTracing.StartProcessActivity(String, String, ActivityContext)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity(String, String, System.Diagnostics.ActivityContext)
+  name.vb: StartProcessActivity(String, String, ActivityContext)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String)
+  id: StartStorageActivity(System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartStorageActivity(string, string)
+  nameWithType: MarketDataTracing.StartStorageActivity(string, string)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartStorageActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for storing a market event.
+  example: []
+  syntax:
+    content: public static Activity? StartStorageActivity(string storageType, string symbol)
+    parameters:
+    - id: storageType
+      type: System.String
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartStorageActivity(storageType As String, symbol As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity*
+  nameWithType.vb: MarketDataTracing.StartStorageActivity(String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(String, String)
+  name.vb: StartStorageActivity(String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  id: StartStorageActivity(System.String,System.String,System.Diagnostics.ActivityContext)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartStorageActivity(string, string, ActivityContext)
+  nameWithType: MarketDataTracing.StartStorageActivity(string, string, ActivityContext)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(string, string, System.Diagnostics.ActivityContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartStorageActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for storing a market event with an explicit parent context.
+  example: []
+  syntax:
+    content: public static Activity? StartStorageActivity(string storageType, string symbol, ActivityContext parentContext)
+    parameters:
+    - id: storageType
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: parentContext
+      type: System.Diagnostics.ActivityContext
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartStorageActivity(storageType As String, symbol As String, parentContext As ActivityContext) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity*
+  nameWithType.vb: MarketDataTracing.StartStorageActivity(String, String, ActivityContext)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity(String, String, System.Diagnostics.ActivityContext)
+  name.vb: StartStorageActivity(String, String, ActivityContext)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity(System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity(System.String,System.String)
+  id: StartPublishActivity(System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartPublishActivity(string, string)
+  nameWithType: MarketDataTracing.StartPublishActivity(string, string)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartPublishActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for publishing to message bus.
+  example: []
+  syntax:
+    content: public static Activity? StartPublishActivity(string destination, string messageType)
+    parameters:
+    - id: destination
+      type: System.String
+    - id: messageType
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartPublishActivity(destination As String, messageType As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity*
+  nameWithType.vb: MarketDataTracing.StartPublishActivity(String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity(String, String)
+  name.vb: StartPublishActivity(String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity(System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity(System.String,System.String)
+  id: StartWebSocketActivity(System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartWebSocketActivity(string, string)
+  nameWithType: MarketDataTracing.StartWebSocketActivity(string, string)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartWebSocketActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for WebSocket operations.
+  example: []
+  syntax:
+    content: public static Activity? StartWebSocketActivity(string operation, string endpoint)
+    parameters:
+    - id: operation
+      type: System.String
+    - id: endpoint
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartWebSocketActivity(operation As String, endpoint As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity*
+  nameWithType.vb: MarketDataTracing.StartWebSocketActivity(String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity(String, String)
+  name.vb: StartWebSocketActivity(String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity(System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity(System.String,System.String)
+  id: StartIndicatorActivity(System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartIndicatorActivity(string, string)
+  nameWithType: MarketDataTracing.StartIndicatorActivity(string, string)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartIndicatorActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 309
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for indicator calculation.
+  example: []
+  syntax:
+    content: public static Activity? StartIndicatorActivity(string indicatorName, string symbol)
+    parameters:
+    - id: indicatorName
+      type: System.String
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartIndicatorActivity(indicatorName As String, symbol As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity*
+  nameWithType.vb: MarketDataTracing.StartIndicatorActivity(String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity(String, String)
+  name.vb: StartIndicatorActivity(String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity(System.Int32)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity(System.Int32)
+  id: StartBatchConsumeActivity(System.Int32)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartBatchConsumeActivity(int)
+  nameWithType: MarketDataTracing.StartBatchConsumeActivity(int)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartBatchConsumeActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 325
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for a pipeline batch consume operation.
+  example: []
+  syntax:
+    content: public static Activity? StartBatchConsumeActivity(int batchSize)
+    parameters:
+    - id: batchSize
+      type: System.Int32
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartBatchConsumeActivity(batchSize As Integer) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity*
+  nameWithType.vb: MarketDataTracing.StartBatchConsumeActivity(Integer)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity(Integer)
+  name.vb: StartBatchConsumeActivity(Integer)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity(System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity(System.String,System.String,System.String,System.String)
+  id: StartBackfillActivity(System.String,System.String,System.String,System.String)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartBackfillActivity(string, string, string?, string?)
+  nameWithType: MarketDataTracing.StartBackfillActivity(string, string, string?, string?)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity(string, string, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartBackfillActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for a backfill operation.
+  example: []
+  syntax:
+    content: public static Activity? StartBackfillActivity(string provider, string symbol, string? from, string? to)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.String
+    - id: to
+      type: System.String
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartBackfillActivity(provider As String, symbol As String, from As String, [to] As String) As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity*
+  nameWithType.vb: MarketDataTracing.StartBackfillActivity(String, String, String, String)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity(String, String, String, String)
+  name.vb: StartBackfillActivity(String, String, String, String)
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity
+  id: StartWalRecoveryActivity
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: StartWalRecoveryActivity()
+  nameWithType: MarketDataTracing.StartWalRecoveryActivity()
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartWalRecoveryActivity
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Start a trace for a WAL recovery operation.
+  example: []
+  syntax:
+    content: public static Activity? StartWalRecoveryActivity()
+    return:
+      type: System.Diagnostics.Activity
+    content.vb: Public Shared Function StartWalRecoveryActivity() As Activity
+  overload: Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity*
+- uid: Meridian.Application.Tracing.MarketDataTracing.RecordError(System.Diagnostics.Activity,System.Exception)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.RecordError(System.Diagnostics.Activity,System.Exception)
+  id: RecordError(System.Diagnostics.Activity,System.Exception)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: RecordError(Activity?, Exception)
+  nameWithType: MarketDataTracing.RecordError(Activity?, Exception)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.RecordError(System.Diagnostics.Activity?, System.Exception)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordError
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Record an error on the current activity.
+  example: []
+  syntax:
+    content: public static void RecordError(Activity? activity, Exception ex)
+    parameters:
+    - id: activity
+      type: System.Diagnostics.Activity
+    - id: ex
+      type: System.Exception
+    content.vb: Public Shared Sub RecordError(activity As Activity, ex As Exception)
+  overload: Meridian.Application.Tracing.MarketDataTracing.RecordError*
+  nameWithType.vb: MarketDataTracing.RecordError(Activity, Exception)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.RecordError(System.Diagnostics.Activity, System.Exception)
+  name.vb: RecordError(Activity, Exception)
+- uid: Meridian.Application.Tracing.MarketDataTracing.RecordLatency(System.Diagnostics.Activity,System.TimeSpan)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.RecordLatency(System.Diagnostics.Activity,System.TimeSpan)
+  id: RecordLatency(System.Diagnostics.Activity,System.TimeSpan)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(Activity?, TimeSpan)
+  nameWithType: MarketDataTracing.RecordLatency(Activity?, TimeSpan)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.RecordLatency(System.Diagnostics.Activity?, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 384
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Add latency measurement to activity.
+  example: []
+  syntax:
+    content: public static void RecordLatency(Activity? activity, TimeSpan latency)
+    parameters:
+    - id: activity
+      type: System.Diagnostics.Activity
+    - id: latency
+      type: System.TimeSpan
+    content.vb: Public Shared Sub RecordLatency(activity As Activity, latency As TimeSpan)
+  overload: Meridian.Application.Tracing.MarketDataTracing.RecordLatency*
+  nameWithType.vb: MarketDataTracing.RecordLatency(Activity, TimeSpan)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.RecordLatency(System.Diagnostics.Activity, System.TimeSpan)
+  name.vb: RecordLatency(Activity, TimeSpan)
+- uid: Meridian.Application.Tracing.MarketDataTracing.RecordEventCount(System.Diagnostics.Activity,System.Int32)
+  commentId: M:Meridian.Application.Tracing.MarketDataTracing.RecordEventCount(System.Diagnostics.Activity,System.Int32)
+  id: RecordEventCount(System.Diagnostics.Activity,System.Int32)
+  parent: Meridian.Application.Tracing.MarketDataTracing
+  langs:
+  - csharp
+  - vb
+  name: RecordEventCount(Activity?, int)
+  nameWithType: MarketDataTracing.RecordEventCount(Activity?, int)
+  fullName: Meridian.Application.Tracing.MarketDataTracing.RecordEventCount(System.Diagnostics.Activity?, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordEventCount
+    path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Tracing
+  summary: Add event count to activity.
+  example: []
+  syntax:
+    content: public static void RecordEventCount(Activity? activity, int count)
+    parameters:
+    - id: activity
+      type: System.Diagnostics.Activity
+    - id: count
+      type: System.Int32
+    content.vb: Public Shared Sub RecordEventCount(activity As Activity, count As Integer)
+  overload: Meridian.Application.Tracing.MarketDataTracing.RecordEventCount*
+  nameWithType.vb: MarketDataTracing.RecordEventCount(Activity, Integer)
+  fullName.vb: Meridian.Application.Tracing.MarketDataTracing.RecordEventCount(System.Diagnostics.Activity, Integer)
+  name.vb: RecordEventCount(Activity, Integer)
+references:
+- uid: Meridian.Application.Tracing
+  commentId: N:Meridian.Application.Tracing
+  href: Meridian.html
+  name: Meridian.Application.Tracing
+  nameWithType: Meridian.Application.Tracing
+  fullName: Meridian.Application.Tracing
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Tracing
+    name: Tracing
+    href: Meridian.Application.Tracing.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Tracing
+    name: Tracing
+    href: Meridian.Application.Tracing.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartReceiveActivity_System_String_System_String_
+  name: StartReceiveActivity
+  nameWithType: MarketDataTracing.StartReceiveActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartReceiveActivity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Diagnostics.Activity
+  commentId: T:System.Diagnostics.Activity
+  parent: System.Diagnostics
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.diagnostics.activity
+  name: Activity
+  nameWithType: Activity
+  fullName: System.Diagnostics.Activity
+- uid: System.Diagnostics
+  commentId: N:System.Diagnostics
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Diagnostics
+  nameWithType: System.Diagnostics
+  fullName: System.Diagnostics
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Diagnostics
+    name: Diagnostics
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.diagnostics
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Diagnostics
+    name: Diagnostics
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.diagnostics
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartProcessActivity_System_String_System_String_
+  name: StartProcessActivity
+  nameWithType: MarketDataTracing.StartProcessActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartProcessActivity
+- uid: System.Diagnostics.ActivityContext
+  commentId: T:System.Diagnostics.ActivityContext
+  parent: System.Diagnostics
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.diagnostics.activitycontext
+  name: ActivityContext
+  nameWithType: ActivityContext
+  fullName: System.Diagnostics.ActivityContext
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartStorageActivity_System_String_System_String_
+  name: StartStorageActivity
+  nameWithType: MarketDataTracing.StartStorageActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartStorageActivity
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartPublishActivity_System_String_System_String_
+  name: StartPublishActivity
+  nameWithType: MarketDataTracing.StartPublishActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartPublishActivity
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartWebSocketActivity_System_String_System_String_
+  name: StartWebSocketActivity
+  nameWithType: MarketDataTracing.StartWebSocketActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartWebSocketActivity
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartIndicatorActivity_System_String_System_String_
+  name: StartIndicatorActivity
+  nameWithType: MarketDataTracing.StartIndicatorActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartIndicatorActivity
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartBatchConsumeActivity_System_Int32_
+  name: StartBatchConsumeActivity
+  nameWithType: MarketDataTracing.StartBatchConsumeActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartBatchConsumeActivity
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartBackfillActivity_System_String_System_String_System_String_System_String_
+  name: StartBackfillActivity
+  nameWithType: MarketDataTracing.StartBackfillActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartBackfillActivity
+- uid: Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_StartWalRecoveryActivity
+  name: StartWalRecoveryActivity
+  nameWithType: MarketDataTracing.StartWalRecoveryActivity
+  fullName: Meridian.Application.Tracing.MarketDataTracing.StartWalRecoveryActivity
+- uid: Meridian.Application.Tracing.MarketDataTracing.RecordError*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.RecordError
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_RecordError_System_Diagnostics_Activity_System_Exception_
+  name: RecordError
+  nameWithType: MarketDataTracing.RecordError
+  fullName: Meridian.Application.Tracing.MarketDataTracing.RecordError
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Application.Tracing.MarketDataTracing.RecordLatency*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.RecordLatency
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_RecordLatency_System_Diagnostics_Activity_System_TimeSpan_
+  name: RecordLatency
+  nameWithType: MarketDataTracing.RecordLatency
+  fullName: Meridian.Application.Tracing.MarketDataTracing.RecordLatency
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Tracing.MarketDataTracing.RecordEventCount*
+  commentId: Overload:Meridian.Application.Tracing.MarketDataTracing.RecordEventCount
+  href: Meridian.Application.Tracing.MarketDataTracing.html#Meridian_Application_Tracing_MarketDataTracing_RecordEventCount_System_Diagnostics_Activity_System_Int32_
+  name: RecordEventCount
+  nameWithType: MarketDataTracing.RecordEventCount
+  fullName: Meridian.Application.Tracing.MarketDataTracing.RecordEventCount

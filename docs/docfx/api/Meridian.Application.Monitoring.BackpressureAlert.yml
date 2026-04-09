@@ -1,0 +1,750 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.BackpressureAlert
+  commentId: T:Meridian.Application.Monitoring.BackpressureAlert
+  id: BackpressureAlert
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.BackpressureAlert.#ctor(Meridian.Application.Monitoring.BackpressureLevel,System.Double,System.Int64,System.Int64,System.Double,System.TimeSpan,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.BackpressureAlert.DropRate
+  - Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent
+  - Meridian.Application.Monitoring.BackpressureAlert.Duration
+  - Meridian.Application.Monitoring.BackpressureAlert.Level
+  - Meridian.Application.Monitoring.BackpressureAlert.Message
+  - Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization
+  - Meridian.Application.Monitoring.BackpressureAlert.Timestamp
+  - Meridian.Application.Monitoring.BackpressureAlert.TotalDropped
+  langs:
+  - csharp
+  - vb
+  name: BackpressureAlert
+  nameWithType: BackpressureAlert
+  fullName: Meridian.Application.Monitoring.BackpressureAlert
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackpressureAlert
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Backpressure alert event.
+  example: []
+  syntax:
+    content: 'public readonly record struct BackpressureAlert : IEquatable<BackpressureAlert>'
+    content.vb: Public Structure BackpressureAlert Implements IEquatable(Of BackpressureAlert)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.BackpressureAlert}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.BackpressureAlert.#ctor(Meridian.Application.Monitoring.BackpressureLevel,System.Double,System.Int64,System.Int64,System.Double,System.TimeSpan,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.BackpressureAlert.#ctor(Meridian.Application.Monitoring.BackpressureLevel,System.Double,System.Int64,System.Int64,System.Double,System.TimeSpan,System.DateTimeOffset,System.String)
+  id: '#ctor(Meridian.Application.Monitoring.BackpressureLevel,System.Double,System.Int64,System.Int64,System.Double,System.TimeSpan,System.DateTimeOffset,System.String)'
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: BackpressureAlert(BackpressureLevel, double, long, long, double, TimeSpan, DateTimeOffset, string)
+  nameWithType: BackpressureAlert.BackpressureAlert(BackpressureLevel, double, long, long, double, TimeSpan, DateTimeOffset, string)
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.BackpressureAlert(Meridian.Application.Monitoring.BackpressureLevel, double, long, long, double, System.TimeSpan, System.DateTimeOffset, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Backpressure alert event.
+  example: []
+  syntax:
+    content: public BackpressureAlert(BackpressureLevel Level, double QueueUtilization, long DroppedEventsRecent, long TotalDropped, double DropRate, TimeSpan Duration, DateTimeOffset Timestamp, string Message)
+    parameters:
+    - id: Level
+      type: Meridian.Application.Monitoring.BackpressureLevel
+    - id: QueueUtilization
+      type: System.Double
+    - id: DroppedEventsRecent
+      type: System.Int64
+    - id: TotalDropped
+      type: System.Int64
+    - id: DropRate
+      type: System.Double
+    - id: Duration
+      type: System.TimeSpan
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Message
+      type: System.String
+    content.vb: Public Sub New(Level As BackpressureLevel, QueueUtilization As Double, DroppedEventsRecent As Long, TotalDropped As Long, DropRate As Double, Duration As TimeSpan, Timestamp As DateTimeOffset, Message As String)
+  overload: Meridian.Application.Monitoring.BackpressureAlert.#ctor*
+  nameWithType.vb: BackpressureAlert.New(BackpressureLevel, Double, Long, Long, Double, TimeSpan, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.BackpressureAlert.New(Meridian.Application.Monitoring.BackpressureLevel, Double, Long, Long, Double, System.TimeSpan, System.DateTimeOffset, String)
+  name.vb: New(BackpressureLevel, Double, Long, Long, Double, TimeSpan, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Level
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.Level
+  id: Level
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: BackpressureAlert.Level
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public BackpressureLevel Level { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.BackpressureLevel
+    content.vb: Public Property Level As BackpressureLevel
+  overload: Meridian.Application.Monitoring.BackpressureAlert.Level*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization
+  id: QueueUtilization
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: QueueUtilization
+  nameWithType: BackpressureAlert.QueueUtilization
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueUtilization
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double QueueUtilization { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property QueueUtilization As Double
+  overload: Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent
+  id: DroppedEventsRecent
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: DroppedEventsRecent
+  nameWithType: BackpressureAlert.DroppedEventsRecent
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DroppedEventsRecent
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long DroppedEventsRecent { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DroppedEventsRecent As Long
+  overload: Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.TotalDropped
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.TotalDropped
+  id: TotalDropped
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: TotalDropped
+  nameWithType: BackpressureAlert.TotalDropped
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.TotalDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDropped
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalDropped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalDropped As Long
+  overload: Meridian.Application.Monitoring.BackpressureAlert.TotalDropped*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.DropRate
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.DropRate
+  id: DropRate
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: DropRate
+  nameWithType: BackpressureAlert.DropRate
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.DropRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DropRate
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double DropRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DropRate As Double
+  overload: Meridian.Application.Monitoring.BackpressureAlert.DropRate*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Duration
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.Duration
+  id: Duration
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: BackpressureAlert.Duration
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public TimeSpan Duration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Meridian.Application.Monitoring.BackpressureAlert.Duration*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Timestamp
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: BackpressureAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.BackpressureAlert.Timestamp*
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Message
+  commentId: P:Meridian.Application.Monitoring.BackpressureAlert.Message
+  id: Message
+  parent: Meridian.Application.Monitoring.BackpressureAlert
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: BackpressureAlert.Message
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Monitoring.BackpressureAlert.Message*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.BackpressureAlert}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.BackpressureAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackpressureAlert>
+  nameWithType: IEquatable<BackpressureAlert>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.BackpressureAlert>
+  nameWithType.vb: IEquatable(Of BackpressureAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.BackpressureAlert)
+  name.vb: IEquatable(Of BackpressureAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.BackpressureAlert
+    name: BackpressureAlert
+    href: Meridian.Application.Monitoring.BackpressureAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.BackpressureAlert
+    name: BackpressureAlert
+    href: Meridian.Application.Monitoring.BackpressureAlert.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.BackpressureAlert.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.#ctor
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert__ctor_Meridian_Application_Monitoring_BackpressureLevel_System_Double_System_Int64_System_Int64_System_Double_System_TimeSpan_System_DateTimeOffset_System_String_
+  name: BackpressureAlert
+  nameWithType: BackpressureAlert.BackpressureAlert
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.BackpressureAlert
+  nameWithType.vb: BackpressureAlert.New
+  fullName.vb: Meridian.Application.Monitoring.BackpressureAlert.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.BackpressureLevel
+  commentId: T:Meridian.Application.Monitoring.BackpressureLevel
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.BackpressureLevel.html
+  name: BackpressureLevel
+  nameWithType: BackpressureLevel
+  fullName: Meridian.Application.Monitoring.BackpressureLevel
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Level*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.Level
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_Level
+  name: Level
+  nameWithType: BackpressureAlert.Level
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Level
+- uid: Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_QueueUtilization
+  name: QueueUtilization
+  nameWithType: BackpressureAlert.QueueUtilization
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.QueueUtilization
+- uid: Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_DroppedEventsRecent
+  name: DroppedEventsRecent
+  nameWithType: BackpressureAlert.DroppedEventsRecent
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.DroppedEventsRecent
+- uid: Meridian.Application.Monitoring.BackpressureAlert.TotalDropped*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.TotalDropped
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_TotalDropped
+  name: TotalDropped
+  nameWithType: BackpressureAlert.TotalDropped
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.TotalDropped
+- uid: Meridian.Application.Monitoring.BackpressureAlert.DropRate*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.DropRate
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_DropRate
+  name: DropRate
+  nameWithType: BackpressureAlert.DropRate
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.DropRate
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Duration*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.Duration
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_Duration
+  name: Duration
+  nameWithType: BackpressureAlert.Duration
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Duration
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.Timestamp
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_Timestamp
+  name: Timestamp
+  nameWithType: BackpressureAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Timestamp
+- uid: Meridian.Application.Monitoring.BackpressureAlert.Message*
+  commentId: Overload:Meridian.Application.Monitoring.BackpressureAlert.Message
+  href: Meridian.Application.Monitoring.BackpressureAlert.html#Meridian_Application_Monitoring_BackpressureAlert_Message
+  name: Message
+  nameWithType: BackpressureAlert.Message
+  fullName: Meridian.Application.Monitoring.BackpressureAlert.Message

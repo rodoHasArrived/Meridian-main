@@ -1,0 +1,740 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ServiceRegistryExtensions
+  commentId: T:Meridian.Application.Services.ServiceRegistryExtensions
+  id: ServiceRegistryExtensions
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.TradingCalendar)
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.Services.SampleDataGenerator)
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.DiagnosticBundleService,Meridian.Application.Services.ErrorTracker)
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.GracefulShutdownService)
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ProgressDisplayService,Meridian.Application.Services.ApiDocumentationService)
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService)
+  - Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.CredentialValidationService,Meridian.Application.Services.ConnectivityTestService,Meridian.Application.Services.PreflightChecker)
+  langs:
+  - csharp
+  - vb
+  name: ServiceRegistryExtensions
+  nameWithType: ServiceRegistryExtensions
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceRegistryExtensions
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Extension methods for service registration with common patterns.
+  example: []
+  syntax:
+    content: public static class ServiceRegistryExtensions
+    content.vb: Public Module ServiceRegistryExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService)
+  id: RegisterSetupServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterSetupServices(ServiceRegistry, ConfigurationWizard?, AutoConfigurationService?)
+  nameWithType: ServiceRegistryExtensions.RegisterSetupServices(ServiceRegistry, ConfigurationWizard?, AutoConfigurationService?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.ConfigurationWizard?, Meridian.Application.Services.AutoConfigurationService?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSetupServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers setup services (configuration, wizard, auto-config).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterSetupServices(this ServiceRegistry registry, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: wizard
+      type: Meridian.Application.Services.ConfigurationWizard
+    - id: autoConfig
+      type: Meridian.Application.Services.AutoConfigurationService
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterSetupServices(registry As ServiceRegistry, wizard As ConfigurationWizard = Nothing, autoConfig As AutoConfigurationService = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterSetupServices(ServiceRegistry, ConfigurationWizard, AutoConfigurationService)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.ConfigurationWizard, Meridian.Application.Services.AutoConfigurationService)
+  name.vb: RegisterSetupServices(ServiceRegistry, ConfigurationWizard, AutoConfigurationService)
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.CredentialValidationService,Meridian.Application.Services.ConnectivityTestService,Meridian.Application.Services.PreflightChecker)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.CredentialValidationService,Meridian.Application.Services.ConnectivityTestService,Meridian.Application.Services.PreflightChecker)
+  id: RegisterValidationServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.CredentialValidationService,Meridian.Application.Services.ConnectivityTestService,Meridian.Application.Services.PreflightChecker)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterValidationServices(ServiceRegistry, CredentialValidationService?, ConnectivityTestService?, PreflightChecker?)
+  nameWithType: ServiceRegistryExtensions.RegisterValidationServices(ServiceRegistry, CredentialValidationService?, ConnectivityTestService?, PreflightChecker?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.CredentialValidationService?, Meridian.Application.Services.ConnectivityTestService?, Meridian.Application.Services.PreflightChecker?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterValidationServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers validation services (credentials, connectivity, preflight).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterValidationServices(this ServiceRegistry registry, CredentialValidationService? credentialValidator = null, ConnectivityTestService? connectivityTest = null, PreflightChecker? preflightChecker = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: credentialValidator
+      type: Meridian.Application.Services.CredentialValidationService
+    - id: connectivityTest
+      type: Meridian.Application.Services.ConnectivityTestService
+    - id: preflightChecker
+      type: Meridian.Application.Services.PreflightChecker
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterValidationServices(registry As ServiceRegistry, credentialValidator As CredentialValidationService = Nothing, connectivityTest As ConnectivityTestService = Nothing, preflightChecker As PreflightChecker = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterValidationServices(ServiceRegistry, CredentialValidationService, ConnectivityTestService, PreflightChecker)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.CredentialValidationService, Meridian.Application.Services.ConnectivityTestService, Meridian.Application.Services.PreflightChecker)
+  name.vb: RegisterValidationServices(ServiceRegistry, CredentialValidationService, ConnectivityTestService, PreflightChecker)
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.DiagnosticBundleService,Meridian.Application.Services.ErrorTracker)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.DiagnosticBundleService,Meridian.Application.Services.ErrorTracker)
+  id: RegisterDiagnosticServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.DiagnosticBundleService,Meridian.Application.Services.ErrorTracker)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterDiagnosticServices(ServiceRegistry, DiagnosticBundleService?, ErrorTracker?)
+  nameWithType: ServiceRegistryExtensions.RegisterDiagnosticServices(ServiceRegistry, DiagnosticBundleService?, ErrorTracker?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.DiagnosticBundleService?, Meridian.Application.Services.ErrorTracker?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterDiagnosticServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers diagnostic services (error tracking, diagnostics bundle).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterDiagnosticServices(this ServiceRegistry registry, DiagnosticBundleService? diagnosticBundle = null, ErrorTracker? errorTracker = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: diagnosticBundle
+      type: Meridian.Application.Services.DiagnosticBundleService
+    - id: errorTracker
+      type: Meridian.Application.Services.ErrorTracker
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterDiagnosticServices(registry As ServiceRegistry, diagnosticBundle As DiagnosticBundleService = Nothing, errorTracker As ErrorTracker = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterDiagnosticServices(ServiceRegistry, DiagnosticBundleService, ErrorTracker)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.DiagnosticBundleService, Meridian.Application.Services.ErrorTracker)
+  name.vb: RegisterDiagnosticServices(ServiceRegistry, DiagnosticBundleService, ErrorTracker)
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.GracefulShutdownService)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.GracefulShutdownService)
+  id: RegisterLifecycleServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.GracefulShutdownService)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterLifecycleServices(ServiceRegistry, GracefulShutdownService?)
+  nameWithType: ServiceRegistryExtensions.RegisterLifecycleServices(ServiceRegistry, GracefulShutdownService?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.GracefulShutdownService?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterLifecycleServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers lifecycle services (shutdown, startup summary).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterLifecycleServices(this ServiceRegistry registry, GracefulShutdownService? shutdownService = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: shutdownService
+      type: Meridian.Application.Services.GracefulShutdownService
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterLifecycleServices(registry As ServiceRegistry, shutdownService As GracefulShutdownService = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterLifecycleServices(ServiceRegistry, GracefulShutdownService)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.GracefulShutdownService)
+  name.vb: RegisterLifecycleServices(ServiceRegistry, GracefulShutdownService)
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.Services.SampleDataGenerator)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.Services.SampleDataGenerator)
+  id: RegisterDataServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.Services.SampleDataGenerator)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterDataServices(ServiceRegistry, HistoricalDataQueryService?, SampleDataGenerator?)
+  nameWithType: ServiceRegistryExtensions.RegisterDataServices(ServiceRegistry, HistoricalDataQueryService?, SampleDataGenerator?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.HistoricalDataQueryService?, Meridian.Application.Services.SampleDataGenerator?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterDataServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 265
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers data services (historical query, sample generator).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterDataServices(this ServiceRegistry registry, HistoricalDataQueryService? historicalQuery = null, SampleDataGenerator? sampleGenerator = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: historicalQuery
+      type: Meridian.Application.Services.HistoricalDataQueryService
+    - id: sampleGenerator
+      type: Meridian.Application.Services.SampleDataGenerator
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterDataServices(registry As ServiceRegistry, historicalQuery As HistoricalDataQueryService = Nothing, sampleGenerator As SampleDataGenerator = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterDataServices(ServiceRegistry, HistoricalDataQueryService, SampleDataGenerator)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.HistoricalDataQueryService, Meridian.Application.Services.SampleDataGenerator)
+  name.vb: RegisterDataServices(ServiceRegistry, HistoricalDataQueryService, SampleDataGenerator)
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.TradingCalendar)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.TradingCalendar)
+  id: RegisterCalendarServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.TradingCalendar)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterCalendarServices(ServiceRegistry, TradingCalendar?)
+  nameWithType: ServiceRegistryExtensions.RegisterCalendarServices(ServiceRegistry, TradingCalendar?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.TradingCalendar?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterCalendarServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers calendar services (trading calendar).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterCalendarServices(this ServiceRegistry registry, TradingCalendar? tradingCalendar = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: tradingCalendar
+      type: Meridian.Application.Services.TradingCalendar
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterCalendarServices(registry As ServiceRegistry, tradingCalendar As TradingCalendar = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterCalendarServices(ServiceRegistry, TradingCalendar)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.TradingCalendar)
+  name.vb: RegisterCalendarServices(ServiceRegistry, TradingCalendar)
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ProgressDisplayService,Meridian.Application.Services.ApiDocumentationService)
+  commentId: M:Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ProgressDisplayService,Meridian.Application.Services.ApiDocumentationService)
+  id: RegisterReportingServices(Meridian.Application.Services.ServiceRegistry,Meridian.Application.Services.ProgressDisplayService,Meridian.Application.Services.ApiDocumentationService)
+  isExtensionMethod: true
+  parent: Meridian.Application.Services.ServiceRegistryExtensions
+  langs:
+  - csharp
+  - vb
+  name: RegisterReportingServices(ServiceRegistry, ProgressDisplayService?, ApiDocumentationService?)
+  nameWithType: ServiceRegistryExtensions.RegisterReportingServices(ServiceRegistry, ProgressDisplayService?, ApiDocumentationService?)
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.ProgressDisplayService?, Meridian.Application.Services.ApiDocumentationService?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterReportingServices
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers reporting services (progress, webhooks, documentation).
+  example: []
+  syntax:
+    content: public static ServiceRegistry RegisterReportingServices(this ServiceRegistry registry, ProgressDisplayService? progressDisplay = null, ApiDocumentationService? apiDocs = null)
+    parameters:
+    - id: registry
+      type: Meridian.Application.Services.ServiceRegistry
+    - id: progressDisplay
+      type: Meridian.Application.Services.ProgressDisplayService
+    - id: apiDocs
+      type: Meridian.Application.Services.ApiDocumentationService
+    return:
+      type: Meridian.Application.Services.ServiceRegistry
+    content.vb: Public Shared Function RegisterReportingServices(registry As ServiceRegistry, progressDisplay As ProgressDisplayService = Nothing, apiDocs As ApiDocumentationService = Nothing) As ServiceRegistry
+  overload: Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices*
+  nameWithType.vb: ServiceRegistryExtensions.RegisterReportingServices(ServiceRegistry, ProgressDisplayService, ApiDocumentationService)
+  fullName.vb: Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices(Meridian.Application.Services.ServiceRegistry, Meridian.Application.Services.ProgressDisplayService, Meridian.Application.Services.ApiDocumentationService)
+  name.vb: RegisterReportingServices(ServiceRegistry, ProgressDisplayService, ApiDocumentationService)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterSetupServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_ConfigurationWizard_Meridian_Application_Services_AutoConfigurationService_
+  name: RegisterSetupServices
+  nameWithType: ServiceRegistryExtensions.RegisterSetupServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterSetupServices
+- uid: Meridian.Application.Services.ServiceRegistry
+  commentId: T:Meridian.Application.Services.ServiceRegistry
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ServiceRegistry.html
+  name: ServiceRegistry
+  nameWithType: ServiceRegistry
+  fullName: Meridian.Application.Services.ServiceRegistry
+- uid: Meridian.Application.Services.ConfigurationWizard
+  commentId: T:Meridian.Application.Services.ConfigurationWizard
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigurationWizard.html
+  name: ConfigurationWizard
+  nameWithType: ConfigurationWizard
+  fullName: Meridian.Application.Services.ConfigurationWizard
+- uid: Meridian.Application.Services.AutoConfigurationService
+  commentId: T:Meridian.Application.Services.AutoConfigurationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.AutoConfigurationService.html
+  name: AutoConfigurationService
+  nameWithType: AutoConfigurationService
+  fullName: Meridian.Application.Services.AutoConfigurationService
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterValidationServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_CredentialValidationService_Meridian_Application_Services_ConnectivityTestService_Meridian_Application_Services_PreflightChecker_
+  name: RegisterValidationServices
+  nameWithType: ServiceRegistryExtensions.RegisterValidationServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterValidationServices
+- uid: Meridian.Application.Services.CredentialValidationService
+  commentId: T:Meridian.Application.Services.CredentialValidationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.CredentialValidationService.html
+  name: CredentialValidationService
+  nameWithType: CredentialValidationService
+  fullName: Meridian.Application.Services.CredentialValidationService
+- uid: Meridian.Application.Services.ConnectivityTestService
+  commentId: T:Meridian.Application.Services.ConnectivityTestService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConnectivityTestService.html
+  name: ConnectivityTestService
+  nameWithType: ConnectivityTestService
+  fullName: Meridian.Application.Services.ConnectivityTestService
+- uid: Meridian.Application.Services.PreflightChecker
+  commentId: T:Meridian.Application.Services.PreflightChecker
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.PreflightChecker.html
+  name: PreflightChecker
+  nameWithType: PreflightChecker
+  fullName: Meridian.Application.Services.PreflightChecker
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterDiagnosticServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_DiagnosticBundleService_Meridian_Application_Services_ErrorTracker_
+  name: RegisterDiagnosticServices
+  nameWithType: ServiceRegistryExtensions.RegisterDiagnosticServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDiagnosticServices
+- uid: Meridian.Application.Services.DiagnosticBundleService
+  commentId: T:Meridian.Application.Services.DiagnosticBundleService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.DiagnosticBundleService.html
+  name: DiagnosticBundleService
+  nameWithType: DiagnosticBundleService
+  fullName: Meridian.Application.Services.DiagnosticBundleService
+- uid: Meridian.Application.Services.ErrorTracker
+  commentId: T:Meridian.Application.Services.ErrorTracker
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ErrorTracker.html
+  name: ErrorTracker
+  nameWithType: ErrorTracker
+  fullName: Meridian.Application.Services.ErrorTracker
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterLifecycleServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_GracefulShutdownService_
+  name: RegisterLifecycleServices
+  nameWithType: ServiceRegistryExtensions.RegisterLifecycleServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterLifecycleServices
+- uid: Meridian.Application.Services.GracefulShutdownService
+  commentId: T:Meridian.Application.Services.GracefulShutdownService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GracefulShutdownService.html
+  name: GracefulShutdownService
+  nameWithType: GracefulShutdownService
+  fullName: Meridian.Application.Services.GracefulShutdownService
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterDataServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_HistoricalDataQueryService_Meridian_Application_Services_SampleDataGenerator_
+  name: RegisterDataServices
+  nameWithType: ServiceRegistryExtensions.RegisterDataServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterDataServices
+- uid: Meridian.Application.Services.HistoricalDataQueryService
+  commentId: T:Meridian.Application.Services.HistoricalDataQueryService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.HistoricalDataQueryService.html
+  name: HistoricalDataQueryService
+  nameWithType: HistoricalDataQueryService
+  fullName: Meridian.Application.Services.HistoricalDataQueryService
+- uid: Meridian.Application.Services.SampleDataGenerator
+  commentId: T:Meridian.Application.Services.SampleDataGenerator
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.SampleDataGenerator.html
+  name: SampleDataGenerator
+  nameWithType: SampleDataGenerator
+  fullName: Meridian.Application.Services.SampleDataGenerator
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterCalendarServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_TradingCalendar_
+  name: RegisterCalendarServices
+  nameWithType: ServiceRegistryExtensions.RegisterCalendarServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterCalendarServices
+- uid: Meridian.Application.Services.TradingCalendar
+  commentId: T:Meridian.Application.Services.TradingCalendar
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.TradingCalendar.html
+  name: TradingCalendar
+  nameWithType: TradingCalendar
+  fullName: Meridian.Application.Services.TradingCalendar
+- uid: Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices*
+  commentId: Overload:Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices
+  href: Meridian.Application.Services.ServiceRegistryExtensions.html#Meridian_Application_Services_ServiceRegistryExtensions_RegisterReportingServices_Meridian_Application_Services_ServiceRegistry_Meridian_Application_Services_ProgressDisplayService_Meridian_Application_Services_ApiDocumentationService_
+  name: RegisterReportingServices
+  nameWithType: ServiceRegistryExtensions.RegisterReportingServices
+  fullName: Meridian.Application.Services.ServiceRegistryExtensions.RegisterReportingServices
+- uid: Meridian.Application.Services.ProgressDisplayService
+  commentId: T:Meridian.Application.Services.ProgressDisplayService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ProgressDisplayService.html
+  name: ProgressDisplayService
+  nameWithType: ProgressDisplayService
+  fullName: Meridian.Application.Services.ProgressDisplayService
+- uid: Meridian.Application.Services.ApiDocumentationService
+  commentId: T:Meridian.Application.Services.ApiDocumentationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ApiDocumentationService.html
+  name: ApiDocumentationService
+  nameWithType: ApiDocumentationService
+  fullName: Meridian.Application.Services.ApiDocumentationService

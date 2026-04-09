@@ -1,0 +1,857 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Logging.LoggingSetup
+  commentId: T:Meridian.Application.Logging.LoggingSetup
+  id: LoggingSetup
+  parent: Meridian.Application.Logging
+  children:
+  - Meridian.Application.Logging.LoggingSetup.CloseAndFlush
+  - Meridian.Application.Logging.LoggingSetup.CurrentLevel
+  - Meridian.Application.Logging.LoggingSetup.ForContext(System.String)
+  - Meridian.Application.Logging.LoggingSetup.ForContext(System.Type)
+  - Meridian.Application.Logging.LoggingSetup.ForContext``1
+  - Meridian.Application.Logging.LoggingSetup.Initialize(Microsoft.Extensions.Configuration.IConfiguration,System.String)
+  - Meridian.Application.Logging.LoggingSetup.IsDebugEnabled
+  - Meridian.Application.Logging.LoggingSetup.Logger
+  - Meridian.Application.Logging.LoggingSetup.SetLogLevel(Serilog.Events.LogEventLevel)
+  - Meridian.Application.Logging.LoggingSetup.SetLogLevel(System.String)
+  - Meridian.Application.Logging.LoggingSetup.ToggleDebug
+  langs:
+  - csharp
+  - vb
+  name: LoggingSetup
+  nameWithType: LoggingSetup
+  fullName: Meridian.Application.Logging.LoggingSetup
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoggingSetup
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: >-
+    Configures Serilog logging infrastructure for the Meridian.
+
+    Supports structured logging with console and file sinks, and runtime log level toggling (QW-53).
+  example: []
+  syntax:
+    content: public static class LoggingSetup
+    content.vb: Public Module LoggingSetup
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Logging.LoggingSetup.Logger
+  commentId: P:Meridian.Application.Logging.LoggingSetup.Logger
+  id: Logger
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: Logger
+  nameWithType: LoggingSetup.Logger
+  fullName: Meridian.Application.Logging.LoggingSetup.Logger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Logger
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Gets the configured logger instance.
+  example: []
+  syntax:
+    content: public static ILogger Logger { get; }
+    parameters: []
+    return:
+      type: Serilog.ILogger
+    content.vb: Public Shared ReadOnly Property Logger As ILogger
+  overload: Meridian.Application.Logging.LoggingSetup.Logger*
+- uid: Meridian.Application.Logging.LoggingSetup.CurrentLevel
+  commentId: P:Meridian.Application.Logging.LoggingSetup.CurrentLevel
+  id: CurrentLevel
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: CurrentLevel
+  nameWithType: LoggingSetup.CurrentLevel
+  fullName: Meridian.Application.Logging.LoggingSetup.CurrentLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentLevel
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Gets the current minimum log level.
+  example: []
+  syntax:
+    content: public static LogEventLevel CurrentLevel { get; }
+    parameters: []
+    return:
+      type: Serilog.Events.LogEventLevel
+    content.vb: Public Shared ReadOnly Property CurrentLevel As LogEventLevel
+  overload: Meridian.Application.Logging.LoggingSetup.CurrentLevel*
+- uid: Meridian.Application.Logging.LoggingSetup.SetLogLevel(Serilog.Events.LogEventLevel)
+  commentId: M:Meridian.Application.Logging.LoggingSetup.SetLogLevel(Serilog.Events.LogEventLevel)
+  id: SetLogLevel(Serilog.Events.LogEventLevel)
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: SetLogLevel(LogEventLevel)
+  nameWithType: LoggingSetup.SetLogLevel(LogEventLevel)
+  fullName: Meridian.Application.Logging.LoggingSetup.SetLogLevel(Serilog.Events.LogEventLevel)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetLogLevel
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: 'Sets the minimum log level at runtime (QW-53: Log Level Runtime Toggle).'
+  example: []
+  syntax:
+    content: public static void SetLogLevel(LogEventLevel level)
+    parameters:
+    - id: level
+      type: Serilog.Events.LogEventLevel
+      description: The new minimum log level.
+    content.vb: Public Shared Sub SetLogLevel(level As LogEventLevel)
+  overload: Meridian.Application.Logging.LoggingSetup.SetLogLevel*
+- uid: Meridian.Application.Logging.LoggingSetup.SetLogLevel(System.String)
+  commentId: M:Meridian.Application.Logging.LoggingSetup.SetLogLevel(System.String)
+  id: SetLogLevel(System.String)
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: SetLogLevel(string)
+  nameWithType: LoggingSetup.SetLogLevel(string)
+  fullName: Meridian.Application.Logging.LoggingSetup.SetLogLevel(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetLogLevel
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: >-
+    Sets the minimum log level at runtime using a string (case-insensitive).
+
+    Valid values: Verbose, Debug, Information, Warning, Error, Fatal
+  example: []
+  syntax:
+    content: public static bool SetLogLevel(string levelName)
+    parameters:
+    - id: levelName
+      type: System.String
+      description: The log level name.
+    return:
+      type: System.Boolean
+      description: True if the level was set successfully.
+    content.vb: Public Shared Function SetLogLevel(levelName As String) As Boolean
+  overload: Meridian.Application.Logging.LoggingSetup.SetLogLevel*
+  nameWithType.vb: LoggingSetup.SetLogLevel(String)
+  fullName.vb: Meridian.Application.Logging.LoggingSetup.SetLogLevel(String)
+  name.vb: SetLogLevel(String)
+- uid: Meridian.Application.Logging.LoggingSetup.ToggleDebug
+  commentId: M:Meridian.Application.Logging.LoggingSetup.ToggleDebug
+  id: ToggleDebug
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: ToggleDebug()
+  nameWithType: LoggingSetup.ToggleDebug()
+  fullName: Meridian.Application.Logging.LoggingSetup.ToggleDebug()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToggleDebug
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Toggles between Information and Debug log levels.
+  example: []
+  syntax:
+    content: public static void ToggleDebug()
+    content.vb: Public Shared Sub ToggleDebug()
+  overload: Meridian.Application.Logging.LoggingSetup.ToggleDebug*
+- uid: Meridian.Application.Logging.LoggingSetup.IsDebugEnabled
+  commentId: P:Meridian.Application.Logging.LoggingSetup.IsDebugEnabled
+  id: IsDebugEnabled
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: IsDebugEnabled
+  nameWithType: LoggingSetup.IsDebugEnabled
+  fullName: Meridian.Application.Logging.LoggingSetup.IsDebugEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsDebugEnabled
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Gets whether debug logging is currently enabled.
+  example: []
+  syntax:
+    content: public static bool IsDebugEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Shared ReadOnly Property IsDebugEnabled As Boolean
+  overload: Meridian.Application.Logging.LoggingSetup.IsDebugEnabled*
+- uid: Meridian.Application.Logging.LoggingSetup.Initialize(Microsoft.Extensions.Configuration.IConfiguration,System.String)
+  commentId: M:Meridian.Application.Logging.LoggingSetup.Initialize(Microsoft.Extensions.Configuration.IConfiguration,System.String)
+  id: Initialize(Microsoft.Extensions.Configuration.IConfiguration,System.String)
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: Initialize(IConfiguration?, string)
+  nameWithType: LoggingSetup.Initialize(IConfiguration?, string)
+  fullName: Meridian.Application.Logging.LoggingSetup.Initialize(Microsoft.Extensions.Configuration.IConfiguration?, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Initialize
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: >-
+    Initializes the logging infrastructure with default settings.
+
+    Call this early in application startup.
+  example: []
+  syntax:
+    content: public static void Initialize(IConfiguration? configuration = null, string dataRoot = "data")
+    parameters:
+    - id: configuration
+      type: Microsoft.Extensions.Configuration.IConfiguration
+      description: Optional configuration for customizing log settings.
+    - id: dataRoot
+      type: System.String
+      description: Root directory for log files.
+    content.vb: Public Shared Sub Initialize(configuration As IConfiguration = Nothing, dataRoot As String = "data")
+  overload: Meridian.Application.Logging.LoggingSetup.Initialize*
+  nameWithType.vb: LoggingSetup.Initialize(IConfiguration, String)
+  fullName.vb: Meridian.Application.Logging.LoggingSetup.Initialize(Microsoft.Extensions.Configuration.IConfiguration, String)
+  name.vb: Initialize(IConfiguration, String)
+- uid: Meridian.Application.Logging.LoggingSetup.ForContext``1
+  commentId: M:Meridian.Application.Logging.LoggingSetup.ForContext``1
+  id: ForContext``1
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: ForContext<T>()
+  nameWithType: LoggingSetup.ForContext<T>()
+  fullName: Meridian.Application.Logging.LoggingSetup.ForContext<T>()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForContext
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Creates a contextual logger for a specific component.
+  example: []
+  syntax:
+    content: public static ILogger ForContext<T>()
+    typeParameters:
+    - id: T
+    return:
+      type: Serilog.ILogger
+    content.vb: Public Shared Function ForContext(Of T)() As ILogger
+  overload: Meridian.Application.Logging.LoggingSetup.ForContext*
+  nameWithType.vb: LoggingSetup.ForContext(Of T)()
+  fullName.vb: Meridian.Application.Logging.LoggingSetup.ForContext(Of T)()
+  name.vb: ForContext(Of T)()
+- uid: Meridian.Application.Logging.LoggingSetup.ForContext(System.String)
+  commentId: M:Meridian.Application.Logging.LoggingSetup.ForContext(System.String)
+  id: ForContext(System.String)
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: ForContext(string)
+  nameWithType: LoggingSetup.ForContext(string)
+  fullName: Meridian.Application.Logging.LoggingSetup.ForContext(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForContext
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Creates a contextual logger with a custom source context.
+  example: []
+  syntax:
+    content: public static ILogger ForContext(string sourceContext)
+    parameters:
+    - id: sourceContext
+      type: System.String
+    return:
+      type: Serilog.ILogger
+    content.vb: Public Shared Function ForContext(sourceContext As String) As ILogger
+  overload: Meridian.Application.Logging.LoggingSetup.ForContext*
+  nameWithType.vb: LoggingSetup.ForContext(String)
+  fullName.vb: Meridian.Application.Logging.LoggingSetup.ForContext(String)
+  name.vb: ForContext(String)
+- uid: Meridian.Application.Logging.LoggingSetup.ForContext(System.Type)
+  commentId: M:Meridian.Application.Logging.LoggingSetup.ForContext(System.Type)
+  id: ForContext(System.Type)
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: ForContext(Type)
+  nameWithType: LoggingSetup.ForContext(Type)
+  fullName: Meridian.Application.Logging.LoggingSetup.ForContext(System.Type)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForContext
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: Creates a contextual logger for a specific type.
+  example: []
+  syntax:
+    content: public static ILogger ForContext(Type sourceType)
+    parameters:
+    - id: sourceType
+      type: System.Type
+    return:
+      type: Serilog.ILogger
+    content.vb: Public Shared Function ForContext(sourceType As Type) As ILogger
+  overload: Meridian.Application.Logging.LoggingSetup.ForContext*
+- uid: Meridian.Application.Logging.LoggingSetup.CloseAndFlush
+  commentId: M:Meridian.Application.Logging.LoggingSetup.CloseAndFlush
+  id: CloseAndFlush
+  parent: Meridian.Application.Logging.LoggingSetup
+  langs:
+  - csharp
+  - vb
+  name: CloseAndFlush()
+  nameWithType: LoggingSetup.CloseAndFlush()
+  fullName: Meridian.Application.Logging.LoggingSetup.CloseAndFlush()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Logging/LoggingSetup.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CloseAndFlush
+    path: ../../src/Meridian.Core/Logging/LoggingSetup.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Logging
+  summary: >-
+    Flushes any buffered log entries and closes the logger.
+
+    Call this during application shutdown.
+  example: []
+  syntax:
+    content: public static void CloseAndFlush()
+    content.vb: Public Shared Sub CloseAndFlush()
+  overload: Meridian.Application.Logging.LoggingSetup.CloseAndFlush*
+references:
+- uid: Meridian.Application.Logging
+  commentId: N:Meridian.Application.Logging
+  href: Meridian.html
+  name: Meridian.Application.Logging
+  nameWithType: Meridian.Application.Logging
+  fullName: Meridian.Application.Logging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Logging
+    name: Logging
+    href: Meridian.Application.Logging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Logging
+    name: Logging
+    href: Meridian.Application.Logging.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Logging.LoggingSetup.Logger*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.Logger
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_Logger
+  name: Logger
+  nameWithType: LoggingSetup.Logger
+  fullName: Meridian.Application.Logging.LoggingSetup.Logger
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Logging.LoggingSetup.CurrentLevel*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.CurrentLevel
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_CurrentLevel
+  name: CurrentLevel
+  nameWithType: LoggingSetup.CurrentLevel
+  fullName: Meridian.Application.Logging.LoggingSetup.CurrentLevel
+- uid: Serilog.Events.LogEventLevel
+  commentId: T:Serilog.Events.LogEventLevel
+  parent: Serilog.Events
+  isExternal: true
+  name: LogEventLevel
+  nameWithType: LogEventLevel
+  fullName: Serilog.Events.LogEventLevel
+- uid: Serilog.Events
+  commentId: N:Serilog.Events
+  isExternal: true
+  name: Serilog.Events
+  nameWithType: Serilog.Events
+  fullName: Serilog.Events
+  spec.csharp:
+  - uid: Serilog
+    name: Serilog
+    isExternal: true
+  - name: .
+  - uid: Serilog.Events
+    name: Events
+    isExternal: true
+  spec.vb:
+  - uid: Serilog
+    name: Serilog
+    isExternal: true
+  - name: .
+  - uid: Serilog.Events
+    name: Events
+    isExternal: true
+- uid: Meridian.Application.Logging.LoggingSetup.SetLogLevel*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.SetLogLevel
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_SetLogLevel_Serilog_Events_LogEventLevel_
+  name: SetLogLevel
+  nameWithType: LoggingSetup.SetLogLevel
+  fullName: Meridian.Application.Logging.LoggingSetup.SetLogLevel
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Logging.LoggingSetup.ToggleDebug*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.ToggleDebug
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_ToggleDebug
+  name: ToggleDebug
+  nameWithType: LoggingSetup.ToggleDebug
+  fullName: Meridian.Application.Logging.LoggingSetup.ToggleDebug
+- uid: Meridian.Application.Logging.LoggingSetup.IsDebugEnabled*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.IsDebugEnabled
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_IsDebugEnabled
+  name: IsDebugEnabled
+  nameWithType: LoggingSetup.IsDebugEnabled
+  fullName: Meridian.Application.Logging.LoggingSetup.IsDebugEnabled
+- uid: Meridian.Application.Logging.LoggingSetup.Initialize*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.Initialize
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_Initialize_Microsoft_Extensions_Configuration_IConfiguration_System_String_
+  name: Initialize
+  nameWithType: LoggingSetup.Initialize
+  fullName: Meridian.Application.Logging.LoggingSetup.Initialize
+- uid: Microsoft.Extensions.Configuration.IConfiguration
+  commentId: T:Microsoft.Extensions.Configuration.IConfiguration
+  parent: Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration
+  name: IConfiguration
+  nameWithType: IConfiguration
+  fullName: Microsoft.Extensions.Configuration.IConfiguration
+- uid: Microsoft.Extensions.Configuration
+  commentId: N:Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Configuration
+  nameWithType: Microsoft.Extensions.Configuration
+  fullName: Microsoft.Extensions.Configuration
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+- uid: Meridian.Application.Logging.LoggingSetup.ForContext*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.ForContext
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_ForContext__1
+  name: ForContext
+  nameWithType: LoggingSetup.ForContext
+  fullName: Meridian.Application.Logging.LoggingSetup.ForContext
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: Meridian.Application.Logging.LoggingSetup.CloseAndFlush*
+  commentId: Overload:Meridian.Application.Logging.LoggingSetup.CloseAndFlush
+  href: Meridian.Application.Logging.LoggingSetup.html#Meridian_Application_Logging_LoggingSetup_CloseAndFlush
+  name: CloseAndFlush
+  nameWithType: LoggingSetup.CloseAndFlush
+  fullName: Meridian.Application.Logging.LoggingSetup.CloseAndFlush

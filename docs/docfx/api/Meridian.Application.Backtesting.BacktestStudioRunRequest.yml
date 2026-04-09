@@ -1,0 +1,978 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunRequest
+  id: BacktestStudioRunRequest
+  parent: Meridian.Application.Backtesting
+  children:
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Backtesting.Sdk.BacktestRequest,Meridian.Backtesting.Sdk.IBacktestStrategy,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId
+  - Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName
+  langs:
+  - csharp
+  - vb
+  name: BacktestStudioRunRequest
+  nameWithType: BacktestStudioRunRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestStudioRunRequest
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Application-level request for launching a Backtest Studio run through a concrete engine.
+  example: []
+  syntax:
+    content: 'public sealed record BacktestStudioRunRequest : IEquatable<BacktestStudioRunRequest>'
+    content.vb: Public NotInheritable Class BacktestStudioRunRequest Implements IEquatable(Of BacktestStudioRunRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Backtesting.BacktestStudioRunRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Backtesting.Sdk.BacktestRequest,Meridian.Backtesting.Sdk.IBacktestStrategy,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Application.Backtesting.BacktestStudioRunRequest.#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Backtesting.Sdk.BacktestRequest,Meridian.Backtesting.Sdk.IBacktestStrategy,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Backtesting.Sdk.BacktestRequest,Meridian.Backtesting.Sdk.IBacktestStrategy,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: BacktestStudioRunRequest(string, string, StrategyRunEngine, BacktestRequest, IBacktestStrategy?, string?, string?, string?, IReadOnlyDictionary<string, string>?, IReadOnlyDictionary<string, string>?)
+  nameWithType: BacktestStudioRunRequest.BacktestStudioRunRequest(string, string, StrategyRunEngine, BacktestRequest, IBacktestStrategy?, string?, string?, string?, IReadOnlyDictionary<string, string>?, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.BacktestStudioRunRequest(string, string, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Backtesting.Sdk.BacktestRequest, Meridian.Backtesting.Sdk.IBacktestStrategy?, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Application-level request for launching a Backtest Studio run through a concrete engine.
+  example: []
+  syntax:
+    content: public BacktestStudioRunRequest(string StrategyId, string StrategyName, StrategyRunEngine Engine, BacktestRequest NativeRequest, IBacktestStrategy? Strategy = null, string? DatasetReference = null, string? FeedReference = null, string? BenchmarkSymbol = null, IReadOnlyDictionary<string, string>? Parameters = null, IReadOnlyDictionary<string, string>? ExternalEngineOptions = null)
+    parameters:
+    - id: StrategyId
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: Engine
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+    - id: NativeRequest
+      type: Meridian.Backtesting.Sdk.BacktestRequest
+    - id: Strategy
+      type: Meridian.Backtesting.Sdk.IBacktestStrategy
+    - id: DatasetReference
+      type: System.String
+    - id: FeedReference
+      type: System.String
+    - id: BenchmarkSymbol
+      type: System.String
+    - id: Parameters
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    - id: ExternalEngineOptions
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(StrategyId As String, StrategyName As String, Engine As StrategyRunEngine, NativeRequest As BacktestRequest, Strategy As IBacktestStrategy = Nothing, DatasetReference As String = Nothing, FeedReference As String = Nothing, BenchmarkSymbol As String = Nothing, Parameters As IReadOnlyDictionary(Of String, String) = Nothing, ExternalEngineOptions As IReadOnlyDictionary(Of String, String) = Nothing)
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.#ctor*
+  nameWithType.vb: BacktestStudioRunRequest.New(String, String, StrategyRunEngine, BacktestRequest, IBacktestStrategy, String, String, String, IReadOnlyDictionary(Of String, String), IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Application.Backtesting.BacktestStudioRunRequest.New(String, String, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Backtesting.Sdk.BacktestRequest, Meridian.Backtesting.Sdk.IBacktestStrategy, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String), System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(String, String, StrategyRunEngine, BacktestRequest, IBacktestStrategy, String, String, String, IReadOnlyDictionary(Of String, String), IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId
+  id: StrategyId
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: BacktestStudioRunRequest.StrategyId
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName
+  id: StrategyName
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: BacktestStudioRunRequest.StrategyName
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine
+  id: Engine
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: Engine
+  nameWithType: BacktestStudioRunRequest.Engine
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Engine
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public StrategyRunEngine Engine { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+    content.vb: Public Property Engine As StrategyRunEngine
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest
+  id: NativeRequest
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: NativeRequest
+  nameWithType: BacktestStudioRunRequest.NativeRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NativeRequest
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public BacktestRequest NativeRequest { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestRequest
+    content.vb: Public Property NativeRequest As BacktestRequest
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy
+  id: Strategy
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: Strategy
+  nameWithType: BacktestStudioRunRequest.Strategy
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strategy
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public IBacktestStrategy? Strategy { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.IBacktestStrategy
+    content.vb: Public Property Strategy As IBacktestStrategy
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference
+  id: DatasetReference
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: DatasetReference
+  nameWithType: BacktestStudioRunRequest.DatasetReference
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatasetReference
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string? DatasetReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DatasetReference As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference
+  id: FeedReference
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: FeedReference
+  nameWithType: BacktestStudioRunRequest.FeedReference
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeedReference
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string? FeedReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FeedReference As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol
+  id: BenchmarkSymbol
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: BenchmarkSymbol
+  nameWithType: BacktestStudioRunRequest.BenchmarkSymbol
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BenchmarkSymbol
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string? BenchmarkSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BenchmarkSymbol As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters
+  id: Parameters
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: Parameters
+  nameWithType: BacktestStudioRunRequest.Parameters
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parameters
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Parameters { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Parameters As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions
+  id: ExternalEngineOptions
+  parent: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  langs:
+  - csharp
+  - vb
+  name: ExternalEngineOptions
+  nameWithType: BacktestStudioRunRequest.ExternalEngineOptions
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalEngineOptions
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? ExternalEngineOptions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property ExternalEngineOptions As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions*
+references:
+- uid: Meridian.Application.Backtesting
+  commentId: N:Meridian.Application.Backtesting
+  href: Meridian.html
+  name: Meridian.Application.Backtesting
+  nameWithType: Meridian.Application.Backtesting
+  fullName: Meridian.Application.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Backtesting.BacktestStudioRunRequest}
+  commentId: T:System.IEquatable{Meridian.Application.Backtesting.BacktestStudioRunRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BacktestStudioRunRequest>
+  nameWithType: IEquatable<BacktestStudioRunRequest>
+  fullName: System.IEquatable<Meridian.Application.Backtesting.BacktestStudioRunRequest>
+  nameWithType.vb: IEquatable(Of BacktestStudioRunRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Backtesting.BacktestStudioRunRequest)
+  name.vb: IEquatable(Of BacktestStudioRunRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunRequest
+    name: BacktestStudioRunRequest
+    href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunRequest
+    name: BacktestStudioRunRequest
+    href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.#ctor*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.#ctor
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest__ctor_System_String_System_String_Meridian_Contracts_Workstation_StrategyRunEngine_Meridian_Backtesting_Sdk_BacktestRequest_Meridian_Backtesting_Sdk_IBacktestStrategy_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: BacktestStudioRunRequest
+  nameWithType: BacktestStudioRunRequest.BacktestStudioRunRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.BacktestStudioRunRequest
+  nameWithType.vb: BacktestStudioRunRequest.New
+  fullName.vb: Meridian.Application.Backtesting.BacktestStudioRunRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunEngine
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunEngine.html
+  name: StrategyRunEngine
+  nameWithType: StrategyRunEngine
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Backtesting.Sdk.BacktestRequest
+  commentId: T:Meridian.Backtesting.Sdk.BacktestRequest
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestRequest.html
+  name: BacktestRequest
+  nameWithType: BacktestRequest
+  fullName: Meridian.Backtesting.Sdk.BacktestRequest
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestStrategy
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html
+  name: IBacktestStrategy
+  nameWithType: IBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_StrategyId
+  name: StrategyId
+  nameWithType: BacktestStudioRunRequest.StrategyId
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyId
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_StrategyName
+  name: StrategyName
+  nameWithType: BacktestStudioRunRequest.StrategyName
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.StrategyName
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_Engine
+  name: Engine
+  nameWithType: BacktestStudioRunRequest.Engine
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.Engine
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_NativeRequest
+  name: NativeRequest
+  nameWithType: BacktestStudioRunRequest.NativeRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.NativeRequest
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_Strategy
+  name: Strategy
+  nameWithType: BacktestStudioRunRequest.Strategy
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.Strategy
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_DatasetReference
+  name: DatasetReference
+  nameWithType: BacktestStudioRunRequest.DatasetReference
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.DatasetReference
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_FeedReference
+  name: FeedReference
+  nameWithType: BacktestStudioRunRequest.FeedReference
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.FeedReference
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_BenchmarkSymbol
+  name: BenchmarkSymbol
+  nameWithType: BacktestStudioRunRequest.BenchmarkSymbol
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.BenchmarkSymbol
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_Parameters
+  name: Parameters
+  nameWithType: BacktestStudioRunRequest.Parameters
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.Parameters
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html#Meridian_Application_Backtesting_BacktestStudioRunRequest_ExternalEngineOptions
+  name: ExternalEngineOptions
+  nameWithType: BacktestStudioRunRequest.ExternalEngineOptions
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest.ExternalEngineOptions

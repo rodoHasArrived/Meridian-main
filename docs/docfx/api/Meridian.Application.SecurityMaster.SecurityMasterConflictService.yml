@@ -1,0 +1,1031 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  id: SecurityMasterConflictService
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.SecurityMasterConflictService.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService})
+  - Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterConflictService
+  nameWithType: SecurityMasterConflictService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterConflictService
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    In-memory conflict detection over the Security Master projection store.
+
+    Detects identifier ambiguities where multiple providers map the same identifier to
+
+    different SecurityIds.
+  example: []
+  syntax:
+    content: 'public sealed class SecurityMasterConflictService : ISecurityMasterConflictService'
+    content.vb: Public NotInheritable Class SecurityMasterConflictService Implements ISecurityMasterConflictService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService})
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterConflictService.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService})
+  id: '#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterStore,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService})'
+  parent: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterConflictService(ISecurityMasterStore, ILogger<SecurityMasterConflictService>)
+  nameWithType: SecurityMasterConflictService.SecurityMasterConflictService(ISecurityMasterStore, ILogger<SecurityMasterConflictService>)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.SecurityMasterConflictService(Meridian.Storage.SecurityMaster.ISecurityMasterStore, Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterConflictService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public SecurityMasterConflictService(ISecurityMasterStore store, ILogger<SecurityMasterConflictService> logger)
+    parameters:
+    - id: store
+      type: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService}
+    content.vb: Public Sub New(store As ISecurityMasterStore, logger As ILogger(Of SecurityMasterConflictService))
+  overload: Meridian.Application.SecurityMaster.SecurityMasterConflictService.#ctor*
+  nameWithType.vb: SecurityMasterConflictService.New(ISecurityMasterStore, ILogger(Of SecurityMasterConflictService))
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterConflictService.New(Meridian.Storage.SecurityMaster.ISecurityMasterStore, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterConflictService))
+  name.vb: New(ISecurityMasterStore, ILogger(Of SecurityMasterConflictService))
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  id: GetOpenConflictsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  langs:
+  - csharp
+  - vb
+  name: GetOpenConflictsAsync(CancellationToken)
+  nameWithType: SecurityMasterConflictService.GetOpenConflictsAsync(CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOpenConflictsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Refreshes conflict detection and returns all open conflicts.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}}
+    content.vb: Public Function GetOpenConflictsAsync(ct As CancellationToken) As Task(Of IReadOnlyList(Of SecurityMasterConflict))
+  overload: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  langs:
+  - csharp
+  - vb
+  name: GetConflictAsync(Guid, CancellationToken)
+  nameWithType: SecurityMasterConflictService.GetConflictAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConflictAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Returns a specific conflict by ID, or null if not found.
+  example: []
+  syntax:
+    content: public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
+    parameters:
+    - id: conflictId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}
+    content.vb: Public Function GetConflictAsync(conflictId As Guid, ct As CancellationToken) As Task(Of SecurityMasterConflict)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+  id: ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  langs:
+  - csharp
+  - vb
+  name: ResolveAsync(ResolveConflictRequest, CancellationToken)
+  nameWithType: SecurityMasterConflictService.ResolveAsync(ResolveConflictRequest, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Resolves or dismisses a conflict. Returns the updated record, or null if not found.
+  example: []
+  syntax:
+    content: public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}
+    content.vb: Public Function ResolveAsync(request As ResolveConflictRequest, ct As CancellationToken) As Task(Of SecurityMasterConflict)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  id: RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+  langs:
+  - csharp
+  - vb
+  name: RecordConflictsForProjectionAsync(SecurityProjectionRecord, CancellationToken)
+  nameWithType: SecurityMasterConflictService.RecordConflictsForProjectionAsync(SecurityProjectionRecord, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordConflictsForProjectionAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Checks a freshly written projection for identifier conflicts with existing securities
+
+    and records any newly found conflicts in the in-memory store.
+
+    Called automatically after every create/amend operation.
+  example: []
+  syntax:
+    content: public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+    parameters:
+    - id: projection
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordConflictsForProjectionAsync(projection As SecurityProjectionRecord, ct As CancellationToken) As Task
+  overload: Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html
+  name: ISecurityMasterConflictService
+  nameWithType: ISecurityMasterConflictService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.#ctor*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterConflictService.#ctor
+  href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html#Meridian_Application_SecurityMaster_SecurityMasterConflictService__ctor_Meridian_Storage_SecurityMaster_ISecurityMasterStore_Microsoft_Extensions_Logging_ILogger_Meridian_Application_SecurityMaster_SecurityMasterConflictService__
+  name: SecurityMasterConflictService
+  nameWithType: SecurityMasterConflictService.SecurityMasterConflictService
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.SecurityMasterConflictService
+  nameWithType.vb: SecurityMasterConflictService.New
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterConflictService.New
+  name.vb: New
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html
+  name: ISecurityMasterStore
+  nameWithType: ISecurityMasterStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterConflictService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<SecurityMasterConflictService>
+  nameWithType: ILogger<SecurityMasterConflictService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterConflictService>
+  nameWithType.vb: ILogger(Of SecurityMasterConflictService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterConflictService)
+  name.vb: ILogger(Of SecurityMasterConflictService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+    name: SecurityMasterConflictService
+    href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService
+    name: SecurityMasterConflictService
+    href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html
+  - name: )
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html#Meridian_Application_SecurityMaster_SecurityMasterConflictService_GetOpenConflictsAsync_System_Threading_CancellationToken_
+  name: GetOpenConflictsAsync
+  nameWithType: SecurityMasterConflictService.GetOpenConflictsAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetOpenConflictsAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_GetOpenConflictsAsync_System_Threading_CancellationToken_
+  name: GetOpenConflictsAsync(CancellationToken)
+  nameWithType: ISecurityMasterConflictService.GetOpenConflictsAsync(CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+    name: GetOpenConflictsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_GetOpenConflictsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetOpenConflictsAsync(System.Threading.CancellationToken)
+    name: GetOpenConflictsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_GetOpenConflictsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecurityMasterConflict>>
+  nameWithType: Task<IReadOnlyList<SecurityMasterConflict>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterConflict>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecurityMasterConflict))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterConflict))
+  name.vb: Task(Of IReadOnlyList(Of SecurityMasterConflict))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterConflict
+    name: SecurityMasterConflict
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterConflict
+    name: SecurityMasterConflict
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html#Meridian_Application_SecurityMaster_SecurityMasterConflictService_GetConflictAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetConflictAsync
+  nameWithType: SecurityMasterConflictService.GetConflictAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.GetConflictAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_GetConflictAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetConflictAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterConflictService.GetConflictAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetConflictAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetConflictAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_GetConflictAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.GetConflictAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetConflictAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_GetConflictAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityMasterConflict}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityMasterConflict>
+  nameWithType: Task<SecurityMasterConflict>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityMasterConflict>
+  nameWithType.vb: Task(Of SecurityMasterConflict)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityMasterConflict)
+  name.vb: Task(Of SecurityMasterConflict)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterConflict
+    name: SecurityMasterConflict
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterConflict
+    name: SecurityMasterConflict
+  - name: )
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html#Meridian_Application_SecurityMaster_SecurityMasterConflictService_ResolveAsync_Meridian_Contracts_SecurityMaster_ResolveConflictRequest_System_Threading_CancellationToken_
+  name: ResolveAsync
+  nameWithType: SecurityMasterConflictService.ResolveAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.ResolveAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_ResolveAsync_Meridian_Contracts_SecurityMaster_ResolveConflictRequest_System_Threading_CancellationToken_
+  name: ResolveAsync(ResolveConflictRequest, CancellationToken)
+  nameWithType: ISecurityMasterConflictService.ResolveAsync(ResolveConflictRequest, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+    name: ResolveAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_ResolveAsync_Meridian_Contracts_SecurityMaster_ResolveConflictRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+    name: ResolveConflictRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveConflictRequest,System.Threading.CancellationToken)
+    name: ResolveAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_ResolveAsync_Meridian_Contracts_SecurityMaster_ResolveConflictRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+    name: ResolveConflictRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html
+  name: ResolveConflictRequest
+  nameWithType: ResolveConflictRequest
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterConflictService.html#Meridian_Application_SecurityMaster_SecurityMasterConflictService_RecordConflictsForProjectionAsync_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  name: RecordConflictsForProjectionAsync
+  nameWithType: SecurityMasterConflictService.RecordConflictsForProjectionAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterConflictService.RecordConflictsForProjectionAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_RecordConflictsForProjectionAsync_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  name: RecordConflictsForProjectionAsync(SecurityProjectionRecord, CancellationToken)
+  nameWithType: ISecurityMasterConflictService.RecordConflictsForProjectionAsync(SecurityProjectionRecord, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+    name: RecordConflictsForProjectionAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_RecordConflictsForProjectionAsync_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.RecordConflictsForProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+    name: RecordConflictsForProjectionAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html#Meridian_Application_SecurityMaster_ISecurityMasterConflictService_RecordConflictsForProjectionAsync_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

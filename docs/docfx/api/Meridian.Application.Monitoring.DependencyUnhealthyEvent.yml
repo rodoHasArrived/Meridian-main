@@ -1,0 +1,561 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  commentId: T:Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  id: DependencyUnhealthyEvent
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.DependencyUnhealthyEvent.#ctor(System.String,System.String,System.String,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name
+  - Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason
+  - Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp
+  - Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type
+  langs:
+  - csharp
+  - vb
+  name: DependencyUnhealthyEvent
+  nameWithType: DependencyUnhealthyEvent
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DependencyUnhealthyEvent
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a dependency becomes unhealthy.
+  example: []
+  syntax:
+    content: 'public readonly record struct DependencyUnhealthyEvent : IEquatable<DependencyUnhealthyEvent>'
+    content.vb: Public Structure DependencyUnhealthyEvent Implements IEquatable(Of DependencyUnhealthyEvent)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DependencyUnhealthyEvent}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.#ctor(System.String,System.String,System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DependencyUnhealthyEvent.#ctor(System.String,System.String,System.String,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.String,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  langs:
+  - csharp
+  - vb
+  name: DependencyUnhealthyEvent(string, string, string, DateTimeOffset)
+  nameWithType: DependencyUnhealthyEvent.DependencyUnhealthyEvent(string, string, string, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.DependencyUnhealthyEvent(string, string, string, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a dependency becomes unhealthy.
+  example: []
+  syntax:
+    content: public DependencyUnhealthyEvent(string Name, string Type, string Reason, DateTimeOffset Timestamp)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: Type
+      type: System.String
+    - id: Reason
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Name As String, Type As String, Reason As String, Timestamp As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DependencyUnhealthyEvent.#ctor*
+  nameWithType.vb: DependencyUnhealthyEvent.New(String, String, String, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DependencyUnhealthyEvent.New(String, String, String, System.DateTimeOffset)
+  name.vb: New(String, String, String, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name
+  commentId: P:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name
+  id: Name
+  parent: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: DependencyUnhealthyEvent.Name
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name*
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type
+  commentId: P:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type
+  id: Type
+  parent: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: DependencyUnhealthyEvent.Type
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Type { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Type As String
+  overload: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type*
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason
+  commentId: P:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason
+  id: Reason
+  parent: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: DependencyUnhealthyEvent.Reason
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason*
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp
+  commentId: P:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: DependencyUnhealthyEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.DependencyUnhealthyEvent}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DependencyUnhealthyEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DependencyUnhealthyEvent>
+  nameWithType: IEquatable<DependencyUnhealthyEvent>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DependencyUnhealthyEvent>
+  nameWithType.vb: IEquatable(Of DependencyUnhealthyEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DependencyUnhealthyEvent)
+  name.vb: IEquatable(Of DependencyUnhealthyEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+    name: DependencyUnhealthyEvent
+    href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent
+    name: DependencyUnhealthyEvent
+    href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DependencyUnhealthyEvent.#ctor
+  href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html#Meridian_Application_Monitoring_DependencyUnhealthyEvent__ctor_System_String_System_String_System_String_System_DateTimeOffset_
+  name: DependencyUnhealthyEvent
+  nameWithType: DependencyUnhealthyEvent.DependencyUnhealthyEvent
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.DependencyUnhealthyEvent
+  nameWithType.vb: DependencyUnhealthyEvent.New
+  fullName.vb: Meridian.Application.Monitoring.DependencyUnhealthyEvent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name*
+  commentId: Overload:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name
+  href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html#Meridian_Application_Monitoring_DependencyUnhealthyEvent_Name
+  name: Name
+  nameWithType: DependencyUnhealthyEvent.Name
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Name
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type*
+  commentId: Overload:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type
+  href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html#Meridian_Application_Monitoring_DependencyUnhealthyEvent_Type
+  name: Type
+  nameWithType: DependencyUnhealthyEvent.Type
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Type
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason*
+  commentId: Overload:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason
+  href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html#Meridian_Application_Monitoring_DependencyUnhealthyEvent_Reason
+  name: Reason
+  nameWithType: DependencyUnhealthyEvent.Reason
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Reason
+- uid: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp
+  href: Meridian.Application.Monitoring.DependencyUnhealthyEvent.html#Meridian_Application_Monitoring_DependencyUnhealthyEvent_Timestamp
+  name: Timestamp
+  nameWithType: DependencyUnhealthyEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.DependencyUnhealthyEvent.Timestamp

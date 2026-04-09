@@ -1,0 +1,913 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.MarketStatus
+  commentId: T:Meridian.Application.Services.MarketStatus
+  id: MarketStatus
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.MarketStatus.#ctor(Meridian.Application.Services.MarketState,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Boolean,System.DateTimeOffset)
+  - Meridian.Application.Services.MarketStatus.CurrentSessionEnd
+  - Meridian.Application.Services.MarketStatus.CurrentSessionStart
+  - Meridian.Application.Services.MarketStatus.EasternTime
+  - Meridian.Application.Services.MarketStatus.IsAnySessionActive
+  - Meridian.Application.Services.MarketStatus.IsHalfDay
+  - Meridian.Application.Services.MarketStatus.IsRegularTradingHours
+  - Meridian.Application.Services.MarketStatus.NextSessionStart
+  - Meridian.Application.Services.MarketStatus.Reason
+  - Meridian.Application.Services.MarketStatus.State
+  - Meridian.Application.Services.MarketStatus.TimeRemainingInSession
+  - Meridian.Application.Services.MarketStatus.ToString
+  langs:
+  - csharp
+  - vb
+  name: MarketStatus
+  nameWithType: MarketStatus
+  fullName: Meridian.Application.Services.MarketStatus
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketStatus
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 547
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Current market status information.
+  example: []
+  syntax:
+    content: 'public readonly record struct MarketStatus : IEquatable<MarketStatus>'
+    content.vb: Public Structure MarketStatus Implements IEquatable(Of MarketStatus)
+  implements:
+  - System.IEquatable{Meridian.Application.Services.MarketStatus}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Services.MarketStatus.#ctor(Meridian.Application.Services.MarketState,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Boolean,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Services.MarketStatus.#ctor(Meridian.Application.Services.MarketState,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Boolean,System.DateTimeOffset)
+  id: '#ctor(Meridian.Application.Services.MarketState,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Boolean,System.DateTimeOffset)'
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: MarketStatus(MarketState, string, DateTimeOffset?, DateTimeOffset?, DateTimeOffset?, bool, DateTimeOffset)
+  nameWithType: MarketStatus.MarketStatus(MarketState, string, DateTimeOffset?, DateTimeOffset?, DateTimeOffset?, bool, DateTimeOffset)
+  fullName: Meridian.Application.Services.MarketStatus.MarketStatus(Meridian.Application.Services.MarketState, string, System.DateTimeOffset?, System.DateTimeOffset?, System.DateTimeOffset?, bool, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 547
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Current market status information.
+  example: []
+  syntax:
+    content: public MarketStatus(MarketState State, string Reason, DateTimeOffset? CurrentSessionStart, DateTimeOffset? CurrentSessionEnd, DateTimeOffset? NextSessionStart, bool IsHalfDay, DateTimeOffset EasternTime)
+    parameters:
+    - id: State
+      type: Meridian.Application.Services.MarketState
+    - id: Reason
+      type: System.String
+    - id: CurrentSessionStart
+      type: System.Nullable{System.DateTimeOffset}
+    - id: CurrentSessionEnd
+      type: System.Nullable{System.DateTimeOffset}
+    - id: NextSessionStart
+      type: System.Nullable{System.DateTimeOffset}
+    - id: IsHalfDay
+      type: System.Boolean
+    - id: EasternTime
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(State As MarketState, Reason As String, CurrentSessionStart As DateTimeOffset?, CurrentSessionEnd As DateTimeOffset?, NextSessionStart As DateTimeOffset?, IsHalfDay As Boolean, EasternTime As DateTimeOffset)
+  overload: Meridian.Application.Services.MarketStatus.#ctor*
+  nameWithType.vb: MarketStatus.New(MarketState, String, DateTimeOffset?, DateTimeOffset?, DateTimeOffset?, Boolean, DateTimeOffset)
+  fullName.vb: Meridian.Application.Services.MarketStatus.New(Meridian.Application.Services.MarketState, String, System.DateTimeOffset?, System.DateTimeOffset?, System.DateTimeOffset?, Boolean, System.DateTimeOffset)
+  name.vb: New(MarketState, String, DateTimeOffset?, DateTimeOffset?, DateTimeOffset?, Boolean, DateTimeOffset)
+- uid: Meridian.Application.Services.MarketStatus.State
+  commentId: P:Meridian.Application.Services.MarketStatus.State
+  id: State
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: MarketStatus.State
+  fullName: Meridian.Application.Services.MarketStatus.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public MarketState State { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.MarketState
+    content.vb: Public Property State As MarketState
+  overload: Meridian.Application.Services.MarketStatus.State*
+- uid: Meridian.Application.Services.MarketStatus.Reason
+  commentId: P:Meridian.Application.Services.MarketStatus.Reason
+  id: Reason
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: MarketStatus.Reason
+  fullName: Meridian.Application.Services.MarketStatus.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 549
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Application.Services.MarketStatus.Reason*
+- uid: Meridian.Application.Services.MarketStatus.CurrentSessionStart
+  commentId: P:Meridian.Application.Services.MarketStatus.CurrentSessionStart
+  id: CurrentSessionStart
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: CurrentSessionStart
+  nameWithType: MarketStatus.CurrentSessionStart
+  fullName: Meridian.Application.Services.MarketStatus.CurrentSessionStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSessionStart
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 550
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset? CurrentSessionStart { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CurrentSessionStart As DateTimeOffset?
+  overload: Meridian.Application.Services.MarketStatus.CurrentSessionStart*
+- uid: Meridian.Application.Services.MarketStatus.CurrentSessionEnd
+  commentId: P:Meridian.Application.Services.MarketStatus.CurrentSessionEnd
+  id: CurrentSessionEnd
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: CurrentSessionEnd
+  nameWithType: MarketStatus.CurrentSessionEnd
+  fullName: Meridian.Application.Services.MarketStatus.CurrentSessionEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSessionEnd
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 551
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset? CurrentSessionEnd { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CurrentSessionEnd As DateTimeOffset?
+  overload: Meridian.Application.Services.MarketStatus.CurrentSessionEnd*
+- uid: Meridian.Application.Services.MarketStatus.NextSessionStart
+  commentId: P:Meridian.Application.Services.MarketStatus.NextSessionStart
+  id: NextSessionStart
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: NextSessionStart
+  nameWithType: MarketStatus.NextSessionStart
+  fullName: Meridian.Application.Services.MarketStatus.NextSessionStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextSessionStart
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 552
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset? NextSessionStart { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property NextSessionStart As DateTimeOffset?
+  overload: Meridian.Application.Services.MarketStatus.NextSessionStart*
+- uid: Meridian.Application.Services.MarketStatus.IsHalfDay
+  commentId: P:Meridian.Application.Services.MarketStatus.IsHalfDay
+  id: IsHalfDay
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: IsHalfDay
+  nameWithType: MarketStatus.IsHalfDay
+  fullName: Meridian.Application.Services.MarketStatus.IsHalfDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHalfDay
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool IsHalfDay { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHalfDay As Boolean
+  overload: Meridian.Application.Services.MarketStatus.IsHalfDay*
+- uid: Meridian.Application.Services.MarketStatus.EasternTime
+  commentId: P:Meridian.Application.Services.MarketStatus.EasternTime
+  id: EasternTime
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: EasternTime
+  nameWithType: MarketStatus.EasternTime
+  fullName: Meridian.Application.Services.MarketStatus.EasternTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EasternTime
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 554
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset EasternTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EasternTime As DateTimeOffset
+  overload: Meridian.Application.Services.MarketStatus.EasternTime*
+- uid: Meridian.Application.Services.MarketStatus.IsRegularTradingHours
+  commentId: P:Meridian.Application.Services.MarketStatus.IsRegularTradingHours
+  id: IsRegularTradingHours
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: IsRegularTradingHours
+  nameWithType: MarketStatus.IsRegularTradingHours
+  fullName: Meridian.Application.Services.MarketStatus.IsRegularTradingHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRegularTradingHours
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 560
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns true if regular trading is currently active.
+  example: []
+  syntax:
+    content: public bool IsRegularTradingHours { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsRegularTradingHours As Boolean
+  overload: Meridian.Application.Services.MarketStatus.IsRegularTradingHours*
+- uid: Meridian.Application.Services.MarketStatus.IsAnySessionActive
+  commentId: P:Meridian.Application.Services.MarketStatus.IsAnySessionActive
+  id: IsAnySessionActive
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: IsAnySessionActive
+  nameWithType: MarketStatus.IsAnySessionActive
+  fullName: Meridian.Application.Services.MarketStatus.IsAnySessionActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAnySessionActive
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 565
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns true if any trading session is active (pre-market, regular, or after-hours).
+  example: []
+  syntax:
+    content: public bool IsAnySessionActive { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsAnySessionActive As Boolean
+  overload: Meridian.Application.Services.MarketStatus.IsAnySessionActive*
+- uid: Meridian.Application.Services.MarketStatus.TimeRemainingInSession
+  commentId: P:Meridian.Application.Services.MarketStatus.TimeRemainingInSession
+  id: TimeRemainingInSession
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: TimeRemainingInSession
+  nameWithType: MarketStatus.TimeRemainingInSession
+  fullName: Meridian.Application.Services.MarketStatus.TimeRemainingInSession
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeRemainingInSession
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 570
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns the time remaining in the current session, or null if no session is active.
+  example: []
+  syntax:
+    content: public TimeSpan? TimeRemainingInSession { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public ReadOnly Property TimeRemainingInSession As TimeSpan?
+  overload: Meridian.Application.Services.MarketStatus.TimeRemainingInSession*
+- uid: Meridian.Application.Services.MarketStatus.ToString
+  commentId: M:Meridian.Application.Services.MarketStatus.ToString
+  id: ToString
+  parent: Meridian.Application.Services.MarketStatus
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: MarketStatus.ToString()
+  fullName: Meridian.Application.Services.MarketStatus.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 573
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns the fully qualified type name of this instance.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: The fully qualified type name.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.ValueType.ToString
+  overload: Meridian.Application.Services.MarketStatus.ToString*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IEquatable{Meridian.Application.Services.MarketStatus}
+  commentId: T:System.IEquatable{Meridian.Application.Services.MarketStatus}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketStatus>
+  nameWithType: IEquatable<MarketStatus>
+  fullName: System.IEquatable<Meridian.Application.Services.MarketStatus>
+  nameWithType.vb: IEquatable(Of MarketStatus)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.MarketStatus)
+  name.vb: IEquatable(Of MarketStatus)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.MarketStatus
+    name: MarketStatus
+    href: Meridian.Application.Services.MarketStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.MarketStatus
+    name: MarketStatus
+    href: Meridian.Application.Services.MarketStatus.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Services.MarketStatus.#ctor*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.#ctor
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus__ctor_Meridian_Application_Services_MarketState_System_String_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Boolean_System_DateTimeOffset_
+  name: MarketStatus
+  nameWithType: MarketStatus.MarketStatus
+  fullName: Meridian.Application.Services.MarketStatus.MarketStatus
+  nameWithType.vb: MarketStatus.New
+  fullName.vb: Meridian.Application.Services.MarketStatus.New
+  name.vb: New
+- uid: Meridian.Application.Services.MarketState
+  commentId: T:Meridian.Application.Services.MarketState
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.MarketState.html
+  name: MarketState
+  nameWithType: MarketState
+  fullName: Meridian.Application.Services.MarketState
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.MarketStatus.State*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.State
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_State
+  name: State
+  nameWithType: MarketStatus.State
+  fullName: Meridian.Application.Services.MarketStatus.State
+- uid: Meridian.Application.Services.MarketStatus.Reason*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.Reason
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_Reason
+  name: Reason
+  nameWithType: MarketStatus.Reason
+  fullName: Meridian.Application.Services.MarketStatus.Reason
+- uid: Meridian.Application.Services.MarketStatus.CurrentSessionStart*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.CurrentSessionStart
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_CurrentSessionStart
+  name: CurrentSessionStart
+  nameWithType: MarketStatus.CurrentSessionStart
+  fullName: Meridian.Application.Services.MarketStatus.CurrentSessionStart
+- uid: Meridian.Application.Services.MarketStatus.CurrentSessionEnd*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.CurrentSessionEnd
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_CurrentSessionEnd
+  name: CurrentSessionEnd
+  nameWithType: MarketStatus.CurrentSessionEnd
+  fullName: Meridian.Application.Services.MarketStatus.CurrentSessionEnd
+- uid: Meridian.Application.Services.MarketStatus.NextSessionStart*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.NextSessionStart
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_NextSessionStart
+  name: NextSessionStart
+  nameWithType: MarketStatus.NextSessionStart
+  fullName: Meridian.Application.Services.MarketStatus.NextSessionStart
+- uid: Meridian.Application.Services.MarketStatus.IsHalfDay*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.IsHalfDay
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_IsHalfDay
+  name: IsHalfDay
+  nameWithType: MarketStatus.IsHalfDay
+  fullName: Meridian.Application.Services.MarketStatus.IsHalfDay
+- uid: Meridian.Application.Services.MarketStatus.EasternTime*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.EasternTime
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_EasternTime
+  name: EasternTime
+  nameWithType: MarketStatus.EasternTime
+  fullName: Meridian.Application.Services.MarketStatus.EasternTime
+- uid: Meridian.Application.Services.MarketStatus.IsRegularTradingHours*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.IsRegularTradingHours
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_IsRegularTradingHours
+  name: IsRegularTradingHours
+  nameWithType: MarketStatus.IsRegularTradingHours
+  fullName: Meridian.Application.Services.MarketStatus.IsRegularTradingHours
+- uid: Meridian.Application.Services.MarketStatus.IsAnySessionActive*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.IsAnySessionActive
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_IsAnySessionActive
+  name: IsAnySessionActive
+  nameWithType: MarketStatus.IsAnySessionActive
+  fullName: Meridian.Application.Services.MarketStatus.IsAnySessionActive
+- uid: Meridian.Application.Services.MarketStatus.TimeRemainingInSession*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.TimeRemainingInSession
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_TimeRemainingInSession
+  name: TimeRemainingInSession
+  nameWithType: MarketStatus.TimeRemainingInSession
+  fullName: Meridian.Application.Services.MarketStatus.TimeRemainingInSession
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.Services.MarketStatus.ToString*
+  commentId: Overload:Meridian.Application.Services.MarketStatus.ToString
+  href: Meridian.Application.Services.MarketStatus.html#Meridian_Application_Services_MarketStatus_ToString
+  name: ToString
+  nameWithType: MarketStatus.ToString
+  fullName: Meridian.Application.Services.MarketStatus.ToString

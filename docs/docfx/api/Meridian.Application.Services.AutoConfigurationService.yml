@@ -1,0 +1,713 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.AutoConfigurationService
+  commentId: T:Meridian.Application.Services.AutoConfigurationService
+  id: AutoConfigurationService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.AutoConfigurationService.ApplyPreset(Meridian.Application.Services.ConfigPreset,Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.AutoConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders
+  - Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  - Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions
+  langs:
+  - csharp
+  - vb
+  name: AutoConfigurationService
+  nameWithType: AutoConfigurationService
+  fullName: Meridian.Application.Services.AutoConfigurationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoConfigurationService
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for automatic configuration based on available credentials and environment.
+
+    Implements user-friendly auto-detection and configuration of data providers.
+  example: []
+  syntax:
+    content: public sealed class AutoConfigurationService
+    content.vb: Public NotInheritable Class AutoConfigurationService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders
+  commentId: M:Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders
+  id: DetectAvailableProviders
+  parent: Meridian.Application.Services.AutoConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: DetectAvailableProviders()
+  nameWithType: AutoConfigurationService.DetectAvailableProviders()
+  fullName: Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectAvailableProviders
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Detects all available providers based on environment variables.
+
+    Uses <xref href="Meridian.Application.Wizard.Metadata.ProviderRegistry" data-throw-if-not-resolved="false"></xref> as the single source of provider metadata.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AutoConfigurationService.DetectedProvider> DetectAvailableProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+    content.vb: Public Function DetectAvailableProviders() As IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  overload: Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders*
+- uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.AutoConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  id: AutoConfigure(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.AutoConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: AutoConfigure(AppConfig?)
+  nameWithType: AutoConfigurationService.AutoConfigure(AppConfig?)
+  fullName: Meridian.Application.Services.AutoConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoConfigure
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Auto-configures the application based on detected providers and environment.
+  example: []
+  syntax:
+    content: public AutoConfigurationService.AutoConfigResult AutoConfigure(AppConfig? existingConfig = null)
+    parameters:
+    - id: existingConfig
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+    content.vb: Public Function AutoConfigure(existingConfig As AppConfig = Nothing) As AutoConfigurationService.AutoConfigResult
+  overload: Meridian.Application.Services.AutoConfigurationService.AutoConfigure*
+  nameWithType.vb: AutoConfigurationService.AutoConfigure(AppConfig)
+  fullName.vb: Meridian.Application.Services.AutoConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  name.vb: AutoConfigure(AppConfig)
+- uid: Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  commentId: M:Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  id: GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  parent: Meridian.Application.Services.AutoConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GenerateFirstTimeConfig(FirstTimeConfigOptions)
+  nameWithType: AutoConfigurationService.GenerateFirstTimeConfig(FirstTimeConfigOptions)
+  fullName: Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateFirstTimeConfig
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates configuration for first-time users with interactive defaults.
+  example: []
+  syntax:
+    content: public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options)
+    parameters:
+    - id: options
+      type: Meridian.Application.Services.FirstTimeConfigOptions
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function GenerateFirstTimeConfig(options As FirstTimeConfigOptions) As AppConfig
+  overload: Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig*
+- uid: Meridian.Application.Services.AutoConfigurationService.ApplyPreset(Meridian.Application.Services.ConfigPreset,Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.AutoConfigurationService.ApplyPreset(Meridian.Application.Services.ConfigPreset,Meridian.Application.Config.AppConfig)
+  id: ApplyPreset(Meridian.Application.Services.ConfigPreset,Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.AutoConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ApplyPreset(ConfigPreset, AppConfig?)
+  nameWithType: AutoConfigurationService.ApplyPreset(ConfigPreset, AppConfig?)
+  fullName: Meridian.Application.Services.AutoConfigurationService.ApplyPreset(Meridian.Application.Services.ConfigPreset, Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyPreset
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 755
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Applies a role-based configuration preset, setting ~15 config values at once.
+
+    Presets: Researcher, DayTrader, OptionsTrader, Crypto.
+  example: []
+  syntax:
+    content: public AppConfig ApplyPreset(ConfigPreset preset, AppConfig? existingConfig = null)
+    parameters:
+    - id: preset
+      type: Meridian.Application.Services.ConfigPreset
+    - id: existingConfig
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function ApplyPreset(preset As ConfigPreset, existingConfig As AppConfig = Nothing) As AppConfig
+  overload: Meridian.Application.Services.AutoConfigurationService.ApplyPreset*
+  nameWithType.vb: AutoConfigurationService.ApplyPreset(ConfigPreset, AppConfig)
+  fullName.vb: Meridian.Application.Services.AutoConfigurationService.ApplyPreset(Meridian.Application.Services.ConfigPreset, Meridian.Application.Config.AppConfig)
+  name.vb: ApplyPreset(ConfigPreset, AppConfig)
+- uid: Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions
+  commentId: M:Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions
+  id: GetPresetDescriptions
+  parent: Meridian.Application.Services.AutoConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetPresetDescriptions()
+  nameWithType: AutoConfigurationService.GetPresetDescriptions()
+  fullName: Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPresetDescriptions
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 773
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Lists available presets with descriptions.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<ConfigPresetInfo> GetPresetDescriptions()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.ConfigPresetInfo}
+    content.vb: Public Shared Function GetPresetDescriptions() As IReadOnlyList(Of ConfigPresetInfo)
+  overload: Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Wizard.Metadata.ProviderRegistry
+  commentId: T:Meridian.Application.Wizard.Metadata.ProviderRegistry
+  href: Meridian.Application.Wizard.Metadata.ProviderRegistry.html
+  name: ProviderRegistry
+  nameWithType: ProviderRegistry
+  fullName: Meridian.Application.Wizard.Metadata.ProviderRegistry
+- uid: Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders*
+  commentId: Overload:Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders
+  href: Meridian.Application.Services.AutoConfigurationService.html#Meridian_Application_Services_AutoConfigurationService_DetectAvailableProviders
+  name: DetectAvailableProviders
+  nameWithType: AutoConfigurationService.DetectAvailableProviders
+  fullName: Meridian.Application.Services.AutoConfigurationService.DetectAvailableProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AutoConfigurationService.DetectedProvider>
+  nameWithType: IReadOnlyList<AutoConfigurationService.DetectedProvider>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.AutoConfigurationService.DetectedProvider>
+  nameWithType.vb: IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.AutoConfigurationService.DetectedProvider)
+  name.vb: IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigure*
+  commentId: Overload:Meridian.Application.Services.AutoConfigurationService.AutoConfigure
+  href: Meridian.Application.Services.AutoConfigurationService.html#Meridian_Application_Services_AutoConfigurationService_AutoConfigure_Meridian_Application_Config_AppConfig_
+  name: AutoConfigure
+  nameWithType: AutoConfigurationService.AutoConfigure
+  fullName: Meridian.Application.Services.AutoConfigurationService.AutoConfigure
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+  commentId: T:Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.AutoConfigurationService.html
+  name: AutoConfigurationService.AutoConfigResult
+  nameWithType: AutoConfigurationService.AutoConfigResult
+  fullName: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+  spec.csharp:
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+    name: AutoConfigResult
+    href: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult.html
+  spec.vb:
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+    name: AutoConfigResult
+    href: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult.html
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig*
+  commentId: Overload:Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig
+  href: Meridian.Application.Services.AutoConfigurationService.html#Meridian_Application_Services_AutoConfigurationService_GenerateFirstTimeConfig_Meridian_Application_Services_FirstTimeConfigOptions_
+  name: GenerateFirstTimeConfig
+  nameWithType: AutoConfigurationService.GenerateFirstTimeConfig
+  fullName: Meridian.Application.Services.AutoConfigurationService.GenerateFirstTimeConfig
+- uid: Meridian.Application.Services.FirstTimeConfigOptions
+  commentId: T:Meridian.Application.Services.FirstTimeConfigOptions
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.FirstTimeConfigOptions.html
+  name: FirstTimeConfigOptions
+  nameWithType: FirstTimeConfigOptions
+  fullName: Meridian.Application.Services.FirstTimeConfigOptions
+- uid: Meridian.Application.Services.AutoConfigurationService.ApplyPreset*
+  commentId: Overload:Meridian.Application.Services.AutoConfigurationService.ApplyPreset
+  href: Meridian.Application.Services.AutoConfigurationService.html#Meridian_Application_Services_AutoConfigurationService_ApplyPreset_Meridian_Application_Services_ConfigPreset_Meridian_Application_Config_AppConfig_
+  name: ApplyPreset
+  nameWithType: AutoConfigurationService.ApplyPreset
+  fullName: Meridian.Application.Services.AutoConfigurationService.ApplyPreset
+- uid: Meridian.Application.Services.ConfigPreset
+  commentId: T:Meridian.Application.Services.ConfigPreset
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigPreset.html
+  name: ConfigPreset
+  nameWithType: ConfigPreset
+  fullName: Meridian.Application.Services.ConfigPreset
+- uid: Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions*
+  commentId: Overload:Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions
+  href: Meridian.Application.Services.AutoConfigurationService.html#Meridian_Application_Services_AutoConfigurationService_GetPresetDescriptions
+  name: GetPresetDescriptions
+  nameWithType: AutoConfigurationService.GetPresetDescriptions
+  fullName: Meridian.Application.Services.AutoConfigurationService.GetPresetDescriptions
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.ConfigPresetInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.ConfigPresetInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ConfigPresetInfo>
+  nameWithType: IReadOnlyList<ConfigPresetInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.ConfigPresetInfo>
+  nameWithType.vb: IReadOnlyList(Of ConfigPresetInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.ConfigPresetInfo)
+  name.vb: IReadOnlyList(Of ConfigPresetInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.ConfigPresetInfo
+    name: ConfigPresetInfo
+    href: Meridian.Application.Services.ConfigPresetInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ConfigPresetInfo
+    name: ConfigPresetInfo
+    href: Meridian.Application.Services.ConfigPresetInfo.html
+  - name: )

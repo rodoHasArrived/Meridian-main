@@ -1,0 +1,534 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats
+  commentId: T:Meridian.Application.Monitoring.SymbolBadTickStats
+  id: SymbolBadTickStats
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SymbolBadTickStats.#ctor(System.String,System.Int64,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime
+  - Meridian.Application.Monitoring.SymbolBadTickStats.Symbol
+  - Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks
+  langs:
+  - csharp
+  - vb
+  name: SymbolBadTickStats
+  nameWithType: SymbolBadTickStats
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBadTickStats
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 626
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Per-symbol bad tick statistics.
+  example: []
+  syntax:
+    content: 'public readonly record struct SymbolBadTickStats : IEquatable<SymbolBadTickStats>'
+    content.vb: Public Structure SymbolBadTickStats Implements IEquatable(Of SymbolBadTickStats)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.SymbolBadTickStats}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.#ctor(System.String,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.SymbolBadTickStats.#ctor(System.String,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.String,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.SymbolBadTickStats
+  langs:
+  - csharp
+  - vb
+  name: SymbolBadTickStats(string, long, DateTimeOffset)
+  nameWithType: SymbolBadTickStats.SymbolBadTickStats(string, long, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.SymbolBadTickStats(string, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 626
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Per-symbol bad tick statistics.
+  example: []
+  syntax:
+    content: public SymbolBadTickStats(string Symbol, long TotalBadTicks, DateTimeOffset LastBadTickTime)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: TotalBadTicks
+      type: System.Int64
+    - id: LastBadTickTime
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, TotalBadTicks As Long, LastBadTickTime As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.SymbolBadTickStats.#ctor*
+  nameWithType.vb: SymbolBadTickStats.New(String, Long, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.SymbolBadTickStats.New(String, Long, System.DateTimeOffset)
+  name.vb: New(String, Long, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.Symbol
+  commentId: P:Meridian.Application.Monitoring.SymbolBadTickStats.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.SymbolBadTickStats
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolBadTickStats.Symbol
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 627
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.SymbolBadTickStats.Symbol*
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks
+  commentId: P:Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks
+  id: TotalBadTicks
+  parent: Meridian.Application.Monitoring.SymbolBadTickStats
+  langs:
+  - csharp
+  - vb
+  name: TotalBadTicks
+  nameWithType: SymbolBadTickStats.TotalBadTicks
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBadTicks
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 628
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalBadTicks { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBadTicks As Long
+  overload: Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks*
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime
+  commentId: P:Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime
+  id: LastBadTickTime
+  parent: Meridian.Application.Monitoring.SymbolBadTickStats
+  langs:
+  - csharp
+  - vb
+  name: LastBadTickTime
+  nameWithType: SymbolBadTickStats.LastBadTickTime
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastBadTickTime
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 629
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset LastBadTickTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastBadTickTime As DateTimeOffset
+  overload: Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.SymbolBadTickStats}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.SymbolBadTickStats}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolBadTickStats>
+  nameWithType: IEquatable<SymbolBadTickStats>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.SymbolBadTickStats>
+  nameWithType.vb: IEquatable(Of SymbolBadTickStats)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.SymbolBadTickStats)
+  name.vb: IEquatable(Of SymbolBadTickStats)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SymbolBadTickStats
+    name: SymbolBadTickStats
+    href: Meridian.Application.Monitoring.SymbolBadTickStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SymbolBadTickStats
+    name: SymbolBadTickStats
+    href: Meridian.Application.Monitoring.SymbolBadTickStats.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolBadTickStats.#ctor
+  href: Meridian.Application.Monitoring.SymbolBadTickStats.html#Meridian_Application_Monitoring_SymbolBadTickStats__ctor_System_String_System_Int64_System_DateTimeOffset_
+  name: SymbolBadTickStats
+  nameWithType: SymbolBadTickStats.SymbolBadTickStats
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.SymbolBadTickStats
+  nameWithType.vb: SymbolBadTickStats.New
+  fullName.vb: Meridian.Application.Monitoring.SymbolBadTickStats.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolBadTickStats.Symbol
+  href: Meridian.Application.Monitoring.SymbolBadTickStats.html#Meridian_Application_Monitoring_SymbolBadTickStats_Symbol
+  name: Symbol
+  nameWithType: SymbolBadTickStats.Symbol
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.Symbol
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks
+  href: Meridian.Application.Monitoring.SymbolBadTickStats.html#Meridian_Application_Monitoring_SymbolBadTickStats_TotalBadTicks
+  name: TotalBadTicks
+  nameWithType: SymbolBadTickStats.TotalBadTicks
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.TotalBadTicks
+- uid: Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime
+  href: Meridian.Application.Monitoring.SymbolBadTickStats.html#Meridian_Application_Monitoring_SymbolBadTickStats_LastBadTickTime
+  name: LastBadTickTime
+  nameWithType: SymbolBadTickStats.LastBadTickTime
+  fullName: Meridian.Application.Monitoring.SymbolBadTickStats.LastBadTickTime

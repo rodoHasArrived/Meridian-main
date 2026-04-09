@@ -261,6 +261,24 @@ make build-wpf
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -r win-x64
 ```
 
+## Robinhood/Options Smoke Harness
+
+For repeatable desktop smoke coverage of the Robinhood provider wizard, the options page, and the trading position blotter, use:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/robinhood-options-smoke.ps1
+```
+
+The harness is intended to be push-button and deterministic:
+
+- It relaunches itself under `pwsh` 7 automatically when needed.
+- It defaults to fixture mode so the UI can be exercised without a live backend session.
+- It seeds `%LocalAppData%\\Meridian\\workspace-data.json` and `%LocalAppData%\\Meridian\\workstation-operating-context.json` with a workspace/session snapshot for each smoke case.
+- It always restores the user's original local files after the run finishes.
+- It writes screenshots, seeded session files, per-case post-run workspace snapshots, and `robinhood-options-smoke-results.json` under `output/manual-captures/`.
+
+For compatibility with older notes and artifacts, `output/manual-captures/robinhood-options-smoke.ps1` is a thin wrapper that forwards to the canonical script in `scripts/dev/`.
+
 ## Common Issues and Solutions
 
 ### Missing .NET 9 SDK
@@ -304,7 +322,6 @@ Current test coverage for desktop services:
 
 **Areas Not Yet Covered** (future work):
 - Integration tests with actual backend service
-- Cross-process desktop automation against a launched app window
 - Visual regression tests
 - Performance tests for singleton access patterns
 

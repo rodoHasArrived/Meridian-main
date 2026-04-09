@@ -1,0 +1,726 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.IngestionJobSummary
+  commentId: T:Meridian.Application.Pipeline.IngestionJobSummary
+  id: IngestionJobSummary
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs
+  - Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs
+  langs:
+  - csharp
+  - vb
+  name: IngestionJobSummary
+  nameWithType: IngestionJobSummary
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionJobSummary
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Summary statistics for all ingestion jobs.
+  example: []
+  syntax:
+    content: public sealed class IngestionJobSummary
+    content.vb: Public NotInheritable Class IngestionJobSummary
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs
+  id: TotalJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalJobs
+  nameWithType: IngestionJobSummary.TotalJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 420
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int TotalJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs
+  id: DraftJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: DraftJobs
+  nameWithType: IngestionJobSummary.DraftJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DraftJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int DraftJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DraftJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs
+  id: QueuedJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: QueuedJobs
+  nameWithType: IngestionJobSummary.QueuedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueuedJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int QueuedJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property QueuedJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs
+  id: RunningJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: RunningJobs
+  nameWithType: IngestionJobSummary.RunningJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunningJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 423
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int RunningJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RunningJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs
+  id: PausedJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: PausedJobs
+  nameWithType: IngestionJobSummary.PausedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PausedJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 424
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int PausedJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property PausedJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs
+  id: CompletedJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: CompletedJobs
+  nameWithType: IngestionJobSummary.CompletedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int CompletedJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CompletedJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs
+  id: FailedJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: FailedJobs
+  nameWithType: IngestionJobSummary.FailedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 426
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int FailedJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs
+  id: CancelledJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: CancelledJobs
+  nameWithType: IngestionJobSummary.CancelledJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelledJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int CancelledJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CancelledJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs
+  id: ResumableJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: ResumableJobs
+  nameWithType: IngestionJobSummary.ResumableJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResumableJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int ResumableJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ResumableJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs
+  id: RealtimeJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: RealtimeJobs
+  nameWithType: IngestionJobSummary.RealtimeJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int RealtimeJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RealtimeJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs
+  id: HistoricalJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: HistoricalJobs
+  nameWithType: IngestionJobSummary.HistoricalJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 430
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int HistoricalJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HistoricalJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs
+  commentId: P:Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs
+  id: GapFillJobs
+  parent: Meridian.Application.Pipeline.IngestionJobSummary
+  langs:
+  - csharp
+  - vb
+  name: GapFillJobs
+  nameWithType: IngestionJobSummary.GapFillJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapFillJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int GapFillJobs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapFillJobs As Integer
+  overload: Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs*
+references:
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_TotalJobs
+  name: TotalJobs
+  nameWithType: IngestionJobSummary.TotalJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.TotalJobs
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_DraftJobs
+  name: DraftJobs
+  nameWithType: IngestionJobSummary.DraftJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.DraftJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_QueuedJobs
+  name: QueuedJobs
+  nameWithType: IngestionJobSummary.QueuedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.QueuedJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_RunningJobs
+  name: RunningJobs
+  nameWithType: IngestionJobSummary.RunningJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.RunningJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_PausedJobs
+  name: PausedJobs
+  nameWithType: IngestionJobSummary.PausedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.PausedJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_CompletedJobs
+  name: CompletedJobs
+  nameWithType: IngestionJobSummary.CompletedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.CompletedJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_FailedJobs
+  name: FailedJobs
+  nameWithType: IngestionJobSummary.FailedJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.FailedJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_CancelledJobs
+  name: CancelledJobs
+  nameWithType: IngestionJobSummary.CancelledJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.CancelledJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_ResumableJobs
+  name: ResumableJobs
+  nameWithType: IngestionJobSummary.ResumableJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.ResumableJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_RealtimeJobs
+  name: RealtimeJobs
+  nameWithType: IngestionJobSummary.RealtimeJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.RealtimeJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_HistoricalJobs
+  name: HistoricalJobs
+  nameWithType: IngestionJobSummary.HistoricalJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.HistoricalJobs
+- uid: Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html#Meridian_Application_Pipeline_IngestionJobSummary_GapFillJobs
+  name: GapFillJobs
+  nameWithType: IngestionJobSummary.GapFillJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary.GapFillJobs

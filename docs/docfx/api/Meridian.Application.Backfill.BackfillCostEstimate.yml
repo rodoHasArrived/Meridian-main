@@ -1,0 +1,934 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backfill.BackfillCostEstimate
+  commentId: T:Meridian.Application.Backfill.BackfillCostEstimate
+  id: BackfillCostEstimate
+  parent: Meridian.Application.Backfill
+  children:
+  - Meridian.Application.Backfill.BackfillCostEstimate.#ctor(System.String[],System.DateOnly,System.DateOnly,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate},System.String,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)
+  - Meridian.Application.Backfill.BackfillCostEstimate.Empty(System.String)
+  - Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt
+  - Meridian.Application.Backfill.BackfillCostEstimate.From
+  - Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates
+  - Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider
+  - Meridian.Application.Backfill.BackfillCostEstimate.Symbols
+  - Meridian.Application.Backfill.BackfillCostEstimate.To
+  - Meridian.Application.Backfill.BackfillCostEstimate.TradingDays
+  - Meridian.Application.Backfill.BackfillCostEstimate.Warnings
+  langs:
+  - csharp
+  - vb
+  name: BackfillCostEstimate
+  nameWithType: BackfillCostEstimate
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillCostEstimate
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Cost estimate for a backfill request.
+  example: []
+  syntax:
+    content: 'public sealed record BackfillCostEstimate : IEquatable<BackfillCostEstimate>'
+    content.vb: Public NotInheritable Class BackfillCostEstimate Implements IEquatable(Of BackfillCostEstimate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Backfill.BackfillCostEstimate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.#ctor(System.String[],System.DateOnly,System.DateOnly,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate},System.String,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)
+  commentId: M:Meridian.Application.Backfill.BackfillCostEstimate.#ctor(System.String[],System.DateOnly,System.DateOnly,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate},System.String,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)
+  id: '#ctor(System.String[],System.DateOnly,System.DateOnly,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate},System.String,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)'
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: BackfillCostEstimate(string[], DateOnly, DateOnly, int, IReadOnlyList<ProviderCostEstimate>, string?, IReadOnlyList<string>, DateTimeOffset)
+  nameWithType: BackfillCostEstimate.BackfillCostEstimate(string[], DateOnly, DateOnly, int, IReadOnlyList<ProviderCostEstimate>, string?, IReadOnlyList<string>, DateTimeOffset)
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.BackfillCostEstimate(string[], System.DateOnly, System.DateOnly, int, System.Collections.Generic.IReadOnlyList<Meridian.Application.Backfill.ProviderCostEstimate>, string?, System.Collections.Generic.IReadOnlyList<string>, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Cost estimate for a backfill request.
+  example: []
+  syntax:
+    content: public BackfillCostEstimate(string[] Symbols, DateOnly From, DateOnly To, int TradingDays, IReadOnlyList<ProviderCostEstimate> ProviderEstimates, string? RecommendedProvider, IReadOnlyList<string> Warnings, DateTimeOffset EstimatedAt)
+    parameters:
+    - id: Symbols
+      type: System.String[]
+    - id: From
+      type: System.DateOnly
+    - id: To
+      type: System.DateOnly
+    - id: TradingDays
+      type: System.Int32
+    - id: ProviderEstimates
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate}
+    - id: RecommendedProvider
+      type: System.String
+    - id: Warnings
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: EstimatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbols As String(), From As DateOnly, [To] As DateOnly, TradingDays As Integer, ProviderEstimates As IReadOnlyList(Of ProviderCostEstimate), RecommendedProvider As String, Warnings As IReadOnlyList(Of String), EstimatedAt As DateTimeOffset)
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.#ctor*
+  nameWithType.vb: BackfillCostEstimate.New(String(), DateOnly, DateOnly, Integer, IReadOnlyList(Of ProviderCostEstimate), String, IReadOnlyList(Of String), DateTimeOffset)
+  fullName.vb: Meridian.Application.Backfill.BackfillCostEstimate.New(String(), System.DateOnly, System.DateOnly, Integer, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Backfill.ProviderCostEstimate), String, System.Collections.Generic.IReadOnlyList(Of String), System.DateTimeOffset)
+  name.vb: New(String(), DateOnly, DateOnly, Integer, IReadOnlyList(Of ProviderCostEstimate), String, IReadOnlyList(Of String), DateTimeOffset)
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.Symbols
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.Symbols
+  id: Symbols
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: BackfillCostEstimate.Symbols
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string[] Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.Symbols*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.From
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.From
+  id: From
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: BackfillCostEstimate.From
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateOnly From { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property From As DateOnly
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.From*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.To
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.To
+  id: To
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: BackfillCostEstimate.To
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateOnly To { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property [To] As DateOnly
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.To*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.TradingDays
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.TradingDays
+  id: TradingDays
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: TradingDays
+  nameWithType: BackfillCostEstimate.TradingDays
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.TradingDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingDays
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public int TradingDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradingDays As Integer
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.TradingDays*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates
+  id: ProviderEstimates
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: ProviderEstimates
+  nameWithType: BackfillCostEstimate.ProviderEstimates
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderEstimates
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public IReadOnlyList<ProviderCostEstimate> ProviderEstimates { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate}
+    content.vb: Public Property ProviderEstimates As IReadOnlyList(Of ProviderCostEstimate)
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider
+  id: RecommendedProvider
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: RecommendedProvider
+  nameWithType: BackfillCostEstimate.RecommendedProvider
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecommendedProvider
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string? RecommendedProvider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RecommendedProvider As String
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.Warnings
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.Warnings
+  id: Warnings
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: BackfillCostEstimate.Warnings
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public IReadOnlyList<string> Warnings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Warnings As IReadOnlyList(Of String)
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.Warnings*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt
+  commentId: P:Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt
+  id: EstimatedAt
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: EstimatedAt
+  nameWithType: BackfillCostEstimate.EstimatedAt
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedAt
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateTimeOffset EstimatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EstimatedAt As DateTimeOffset
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt*
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.Empty(System.String)
+  commentId: M:Meridian.Application.Backfill.BackfillCostEstimate.Empty(System.String)
+  id: Empty(System.String)
+  parent: Meridian.Application.Backfill.BackfillCostEstimate
+  langs:
+  - csharp
+  - vb
+  name: Empty(string)
+  nameWithType: BackfillCostEstimate.Empty(string)
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.Empty(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Empty
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public static BackfillCostEstimate Empty(string reason)
+    parameters:
+    - id: reason
+      type: System.String
+    return:
+      type: Meridian.Application.Backfill.BackfillCostEstimate
+    content.vb: Public Shared Function Empty(reason As String) As BackfillCostEstimate
+  overload: Meridian.Application.Backfill.BackfillCostEstimate.Empty*
+  nameWithType.vb: BackfillCostEstimate.Empty(String)
+  fullName.vb: Meridian.Application.Backfill.BackfillCostEstimate.Empty(String)
+  name.vb: Empty(String)
+references:
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  href: Meridian.html
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Backfill.BackfillCostEstimate}
+  commentId: T:System.IEquatable{Meridian.Application.Backfill.BackfillCostEstimate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackfillCostEstimate>
+  nameWithType: IEquatable<BackfillCostEstimate>
+  fullName: System.IEquatable<Meridian.Application.Backfill.BackfillCostEstimate>
+  nameWithType.vb: IEquatable(Of BackfillCostEstimate)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Backfill.BackfillCostEstimate)
+  name.vb: IEquatable(Of BackfillCostEstimate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Backfill.BackfillCostEstimate
+    name: BackfillCostEstimate
+    href: Meridian.Application.Backfill.BackfillCostEstimate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backfill.BackfillCostEstimate
+    name: BackfillCostEstimate
+    href: Meridian.Application.Backfill.BackfillCostEstimate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.#ctor*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.#ctor
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate__ctor_System_String___System_DateOnly_System_DateOnly_System_Int32_System_Collections_Generic_IReadOnlyList_Meridian_Application_Backfill_ProviderCostEstimate__System_String_System_Collections_Generic_IReadOnlyList_System_String__System_DateTimeOffset_
+  name: BackfillCostEstimate
+  nameWithType: BackfillCostEstimate.BackfillCostEstimate
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.BackfillCostEstimate
+  nameWithType.vb: BackfillCostEstimate.New
+  fullName.vb: Meridian.Application.Backfill.BackfillCostEstimate.New
+  name.vb: New
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Backfill.ProviderCostEstimate}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderCostEstimate>
+  nameWithType: IReadOnlyList<ProviderCostEstimate>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Backfill.ProviderCostEstimate>
+  nameWithType.vb: IReadOnlyList(Of ProviderCostEstimate)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Backfill.ProviderCostEstimate)
+  name.vb: IReadOnlyList(Of ProviderCostEstimate)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Backfill.ProviderCostEstimate
+    name: ProviderCostEstimate
+    href: Meridian.Application.Backfill.ProviderCostEstimate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backfill.ProviderCostEstimate
+    name: ProviderCostEstimate
+    href: Meridian.Application.Backfill.ProviderCostEstimate.html
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.Symbols*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.Symbols
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_Symbols
+  name: Symbols
+  nameWithType: BackfillCostEstimate.Symbols
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.Symbols
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.From*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.From
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_From
+  name: From
+  nameWithType: BackfillCostEstimate.From
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.From
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.To*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.To
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_To
+  name: To
+  nameWithType: BackfillCostEstimate.To
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.To
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.TradingDays*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.TradingDays
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_TradingDays
+  name: TradingDays
+  nameWithType: BackfillCostEstimate.TradingDays
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.TradingDays
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_ProviderEstimates
+  name: ProviderEstimates
+  nameWithType: BackfillCostEstimate.ProviderEstimates
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.ProviderEstimates
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_RecommendedProvider
+  name: RecommendedProvider
+  nameWithType: BackfillCostEstimate.RecommendedProvider
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.RecommendedProvider
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.Warnings*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.Warnings
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_Warnings
+  name: Warnings
+  nameWithType: BackfillCostEstimate.Warnings
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.Warnings
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_EstimatedAt
+  name: EstimatedAt
+  nameWithType: BackfillCostEstimate.EstimatedAt
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.EstimatedAt
+- uid: Meridian.Application.Backfill.BackfillCostEstimate.Empty*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostEstimate.Empty
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html#Meridian_Application_Backfill_BackfillCostEstimate_Empty_System_String_
+  name: Empty
+  nameWithType: BackfillCostEstimate.Empty
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate.Empty
+- uid: Meridian.Application.Backfill.BackfillCostEstimate
+  commentId: T:Meridian.Application.Backfill.BackfillCostEstimate
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillCostEstimate.html
+  name: BackfillCostEstimate
+  nameWithType: BackfillCostEstimate
+  fullName: Meridian.Application.Backfill.BackfillCostEstimate

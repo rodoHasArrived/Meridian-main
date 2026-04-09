@@ -1,0 +1,727 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchFilter
+  id: BatchFilter
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.BatchFilter.#ctor(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.String,System.String)
+  - Meridian.Application.Subscriptions.Models.BatchFilter.Exchange
+  - Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription
+  - Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription
+  - Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists
+  - Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType
+  - Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern
+  langs:
+  - csharp
+  - vb
+  name: BatchFilter
+  nameWithType: BatchFilter
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchFilter
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Filter criteria for batch operations.
+  example: []
+  syntax:
+    content: 'public sealed record BatchFilter : IEquatable<BatchFilter>'
+    content.vb: Public NotInheritable Class BatchFilter Implements IEquatable(Of BatchFilter)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.BatchFilter}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.#ctor(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.String,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Models.BatchFilter.#ctor(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.String,System.String)
+  id: '#ctor(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.String,System.String)'
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: BatchFilter(string?, bool?, bool?, string[]?, string?, string?)
+  nameWithType: BatchFilter.BatchFilter(string?, bool?, bool?, string[]?, string?, string?)
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.BatchFilter(string?, bool?, bool?, string[]?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Filter criteria for batch operations.
+  example: []
+  syntax:
+    content: public BatchFilter(string? SymbolPattern = null, bool? HasTradeSubscription = null, bool? HasDepthSubscription = null, string[]? InWatchlists = null, string? SecurityType = null, string? Exchange = null)
+    parameters:
+    - id: SymbolPattern
+      type: System.String
+      description: Only affect symbols matching this pattern (supports * wildcard).
+    - id: HasTradeSubscription
+      type: System.Nullable{System.Boolean}
+      description: Only affect symbols subscribed to trades.
+    - id: HasDepthSubscription
+      type: System.Nullable{System.Boolean}
+      description: Only affect symbols subscribed to depth.
+    - id: InWatchlists
+      type: System.String[]
+      description: Only affect symbols in these watchlists.
+    - id: SecurityType
+      type: System.String
+      description: Only affect symbols with this security type.
+    - id: Exchange
+      type: System.String
+      description: Only affect symbols on this exchange.
+    content.vb: Public Sub New(SymbolPattern As String = Nothing, HasTradeSubscription As Boolean? = Nothing, HasDepthSubscription As Boolean? = Nothing, InWatchlists As String() = Nothing, SecurityType As String = Nothing, Exchange As String = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.#ctor*
+  nameWithType.vb: BatchFilter.New(String, Boolean?, Boolean?, String(), String, String)
+  fullName.vb: Meridian.Application.Subscriptions.Models.BatchFilter.New(String, Boolean?, Boolean?, String(), String, String)
+  name.vb: New(String, Boolean?, Boolean?, String(), String, String)
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern
+  id: SymbolPattern
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: SymbolPattern
+  nameWithType: BatchFilter.SymbolPattern
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolPattern
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Only affect symbols matching this pattern (supports * wildcard).
+  example: []
+  syntax:
+    content: public string? SymbolPattern { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SymbolPattern As String
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription
+  id: HasTradeSubscription
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: HasTradeSubscription
+  nameWithType: BatchFilter.HasTradeSubscription
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasTradeSubscription
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Only affect symbols subscribed to trades.
+  example: []
+  syntax:
+    content: public bool? HasTradeSubscription { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property HasTradeSubscription As Boolean?
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription
+  id: HasDepthSubscription
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: HasDepthSubscription
+  nameWithType: BatchFilter.HasDepthSubscription
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasDepthSubscription
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Only affect symbols subscribed to depth.
+  example: []
+  syntax:
+    content: public bool? HasDepthSubscription { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property HasDepthSubscription As Boolean?
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists
+  id: InWatchlists
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: InWatchlists
+  nameWithType: BatchFilter.InWatchlists
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InWatchlists
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Only affect symbols in these watchlists.
+  example: []
+  syntax:
+    content: public string[]? InWatchlists { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property InWatchlists As String()
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType
+  id: SecurityType
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: BatchFilter.SecurityType
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Only affect symbols with this security type.
+  example: []
+  syntax:
+    content: public string? SecurityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityType As String
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType*
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.Exchange
+  commentId: P:Meridian.Application.Subscriptions.Models.BatchFilter.Exchange
+  id: Exchange
+  parent: Meridian.Application.Subscriptions.Models.BatchFilter
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: BatchFilter.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Only affect symbols on this exchange.
+  example: []
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Subscriptions.Models.BatchFilter.Exchange*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.BatchFilter}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.BatchFilter}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BatchFilter>
+  nameWithType: IEquatable<BatchFilter>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.BatchFilter>
+  nameWithType.vb: IEquatable(Of BatchFilter)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.BatchFilter)
+  name.vb: IEquatable(Of BatchFilter)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.BatchFilter
+    name: BatchFilter
+    href: Meridian.Application.Subscriptions.Models.BatchFilter.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.BatchFilter
+    name: BatchFilter
+    href: Meridian.Application.Subscriptions.Models.BatchFilter.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.#ctor
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter__ctor_System_String_System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_String___System_String_System_String_
+  name: BatchFilter
+  nameWithType: BatchFilter.BatchFilter
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.BatchFilter
+  nameWithType.vb: BatchFilter.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.BatchFilter.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter_SymbolPattern
+  name: SymbolPattern
+  nameWithType: BatchFilter.SymbolPattern
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.SymbolPattern
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter_HasTradeSubscription
+  name: HasTradeSubscription
+  nameWithType: BatchFilter.HasTradeSubscription
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.HasTradeSubscription
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter_HasDepthSubscription
+  name: HasDepthSubscription
+  nameWithType: BatchFilter.HasDepthSubscription
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.HasDepthSubscription
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter_InWatchlists
+  name: InWatchlists
+  nameWithType: BatchFilter.InWatchlists
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.InWatchlists
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter_SecurityType
+  name: SecurityType
+  nameWithType: BatchFilter.SecurityType
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.SecurityType
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter.Exchange*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.BatchFilter.Exchange
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html#Meridian_Application_Subscriptions_Models_BatchFilter_Exchange
+  name: Exchange
+  nameWithType: BatchFilter.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter.Exchange

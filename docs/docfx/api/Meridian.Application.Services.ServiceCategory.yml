@@ -1,0 +1,271 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ServiceCategory
+  commentId: T:Meridian.Application.Services.ServiceCategory
+  id: ServiceCategory
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ServiceCategory.Calendar
+  - Meridian.Application.Services.ServiceCategory.Data
+  - Meridian.Application.Services.ServiceCategory.Diagnostics
+  - Meridian.Application.Services.ServiceCategory.Lifecycle
+  - Meridian.Application.Services.ServiceCategory.Reporting
+  - Meridian.Application.Services.ServiceCategory.Setup
+  - Meridian.Application.Services.ServiceCategory.Validation
+  langs:
+  - csharp
+  - vb
+  name: ServiceCategory
+  nameWithType: ServiceCategory
+  fullName: Meridian.Application.Services.ServiceCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceCategory
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Service categories for organization and discovery.
+  example: []
+  syntax:
+    content: 'public enum ServiceCategory : byte'
+    content.vb: Public Enum ServiceCategory As Byte
+- uid: Meridian.Application.Services.ServiceCategory.Setup
+  commentId: F:Meridian.Application.Services.ServiceCategory.Setup
+  id: Setup
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Setup
+  nameWithType: ServiceCategory.Setup
+  fullName: Meridian.Application.Services.ServiceCategory.Setup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Setup
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Configuration and setup services.
+  example: []
+  syntax:
+    content: Setup = 0
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+- uid: Meridian.Application.Services.ServiceCategory.Validation
+  commentId: F:Meridian.Application.Services.ServiceCategory.Validation
+  id: Validation
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Validation
+  nameWithType: ServiceCategory.Validation
+  fullName: Meridian.Application.Services.ServiceCategory.Validation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Validation and preflight check services.
+  example: []
+  syntax:
+    content: Validation = 1
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+- uid: Meridian.Application.Services.ServiceCategory.Diagnostics
+  commentId: F:Meridian.Application.Services.ServiceCategory.Diagnostics
+  id: Diagnostics
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Diagnostics
+  nameWithType: ServiceCategory.Diagnostics
+  fullName: Meridian.Application.Services.ServiceCategory.Diagnostics
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Diagnostics
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Diagnostic and error handling services.
+  example: []
+  syntax:
+    content: Diagnostics = 2
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+- uid: Meridian.Application.Services.ServiceCategory.Lifecycle
+  commentId: F:Meridian.Application.Services.ServiceCategory.Lifecycle
+  id: Lifecycle
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Lifecycle
+  nameWithType: ServiceCategory.Lifecycle
+  fullName: Meridian.Application.Services.ServiceCategory.Lifecycle
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lifecycle
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Application lifecycle services.
+  example: []
+  syntax:
+    content: Lifecycle = 3
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+- uid: Meridian.Application.Services.ServiceCategory.Data
+  commentId: F:Meridian.Application.Services.ServiceCategory.Data
+  id: Data
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Data
+  nameWithType: ServiceCategory.Data
+  fullName: Meridian.Application.Services.ServiceCategory.Data
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Data
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Data query and manipulation services.
+  example: []
+  syntax:
+    content: Data = 4
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+- uid: Meridian.Application.Services.ServiceCategory.Calendar
+  commentId: F:Meridian.Application.Services.ServiceCategory.Calendar
+  id: Calendar
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Calendar
+  nameWithType: ServiceCategory.Calendar
+  fullName: Meridian.Application.Services.ServiceCategory.Calendar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Calendar
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Trading calendar services.
+  example: []
+  syntax:
+    content: Calendar = 5
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+- uid: Meridian.Application.Services.ServiceCategory.Reporting
+  commentId: F:Meridian.Application.Services.ServiceCategory.Reporting
+  id: Reporting
+  parent: Meridian.Application.Services.ServiceCategory
+  langs:
+  - csharp
+  - vb
+  name: Reporting
+  nameWithType: ServiceCategory.Reporting
+  fullName: Meridian.Application.Services.ServiceCategory.Reporting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ServiceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reporting
+    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Reporting and progress display services.
+  example: []
+  syntax:
+    content: Reporting = 6
+    return:
+      type: Meridian.Application.Services.ServiceCategory
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.ServiceCategory
+  commentId: T:Meridian.Application.Services.ServiceCategory
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ServiceCategory.html
+  name: ServiceCategory
+  nameWithType: ServiceCategory
+  fullName: Meridian.Application.Services.ServiceCategory

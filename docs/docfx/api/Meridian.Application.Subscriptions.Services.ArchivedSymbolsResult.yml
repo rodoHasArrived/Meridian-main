@@ -1,0 +1,678 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  commentId: T:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  id: ArchivedSymbolsResult
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.#ctor(Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[],System.Int32,System.Int32,System.Int64,System.String,System.Int64)
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles
+  - Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes
+  langs:
+  - csharp
+  - vb
+  name: ArchivedSymbolsResult
+  nameWithType: ArchivedSymbolsResult
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchivedSymbolsResult
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 737
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Result of scanning archived symbols.
+  example: []
+  syntax:
+    content: 'public sealed record ArchivedSymbolsResult : IEquatable<ArchivedSymbolsResult>'
+    content.vb: Public NotInheritable Class ArchivedSymbolsResult Implements IEquatable(Of ArchivedSymbolsResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.#ctor(Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[],System.Int32,System.Int32,System.Int64,System.String,System.Int64)
+  commentId: M:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.#ctor(Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[],System.Int32,System.Int32,System.Int64,System.String,System.Int64)
+  id: '#ctor(Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[],System.Int32,System.Int32,System.Int64,System.String,System.Int64)'
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: ArchivedSymbolsResult(ArchivedSymbolInfo[], int, int, long, string, long)
+  nameWithType: ArchivedSymbolsResult.ArchivedSymbolsResult(ArchivedSymbolInfo[], int, int, long, string, long)
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ArchivedSymbolsResult(Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[], int, int, long, string, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 737
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Result of scanning archived symbols.
+  example: []
+  syntax:
+    content: public ArchivedSymbolsResult(ArchivedSymbolInfo[] Symbols, int TotalCount, int TotalFiles, long TotalSizeBytes, string DataRoot, long ScanDurationMs)
+    parameters:
+    - id: Symbols
+      type: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[]
+    - id: TotalCount
+      type: System.Int32
+    - id: TotalFiles
+      type: System.Int32
+    - id: TotalSizeBytes
+      type: System.Int64
+    - id: DataRoot
+      type: System.String
+    - id: ScanDurationMs
+      type: System.Int64
+    content.vb: Public Sub New(Symbols As ArchivedSymbolInfo(), TotalCount As Integer, TotalFiles As Integer, TotalSizeBytes As Long, DataRoot As String, ScanDurationMs As Long)
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.#ctor*
+  nameWithType.vb: ArchivedSymbolsResult.New(ArchivedSymbolInfo(), Integer, Integer, Long, String, Long)
+  fullName.vb: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.New(Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo(), Integer, Integer, Long, String, Long)
+  name.vb: New(ArchivedSymbolInfo(), Integer, Integer, Long, String, Long)
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols
+  commentId: P:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols
+  id: Symbols
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: ArchivedSymbolsResult.Symbols
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 738
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public ArchivedSymbolInfo[] Symbols { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[]
+    content.vb: Public Property Symbols As ArchivedSymbolInfo()
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols*
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount
+  commentId: P:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount
+  id: TotalCount
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: TotalCount
+  nameWithType: ArchivedSymbolsResult.TotalCount
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCount
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 739
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public int TotalCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalCount As Integer
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount*
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles
+  commentId: P:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: ArchivedSymbolsResult.TotalFiles
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 740
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public int TotalFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFiles As Integer
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles*
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes
+  commentId: P:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes
+  id: TotalSizeBytes
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: TotalSizeBytes
+  nameWithType: ArchivedSymbolsResult.TotalSizeBytes
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSizeBytes
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 741
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public long TotalSizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSizeBytes As Long
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes*
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot
+  commentId: P:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot
+  id: DataRoot
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: DataRoot
+  nameWithType: ArchivedSymbolsResult.DataRoot
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataRoot
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 742
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string DataRoot { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataRoot As String
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot*
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs
+  commentId: P:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs
+  id: ScanDurationMs
+  parent: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  langs:
+  - csharp
+  - vb
+  name: ScanDurationMs
+  nameWithType: ArchivedSymbolsResult.ScanDurationMs
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScanDurationMs
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 743
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public long ScanDurationMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ScanDurationMs As Long
+  overload: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs*
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ArchivedSymbolsResult>
+  nameWithType: IEquatable<ArchivedSymbolsResult>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult>
+  nameWithType.vb: IEquatable(Of ArchivedSymbolsResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  name.vb: IEquatable(Of ArchivedSymbolsResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+    name: ArchivedSymbolsResult
+    href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+    name: ArchivedSymbolsResult
+    href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.#ctor
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult__ctor_Meridian_Application_Subscriptions_Services_ArchivedSymbolInfo___System_Int32_System_Int32_System_Int64_System_String_System_Int64_
+  name: ArchivedSymbolsResult
+  nameWithType: ArchivedSymbolsResult.ArchivedSymbolsResult
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ArchivedSymbolsResult
+  nameWithType.vb: ArchivedSymbolsResult.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.New
+  name.vb: New
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[]
+  isExternal: true
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo.html
+  name: ArchivedSymbolInfo[]
+  nameWithType: ArchivedSymbolInfo[]
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo[]
+  nameWithType.vb: ArchivedSymbolInfo()
+  fullName.vb: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo()
+  name.vb: ArchivedSymbolInfo()
+  spec.csharp:
+  - uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo
+    name: ArchivedSymbolInfo
+    href: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo
+    name: ArchivedSymbolInfo
+    href: Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo.html
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_Symbols
+  name: Symbols
+  nameWithType: ArchivedSymbolsResult.Symbols
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.Symbols
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_TotalCount
+  name: TotalCount
+  nameWithType: ArchivedSymbolsResult.TotalCount
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalCount
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_TotalFiles
+  name: TotalFiles
+  nameWithType: ArchivedSymbolsResult.TotalFiles
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalFiles
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_TotalSizeBytes
+  name: TotalSizeBytes
+  nameWithType: ArchivedSymbolsResult.TotalSizeBytes
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.TotalSizeBytes
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_DataRoot
+  name: DataRoot
+  nameWithType: ArchivedSymbolsResult.DataRoot
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.DataRoot
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html#Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_ScanDurationMs
+  name: ScanDurationMs
+  nameWithType: ArchivedSymbolsResult.ScanDurationMs
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.ScanDurationMs

@@ -47,7 +47,10 @@
                                 Margin="0,0,8,0" />
                         <Button Content="Enter Workstation"
                                 Command="{Binding EnterFundCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}" />
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                IsDefault="True"
+                                AutomationProperties.Name="Enter Workstation"
+                                AutomationProperties.AutomationId="EnterWorkstationButton" />
                     </StackPanel>
                 </Grid>
             </Border>

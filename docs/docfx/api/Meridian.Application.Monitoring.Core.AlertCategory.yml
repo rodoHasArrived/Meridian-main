@@ -1,0 +1,308 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.AlertCategory
+  commentId: T:Meridian.Application.Monitoring.Core.AlertCategory
+  id: AlertCategory
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.AlertCategory.Configuration
+  - Meridian.Application.Monitoring.Core.AlertCategory.Connection
+  - Meridian.Application.Monitoring.Core.AlertCategory.DataQuality
+  - Meridian.Application.Monitoring.Core.AlertCategory.Performance
+  - Meridian.Application.Monitoring.Core.AlertCategory.Provider
+  - Meridian.Application.Monitoring.Core.AlertCategory.Security
+  - Meridian.Application.Monitoring.Core.AlertCategory.Storage
+  - Meridian.Application.Monitoring.Core.AlertCategory.SystemResources
+  langs:
+  - csharp
+  - vb
+  name: AlertCategory
+  nameWithType: AlertCategory
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertCategory
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Categories for monitoring alerts.
+  example: []
+  syntax:
+    content: 'public enum AlertCategory : byte'
+    content.vb: Public Enum AlertCategory As Byte
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.Connection
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.Connection
+  id: Connection
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: Connection
+  nameWithType: AlertCategory.Connection
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.Connection
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connection
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Connection-related alerts (WebSocket, API connectivity).
+  example: []
+  syntax:
+    content: Connection = 0
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.DataQuality
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.DataQuality
+  id: DataQuality
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: DataQuality
+  nameWithType: AlertCategory.DataQuality
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.DataQuality
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQuality
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Data quality alerts (gaps, anomalies, validation failures).
+  example: []
+  syntax:
+    content: DataQuality = 1
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.Performance
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.Performance
+  id: Performance
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: Performance
+  nameWithType: AlertCategory.Performance
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.Performance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Performance
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Performance alerts (latency, throughput, backpressure).
+  example: []
+  syntax:
+    content: Performance = 2
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.SystemResources
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.SystemResources
+  id: SystemResources
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: SystemResources
+  nameWithType: AlertCategory.SystemResources
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.SystemResources
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SystemResources
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: System resource alerts (memory, CPU, disk).
+  example: []
+  syntax:
+    content: SystemResources = 3
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.Provider
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: AlertCategory.Provider
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.Provider
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Provider-specific alerts.
+  example: []
+  syntax:
+    content: Provider = 4
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.Storage
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.Storage
+  id: Storage
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: Storage
+  nameWithType: AlertCategory.Storage
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.Storage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Storage
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Storage-related alerts (disk space, write failures).
+  example: []
+  syntax:
+    content: Storage = 5
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.Configuration
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.Configuration
+  id: Configuration
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: Configuration
+  nameWithType: AlertCategory.Configuration
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.Configuration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Configuration
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Configuration alerts (invalid settings, missing credentials).
+  example: []
+  syntax:
+    content: Configuration = 6
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: Meridian.Application.Monitoring.Core.AlertCategory.Security
+  commentId: F:Meridian.Application.Monitoring.Core.AlertCategory.Security
+  id: Security
+  parent: Meridian.Application.Monitoring.Core.AlertCategory
+  langs:
+  - csharp
+  - vb
+  name: Security
+  nameWithType: AlertCategory.Security
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory.Security
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Security
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Security alerts (authentication failures, rate limiting).
+  example: []
+  syntax:
+    content: Security = 7
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Meridian.Application.Monitoring.Core.AlertCategory
+  commentId: T:Meridian.Application.Monitoring.Core.AlertCategory
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertCategory.html
+  name: AlertCategory
+  nameWithType: AlertCategory
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory

@@ -1,0 +1,522 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigurationValidationError
+  commentId: T:Meridian.Application.Config.ConfigurationValidationError
+  id: ConfigurationValidationError
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigurationValidationError.#ctor(System.String,System.String,System.Object)
+  - Meridian.Application.Config.ConfigurationValidationError.Message
+  - Meridian.Application.Config.ConfigurationValidationError.Path
+  - Meridian.Application.Config.ConfigurationValidationError.Value
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationValidationError
+  nameWithType: ConfigurationValidationError
+  fullName: Meridian.Application.Config.ConfigurationValidationError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationValidationError
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration validation error.
+  example: []
+  syntax:
+    content: 'public sealed record ConfigurationValidationError : IEquatable<ConfigurationValidationError>'
+    content.vb: Public NotInheritable Class ConfigurationValidationError Implements IEquatable(Of ConfigurationValidationError)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.ConfigurationValidationError}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ConfigurationValidationError.#ctor(System.String,System.String,System.Object)
+  commentId: M:Meridian.Application.Config.ConfigurationValidationError.#ctor(System.String,System.String,System.Object)
+  id: '#ctor(System.String,System.String,System.Object)'
+  parent: Meridian.Application.Config.ConfigurationValidationError
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationValidationError(string, string, object?)
+  nameWithType: ConfigurationValidationError.ConfigurationValidationError(string, string, object?)
+  fullName: Meridian.Application.Config.ConfigurationValidationError.ConfigurationValidationError(string, string, object?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration validation error.
+  example: []
+  syntax:
+    content: public ConfigurationValidationError(string Path, string Message, object? Value = null)
+    parameters:
+    - id: Path
+      type: System.String
+      description: Configuration path that failed validation.
+    - id: Message
+      type: System.String
+      description: Error message.
+    - id: Value
+      type: System.Object
+      description: Invalid value.
+    content.vb: Public Sub New(Path As String, Message As String, Value As Object = Nothing)
+  overload: Meridian.Application.Config.ConfigurationValidationError.#ctor*
+  nameWithType.vb: ConfigurationValidationError.New(String, String, Object)
+  fullName.vb: Meridian.Application.Config.ConfigurationValidationError.New(String, String, Object)
+  name.vb: New(String, String, Object)
+- uid: Meridian.Application.Config.ConfigurationValidationError.Path
+  commentId: P:Meridian.Application.Config.ConfigurationValidationError.Path
+  id: Path
+  parent: Meridian.Application.Config.ConfigurationValidationError
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: ConfigurationValidationError.Path
+  fullName: Meridian.Application.Config.ConfigurationValidationError.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration path that failed validation.
+  example: []
+  syntax:
+    content: public string Path { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Application.Config.ConfigurationValidationError.Path*
+- uid: Meridian.Application.Config.ConfigurationValidationError.Message
+  commentId: P:Meridian.Application.Config.ConfigurationValidationError.Message
+  id: Message
+  parent: Meridian.Application.Config.ConfigurationValidationError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: ConfigurationValidationError.Message
+  fullName: Meridian.Application.Config.ConfigurationValidationError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Error message.
+  example: []
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Config.ConfigurationValidationError.Message*
+- uid: Meridian.Application.Config.ConfigurationValidationError.Value
+  commentId: P:Meridian.Application.Config.ConfigurationValidationError.Value
+  id: Value
+  parent: Meridian.Application.Config.ConfigurationValidationError
+  langs:
+  - csharp
+  - vb
+  name: Value
+  nameWithType: ConfigurationValidationError.Value
+  fullName: Meridian.Application.Config.ConfigurationValidationError.Value
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Invalid value.
+  example: []
+  syntax:
+    content: public object? Value { get; init; }
+    parameters: []
+    return:
+      type: System.Object
+    content.vb: Public Property Value As Object
+  overload: Meridian.Application.Config.ConfigurationValidationError.Value*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.ConfigurationValidationError}
+  commentId: T:System.IEquatable{Meridian.Application.Config.ConfigurationValidationError}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ConfigurationValidationError>
+  nameWithType: IEquatable<ConfigurationValidationError>
+  fullName: System.IEquatable<Meridian.Application.Config.ConfigurationValidationError>
+  nameWithType.vb: IEquatable(Of ConfigurationValidationError)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.ConfigurationValidationError)
+  name.vb: IEquatable(Of ConfigurationValidationError)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.ConfigurationValidationError
+    name: ConfigurationValidationError
+    href: Meridian.Application.Config.ConfigurationValidationError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ConfigurationValidationError
+    name: ConfigurationValidationError
+    href: Meridian.Application.Config.ConfigurationValidationError.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationValidationError.#ctor*
+  commentId: Overload:Meridian.Application.Config.ConfigurationValidationError.#ctor
+  href: Meridian.Application.Config.ConfigurationValidationError.html#Meridian_Application_Config_ConfigurationValidationError__ctor_System_String_System_String_System_Object_
+  name: ConfigurationValidationError
+  nameWithType: ConfigurationValidationError.ConfigurationValidationError
+  fullName: Meridian.Application.Config.ConfigurationValidationError.ConfigurationValidationError
+  nameWithType.vb: ConfigurationValidationError.New
+  fullName.vb: Meridian.Application.Config.ConfigurationValidationError.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Config.ConfigurationValidationError.Path*
+  commentId: Overload:Meridian.Application.Config.ConfigurationValidationError.Path
+  href: Meridian.Application.Config.ConfigurationValidationError.html#Meridian_Application_Config_ConfigurationValidationError_Path
+  name: Path
+  nameWithType: ConfigurationValidationError.Path
+  fullName: Meridian.Application.Config.ConfigurationValidationError.Path
+- uid: Meridian.Application.Config.ConfigurationValidationError.Message*
+  commentId: Overload:Meridian.Application.Config.ConfigurationValidationError.Message
+  href: Meridian.Application.Config.ConfigurationValidationError.html#Meridian_Application_Config_ConfigurationValidationError_Message
+  name: Message
+  nameWithType: ConfigurationValidationError.Message
+  fullName: Meridian.Application.Config.ConfigurationValidationError.Message
+- uid: Meridian.Application.Config.ConfigurationValidationError.Value*
+  commentId: Overload:Meridian.Application.Config.ConfigurationValidationError.Value
+  href: Meridian.Application.Config.ConfigurationValidationError.html#Meridian_Application_Config_ConfigurationValidationError_Value
+  name: Value
+  nameWithType: ConfigurationValidationError.Value
+  fullName: Meridian.Application.Config.ConfigurationValidationError.Value

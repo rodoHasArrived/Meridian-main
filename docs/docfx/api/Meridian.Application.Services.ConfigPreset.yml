@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ConfigPreset
+  commentId: T:Meridian.Application.Services.ConfigPreset
+  id: ConfigPreset
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ConfigPreset.Crypto
+  - Meridian.Application.Services.ConfigPreset.DayTrader
+  - Meridian.Application.Services.ConfigPreset.OptionsTrader
+  - Meridian.Application.Services.ConfigPreset.Researcher
+  langs:
+  - csharp
+  - vb
+  name: ConfigPreset
+  nameWithType: ConfigPreset
+  fullName: Meridian.Application.Services.ConfigPreset
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPreset
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 951
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Available configuration presets for different user roles.
+  example: []
+  syntax:
+    content: 'public enum ConfigPreset : byte'
+    content.vb: Public Enum ConfigPreset As Byte
+- uid: Meridian.Application.Services.ConfigPreset.Researcher
+  commentId: F:Meridian.Application.Services.ConfigPreset.Researcher
+  id: Researcher
+  parent: Meridian.Application.Services.ConfigPreset
+  langs:
+  - csharp
+  - vb
+  name: Researcher
+  nameWithType: ConfigPreset.Researcher
+  fullName: Meridian.Application.Services.ConfigPreset.Researcher
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Researcher
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 954
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Historical analysis, daily bars, Parquet export.
+  example: []
+  syntax:
+    content: Researcher = 0
+    return:
+      type: Meridian.Application.Services.ConfigPreset
+- uid: Meridian.Application.Services.ConfigPreset.DayTrader
+  commentId: F:Meridian.Application.Services.ConfigPreset.DayTrader
+  id: DayTrader
+  parent: Meridian.Application.Services.ConfigPreset
+  langs:
+  - csharp
+  - vb
+  name: DayTrader
+  nameWithType: ConfigPreset.DayTrader
+  fullName: Meridian.Application.Services.ConfigPreset.DayTrader
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DayTrader
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 956
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Real-time streaming, L2 depth, low-latency storage.
+  example: []
+  syntax:
+    content: DayTrader = 1
+    return:
+      type: Meridian.Application.Services.ConfigPreset
+- uid: Meridian.Application.Services.ConfigPreset.OptionsTrader
+  commentId: F:Meridian.Application.Services.ConfigPreset.OptionsTrader
+  id: OptionsTrader
+  parent: Meridian.Application.Services.ConfigPreset
+  langs:
+  - csharp
+  - vb
+  name: OptionsTrader
+  nameWithType: ConfigPreset.OptionsTrader
+  fullName: Meridian.Application.Services.ConfigPreset.OptionsTrader
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsTrader
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 958
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Options chain + Greeks, IB streaming, derivatives enabled.
+  example: []
+  syntax:
+    content: OptionsTrader = 2
+    return:
+      type: Meridian.Application.Services.ConfigPreset
+- uid: Meridian.Application.Services.ConfigPreset.Crypto
+  commentId: F:Meridian.Application.Services.ConfigPreset.Crypto
+  id: Crypto
+  parent: Meridian.Application.Services.ConfigPreset
+  langs:
+  - csharp
+  - vb
+  name: Crypto
+  nameWithType: ConfigPreset.Crypto
+  fullName: Meridian.Application.Services.ConfigPreset.Crypto
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Crypto
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 960
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: 24/7 crypto collection, Alpaca crypto feed, extended retention.
+  example: []
+  syntax:
+    content: Crypto = 3
+    return:
+      type: Meridian.Application.Services.ConfigPreset
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.ConfigPreset
+  commentId: T:Meridian.Application.Services.ConfigPreset
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigPreset.html
+  name: ConfigPreset
+  nameWithType: ConfigPreset
+  fullName: Meridian.Application.Services.ConfigPreset

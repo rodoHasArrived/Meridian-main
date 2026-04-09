@@ -1,0 +1,779 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  id: SymbolPriceStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.#ctor(System.String,System.String,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider
+  - Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol
+  langs:
+  - csharp
+  - vb
+  name: SymbolPriceStatistics
+  nameWithType: SymbolPriceStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolPriceStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Price statistics for a single symbol.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolPriceStatistics : IEquatable<SymbolPriceStatistics>'
+    content.vb: Public NotInheritable Class SymbolPriceStatistics Implements IEquatable(Of SymbolPriceStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.#ctor(System.String,System.String,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.#ctor(System.String,System.String,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: SymbolPriceStatistics(string, string?, int, int, decimal, decimal, decimal, decimal, DateTimeOffset)
+  nameWithType: SymbolPriceStatistics.SymbolPriceStatistics(string, string?, int, int, decimal, decimal, decimal, decimal, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.SymbolPriceStatistics(string, string?, int, int, decimal, decimal, decimal, decimal, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Price statistics for a single symbol.
+  example: []
+  syntax:
+    content: public SymbolPriceStatistics(string Symbol, string? Provider, int CheckCount, int DiscontinuityCount, decimal LastPrice, decimal MinPrice, decimal MaxPrice, decimal LargestGapPercent, DateTimeOffset LastUpdateTime)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Provider
+      type: System.String
+    - id: CheckCount
+      type: System.Int32
+    - id: DiscontinuityCount
+      type: System.Int32
+    - id: LastPrice
+      type: System.Decimal
+    - id: MinPrice
+      type: System.Decimal
+    - id: MaxPrice
+      type: System.Decimal
+    - id: LargestGapPercent
+      type: System.Decimal
+    - id: LastUpdateTime
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, Provider As String, CheckCount As Integer, DiscontinuityCount As Integer, LastPrice As Decimal, MinPrice As Decimal, MaxPrice As Decimal, LargestGapPercent As Decimal, LastUpdateTime As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.#ctor*
+  nameWithType.vb: SymbolPriceStatistics.New(String, String, Integer, Integer, Decimal, Decimal, Decimal, Decimal, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.New(String, String, Integer, Integer, Decimal, Decimal, Decimal, Decimal, System.DateTimeOffset)
+  name.vb: New(String, String, Integer, Integer, Decimal, Decimal, Decimal, Decimal, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolPriceStatistics.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: SymbolPriceStatistics.Provider
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 482
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount
+  id: CheckCount
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: CheckCount
+  nameWithType: SymbolPriceStatistics.CheckCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckCount
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 483
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int CheckCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CheckCount As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount
+  id: DiscontinuityCount
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: DiscontinuityCount
+  nameWithType: SymbolPriceStatistics.DiscontinuityCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscontinuityCount
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 484
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int DiscontinuityCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DiscontinuityCount As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice
+  id: LastPrice
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: LastPrice
+  nameWithType: SymbolPriceStatistics.LastPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 485
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal LastPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LastPrice As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice
+  id: MinPrice
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: MinPrice
+  nameWithType: SymbolPriceStatistics.MinPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 486
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal MinPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MinPrice As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice
+  id: MaxPrice
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: MaxPrice
+  nameWithType: SymbolPriceStatistics.MaxPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 487
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal MaxPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MaxPrice As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent
+  id: LargestGapPercent
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: LargestGapPercent
+  nameWithType: SymbolPriceStatistics.LargestGapPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LargestGapPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 488
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal LargestGapPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LargestGapPercent As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime
+  id: LastUpdateTime
+  parent: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+  langs:
+  - csharp
+  - vb
+  name: LastUpdateTime
+  nameWithType: SymbolPriceStatistics.LastUpdateTime
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdateTime
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 489
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset LastUpdateTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdateTime As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolPriceStatistics>
+  nameWithType: IEquatable<SymbolPriceStatistics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics>
+  nameWithType.vb: IEquatable(Of SymbolPriceStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics)
+  name.vb: IEquatable(Of SymbolPriceStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+    name: SymbolPriceStatistics
+    href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics
+    name: SymbolPriceStatistics
+    href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics__ctor_System_String_System_String_System_Int32_System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_DateTimeOffset_
+  name: SymbolPriceStatistics
+  nameWithType: SymbolPriceStatistics.SymbolPriceStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.SymbolPriceStatistics
+  nameWithType.vb: SymbolPriceStatistics.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_Symbol
+  name: Symbol
+  nameWithType: SymbolPriceStatistics.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Symbol
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_Provider
+  name: Provider
+  nameWithType: SymbolPriceStatistics.Provider
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.Provider
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_CheckCount
+  name: CheckCount
+  nameWithType: SymbolPriceStatistics.CheckCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.CheckCount
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_DiscontinuityCount
+  name: DiscontinuityCount
+  nameWithType: SymbolPriceStatistics.DiscontinuityCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.DiscontinuityCount
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_LastPrice
+  name: LastPrice
+  nameWithType: SymbolPriceStatistics.LastPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastPrice
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_MinPrice
+  name: MinPrice
+  nameWithType: SymbolPriceStatistics.MinPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MinPrice
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_MaxPrice
+  name: MaxPrice
+  nameWithType: SymbolPriceStatistics.MaxPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.MaxPrice
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_LargestGapPercent
+  name: LargestGapPercent
+  nameWithType: SymbolPriceStatistics.LargestGapPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LargestGapPercent
+- uid: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime
+  href: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.html#Meridian_Application_Monitoring_DataQuality_SymbolPriceStatistics_LastUpdateTime
+  name: LastUpdateTime
+  nameWithType: SymbolPriceStatistics.LastUpdateTime
+  fullName: Meridian.Application.Monitoring.DataQuality.SymbolPriceStatistics.LastUpdateTime

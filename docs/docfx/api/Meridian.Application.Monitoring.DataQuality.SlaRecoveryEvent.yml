@@ -1,0 +1,588 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  id: SlaRecoveryEvent
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.#ctor(System.String,System.DateTimeOffset,System.TimeSpan,System.Int32)
+  - Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol
+  - Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp
+  - Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount
+  - Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration
+  langs:
+  - csharp
+  - vb
+  name: SlaRecoveryEvent
+  nameWithType: SlaRecoveryEvent
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SlaRecoveryEvent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when SLA recovers from violation.
+  example: []
+  syntax:
+    content: 'public readonly record struct SlaRecoveryEvent : IEquatable<SlaRecoveryEvent>'
+    content.vb: Public Structure SlaRecoveryEvent Implements IEquatable(Of SlaRecoveryEvent)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.#ctor(System.String,System.DateTimeOffset,System.TimeSpan,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.#ctor(System.String,System.DateTimeOffset,System.TimeSpan,System.Int32)
+  id: '#ctor(System.String,System.DateTimeOffset,System.TimeSpan,System.Int32)'
+  parent: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  langs:
+  - csharp
+  - vb
+  name: SlaRecoveryEvent(string, DateTimeOffset, TimeSpan, int)
+  nameWithType: SlaRecoveryEvent.SlaRecoveryEvent(string, DateTimeOffset, TimeSpan, int)
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.SlaRecoveryEvent(string, System.DateTimeOffset, System.TimeSpan, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when SLA recovers from violation.
+  example: []
+  syntax:
+    content: public SlaRecoveryEvent(string Symbol, DateTimeOffset Timestamp, TimeSpan ViolationDuration, int ViolationCount)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: ViolationDuration
+      type: System.TimeSpan
+    - id: ViolationCount
+      type: System.Int32
+    content.vb: Public Sub New(Symbol As String, Timestamp As DateTimeOffset, ViolationDuration As TimeSpan, ViolationCount As Integer)
+  overload: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.#ctor*
+  nameWithType.vb: SlaRecoveryEvent.New(String, DateTimeOffset, TimeSpan, Integer)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.New(String, System.DateTimeOffset, System.TimeSpan, Integer)
+  name.vb: New(String, DateTimeOffset, TimeSpan, Integer)
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SlaRecoveryEvent.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol*
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: SlaRecoveryEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp*
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration
+  id: ViolationDuration
+  parent: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  langs:
+  - csharp
+  - vb
+  name: ViolationDuration
+  nameWithType: SlaRecoveryEvent.ViolationDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViolationDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan ViolationDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property ViolationDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount
+  commentId: P:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount
+  id: ViolationCount
+  parent: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+  langs:
+  - csharp
+  - vb
+  name: ViolationCount
+  nameWithType: SlaRecoveryEvent.ViolationCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViolationCount
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int ViolationCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ViolationCount As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SlaRecoveryEvent>
+  nameWithType: IEquatable<SlaRecoveryEvent>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent>
+  nameWithType.vb: IEquatable(Of SlaRecoveryEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent)
+  name.vb: IEquatable(Of SlaRecoveryEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+    name: SlaRecoveryEvent
+    href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent
+    name: SlaRecoveryEvent
+    href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html#Meridian_Application_Monitoring_DataQuality_SlaRecoveryEvent__ctor_System_String_System_DateTimeOffset_System_TimeSpan_System_Int32_
+  name: SlaRecoveryEvent
+  nameWithType: SlaRecoveryEvent.SlaRecoveryEvent
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.SlaRecoveryEvent
+  nameWithType.vb: SlaRecoveryEvent.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol
+  href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html#Meridian_Application_Monitoring_DataQuality_SlaRecoveryEvent_Symbol
+  name: Symbol
+  nameWithType: SlaRecoveryEvent.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Symbol
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp
+  href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html#Meridian_Application_Monitoring_DataQuality_SlaRecoveryEvent_Timestamp
+  name: Timestamp
+  nameWithType: SlaRecoveryEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.Timestamp
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration
+  href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html#Meridian_Application_Monitoring_DataQuality_SlaRecoveryEvent_ViolationDuration
+  name: ViolationDuration
+  nameWithType: SlaRecoveryEvent.ViolationDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationDuration
+- uid: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount
+  href: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.html#Meridian_Application_Monitoring_DataQuality_SlaRecoveryEvent_ViolationCount
+  name: ViolationCount
+  nameWithType: SlaRecoveryEvent.ViolationCount
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaRecoveryEvent.ViolationCount

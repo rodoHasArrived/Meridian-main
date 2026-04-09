@@ -1,0 +1,928 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.BackfillProvidersConfig
+  commentId: T:Meridian.Application.Config.BackfillProvidersConfig
+  id: BackfillProvidersConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.BackfillProvidersConfig.#ctor(Meridian.Application.Config.AlpacaBackfillConfig,Meridian.Application.Config.YahooFinanceConfig,Meridian.Application.Config.NasdaqDataLinkConfig,Meridian.Application.Config.StooqConfig,Meridian.Application.Config.OpenFigiConfig,Meridian.Application.Config.TiingoConfig,Meridian.Application.Config.PolygonConfig,Meridian.Application.Config.AlphaVantageConfig,Meridian.Application.Config.FinnhubConfig,Meridian.Application.Config.FredConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.RobinhoodConfig)
+  - Meridian.Application.Config.BackfillProvidersConfig.Alpaca
+  - Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage
+  - Meridian.Application.Config.BackfillProvidersConfig.Finnhub
+  - Meridian.Application.Config.BackfillProvidersConfig.Fred
+  - Meridian.Application.Config.BackfillProvidersConfig.Nasdaq
+  - Meridian.Application.Config.BackfillProvidersConfig.OpenFigi
+  - Meridian.Application.Config.BackfillProvidersConfig.Polygon
+  - Meridian.Application.Config.BackfillProvidersConfig.Robinhood
+  - Meridian.Application.Config.BackfillProvidersConfig.Stooq
+  - Meridian.Application.Config.BackfillProvidersConfig.Synthetic
+  - Meridian.Application.Config.BackfillProvidersConfig.Tiingo
+  - Meridian.Application.Config.BackfillProvidersConfig.Yahoo
+  langs:
+  - csharp
+  - vb
+  name: BackfillProvidersConfig
+  nameWithType: BackfillProvidersConfig
+  fullName: Meridian.Application.Config.BackfillProvidersConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillProvidersConfig
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for individual backfill data providers.
+  example: []
+  syntax:
+    content: 'public sealed record BackfillProvidersConfig : IEquatable<BackfillProvidersConfig>'
+    content.vb: Public NotInheritable Class BackfillProvidersConfig Implements IEquatable(Of BackfillProvidersConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.BackfillProvidersConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.BackfillProvidersConfig.#ctor(Meridian.Application.Config.AlpacaBackfillConfig,Meridian.Application.Config.YahooFinanceConfig,Meridian.Application.Config.NasdaqDataLinkConfig,Meridian.Application.Config.StooqConfig,Meridian.Application.Config.OpenFigiConfig,Meridian.Application.Config.TiingoConfig,Meridian.Application.Config.PolygonConfig,Meridian.Application.Config.AlphaVantageConfig,Meridian.Application.Config.FinnhubConfig,Meridian.Application.Config.FredConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.RobinhoodConfig)
+  commentId: M:Meridian.Application.Config.BackfillProvidersConfig.#ctor(Meridian.Application.Config.AlpacaBackfillConfig,Meridian.Application.Config.YahooFinanceConfig,Meridian.Application.Config.NasdaqDataLinkConfig,Meridian.Application.Config.StooqConfig,Meridian.Application.Config.OpenFigiConfig,Meridian.Application.Config.TiingoConfig,Meridian.Application.Config.PolygonConfig,Meridian.Application.Config.AlphaVantageConfig,Meridian.Application.Config.FinnhubConfig,Meridian.Application.Config.FredConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.RobinhoodConfig)
+  id: '#ctor(Meridian.Application.Config.AlpacaBackfillConfig,Meridian.Application.Config.YahooFinanceConfig,Meridian.Application.Config.NasdaqDataLinkConfig,Meridian.Application.Config.StooqConfig,Meridian.Application.Config.OpenFigiConfig,Meridian.Application.Config.TiingoConfig,Meridian.Application.Config.PolygonConfig,Meridian.Application.Config.AlphaVantageConfig,Meridian.Application.Config.FinnhubConfig,Meridian.Application.Config.FredConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.RobinhoodConfig)'
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: BackfillProvidersConfig(AlpacaBackfillConfig?, YahooFinanceConfig?, NasdaqDataLinkConfig?, StooqConfig?, OpenFigiConfig?, TiingoConfig?, PolygonConfig?, AlphaVantageConfig?, FinnhubConfig?, FredConfig?, SyntheticMarketDataConfig?, RobinhoodConfig?)
+  nameWithType: BackfillProvidersConfig.BackfillProvidersConfig(AlpacaBackfillConfig?, YahooFinanceConfig?, NasdaqDataLinkConfig?, StooqConfig?, OpenFigiConfig?, TiingoConfig?, PolygonConfig?, AlphaVantageConfig?, FinnhubConfig?, FredConfig?, SyntheticMarketDataConfig?, RobinhoodConfig?)
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.BackfillProvidersConfig(Meridian.Application.Config.AlpacaBackfillConfig?, Meridian.Application.Config.YahooFinanceConfig?, Meridian.Application.Config.NasdaqDataLinkConfig?, Meridian.Application.Config.StooqConfig?, Meridian.Application.Config.OpenFigiConfig?, Meridian.Application.Config.TiingoConfig?, Meridian.Application.Config.PolygonConfig?, Meridian.Application.Config.AlphaVantageConfig?, Meridian.Application.Config.FinnhubConfig?, Meridian.Application.Config.FredConfig?, Meridian.Application.Config.SyntheticMarketDataConfig?, Meridian.Application.Config.RobinhoodConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for individual backfill data providers.
+  example: []
+  syntax:
+    content: public BackfillProvidersConfig(AlpacaBackfillConfig? Alpaca = null, YahooFinanceConfig? Yahoo = null, NasdaqDataLinkConfig? Nasdaq = null, StooqConfig? Stooq = null, OpenFigiConfig? OpenFigi = null, TiingoConfig? Tiingo = null, PolygonConfig? Polygon = null, AlphaVantageConfig? AlphaVantage = null, FinnhubConfig? Finnhub = null, FredConfig? Fred = null, SyntheticMarketDataConfig? Synthetic = null, RobinhoodConfig? Robinhood = null)
+    parameters:
+    - id: Alpaca
+      type: Meridian.Application.Config.AlpacaBackfillConfig
+    - id: Yahoo
+      type: Meridian.Application.Config.YahooFinanceConfig
+    - id: Nasdaq
+      type: Meridian.Application.Config.NasdaqDataLinkConfig
+    - id: Stooq
+      type: Meridian.Application.Config.StooqConfig
+    - id: OpenFigi
+      type: Meridian.Application.Config.OpenFigiConfig
+    - id: Tiingo
+      type: Meridian.Application.Config.TiingoConfig
+    - id: Polygon
+      type: Meridian.Application.Config.PolygonConfig
+    - id: AlphaVantage
+      type: Meridian.Application.Config.AlphaVantageConfig
+    - id: Finnhub
+      type: Meridian.Application.Config.FinnhubConfig
+    - id: Fred
+      type: Meridian.Application.Config.FredConfig
+    - id: Synthetic
+      type: Meridian.Application.Config.SyntheticMarketDataConfig
+    - id: Robinhood
+      type: Meridian.Application.Config.RobinhoodConfig
+    content.vb: Public Sub New(Alpaca As AlpacaBackfillConfig = Nothing, Yahoo As YahooFinanceConfig = Nothing, Nasdaq As NasdaqDataLinkConfig = Nothing, Stooq As StooqConfig = Nothing, OpenFigi As OpenFigiConfig = Nothing, Tiingo As TiingoConfig = Nothing, Polygon As PolygonConfig = Nothing, AlphaVantage As AlphaVantageConfig = Nothing, Finnhub As FinnhubConfig = Nothing, Fred As FredConfig = Nothing, Synthetic As SyntheticMarketDataConfig = Nothing, Robinhood As RobinhoodConfig = Nothing)
+  overload: Meridian.Application.Config.BackfillProvidersConfig.#ctor*
+  nameWithType.vb: BackfillProvidersConfig.New(AlpacaBackfillConfig, YahooFinanceConfig, NasdaqDataLinkConfig, StooqConfig, OpenFigiConfig, TiingoConfig, PolygonConfig, AlphaVantageConfig, FinnhubConfig, FredConfig, SyntheticMarketDataConfig, RobinhoodConfig)
+  fullName.vb: Meridian.Application.Config.BackfillProvidersConfig.New(Meridian.Application.Config.AlpacaBackfillConfig, Meridian.Application.Config.YahooFinanceConfig, Meridian.Application.Config.NasdaqDataLinkConfig, Meridian.Application.Config.StooqConfig, Meridian.Application.Config.OpenFigiConfig, Meridian.Application.Config.TiingoConfig, Meridian.Application.Config.PolygonConfig, Meridian.Application.Config.AlphaVantageConfig, Meridian.Application.Config.FinnhubConfig, Meridian.Application.Config.FredConfig, Meridian.Application.Config.SyntheticMarketDataConfig, Meridian.Application.Config.RobinhoodConfig)
+  name.vb: New(AlpacaBackfillConfig, YahooFinanceConfig, NasdaqDataLinkConfig, StooqConfig, OpenFigiConfig, TiingoConfig, PolygonConfig, AlphaVantageConfig, FinnhubConfig, FredConfig, SyntheticMarketDataConfig, RobinhoodConfig)
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Alpaca
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Alpaca
+  id: Alpaca
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: BackfillProvidersConfig.Alpaca
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Alpaca
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public AlpacaBackfillConfig? Alpaca { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AlpacaBackfillConfig
+    content.vb: Public Property Alpaca As AlpacaBackfillConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Alpaca*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Yahoo
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Yahoo
+  id: Yahoo
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Yahoo
+  nameWithType: BackfillProvidersConfig.Yahoo
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Yahoo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Yahoo
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public YahooFinanceConfig? Yahoo { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.YahooFinanceConfig
+    content.vb: Public Property Yahoo As YahooFinanceConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Yahoo*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Nasdaq
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Nasdaq
+  id: Nasdaq
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Nasdaq
+  nameWithType: BackfillProvidersConfig.Nasdaq
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Nasdaq
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Nasdaq
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public NasdaqDataLinkConfig? Nasdaq { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.NasdaqDataLinkConfig
+    content.vb: Public Property Nasdaq As NasdaqDataLinkConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Nasdaq*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Stooq
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Stooq
+  id: Stooq
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Stooq
+  nameWithType: BackfillProvidersConfig.Stooq
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Stooq
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stooq
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public StooqConfig? Stooq { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.StooqConfig
+    content.vb: Public Property Stooq As StooqConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Stooq*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.OpenFigi
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.OpenFigi
+  id: OpenFigi
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: OpenFigi
+  nameWithType: BackfillProvidersConfig.OpenFigi
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.OpenFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenFigi
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public OpenFigiConfig? OpenFigi { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.OpenFigiConfig
+    content.vb: Public Property OpenFigi As OpenFigiConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.OpenFigi*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Tiingo
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Tiingo
+  id: Tiingo
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Tiingo
+  nameWithType: BackfillProvidersConfig.Tiingo
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Tiingo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tiingo
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public TiingoConfig? Tiingo { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.TiingoConfig
+    content.vb: Public Property Tiingo As TiingoConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Tiingo*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Polygon
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Polygon
+  id: Polygon
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: BackfillProvidersConfig.Polygon
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Polygon
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public PolygonConfig? Polygon { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.PolygonConfig
+    content.vb: Public Property Polygon As PolygonConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Polygon*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage
+  id: AlphaVantage
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: AlphaVantage
+  nameWithType: BackfillProvidersConfig.AlphaVantage
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlphaVantage
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public AlphaVantageConfig? AlphaVantage { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AlphaVantageConfig
+    content.vb: Public Property AlphaVantage As AlphaVantageConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Finnhub
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Finnhub
+  id: Finnhub
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Finnhub
+  nameWithType: BackfillProvidersConfig.Finnhub
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Finnhub
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Finnhub
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public FinnhubConfig? Finnhub { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.FinnhubConfig
+    content.vb: Public Property Finnhub As FinnhubConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Finnhub*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Fred
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Fred
+  id: Fred
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Fred
+  nameWithType: BackfillProvidersConfig.Fred
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Fred
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fred
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public FredConfig? Fred { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.FredConfig
+    content.vb: Public Property Fred As FredConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Fred*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Synthetic
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Synthetic
+  id: Synthetic
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Synthetic
+  nameWithType: BackfillProvidersConfig.Synthetic
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Synthetic
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Synthetic
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public SyntheticMarketDataConfig? Synthetic { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.SyntheticMarketDataConfig
+    content.vb: Public Property Synthetic As SyntheticMarketDataConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Synthetic*
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Robinhood
+  commentId: P:Meridian.Application.Config.BackfillProvidersConfig.Robinhood
+  id: Robinhood
+  parent: Meridian.Application.Config.BackfillProvidersConfig
+  langs:
+  - csharp
+  - vb
+  name: Robinhood
+  nameWithType: BackfillProvidersConfig.Robinhood
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Robinhood
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Robinhood
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public RobinhoodConfig? Robinhood { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.RobinhoodConfig
+    content.vb: Public Property Robinhood As RobinhoodConfig
+  overload: Meridian.Application.Config.BackfillProvidersConfig.Robinhood*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.BackfillProvidersConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.BackfillProvidersConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackfillProvidersConfig>
+  nameWithType: IEquatable<BackfillProvidersConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.BackfillProvidersConfig>
+  nameWithType.vb: IEquatable(Of BackfillProvidersConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.BackfillProvidersConfig)
+  name.vb: IEquatable(Of BackfillProvidersConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.BackfillProvidersConfig
+    name: BackfillProvidersConfig
+    href: Meridian.Application.Config.BackfillProvidersConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.BackfillProvidersConfig
+    name: BackfillProvidersConfig
+    href: Meridian.Application.Config.BackfillProvidersConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.BackfillProvidersConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.#ctor
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig__ctor_Meridian_Application_Config_AlpacaBackfillConfig_Meridian_Application_Config_YahooFinanceConfig_Meridian_Application_Config_NasdaqDataLinkConfig_Meridian_Application_Config_StooqConfig_Meridian_Application_Config_OpenFigiConfig_Meridian_Application_Config_TiingoConfig_Meridian_Application_Config_PolygonConfig_Meridian_Application_Config_AlphaVantageConfig_Meridian_Application_Config_FinnhubConfig_Meridian_Application_Config_FredConfig_Meridian_Application_Config_SyntheticMarketDataConfig_Meridian_Application_Config_RobinhoodConfig_
+  name: BackfillProvidersConfig
+  nameWithType: BackfillProvidersConfig.BackfillProvidersConfig
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.BackfillProvidersConfig
+  nameWithType.vb: BackfillProvidersConfig.New
+  fullName.vb: Meridian.Application.Config.BackfillProvidersConfig.New
+  name.vb: New
+- uid: Meridian.Application.Config.AlpacaBackfillConfig
+  commentId: T:Meridian.Application.Config.AlpacaBackfillConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlpacaBackfillConfig.html
+  name: AlpacaBackfillConfig
+  nameWithType: AlpacaBackfillConfig
+  fullName: Meridian.Application.Config.AlpacaBackfillConfig
+- uid: Meridian.Application.Config.YahooFinanceConfig
+  commentId: T:Meridian.Application.Config.YahooFinanceConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.YahooFinanceConfig.html
+  name: YahooFinanceConfig
+  nameWithType: YahooFinanceConfig
+  fullName: Meridian.Application.Config.YahooFinanceConfig
+- uid: Meridian.Application.Config.NasdaqDataLinkConfig
+  commentId: T:Meridian.Application.Config.NasdaqDataLinkConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.NasdaqDataLinkConfig.html
+  name: NasdaqDataLinkConfig
+  nameWithType: NasdaqDataLinkConfig
+  fullName: Meridian.Application.Config.NasdaqDataLinkConfig
+- uid: Meridian.Application.Config.StooqConfig
+  commentId: T:Meridian.Application.Config.StooqConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.StooqConfig.html
+  name: StooqConfig
+  nameWithType: StooqConfig
+  fullName: Meridian.Application.Config.StooqConfig
+- uid: Meridian.Application.Config.OpenFigiConfig
+  commentId: T:Meridian.Application.Config.OpenFigiConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.OpenFigiConfig.html
+  name: OpenFigiConfig
+  nameWithType: OpenFigiConfig
+  fullName: Meridian.Application.Config.OpenFigiConfig
+- uid: Meridian.Application.Config.TiingoConfig
+  commentId: T:Meridian.Application.Config.TiingoConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.TiingoConfig.html
+  name: TiingoConfig
+  nameWithType: TiingoConfig
+  fullName: Meridian.Application.Config.TiingoConfig
+- uid: Meridian.Application.Config.PolygonConfig
+  commentId: T:Meridian.Application.Config.PolygonConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PolygonConfig.html
+  name: PolygonConfig
+  nameWithType: PolygonConfig
+  fullName: Meridian.Application.Config.PolygonConfig
+- uid: Meridian.Application.Config.AlphaVantageConfig
+  commentId: T:Meridian.Application.Config.AlphaVantageConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlphaVantageConfig.html
+  name: AlphaVantageConfig
+  nameWithType: AlphaVantageConfig
+  fullName: Meridian.Application.Config.AlphaVantageConfig
+- uid: Meridian.Application.Config.FinnhubConfig
+  commentId: T:Meridian.Application.Config.FinnhubConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.FinnhubConfig.html
+  name: FinnhubConfig
+  nameWithType: FinnhubConfig
+  fullName: Meridian.Application.Config.FinnhubConfig
+- uid: Meridian.Application.Config.FredConfig
+  commentId: T:Meridian.Application.Config.FredConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.FredConfig.html
+  name: FredConfig
+  nameWithType: FredConfig
+  fullName: Meridian.Application.Config.FredConfig
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig
+  commentId: T:Meridian.Application.Config.SyntheticMarketDataConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html
+  name: SyntheticMarketDataConfig
+  nameWithType: SyntheticMarketDataConfig
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig
+- uid: Meridian.Application.Config.RobinhoodConfig
+  commentId: T:Meridian.Application.Config.RobinhoodConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.RobinhoodConfig.html
+  name: RobinhoodConfig
+  nameWithType: RobinhoodConfig
+  fullName: Meridian.Application.Config.RobinhoodConfig
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Alpaca*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Alpaca
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Alpaca
+  name: Alpaca
+  nameWithType: BackfillProvidersConfig.Alpaca
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Alpaca
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Yahoo*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Yahoo
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Yahoo
+  name: Yahoo
+  nameWithType: BackfillProvidersConfig.Yahoo
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Yahoo
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Nasdaq*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Nasdaq
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Nasdaq
+  name: Nasdaq
+  nameWithType: BackfillProvidersConfig.Nasdaq
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Nasdaq
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Stooq*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Stooq
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Stooq
+  name: Stooq
+  nameWithType: BackfillProvidersConfig.Stooq
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Stooq
+- uid: Meridian.Application.Config.BackfillProvidersConfig.OpenFigi*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.OpenFigi
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_OpenFigi
+  name: OpenFigi
+  nameWithType: BackfillProvidersConfig.OpenFigi
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.OpenFigi
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Tiingo*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Tiingo
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Tiingo
+  name: Tiingo
+  nameWithType: BackfillProvidersConfig.Tiingo
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Tiingo
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Polygon*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Polygon
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Polygon
+  name: Polygon
+  nameWithType: BackfillProvidersConfig.Polygon
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Polygon
+- uid: Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_AlphaVantage
+  name: AlphaVantage
+  nameWithType: BackfillProvidersConfig.AlphaVantage
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.AlphaVantage
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Finnhub*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Finnhub
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Finnhub
+  name: Finnhub
+  nameWithType: BackfillProvidersConfig.Finnhub
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Finnhub
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Fred*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Fred
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Fred
+  name: Fred
+  nameWithType: BackfillProvidersConfig.Fred
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Fred
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Synthetic*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Synthetic
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Synthetic
+  name: Synthetic
+  nameWithType: BackfillProvidersConfig.Synthetic
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Synthetic
+- uid: Meridian.Application.Config.BackfillProvidersConfig.Robinhood*
+  commentId: Overload:Meridian.Application.Config.BackfillProvidersConfig.Robinhood
+  href: Meridian.Application.Config.BackfillProvidersConfig.html#Meridian_Application_Config_BackfillProvidersConfig_Robinhood
+  name: Robinhood
+  nameWithType: BackfillProvidersConfig.Robinhood
+  fullName: Meridian.Application.Config.BackfillProvidersConfig.Robinhood

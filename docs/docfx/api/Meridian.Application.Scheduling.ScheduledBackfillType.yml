@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ScheduledBackfillType
+  commentId: T:Meridian.Application.Scheduling.ScheduledBackfillType
+  id: ScheduledBackfillType
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ScheduledBackfillType.EndOfDay
+  - Meridian.Application.Scheduling.ScheduledBackfillType.FullBackfill
+  - Meridian.Application.Scheduling.ScheduledBackfillType.GapFill
+  - Meridian.Application.Scheduling.ScheduledBackfillType.RollingWindow
+  langs:
+  - csharp
+  - vb
+  name: ScheduledBackfillType
+  nameWithType: ScheduledBackfillType
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledBackfillType
+    path: ../../src/Meridian.Application/Scheduling/BackfillSchedule.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Type of scheduled backfill operation.
+  example: []
+  syntax:
+    content: 'public enum ScheduledBackfillType : byte'
+    content.vb: Public Enum ScheduledBackfillType As Byte
+- uid: Meridian.Application.Scheduling.ScheduledBackfillType.GapFill
+  commentId: F:Meridian.Application.Scheduling.ScheduledBackfillType.GapFill
+  id: GapFill
+  parent: Meridian.Application.Scheduling.ScheduledBackfillType
+  langs:
+  - csharp
+  - vb
+  name: GapFill
+  nameWithType: ScheduledBackfillType.GapFill
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillType.GapFill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapFill
+    path: ../../src/Meridian.Application/Scheduling/BackfillSchedule.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Only fill gaps in existing data.
+  example: []
+  syntax:
+    content: GapFill = 0
+    return:
+      type: Meridian.Application.Scheduling.ScheduledBackfillType
+- uid: Meridian.Application.Scheduling.ScheduledBackfillType.FullBackfill
+  commentId: F:Meridian.Application.Scheduling.ScheduledBackfillType.FullBackfill
+  id: FullBackfill
+  parent: Meridian.Application.Scheduling.ScheduledBackfillType
+  langs:
+  - csharp
+  - vb
+  name: FullBackfill
+  nameWithType: ScheduledBackfillType.FullBackfill
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillType.FullBackfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullBackfill
+    path: ../../src/Meridian.Application/Scheduling/BackfillSchedule.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Full backfill of the lookback period (may overwrite existing).
+  example: []
+  syntax:
+    content: FullBackfill = 1
+    return:
+      type: Meridian.Application.Scheduling.ScheduledBackfillType
+- uid: Meridian.Application.Scheduling.ScheduledBackfillType.RollingWindow
+  commentId: F:Meridian.Application.Scheduling.ScheduledBackfillType.RollingWindow
+  id: RollingWindow
+  parent: Meridian.Application.Scheduling.ScheduledBackfillType
+  langs:
+  - csharp
+  - vb
+  name: RollingWindow
+  nameWithType: ScheduledBackfillType.RollingWindow
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillType.RollingWindow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RollingWindow
+    path: ../../src/Meridian.Application/Scheduling/BackfillSchedule.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Rolling window - always fetch last N days.
+  example: []
+  syntax:
+    content: RollingWindow = 2
+    return:
+      type: Meridian.Application.Scheduling.ScheduledBackfillType
+- uid: Meridian.Application.Scheduling.ScheduledBackfillType.EndOfDay
+  commentId: F:Meridian.Application.Scheduling.ScheduledBackfillType.EndOfDay
+  id: EndOfDay
+  parent: Meridian.Application.Scheduling.ScheduledBackfillType
+  langs:
+  - csharp
+  - vb
+  name: EndOfDay
+  nameWithType: ScheduledBackfillType.EndOfDay
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillType.EndOfDay
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndOfDay
+    path: ../../src/Meridian.Application/Scheduling/BackfillSchedule.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: End-of-day update - fetch only yesterday's data.
+  example: []
+  syntax:
+    content: EndOfDay = 3
+    return:
+      type: Meridian.Application.Scheduling.ScheduledBackfillType
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: Meridian.Application.Scheduling.ScheduledBackfillType
+  commentId: T:Meridian.Application.Scheduling.ScheduledBackfillType
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ScheduledBackfillType.html
+  name: ScheduledBackfillType
+  nameWithType: ScheduledBackfillType
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillType

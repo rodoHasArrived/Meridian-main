@@ -1,0 +1,729 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.IOperationalScheduler
+  commentId: T:Meridian.Application.Scheduling.IOperationalScheduler
+  id: IOperationalScheduler
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync(Meridian.Application.Scheduling.OperationType,Meridian.Application.Scheduling.ResourceRequirements,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync(Meridian.Application.Scheduling.OperationType,System.TimeSpan,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow
+  - Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession
+  - Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow
+  - Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession
+  - Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow
+  - Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours
+  - Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow(Meridian.Application.Scheduling.MaintenanceWindow)
+  - Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow(System.String)
+  langs:
+  - csharp
+  - vb
+  name: IOperationalScheduler
+  nameWithType: IOperationalScheduler
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IOperationalScheduler
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: >-
+    Centralized operational scheduler for coordinating maintenance tasks,
+
+    backfill operations, and other scheduled activities with trading hours.
+  remarks: >-
+    The operational scheduler provides:
+
+    - Awareness of trading hours across markets
+
+    - Maintenance window management
+
+    - Operation scheduling with resource requirements
+
+    - Conflict detection and resolution
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Centralized operational scheduling")]
+
+      public interface IOperationalScheduler
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Centralized operational scheduling")>
+
+      Public Interface IOperationalScheduler
+  derivedClasses:
+  - Meridian.Application.Scheduling.OperationalScheduler
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Centralized operational scheduling
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync(Meridian.Application.Scheduling.OperationType,Meridian.Application.Scheduling.ResourceRequirements,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync(Meridian.Application.Scheduling.OperationType,Meridian.Application.Scheduling.ResourceRequirements,System.Threading.CancellationToken)
+  id: CanExecuteAsync(Meridian.Application.Scheduling.OperationType,Meridian.Application.Scheduling.ResourceRequirements,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: CanExecuteAsync(OperationType, ResourceRequirements?, CancellationToken)
+  nameWithType: IOperationalScheduler.CanExecuteAsync(OperationType, ResourceRequirements?, CancellationToken)
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync(Meridian.Application.Scheduling.OperationType, Meridian.Application.Scheduling.ResourceRequirements?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanExecuteAsync
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Checks if an operation can execute now based on current conditions.
+  example: []
+  syntax:
+    content: Task<ScheduleDecision> CanExecuteAsync(OperationType operationType, ResourceRequirements? requirements = null, CancellationToken ct = default)
+    parameters:
+    - id: operationType
+      type: Meridian.Application.Scheduling.OperationType
+      description: Type of operation.
+    - id: requirements
+      type: Meridian.Application.Scheduling.ResourceRequirements
+      description: Resource requirements for the operation.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.ScheduleDecision}
+      description: Decision about whether the operation can execute.
+    content.vb: Function CanExecuteAsync(operationType As OperationType, requirements As ResourceRequirements = Nothing, ct As CancellationToken = Nothing) As Task(Of ScheduleDecision)
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync*
+  nameWithType.vb: IOperationalScheduler.CanExecuteAsync(OperationType, ResourceRequirements, CancellationToken)
+  fullName.vb: Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync(Meridian.Application.Scheduling.OperationType, Meridian.Application.Scheduling.ResourceRequirements, System.Threading.CancellationToken)
+  name.vb: CanExecuteAsync(OperationType, ResourceRequirements, CancellationToken)
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync(Meridian.Application.Scheduling.OperationType,System.TimeSpan,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync(Meridian.Application.Scheduling.OperationType,System.TimeSpan,System.Threading.CancellationToken)
+  id: FindNextAvailableSlotAsync(Meridian.Application.Scheduling.OperationType,System.TimeSpan,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: FindNextAvailableSlotAsync(OperationType, TimeSpan, CancellationToken)
+  nameWithType: IOperationalScheduler.FindNextAvailableSlotAsync(OperationType, TimeSpan, CancellationToken)
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync(Meridian.Application.Scheduling.OperationType, System.TimeSpan, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindNextAvailableSlotAsync
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Finds the next available slot for an operation.
+  example: []
+  syntax:
+    content: Task<ScheduleSlot?> FindNextAvailableSlotAsync(OperationType operationType, TimeSpan minDuration, CancellationToken ct = default)
+    parameters:
+    - id: operationType
+      type: Meridian.Application.Scheduling.OperationType
+      description: Type of operation.
+    - id: minDuration
+      type: System.TimeSpan
+      description: Minimum duration required.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.ScheduleSlot}
+      description: Next available slot or null if none found within search window.
+    content.vb: Function FindNextAvailableSlotAsync(operationType As OperationType, minDuration As TimeSpan, ct As CancellationToken = Nothing) As Task(Of ScheduleSlot)
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours
+  commentId: P:Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours
+  id: IsWithinTradingHours
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: IsWithinTradingHours
+  nameWithType: IOperationalScheduler.IsWithinTradingHours
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsWithinTradingHours
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets whether we are currently within trading hours for any market.
+  example: []
+  syntax:
+    content: bool IsWithinTradingHours { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsWithinTradingHours As Boolean
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow
+  commentId: P:Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow
+  id: IsWithinMaintenanceWindow
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: IsWithinMaintenanceWindow
+  nameWithType: IOperationalScheduler.IsWithinMaintenanceWindow
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsWithinMaintenanceWindow
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets whether we are currently within a maintenance window.
+  example: []
+  syntax:
+    content: bool IsWithinMaintenanceWindow { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsWithinMaintenanceWindow As Boolean
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession
+  id: GetCurrentTradingSession
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentTradingSession()
+  nameWithType: IOperationalScheduler.GetCurrentTradingSession()
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentTradingSession
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets the current trading session if any.
+  example: []
+  syntax:
+    content: TradingSession? GetCurrentTradingSession()
+    return:
+      type: Meridian.Application.Scheduling.TradingSession
+      description: Current trading session or null.
+    content.vb: Function GetCurrentTradingSession() As TradingSession
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession
+  id: GetNextTradingSession
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetNextTradingSession()
+  nameWithType: IOperationalScheduler.GetNextTradingSession()
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextTradingSession
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets the next trading session.
+  example: []
+  syntax:
+    content: TradingSession? GetNextTradingSession()
+    return:
+      type: Meridian.Application.Scheduling.TradingSession
+      description: Next trading session.
+    content.vb: Function GetNextTradingSession() As TradingSession
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow
+  id: GetCurrentMaintenanceWindow
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentMaintenanceWindow()
+  nameWithType: IOperationalScheduler.GetCurrentMaintenanceWindow()
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentMaintenanceWindow
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets the current maintenance window if any.
+  example: []
+  syntax:
+    content: MaintenanceWindow? GetCurrentMaintenanceWindow()
+    return:
+      type: Meridian.Application.Scheduling.MaintenanceWindow
+      description: Current maintenance window or null.
+    content.vb: Function GetCurrentMaintenanceWindow() As MaintenanceWindow
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow
+  id: GetNextMaintenanceWindow
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: GetNextMaintenanceWindow()
+  nameWithType: IOperationalScheduler.GetNextMaintenanceWindow()
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextMaintenanceWindow
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets the next maintenance window.
+  example: []
+  syntax:
+    content: MaintenanceWindow? GetNextMaintenanceWindow()
+    return:
+      type: Meridian.Application.Scheduling.MaintenanceWindow
+      description: Next maintenance window or null.
+    content.vb: Function GetNextMaintenanceWindow() As MaintenanceWindow
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow(Meridian.Application.Scheduling.MaintenanceWindow)
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow(Meridian.Application.Scheduling.MaintenanceWindow)
+  id: RegisterMaintenanceWindow(Meridian.Application.Scheduling.MaintenanceWindow)
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: RegisterMaintenanceWindow(MaintenanceWindow)
+  nameWithType: IOperationalScheduler.RegisterMaintenanceWindow(MaintenanceWindow)
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow(Meridian.Application.Scheduling.MaintenanceWindow)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterMaintenanceWindow
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Registers a maintenance window.
+  example: []
+  syntax:
+    content: void RegisterMaintenanceWindow(MaintenanceWindow window)
+    parameters:
+    - id: window
+      type: Meridian.Application.Scheduling.MaintenanceWindow
+      description: Maintenance window to register.
+    content.vb: Sub RegisterMaintenanceWindow(window As MaintenanceWindow)
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow*
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow(System.String)
+  commentId: M:Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow(System.String)
+  id: RemoveMaintenanceWindow(System.String)
+  parent: Meridian.Application.Scheduling.IOperationalScheduler
+  langs:
+  - csharp
+  - vb
+  name: RemoveMaintenanceWindow(string)
+  nameWithType: IOperationalScheduler.RemoveMaintenanceWindow(string)
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveMaintenanceWindow
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Removes a maintenance window.
+  example: []
+  syntax:
+    content: void RemoveMaintenanceWindow(string windowName)
+    parameters:
+    - id: windowName
+      type: System.String
+      description: Name of the window to remove.
+    content.vb: Sub RemoveMaintenanceWindow(windowName As String)
+  overload: Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow*
+  nameWithType.vb: IOperationalScheduler.RemoveMaintenanceWindow(String)
+  fullName.vb: Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow(String)
+  name.vb: RemoveMaintenanceWindow(String)
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_CanExecuteAsync_Meridian_Application_Scheduling_OperationType_Meridian_Application_Scheduling_ResourceRequirements_System_Threading_CancellationToken_
+  name: CanExecuteAsync
+  nameWithType: IOperationalScheduler.CanExecuteAsync
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.CanExecuteAsync
+- uid: Meridian.Application.Scheduling.OperationType
+  commentId: T:Meridian.Application.Scheduling.OperationType
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.OperationType.html
+  name: OperationType
+  nameWithType: OperationType
+  fullName: Meridian.Application.Scheduling.OperationType
+- uid: Meridian.Application.Scheduling.ResourceRequirements
+  commentId: T:Meridian.Application.Scheduling.ResourceRequirements
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ResourceRequirements.html
+  name: ResourceRequirements
+  nameWithType: ResourceRequirements
+  fullName: Meridian.Application.Scheduling.ResourceRequirements
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Scheduling.ScheduleDecision}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Scheduling.ScheduleDecision}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ScheduleDecision>
+  nameWithType: Task<ScheduleDecision>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Scheduling.ScheduleDecision>
+  nameWithType.vb: Task(Of ScheduleDecision)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Scheduling.ScheduleDecision)
+  name.vb: Task(Of ScheduleDecision)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.ScheduleDecision
+    name: ScheduleDecision
+    href: Meridian.Application.Scheduling.ScheduleDecision.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ScheduleDecision
+    name: ScheduleDecision
+    href: Meridian.Application.Scheduling.ScheduleDecision.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_FindNextAvailableSlotAsync_Meridian_Application_Scheduling_OperationType_System_TimeSpan_System_Threading_CancellationToken_
+  name: FindNextAvailableSlotAsync
+  nameWithType: IOperationalScheduler.FindNextAvailableSlotAsync
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.FindNextAvailableSlotAsync
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Threading.Tasks.Task{Meridian.Application.Scheduling.ScheduleSlot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Scheduling.ScheduleSlot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ScheduleSlot>
+  nameWithType: Task<ScheduleSlot>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Scheduling.ScheduleSlot>
+  nameWithType.vb: Task(Of ScheduleSlot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Scheduling.ScheduleSlot)
+  name.vb: Task(Of ScheduleSlot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.ScheduleSlot
+    name: ScheduleSlot
+    href: Meridian.Application.Scheduling.ScheduleSlot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ScheduleSlot
+    name: ScheduleSlot
+    href: Meridian.Application.Scheduling.ScheduleSlot.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_IsWithinTradingHours
+  name: IsWithinTradingHours
+  nameWithType: IOperationalScheduler.IsWithinTradingHours
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinTradingHours
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_IsWithinMaintenanceWindow
+  name: IsWithinMaintenanceWindow
+  nameWithType: IOperationalScheduler.IsWithinMaintenanceWindow
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.IsWithinMaintenanceWindow
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_GetCurrentTradingSession
+  name: GetCurrentTradingSession
+  nameWithType: IOperationalScheduler.GetCurrentTradingSession
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentTradingSession
+- uid: Meridian.Application.Scheduling.TradingSession
+  commentId: T:Meridian.Application.Scheduling.TradingSession
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.TradingSession.html
+  name: TradingSession
+  nameWithType: TradingSession
+  fullName: Meridian.Application.Scheduling.TradingSession
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_GetNextTradingSession
+  name: GetNextTradingSession
+  nameWithType: IOperationalScheduler.GetNextTradingSession
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetNextTradingSession
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_GetCurrentMaintenanceWindow
+  name: GetCurrentMaintenanceWindow
+  nameWithType: IOperationalScheduler.GetCurrentMaintenanceWindow
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetCurrentMaintenanceWindow
+- uid: Meridian.Application.Scheduling.MaintenanceWindow
+  commentId: T:Meridian.Application.Scheduling.MaintenanceWindow
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.MaintenanceWindow.html
+  name: MaintenanceWindow
+  nameWithType: MaintenanceWindow
+  fullName: Meridian.Application.Scheduling.MaintenanceWindow
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_GetNextMaintenanceWindow
+  name: GetNextMaintenanceWindow
+  nameWithType: IOperationalScheduler.GetNextMaintenanceWindow
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.GetNextMaintenanceWindow
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_RegisterMaintenanceWindow_Meridian_Application_Scheduling_MaintenanceWindow_
+  name: RegisterMaintenanceWindow
+  nameWithType: IOperationalScheduler.RegisterMaintenanceWindow
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.RegisterMaintenanceWindow
+- uid: Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow*
+  commentId: Overload:Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow
+  href: Meridian.Application.Scheduling.IOperationalScheduler.html#Meridian_Application_Scheduling_IOperationalScheduler_RemoveMaintenanceWindow_System_String_
+  name: RemoveMaintenanceWindow
+  nameWithType: IOperationalScheduler.RemoveMaintenanceWindow
+  fullName: Meridian.Application.Scheduling.IOperationalScheduler.RemoveMaintenanceWindow
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

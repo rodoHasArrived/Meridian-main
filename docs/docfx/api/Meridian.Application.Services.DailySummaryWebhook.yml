@@ -1,0 +1,1012 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.DailySummaryWebhook
+  commentId: T:Meridian.Application.Services.DailySummaryWebhook
+  id: DailySummaryWebhook
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.DailySummaryWebhook.#ctor(Meridian.Application.Services.DailySummaryWebhookConfig,Meridian.Application.Services.TradingCalendar)
+  - Meridian.Application.Services.DailySummaryWebhook.DisposeAsync
+  - Meridian.Application.Services.DailySummaryWebhook.OnSummaryFailed
+  - Meridian.Application.Services.DailySummaryWebhook.OnSummarySent
+  - Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot})
+  - Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: DailySummaryWebhook
+  nameWithType: DailySummaryWebhook
+  fullName: Meridian.Application.Services.DailySummaryWebhook
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailySummaryWebhook
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Sends end-of-day summary digests via webhook to external services.
+
+    Supports Slack, Discord, Microsoft Teams, and generic JSON webhooks.
+  example: []
+  syntax:
+    content: 'public sealed class DailySummaryWebhook : IAsyncDisposable'
+    content.vb: Public NotInheritable Class DailySummaryWebhook Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.DailySummaryWebhook.OnSummarySent
+  commentId: E:Meridian.Application.Services.DailySummaryWebhook.OnSummarySent
+  id: OnSummarySent
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: OnSummarySent
+  nameWithType: DailySummaryWebhook.OnSummarySent
+  fullName: Meridian.Application.Services.DailySummaryWebhook.OnSummarySent
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnSummarySent
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Event raised when a summary is sent successfully.
+  example: []
+  syntax:
+    content: public event Action<DailySummaryResult>? OnSummarySent
+    return:
+      type: System.Action{Meridian.Application.Services.DailySummaryResult}
+    content.vb: Public Event OnSummarySent As Action(Of DailySummaryResult)
+- uid: Meridian.Application.Services.DailySummaryWebhook.OnSummaryFailed
+  commentId: E:Meridian.Application.Services.DailySummaryWebhook.OnSummaryFailed
+  id: OnSummaryFailed
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: OnSummaryFailed
+  nameWithType: DailySummaryWebhook.OnSummaryFailed
+  fullName: Meridian.Application.Services.DailySummaryWebhook.OnSummaryFailed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnSummaryFailed
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Event raised when a summary fails to send.
+  example: []
+  syntax:
+    content: public event Action<DailySummaryResult>? OnSummaryFailed
+    return:
+      type: System.Action{Meridian.Application.Services.DailySummaryResult}
+    content.vb: Public Event OnSummaryFailed As Action(Of DailySummaryResult)
+- uid: Meridian.Application.Services.DailySummaryWebhook.#ctor(Meridian.Application.Services.DailySummaryWebhookConfig,Meridian.Application.Services.TradingCalendar)
+  commentId: M:Meridian.Application.Services.DailySummaryWebhook.#ctor(Meridian.Application.Services.DailySummaryWebhookConfig,Meridian.Application.Services.TradingCalendar)
+  id: '#ctor(Meridian.Application.Services.DailySummaryWebhookConfig,Meridian.Application.Services.TradingCalendar)'
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: DailySummaryWebhook(DailySummaryWebhookConfig, TradingCalendar?)
+  nameWithType: DailySummaryWebhook.DailySummaryWebhook(DailySummaryWebhookConfig, TradingCalendar?)
+  fullName: Meridian.Application.Services.DailySummaryWebhook.DailySummaryWebhook(Meridian.Application.Services.DailySummaryWebhookConfig, Meridian.Application.Services.TradingCalendar?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DailySummaryWebhook(DailySummaryWebhookConfig config, TradingCalendar? tradingCalendar = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Services.DailySummaryWebhookConfig
+    - id: tradingCalendar
+      type: Meridian.Application.Services.TradingCalendar
+    content.vb: Public Sub New(config As DailySummaryWebhookConfig, tradingCalendar As TradingCalendar = Nothing)
+  overload: Meridian.Application.Services.DailySummaryWebhook.#ctor*
+  nameWithType.vb: DailySummaryWebhook.New(DailySummaryWebhookConfig, TradingCalendar)
+  fullName.vb: Meridian.Application.Services.DailySummaryWebhook.New(Meridian.Application.Services.DailySummaryWebhookConfig, Meridian.Application.Services.TradingCalendar)
+  name.vb: New(DailySummaryWebhookConfig, TradingCalendar)
+- uid: Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot})
+  commentId: M:Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot})
+  id: RegisterStatisticsProviders(System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}},System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot})
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: RegisterStatisticsProviders(Func<PipelineStatistics>?, Func<IReadOnlyList<DataAnomaly>>?, Func<SystemHealthSnapshot>?)
+  nameWithType: DailySummaryWebhook.RegisterStatisticsProviders(Func<PipelineStatistics>?, Func<IReadOnlyList<DataAnomaly>>?, Func<SystemHealthSnapshot>?)
+  fullName: Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders(System.Func<Meridian.Application.Pipeline.PipelineStatistics>?, System.Func<System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataAnomaly>>?, System.Func<Meridian.Application.Monitoring.SystemHealthSnapshot>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterStatisticsProviders
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Registers statistics providers for inclusion in the summary.
+  example: []
+  syntax:
+    content: public void RegisterStatisticsProviders(Func<PipelineStatistics>? pipelineStats = null, Func<IReadOnlyList<DataAnomaly>>? staleSymbols = null, Func<SystemHealthSnapshot>? healthSnapshot = null)
+    parameters:
+    - id: pipelineStats
+      type: System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+    - id: staleSymbols
+      type: System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}}
+    - id: healthSnapshot
+      type: System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot}
+    content.vb: Public Sub RegisterStatisticsProviders(pipelineStats As Func(Of PipelineStatistics) = Nothing, staleSymbols As Func(Of IReadOnlyList(Of DataAnomaly)) = Nothing, healthSnapshot As Func(Of SystemHealthSnapshot) = Nothing)
+  overload: Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders*
+  nameWithType.vb: DailySummaryWebhook.RegisterStatisticsProviders(Func(Of PipelineStatistics), Func(Of IReadOnlyList(Of DataAnomaly)), Func(Of SystemHealthSnapshot))
+  fullName.vb: Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders(System.Func(Of Meridian.Application.Pipeline.PipelineStatistics), System.Func(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly)), System.Func(Of Meridian.Application.Monitoring.SystemHealthSnapshot))
+  name.vb: RegisterStatisticsProviders(Func(Of PipelineStatistics), Func(Of IReadOnlyList(Of DataAnomaly)), Func(Of SystemHealthSnapshot))
+- uid: Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync(System.Threading.CancellationToken)
+  id: SendSummaryAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: SendSummaryAsync(CancellationToken)
+  nameWithType: DailySummaryWebhook.SendSummaryAsync(CancellationToken)
+  fullName: Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendSummaryAsync
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Sends a daily summary immediately to all configured webhooks.
+  example: []
+  syntax:
+    content: public Task<DailySummaryResult> SendSummaryAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.DailySummaryResult}
+    content.vb: Public Function SendSummaryAsync(ct As CancellationToken = Nothing) As Task(Of DailySummaryResult)
+  overload: Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync*
+- uid: Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: SendMessageAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: SendMessageAsync(string, string?, CancellationToken)
+  nameWithType: DailySummaryWebhook.SendMessageAsync(string, string?, CancellationToken)
+  fullName: Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendMessageAsync
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Sends a custom message to all configured webhooks.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<WebhookDeliveryResult>> SendMessageAsync(string message, string? title = null, CancellationToken ct = default)
+    parameters:
+    - id: message
+      type: System.String
+    - id: title
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}}
+    content.vb: Public Function SendMessageAsync(message As String, title As String = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of WebhookDeliveryResult))
+  overload: Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync*
+  nameWithType.vb: DailySummaryWebhook.SendMessageAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync(String, String, System.Threading.CancellationToken)
+  name.vb: SendMessageAsync(String, String, CancellationToken)
+- uid: Meridian.Application.Services.DailySummaryWebhook.DisposeAsync
+  commentId: M:Meridian.Application.Services.DailySummaryWebhook.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Services.DailySummaryWebhook
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: DailySummaryWebhook.DisposeAsync()
+  fullName: Meridian.Application.Services.DailySummaryWebhook.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Services.DailySummaryWebhook.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Services.DailySummaryResult}
+  commentId: T:System.Action{Meridian.Application.Services.DailySummaryResult}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<DailySummaryResult>
+  nameWithType: Action<DailySummaryResult>
+  fullName: System.Action<Meridian.Application.Services.DailySummaryResult>
+  nameWithType.vb: Action(Of DailySummaryResult)
+  fullName.vb: System.Action(Of Meridian.Application.Services.DailySummaryResult)
+  name.vb: Action(Of DailySummaryResult)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Services.DailySummaryResult
+    name: DailySummaryResult
+    href: Meridian.Application.Services.DailySummaryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.DailySummaryResult
+    name: DailySummaryResult
+    href: Meridian.Application.Services.DailySummaryResult.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.DailySummaryWebhook.#ctor*
+  commentId: Overload:Meridian.Application.Services.DailySummaryWebhook.#ctor
+  href: Meridian.Application.Services.DailySummaryWebhook.html#Meridian_Application_Services_DailySummaryWebhook__ctor_Meridian_Application_Services_DailySummaryWebhookConfig_Meridian_Application_Services_TradingCalendar_
+  name: DailySummaryWebhook
+  nameWithType: DailySummaryWebhook.DailySummaryWebhook
+  fullName: Meridian.Application.Services.DailySummaryWebhook.DailySummaryWebhook
+  nameWithType.vb: DailySummaryWebhook.New
+  fullName.vb: Meridian.Application.Services.DailySummaryWebhook.New
+  name.vb: New
+- uid: Meridian.Application.Services.DailySummaryWebhookConfig
+  commentId: T:Meridian.Application.Services.DailySummaryWebhookConfig
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.DailySummaryWebhookConfig.html
+  name: DailySummaryWebhookConfig
+  nameWithType: DailySummaryWebhookConfig
+  fullName: Meridian.Application.Services.DailySummaryWebhookConfig
+- uid: Meridian.Application.Services.TradingCalendar
+  commentId: T:Meridian.Application.Services.TradingCalendar
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.TradingCalendar.html
+  name: TradingCalendar
+  nameWithType: TradingCalendar
+  fullName: Meridian.Application.Services.TradingCalendar
+- uid: Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders*
+  commentId: Overload:Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders
+  href: Meridian.Application.Services.DailySummaryWebhook.html#Meridian_Application_Services_DailySummaryWebhook_RegisterStatisticsProviders_System_Func_Meridian_Application_Pipeline_PipelineStatistics__System_Func_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_DataAnomaly___System_Func_Meridian_Application_Monitoring_SystemHealthSnapshot__
+  name: RegisterStatisticsProviders
+  nameWithType: DailySummaryWebhook.RegisterStatisticsProviders
+  fullName: Meridian.Application.Services.DailySummaryWebhook.RegisterStatisticsProviders
+- uid: System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+  commentId: T:System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<PipelineStatistics>
+  nameWithType: Func<PipelineStatistics>
+  fullName: System.Func<Meridian.Application.Pipeline.PipelineStatistics>
+  nameWithType.vb: Func(Of PipelineStatistics)
+  fullName.vb: System.Func(Of Meridian.Application.Pipeline.PipelineStatistics)
+  name.vb: Func(Of PipelineStatistics)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: )
+- uid: System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}}
+  commentId: T:System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.DataAnomaly}}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<IReadOnlyList<DataAnomaly>>
+  nameWithType: Func<IReadOnlyList<DataAnomaly>>
+  fullName: System.Func<System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.DataAnomaly>>
+  nameWithType.vb: Func(Of IReadOnlyList(Of DataAnomaly))
+  fullName.vb: System.Func(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly))
+  name.vb: Func(Of IReadOnlyList(Of DataAnomaly))
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: )
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot}
+  commentId: T:System.Func{Meridian.Application.Monitoring.SystemHealthSnapshot}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<SystemHealthSnapshot>
+  nameWithType: Func<SystemHealthSnapshot>
+  fullName: System.Func<Meridian.Application.Monitoring.SystemHealthSnapshot>
+  nameWithType.vb: Func(Of SystemHealthSnapshot)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.SystemHealthSnapshot)
+  name.vb: Func(Of SystemHealthSnapshot)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SystemHealthSnapshot
+    name: SystemHealthSnapshot
+    href: Meridian.Application.Monitoring.SystemHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SystemHealthSnapshot
+    name: SystemHealthSnapshot
+    href: Meridian.Application.Monitoring.SystemHealthSnapshot.html
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync*
+  commentId: Overload:Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync
+  href: Meridian.Application.Services.DailySummaryWebhook.html#Meridian_Application_Services_DailySummaryWebhook_SendSummaryAsync_System_Threading_CancellationToken_
+  name: SendSummaryAsync
+  nameWithType: DailySummaryWebhook.SendSummaryAsync
+  fullName: Meridian.Application.Services.DailySummaryWebhook.SendSummaryAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.DailySummaryResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.DailySummaryResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DailySummaryResult>
+  nameWithType: Task<DailySummaryResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.DailySummaryResult>
+  nameWithType.vb: Task(Of DailySummaryResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.DailySummaryResult)
+  name.vb: Task(Of DailySummaryResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.DailySummaryResult
+    name: DailySummaryResult
+    href: Meridian.Application.Services.DailySummaryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.DailySummaryResult
+    name: DailySummaryResult
+    href: Meridian.Application.Services.DailySummaryResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync*
+  commentId: Overload:Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync
+  href: Meridian.Application.Services.DailySummaryWebhook.html#Meridian_Application_Services_DailySummaryWebhook_SendMessageAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: SendMessageAsync
+  nameWithType: DailySummaryWebhook.SendMessageAsync
+  fullName: Meridian.Application.Services.DailySummaryWebhook.SendMessageAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<WebhookDeliveryResult>>
+  nameWithType: Task<IReadOnlyList<WebhookDeliveryResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.WebhookDeliveryResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of WebhookDeliveryResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.WebhookDeliveryResult))
+  name.vb: Task(Of IReadOnlyList(Of WebhookDeliveryResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.WebhookDeliveryResult
+    name: WebhookDeliveryResult
+    href: Meridian.Application.Services.WebhookDeliveryResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.WebhookDeliveryResult
+    name: WebhookDeliveryResult
+    href: Meridian.Application.Services.WebhookDeliveryResult.html
+  - name: )
+  - name: )
+- uid: Meridian.Application.Services.DailySummaryWebhook.DisposeAsync*
+  commentId: Overload:Meridian.Application.Services.DailySummaryWebhook.DisposeAsync
+  href: Meridian.Application.Services.DailySummaryWebhook.html#Meridian_Application_Services_DailySummaryWebhook_DisposeAsync
+  name: DisposeAsync
+  nameWithType: DailySummaryWebhook.DisposeAsync
+  fullName: Meridian.Application.Services.DailySummaryWebhook.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

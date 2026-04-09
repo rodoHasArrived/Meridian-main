@@ -1,0 +1,518 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  commentId: T:Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  id: CombinedMetricsSnapshot
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.CombinedMetricsSnapshot.#ctor(Meridian.Application.Monitoring.MetricsSnapshot,Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)
+  - Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core
+  - Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription
+  langs:
+  - csharp
+  - vb
+  name: CombinedMetricsSnapshot
+  nameWithType: CombinedMetricsSnapshot
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CombinedMetricsSnapshot
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Combined snapshot including core metrics and resubscription metrics.
+  example: []
+  syntax:
+    content: 'public readonly record struct CombinedMetricsSnapshot : IEquatable<CombinedMetricsSnapshot>'
+    content.vb: Public Structure CombinedMetricsSnapshot Implements IEquatable(Of CombinedMetricsSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.CombinedMetricsSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot.#ctor(Meridian.Application.Monitoring.MetricsSnapshot,Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)
+  commentId: M:Meridian.Application.Monitoring.CombinedMetricsSnapshot.#ctor(Meridian.Application.Monitoring.MetricsSnapshot,Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)
+  id: '#ctor(Meridian.Application.Monitoring.MetricsSnapshot,Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)'
+  parent: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CombinedMetricsSnapshot(MetricsSnapshot, ResubscriptionMetricsSnapshot)
+  nameWithType: CombinedMetricsSnapshot.CombinedMetricsSnapshot(MetricsSnapshot, ResubscriptionMetricsSnapshot)
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot.CombinedMetricsSnapshot(Meridian.Application.Monitoring.MetricsSnapshot, Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Combined snapshot including core metrics and resubscription metrics.
+  example: []
+  syntax:
+    content: public CombinedMetricsSnapshot(MetricsSnapshot Core, ResubscriptionMetricsSnapshot Resubscription)
+    parameters:
+    - id: Core
+      type: Meridian.Application.Monitoring.MetricsSnapshot
+    - id: Resubscription
+      type: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+    content.vb: Public Sub New(Core As MetricsSnapshot, Resubscription As ResubscriptionMetricsSnapshot)
+  overload: Meridian.Application.Monitoring.CombinedMetricsSnapshot.#ctor*
+  nameWithType.vb: CombinedMetricsSnapshot.New(MetricsSnapshot, ResubscriptionMetricsSnapshot)
+  fullName.vb: Meridian.Application.Monitoring.CombinedMetricsSnapshot.New(Meridian.Application.Monitoring.MetricsSnapshot, Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)
+  name.vb: New(MetricsSnapshot, ResubscriptionMetricsSnapshot)
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core
+  commentId: P:Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core
+  id: Core
+  parent: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Core
+  nameWithType: CombinedMetricsSnapshot.Core
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Core
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public MetricsSnapshot Core { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.MetricsSnapshot
+    content.vb: Public Property Core As MetricsSnapshot
+  overload: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core*
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription
+  commentId: P:Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription
+  id: Resubscription
+  parent: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Resubscription
+  nameWithType: CombinedMetricsSnapshot.Resubscription
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Metrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resubscription
+    path: ../../src/Meridian.Application/Monitoring/Metrics.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ResubscriptionMetricsSnapshot Resubscription { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+    content.vb: Public Property Resubscription As ResubscriptionMetricsSnapshot
+  overload: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.CombinedMetricsSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.CombinedMetricsSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CombinedMetricsSnapshot>
+  nameWithType: IEquatable<CombinedMetricsSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.CombinedMetricsSnapshot>
+  nameWithType.vb: IEquatable(Of CombinedMetricsSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.CombinedMetricsSnapshot)
+  name.vb: IEquatable(Of CombinedMetricsSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+    name: CombinedMetricsSnapshot
+    href: Meridian.Application.Monitoring.CombinedMetricsSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot
+    name: CombinedMetricsSnapshot
+    href: Meridian.Application.Monitoring.CombinedMetricsSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.CombinedMetricsSnapshot.#ctor
+  href: Meridian.Application.Monitoring.CombinedMetricsSnapshot.html#Meridian_Application_Monitoring_CombinedMetricsSnapshot__ctor_Meridian_Application_Monitoring_MetricsSnapshot_Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_
+  name: CombinedMetricsSnapshot
+  nameWithType: CombinedMetricsSnapshot.CombinedMetricsSnapshot
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot.CombinedMetricsSnapshot
+  nameWithType.vb: CombinedMetricsSnapshot.New
+  fullName.vb: Meridian.Application.Monitoring.CombinedMetricsSnapshot.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.MetricsSnapshot
+  commentId: T:Meridian.Application.Monitoring.MetricsSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.MetricsSnapshot.html
+  name: MetricsSnapshot
+  nameWithType: MetricsSnapshot
+  fullName: Meridian.Application.Monitoring.MetricsSnapshot
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  commentId: T:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html
+  name: ResubscriptionMetricsSnapshot
+  nameWithType: ResubscriptionMetricsSnapshot
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core*
+  commentId: Overload:Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core
+  href: Meridian.Application.Monitoring.CombinedMetricsSnapshot.html#Meridian_Application_Monitoring_CombinedMetricsSnapshot_Core
+  name: Core
+  nameWithType: CombinedMetricsSnapshot.Core
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Core
+- uid: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription*
+  commentId: Overload:Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription
+  href: Meridian.Application.Monitoring.CombinedMetricsSnapshot.html#Meridian_Application_Monitoring_CombinedMetricsSnapshot_Resubscription
+  name: Resubscription
+  nameWithType: CombinedMetricsSnapshot.Resubscription
+  fullName: Meridian.Application.Monitoring.CombinedMetricsSnapshot.Resubscription

@@ -1,0 +1,527 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Indicators.IndicatorType
+  commentId: T:Meridian.Application.Indicators.IndicatorType
+  id: IndicatorType
+  parent: Meridian.Application.Indicators
+  children:
+  - Meridian.Application.Indicators.IndicatorType.ADX
+  - Meridian.Application.Indicators.IndicatorType.ATR
+  - Meridian.Application.Indicators.IndicatorType.BollingerBands
+  - Meridian.Application.Indicators.IndicatorType.CCI
+  - Meridian.Application.Indicators.IndicatorType.Donchian
+  - Meridian.Application.Indicators.IndicatorType.EMA
+  - Meridian.Application.Indicators.IndicatorType.Ichimoku
+  - Meridian.Application.Indicators.IndicatorType.Keltner
+  - Meridian.Application.Indicators.IndicatorType.MACD
+  - Meridian.Application.Indicators.IndicatorType.OBV
+  - Meridian.Application.Indicators.IndicatorType.ParabolicSar
+  - Meridian.Application.Indicators.IndicatorType.RSI
+  - Meridian.Application.Indicators.IndicatorType.SMA
+  - Meridian.Application.Indicators.IndicatorType.Stochastic
+  - Meridian.Application.Indicators.IndicatorType.SuperTrend
+  - Meridian.Application.Indicators.IndicatorType.VWAP
+  - Meridian.Application.Indicators.IndicatorType.Williams
+  langs:
+  - csharp
+  - vb
+  name: IndicatorType
+  nameWithType: IndicatorType
+  fullName: Meridian.Application.Indicators.IndicatorType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndicatorType
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 534
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Types of technical indicators supported.
+  example: []
+  syntax:
+    content: 'public enum IndicatorType : byte'
+    content.vb: Public Enum IndicatorType As Byte
+- uid: Meridian.Application.Indicators.IndicatorType.SMA
+  commentId: F:Meridian.Application.Indicators.IndicatorType.SMA
+  id: SMA
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: SMA
+  nameWithType: IndicatorType.SMA
+  fullName: Meridian.Application.Indicators.IndicatorType.SMA
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SMA
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 536
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: SMA = 0
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.EMA
+  commentId: F:Meridian.Application.Indicators.IndicatorType.EMA
+  id: EMA
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: EMA
+  nameWithType: IndicatorType.EMA
+  fullName: Meridian.Application.Indicators.IndicatorType.EMA
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EMA
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 537
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: EMA = 1
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.RSI
+  commentId: F:Meridian.Application.Indicators.IndicatorType.RSI
+  id: RSI
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: RSI
+  nameWithType: IndicatorType.RSI
+  fullName: Meridian.Application.Indicators.IndicatorType.RSI
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RSI
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 538
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: RSI = 2
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.MACD
+  commentId: F:Meridian.Application.Indicators.IndicatorType.MACD
+  id: MACD
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: MACD
+  nameWithType: IndicatorType.MACD
+  fullName: Meridian.Application.Indicators.IndicatorType.MACD
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MACD
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 539
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: MACD = 3
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.BollingerBands
+  commentId: F:Meridian.Application.Indicators.IndicatorType.BollingerBands
+  id: BollingerBands
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: BollingerBands
+  nameWithType: IndicatorType.BollingerBands
+  fullName: Meridian.Application.Indicators.IndicatorType.BollingerBands
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BollingerBands
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 540
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: BollingerBands = 4
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.ATR
+  commentId: F:Meridian.Application.Indicators.IndicatorType.ATR
+  id: ATR
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: ATR
+  nameWithType: IndicatorType.ATR
+  fullName: Meridian.Application.Indicators.IndicatorType.ATR
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ATR
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 541
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: ATR = 5
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.Stochastic
+  commentId: F:Meridian.Application.Indicators.IndicatorType.Stochastic
+  id: Stochastic
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Stochastic
+  nameWithType: IndicatorType.Stochastic
+  fullName: Meridian.Application.Indicators.IndicatorType.Stochastic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stochastic
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 542
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: Stochastic = 6
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.VWAP
+  commentId: F:Meridian.Application.Indicators.IndicatorType.VWAP
+  id: VWAP
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: VWAP
+  nameWithType: IndicatorType.VWAP
+  fullName: Meridian.Application.Indicators.IndicatorType.VWAP
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VWAP
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 543
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: VWAP = 7
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.ADX
+  commentId: F:Meridian.Application.Indicators.IndicatorType.ADX
+  id: ADX
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: ADX
+  nameWithType: IndicatorType.ADX
+  fullName: Meridian.Application.Indicators.IndicatorType.ADX
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ADX
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 544
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: ADX = 8
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.OBV
+  commentId: F:Meridian.Application.Indicators.IndicatorType.OBV
+  id: OBV
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: OBV
+  nameWithType: IndicatorType.OBV
+  fullName: Meridian.Application.Indicators.IndicatorType.OBV
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OBV
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 545
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: OBV = 9
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.CCI
+  commentId: F:Meridian.Application.Indicators.IndicatorType.CCI
+  id: CCI
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: CCI
+  nameWithType: IndicatorType.CCI
+  fullName: Meridian.Application.Indicators.IndicatorType.CCI
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CCI
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 546
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: CCI = 10
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.Williams
+  commentId: F:Meridian.Application.Indicators.IndicatorType.Williams
+  id: Williams
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Williams
+  nameWithType: IndicatorType.Williams
+  fullName: Meridian.Application.Indicators.IndicatorType.Williams
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Williams
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 547
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: Williams = 11
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.Ichimoku
+  commentId: F:Meridian.Application.Indicators.IndicatorType.Ichimoku
+  id: Ichimoku
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Ichimoku
+  nameWithType: IndicatorType.Ichimoku
+  fullName: Meridian.Application.Indicators.IndicatorType.Ichimoku
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ichimoku
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: Ichimoku = 12
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.Keltner
+  commentId: F:Meridian.Application.Indicators.IndicatorType.Keltner
+  id: Keltner
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Keltner
+  nameWithType: IndicatorType.Keltner
+  fullName: Meridian.Application.Indicators.IndicatorType.Keltner
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Keltner
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 549
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: Keltner = 13
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.Donchian
+  commentId: F:Meridian.Application.Indicators.IndicatorType.Donchian
+  id: Donchian
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Donchian
+  nameWithType: IndicatorType.Donchian
+  fullName: Meridian.Application.Indicators.IndicatorType.Donchian
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Donchian
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 550
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: Donchian = 14
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.ParabolicSar
+  commentId: F:Meridian.Application.Indicators.IndicatorType.ParabolicSar
+  id: ParabolicSar
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: ParabolicSar
+  nameWithType: IndicatorType.ParabolicSar
+  fullName: Meridian.Application.Indicators.IndicatorType.ParabolicSar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParabolicSar
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 551
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: ParabolicSar = 15
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorType.SuperTrend
+  commentId: F:Meridian.Application.Indicators.IndicatorType.SuperTrend
+  id: SuperTrend
+  parent: Meridian.Application.Indicators.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: SuperTrend
+  nameWithType: IndicatorType.SuperTrend
+  fullName: Meridian.Application.Indicators.IndicatorType.SuperTrend
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuperTrend
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 552
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: SuperTrend = 16
+    return:
+      type: Meridian.Application.Indicators.IndicatorType
+references:
+- uid: Meridian.Application.Indicators
+  commentId: N:Meridian.Application.Indicators
+  href: Meridian.html
+  name: Meridian.Application.Indicators
+  nameWithType: Meridian.Application.Indicators
+  fullName: Meridian.Application.Indicators
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+- uid: Meridian.Application.Indicators.IndicatorType
+  commentId: T:Meridian.Application.Indicators.IndicatorType
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorType.html
+  name: IndicatorType
+  nameWithType: IndicatorType
+  fullName: Meridian.Application.Indicators.IndicatorType

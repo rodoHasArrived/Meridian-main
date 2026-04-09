@@ -1,0 +1,820 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  id: CrossProviderComparison
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.#ctor(System.String,System.DateOnly,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy},System.String,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider
+  - Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol
+  langs:
+  - csharp
+  - vb
+  name: CrossProviderComparison
+  nameWithType: CrossProviderComparison
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossProviderComparison
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Cross-provider comparison result for a symbol.
+  example: []
+  syntax:
+    content: 'public sealed record CrossProviderComparison : IEquatable<CrossProviderComparison>'
+    content.vb: Public NotInheritable Class CrossProviderComparison Implements IEquatable(Of CrossProviderComparison)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.CrossProviderComparison}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.#ctor(System.String,System.DateOnly,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy},System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.#ctor(System.String,System.DateOnly,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy},System.String,System.DateTimeOffset)
+  id: '#ctor(System.String,System.DateOnly,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary},System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy},System.String,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: CrossProviderComparison(string, DateOnly, string, IReadOnlyList<ProviderDataSummary>, IReadOnlyList<ProviderDiscrepancy>, string, DateTimeOffset)
+  nameWithType: CrossProviderComparison.CrossProviderComparison(string, DateOnly, string, IReadOnlyList<ProviderDataSummary>, IReadOnlyList<ProviderDiscrepancy>, string, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.CrossProviderComparison(string, System.DateOnly, string, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.ProviderDataSummary>, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy>, string, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Cross-provider comparison result for a symbol.
+  example: []
+  syntax:
+    content: public CrossProviderComparison(string Symbol, DateOnly Date, string EventType, IReadOnlyList<ProviderDataSummary> Providers, IReadOnlyList<ProviderDiscrepancy> Discrepancies, string RecommendedProvider, DateTimeOffset ComparedAt)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Date
+      type: System.DateOnly
+    - id: EventType
+      type: System.String
+    - id: Providers
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary}
+    - id: Discrepancies
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+    - id: RecommendedProvider
+      type: System.String
+    - id: ComparedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, [Date] As DateOnly, EventType As String, Providers As IReadOnlyList(Of ProviderDataSummary), Discrepancies As IReadOnlyList(Of ProviderDiscrepancy), RecommendedProvider As String, ComparedAt As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.#ctor*
+  nameWithType.vb: CrossProviderComparison.New(String, DateOnly, String, IReadOnlyList(Of ProviderDataSummary), IReadOnlyList(Of ProviderDiscrepancy), String, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.New(String, System.DateOnly, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.ProviderDataSummary), System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy), String, System.DateTimeOffset)
+  name.vb: New(String, DateOnly, String, IReadOnlyList(Of ProviderDataSummary), IReadOnlyList(Of ProviderDiscrepancy), String, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: CrossProviderComparison.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol*
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date
+  id: Date
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: CrossProviderComparison.Date
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateOnly Date { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property [Date] As DateOnly
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date*
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType
+  id: EventType
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: CrossProviderComparison.EventType
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string EventType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType*
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers
+  id: Providers
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: Providers
+  nameWithType: CrossProviderComparison.Providers
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Providers
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public IReadOnlyList<ProviderDataSummary> Providers { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary}
+    content.vb: Public Property Providers As IReadOnlyList(Of ProviderDataSummary)
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers*
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies
+  id: Discrepancies
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: Discrepancies
+  nameWithType: CrossProviderComparison.Discrepancies
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Discrepancies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public IReadOnlyList<ProviderDiscrepancy> Discrepancies { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+    content.vb: Public Property Discrepancies As IReadOnlyList(Of ProviderDiscrepancy)
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies*
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider
+  id: RecommendedProvider
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: RecommendedProvider
+  nameWithType: CrossProviderComparison.RecommendedProvider
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecommendedProvider
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string RecommendedProvider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RecommendedProvider As String
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider*
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt
+  commentId: P:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt
+  id: ComparedAt
+  parent: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: ComparedAt
+  nameWithType: CrossProviderComparison.ComparedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComparedAt
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset ComparedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ComparedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.CrossProviderComparison}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.CrossProviderComparison}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CrossProviderComparison>
+  nameWithType: IEquatable<CrossProviderComparison>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.CrossProviderComparison>
+  nameWithType.vb: IEquatable(Of CrossProviderComparison)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.CrossProviderComparison)
+  name.vb: IEquatable(Of CrossProviderComparison)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+    name: CrossProviderComparison
+    href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison
+    name: CrossProviderComparison
+    href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison__ctor_System_String_System_DateOnly_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_ProviderDataSummary__System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_DataQuality_ProviderDiscrepancy__System_String_System_DateTimeOffset_
+  name: CrossProviderComparison
+  nameWithType: CrossProviderComparison.CrossProviderComparison
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.CrossProviderComparison
+  nameWithType.vb: CrossProviderComparison.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDataSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderDataSummary>
+  nameWithType: IReadOnlyList<ProviderDataSummary>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.ProviderDataSummary>
+  nameWithType.vb: IReadOnlyList(Of ProviderDataSummary)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.ProviderDataSummary)
+  name.vb: IReadOnlyList(Of ProviderDataSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.ProviderDataSummary
+    name: ProviderDataSummary
+    href: Meridian.Application.Monitoring.DataQuality.ProviderDataSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.ProviderDataSummary
+    name: ProviderDataSummary
+    href: Meridian.Application.Monitoring.DataQuality.ProviderDataSummary.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderDiscrepancy>
+  nameWithType: IReadOnlyList<ProviderDiscrepancy>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy>
+  nameWithType.vb: IReadOnlyList(Of ProviderDiscrepancy)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy)
+  name.vb: IReadOnlyList(Of ProviderDiscrepancy)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+    name: ProviderDiscrepancy
+    href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy
+    name: ProviderDiscrepancy
+    href: Meridian.Application.Monitoring.DataQuality.ProviderDiscrepancy.html
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_Symbol
+  name: Symbol
+  nameWithType: CrossProviderComparison.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Symbol
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_Date
+  name: Date
+  nameWithType: CrossProviderComparison.Date
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Date
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_EventType
+  name: EventType
+  nameWithType: CrossProviderComparison.EventType
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.EventType
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_Providers
+  name: Providers
+  nameWithType: CrossProviderComparison.Providers
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Providers
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_Discrepancies
+  name: Discrepancies
+  nameWithType: CrossProviderComparison.Discrepancies
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.Discrepancies
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_RecommendedProvider
+  name: RecommendedProvider
+  nameWithType: CrossProviderComparison.RecommendedProvider
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.RecommendedProvider
+- uid: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt
+  href: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.html#Meridian_Application_Monitoring_DataQuality_CrossProviderComparison_ComparedAt
+  name: ComparedAt
+  nameWithType: CrossProviderComparison.ComparedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.CrossProviderComparison.ComparedAt
