@@ -1,0 +1,559 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  id: ResolveConflictRequest
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.ResolveConflictRequest.#ctor(System.Guid,System.String,System.String,System.String)
+  - Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId
+  - Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason
+  - Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution
+  - Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy
+  langs:
+  - csharp
+  - vb
+  name: ResolveConflictRequest
+  nameWithType: ResolveConflictRequest
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveConflictRequest
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Request to resolve or dismiss a golden record conflict.
+  example: []
+  syntax:
+    content: 'public sealed record ResolveConflictRequest : IEquatable<ResolveConflictRequest>'
+    content.vb: Public NotInheritable Class ResolveConflictRequest Implements IEquatable(Of ResolveConflictRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.ResolveConflictRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.#ctor(System.Guid,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.#ctor(System.Guid,System.String,System.String,System.String)
+  id: '#ctor(System.Guid,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  langs:
+  - csharp
+  - vb
+  name: ResolveConflictRequest(Guid, string, string, string?)
+  nameWithType: ResolveConflictRequest.ResolveConflictRequest(Guid, string, string, string?)
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolveConflictRequest(System.Guid, string, string, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Request to resolve or dismiss a golden record conflict.
+  example: []
+  syntax:
+    content: public ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null)
+    parameters:
+    - id: ConflictId
+      type: System.Guid
+    - id: Resolution
+      type: System.String
+    - id: ResolvedBy
+      type: System.String
+    - id: Reason
+      type: System.String
+    content.vb: Public Sub New(ConflictId As Guid, Resolution As String, ResolvedBy As String, Reason As String = Nothing)
+  overload: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.#ctor*
+  nameWithType.vb: ResolveConflictRequest.New(Guid, String, String, String)
+  fullName.vb: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.New(System.Guid, String, String, String)
+  name.vb: New(Guid, String, String, String)
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId
+  commentId: P:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId
+  id: ConflictId
+  parent: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  langs:
+  - csharp
+  - vb
+  name: ConflictId
+  nameWithType: ResolveConflictRequest.ConflictId
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConflictId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid ConflictId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ConflictId As Guid
+  overload: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId*
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution
+  commentId: P:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution
+  id: Resolution
+  parent: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  langs:
+  - csharp
+  - vb
+  name: Resolution
+  nameWithType: ResolveConflictRequest.Resolution
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resolution
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string Resolution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Resolution As String
+  overload: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution*
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy
+  commentId: P:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy
+  id: ResolvedBy
+  parent: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  langs:
+  - csharp
+  - vb
+  name: ResolvedBy
+  nameWithType: ResolveConflictRequest.ResolvedBy
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedBy
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string ResolvedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ResolvedBy As String
+  overload: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy*
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason
+  commentId: P:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason
+  id: Reason
+  parent: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: ResolveConflictRequest.Reason
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.ResolveConflictRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.ResolveConflictRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResolveConflictRequest>
+  nameWithType: IEquatable<ResolveConflictRequest>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.ResolveConflictRequest>
+  nameWithType.vb: IEquatable(Of ResolveConflictRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.ResolveConflictRequest)
+  name.vb: IEquatable(Of ResolveConflictRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+    name: ResolveConflictRequest
+    href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
+    name: ResolveConflictRequest
+    href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.#ctor
+  href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html#Meridian_Contracts_SecurityMaster_ResolveConflictRequest__ctor_System_Guid_System_String_System_String_System_String_
+  name: ResolveConflictRequest
+  nameWithType: ResolveConflictRequest.ResolveConflictRequest
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolveConflictRequest
+  nameWithType.vb: ResolveConflictRequest.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId
+  href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html#Meridian_Contracts_SecurityMaster_ResolveConflictRequest_ConflictId
+  name: ConflictId
+  nameWithType: ResolveConflictRequest.ConflictId
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ConflictId
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution
+  href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html#Meridian_Contracts_SecurityMaster_ResolveConflictRequest_Resolution
+  name: Resolution
+  nameWithType: ResolveConflictRequest.Resolution
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Resolution
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy
+  href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html#Meridian_Contracts_SecurityMaster_ResolveConflictRequest_ResolvedBy
+  name: ResolvedBy
+  nameWithType: ResolveConflictRequest.ResolvedBy
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.ResolvedBy
+- uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason
+  href: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.html#Meridian_Contracts_SecurityMaster_ResolveConflictRequest_Reason
+  name: Reason
+  nameWithType: ResolveConflictRequest.Reason
+  fullName: Meridian.Contracts.SecurityMaster.ResolveConflictRequest.Reason

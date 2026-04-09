@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Meridian.Application.Serialization;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
@@ -195,12 +197,8 @@ public static class UiEndpoints
     /// </summary>
     public static WebApplication MapUiEndpoints(this WebApplication app)
     {
-        var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var jsonOptionsIndented = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
+        var jsonOptions = CreateEndpointJsonOptions();
+        var jsonOptionsIndented = CreateEndpointJsonOptions(writeIndented: true);
 
         return app.MapUiEndpoints(jsonOptions, jsonOptionsIndented);
     }
@@ -210,9 +208,8 @@ public static class UiEndpoints
     /// </summary>
     public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null)
     {
-        jsonOptionsIndented ??= new JsonSerializerOptions
+        jsonOptionsIndented ??= new JsonSerializerOptions(jsonOptions)
         {
-            PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy,
             WriteIndented = true
         };
 
@@ -265,6 +262,9 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
+        // Fund accounts (custodian and bank) endpoints
+        app.MapFundAccountEndpoints(jsonOptions);
+
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -316,12 +316,8 @@ public static class UiEndpoints
     /// </summary>
     public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, StatusEndpointHandlers statusHandlers)
     {
-        var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var jsonOptionsIndented = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
+        var jsonOptions = CreateEndpointJsonOptions();
+        var jsonOptionsIndented = CreateEndpointJsonOptions(writeIndented: true);
 
         // Map status endpoints using shared handlers
         app.MapStatusEndpoints(statusHandlers, jsonOptions);
@@ -375,6 +371,9 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
+        // Fund accounts (custodian and bank) endpoints
+        app.MapFundAccountEndpoints(jsonOptions);
+
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -418,6 +417,18 @@ public static class UiEndpoints
         app.MapStrategyLifecycleEndpoints(jsonOptions);
 
         return app;
+    }
+
+    internal static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false)
+    {
+        return new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = writeIndented,
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(
+                MarketDataJsonContext.Default,
+                new DefaultJsonTypeInfoResolver())
+        };
     }
 
     /// <summary>

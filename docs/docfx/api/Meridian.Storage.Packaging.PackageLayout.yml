@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageLayout
+  commentId: T:Meridian.Storage.Packaging.PackageLayout
+  id: PackageLayout
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageLayout.ByDate
+  - Meridian.Storage.Packaging.PackageLayout.BySymbol
+  - Meridian.Storage.Packaging.PackageLayout.ByType
+  - Meridian.Storage.Packaging.PackageLayout.Flat
+  langs:
+  - csharp
+  - vb
+  name: PackageLayout
+  nameWithType: PackageLayout
+  fullName: Meridian.Storage.Packaging.PackageLayout
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageLayout
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Internal file layout within the package.
+  example: []
+  syntax:
+    content: 'public enum PackageLayout : byte'
+    content.vb: Public Enum PackageLayout As Byte
+- uid: Meridian.Storage.Packaging.PackageLayout.ByDate
+  commentId: F:Meridian.Storage.Packaging.PackageLayout.ByDate
+  id: ByDate
+  parent: Meridian.Storage.Packaging.PackageLayout
+  langs:
+  - csharp
+  - vb
+  name: ByDate
+  nameWithType: PackageLayout.ByDate
+  fullName: Meridian.Storage.Packaging.PackageLayout.ByDate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByDate
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: 'Organize by date: data/{date}/{symbol}/{type}.jsonl'
+  example: []
+  syntax:
+    content: ByDate = 0
+    return:
+      type: Meridian.Storage.Packaging.PackageLayout
+- uid: Meridian.Storage.Packaging.PackageLayout.BySymbol
+  commentId: F:Meridian.Storage.Packaging.PackageLayout.BySymbol
+  id: BySymbol
+  parent: Meridian.Storage.Packaging.PackageLayout
+  langs:
+  - csharp
+  - vb
+  name: BySymbol
+  nameWithType: PackageLayout.BySymbol
+  fullName: Meridian.Storage.Packaging.PackageLayout.BySymbol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BySymbol
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: 'Organize by symbol: data/{symbol}/{type}/{date}.jsonl'
+  example: []
+  syntax:
+    content: BySymbol = 1
+    return:
+      type: Meridian.Storage.Packaging.PackageLayout
+- uid: Meridian.Storage.Packaging.PackageLayout.ByType
+  commentId: F:Meridian.Storage.Packaging.PackageLayout.ByType
+  id: ByType
+  parent: Meridian.Storage.Packaging.PackageLayout
+  langs:
+  - csharp
+  - vb
+  name: ByType
+  nameWithType: PackageLayout.ByType
+  fullName: Meridian.Storage.Packaging.PackageLayout.ByType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByType
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: 'Organize by event type: data/{type}/{symbol}/{date}.jsonl'
+  example: []
+  syntax:
+    content: ByType = 2
+    return:
+      type: Meridian.Storage.Packaging.PackageLayout
+- uid: Meridian.Storage.Packaging.PackageLayout.Flat
+  commentId: F:Meridian.Storage.Packaging.PackageLayout.Flat
+  id: Flat
+  parent: Meridian.Storage.Packaging.PackageLayout
+  langs:
+  - csharp
+  - vb
+  name: Flat
+  nameWithType: PackageLayout.Flat
+  fullName: Meridian.Storage.Packaging.PackageLayout.Flat
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Flat
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: 'Flat structure: data/{symbol}_{type}_{date}.jsonl'
+  example: []
+  syntax:
+    content: Flat = 3
+    return:
+      type: Meridian.Storage.Packaging.PackageLayout
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: Meridian.Storage.Packaging.PackageLayout
+  commentId: T:Meridian.Storage.Packaging.PackageLayout
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageLayout.html
+  name: PackageLayout
+  nameWithType: PackageLayout
+  fullName: Meridian.Storage.Packaging.PackageLayout

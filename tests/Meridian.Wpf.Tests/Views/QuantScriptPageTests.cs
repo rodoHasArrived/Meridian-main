@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
-using Meridian.QuantScript.Plotting;
+using Meridian.QuantScript.Documents;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -13,43 +13,59 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 
-public sealed class QuantScriptPageTests
+public sealed class QuantScriptPageTests : IDisposable
 {
+    private readonly string _tempDirectory = Path.Combine(Path.GetTempPath(), "meridian-wpf-quantscript-page-tests", Guid.NewGuid().ToString("N"));
+
     private sealed class StubLayoutService : IQuantScriptLayoutService
     {
-        public (double LeftWidth, double RightWidth) LoadColumnWidths() => (300, 400);
-        public void SaveColumnWidths(double leftWidth, double rightWidth) { }
+        public (double ChartHeight, double EditorHeight) LoadRowHeights() => (300, 280);
+        public void SaveRowHeights(double chartHeight, double editorHeight) { }
         public int LoadLastActiveTab() => 0;
         public void SaveLastActiveTab(int tabIndex) { }
     }
 
     [Fact]
-    public void Loaded_WhenConstructed_RestoresPersistedColumnWidths()
+    public void Loaded_WhenConstructed_RestoresPersistedRowHeights()
     {
         WpfTestThread.Run(() =>
         {
+            Directory.CreateDirectory(_tempDirectory);
             var page = CreatePage();
 
             page.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
 
-            page.FindName("LeftColumn").Should().BeOfType<ColumnDefinition>().Subject.Width.Value.Should().Be(300);
-            page.FindName("RightColumn").Should().BeOfType<ColumnDefinition>().Subject.Width.Value.Should().Be(400);
+            page.FindName("ChartRow").Should().BeOfType<RowDefinition>().Subject.Height.Value.Should().Be(300);
+            page.FindName("EditorRow").Should().BeOfType<RowDefinition>().Subject.Height.Value.Should().Be(280);
         });
     }
 
-    private static QuantScriptPage CreatePage()
+    private QuantScriptPage CreatePage()
     {
+        var compiler = new Meridian.Wpf.Tests.Support.FakeQuantScriptCompiler();
         var vm = new QuantScriptViewModel(
             new FakeScriptRunner(),
-            new Meridian.Wpf.Tests.Support.FakeQuantScriptCompiler(),
-            new PlotQueue(),
+            compiler,
+            new NotebookExecutionSession(),
+            new QuantScriptNotebookStore(new QuantScriptOptions
+            {
+                ScriptsDirectory = _tempDirectory,
+                NotebookExtension = ".mqnb"
+            }),
             new StubLayoutService(),
-            Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
+            Options.Create(new QuantScriptOptions
+            {
+                ScriptsDirectory = _tempDirectory,
+                NotebookExtension = ".mqnb"
+            }),
             NullLogger<QuantScriptViewModel>.Instance);
 
-        return new QuantScriptPage
-        {
-            DataContext = vm
-        };
+        return new QuantScriptPage(vm);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDirectory))
+            Directory.Delete(_tempDirectory, true);
     }
 }

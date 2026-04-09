@@ -1,0 +1,1151 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  commentId: T:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  id: ICanonicalSymbolRegistry
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass(System.String)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange(System.String)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition(System.String)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown(System.String)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync(Meridian.Contracts.Catalog.CanonicalSymbolDefinition,System.Threading.CancellationToken)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition},System.Threading.CancellationToken)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(Meridian.Contracts.Domain.SymbolId)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(System.String)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(Meridian.Contracts.Domain.ProviderSymbol)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(System.String,System.String)
+  - Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider(System.String,System.String)
+  langs:
+  - csharp
+  - vb
+  name: ICanonicalSymbolRegistry
+  nameWithType: ICanonicalSymbolRegistry
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICanonicalSymbolRegistry
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Service for canonical symbol naming standardization.
+
+    Provides a unified interface for resolving symbols across providers
+
+    using canonical names, aliases, and industry identifiers (ISIN, FIGI, SEDOL, CUSIP).
+  example: []
+  syntax:
+    content: public interface ICanonicalSymbolRegistry
+    content.vb: Public Interface ICanonicalSymbolRegistry
+  derivedClasses:
+  - Meridian.Application.Services.CanonicalSymbolRegistry
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(System.String)
+  id: ResolveToCanonical(System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: ResolveToCanonical(string)
+  nameWithType: ICanonicalSymbolRegistry.ResolveToCanonical(string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveToCanonical
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Resolves any symbol input (alias, ISIN, FIGI, SEDOL, provider-specific format)
+
+    to its canonical representation. Returns null if no match is found.
+  example: []
+  syntax:
+    content: string? ResolveToCanonical(string input)
+    parameters:
+    - id: input
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Function ResolveToCanonical(input As String) As String
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical*
+  nameWithType.vb: ICanonicalSymbolRegistry.ResolveToCanonical(String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(String)
+  name.vb: ResolveToCanonical(String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(Meridian.Contracts.Domain.SymbolId)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(Meridian.Contracts.Domain.SymbolId)
+  id: ResolveToCanonical(Meridian.Contracts.Domain.SymbolId)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: ResolveToCanonical(SymbolId)
+  nameWithType: ICanonicalSymbolRegistry.ResolveToCanonical(SymbolId)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical(Meridian.Contracts.Domain.SymbolId)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveToCanonical
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Typed overload: resolves a raw <xref href="Meridian.Contracts.Domain.SymbolId" data-throw-if-not-resolved="false"></xref> to its
+
+    <xref href="Meridian.Contracts.Domain.CanonicalSymbol" data-throw-if-not-resolved="false"></xref>. Returns null if no match is found.
+  example: []
+  syntax:
+    content: CanonicalSymbol? ResolveToCanonical(SymbolId input)
+    parameters:
+    - id: input
+      type: Meridian.Contracts.Domain.SymbolId
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.CanonicalSymbol}
+    content.vb: Function ResolveToCanonical(input As SymbolId) As CanonicalSymbol?
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical*
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(System.String,System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(System.String,System.String)
+  id: TryResolve(System.String,System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: TryResolve(string, string)
+  nameWithType: ICanonicalSymbolRegistry.TryResolve(string, string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryResolve
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Resolves a provider-specific symbol to canonical form.
+
+    Checks provider-specific mappings first, then falls back to generic resolution.
+  example: []
+  syntax:
+    content: string? TryResolve(string symbol, string provider)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Raw symbol from the provider.
+    - id: provider
+      type: System.String
+      description: Provider name (e.g., "ALPACA", "POLYGON", "IB").
+    return:
+      type: System.String
+      description: Canonical symbol or null if unresolved.
+    content.vb: Function TryResolve(symbol As String, provider As String) As String
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve*
+  nameWithType.vb: ICanonicalSymbolRegistry.TryResolve(String, String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(String, String)
+  name.vb: TryResolve(String, String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(Meridian.Contracts.Domain.ProviderSymbol)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(Meridian.Contracts.Domain.ProviderSymbol)
+  id: TryResolve(Meridian.Contracts.Domain.ProviderSymbol)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: TryResolve(ProviderSymbol)
+  nameWithType: ICanonicalSymbolRegistry.TryResolve(ProviderSymbol)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve(Meridian.Contracts.Domain.ProviderSymbol)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryResolve
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Typed overload: resolves a <xref href="Meridian.Contracts.Domain.ProviderSymbol" data-throw-if-not-resolved="false"></xref> to its
+
+    <xref href="Meridian.Contracts.Domain.CanonicalSymbol" data-throw-if-not-resolved="false"></xref>. Checks provider-specific mappings first,
+
+    then falls back to generic resolution. Returns null if unresolved.
+  example: []
+  syntax:
+    content: CanonicalSymbol? TryResolve(ProviderSymbol providerSymbol)
+    parameters:
+    - id: providerSymbol
+      type: Meridian.Contracts.Domain.ProviderSymbol
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.CanonicalSymbol}
+    content.vb: Function TryResolve(providerSymbol As ProviderSymbol) As CanonicalSymbol?
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve*
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync(Meridian.Contracts.Catalog.CanonicalSymbolDefinition,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync(Meridian.Contracts.Catalog.CanonicalSymbolDefinition,System.Threading.CancellationToken)
+  id: RegisterAsync(Meridian.Contracts.Catalog.CanonicalSymbolDefinition,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterAsync(CanonicalSymbolDefinition, CancellationToken)
+  nameWithType: ICanonicalSymbolRegistry.RegisterAsync(CanonicalSymbolDefinition, CancellationToken)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync(Meridian.Contracts.Catalog.CanonicalSymbolDefinition, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterAsync
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Registers a symbol with its canonical entry, updating aliases and identifier indexes.
+  example: []
+  syntax:
+    content: Task RegisterAsync(CanonicalSymbolDefinition definition, CancellationToken ct = default)
+    parameters:
+    - id: definition
+      type: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function RegisterAsync(definition As CanonicalSymbolDefinition, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync*
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition},System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition},System.Threading.CancellationToken)
+  id: RegisterBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition},System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterBatchAsync(IEnumerable<CanonicalSymbolDefinition>, CancellationToken)
+  nameWithType: ICanonicalSymbolRegistry.RegisterBatchAsync(IEnumerable<CanonicalSymbolDefinition>, CancellationToken)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync(System.Collections.Generic.IEnumerable<Meridian.Contracts.Catalog.CanonicalSymbolDefinition>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterBatchAsync
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Registers multiple symbols in batch.
+  example: []
+  syntax:
+    content: Task<int> RegisterBatchAsync(IEnumerable<CanonicalSymbolDefinition> definitions, CancellationToken ct = default)
+    parameters:
+    - id: definitions
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+    content.vb: Function RegisterBatchAsync(definitions As IEnumerable(Of CanonicalSymbolDefinition), ct As CancellationToken = Nothing) As Task(Of Integer)
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync*
+  nameWithType.vb: ICanonicalSymbolRegistry.RegisterBatchAsync(IEnumerable(Of CanonicalSymbolDefinition), CancellationToken)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync(System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Catalog.CanonicalSymbolDefinition), System.Threading.CancellationToken)
+  name.vb: RegisterBatchAsync(IEnumerable(Of CanonicalSymbolDefinition), CancellationToken)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition(System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition(System.String)
+  id: GetDefinition(System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetDefinition(string)
+  nameWithType: ICanonicalSymbolRegistry.GetDefinition(string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDefinition
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Gets the canonical definition for a symbol. Accepts any known identifier.
+  example: []
+  syntax:
+    content: CanonicalSymbolDefinition? GetDefinition(string symbolOrIdentifier)
+    parameters:
+    - id: symbolOrIdentifier
+      type: System.String
+    return:
+      type: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+    content.vb: Function GetDefinition(symbolOrIdentifier As String) As CanonicalSymbolDefinition
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition*
+  nameWithType.vb: ICanonicalSymbolRegistry.GetDefinition(String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition(String)
+  name.vb: GetDefinition(String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll
+  id: GetAll
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAll()
+  nameWithType: ICanonicalSymbolRegistry.GetAll()
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAll
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Gets all registered canonical definitions.
+  example: []
+  syntax:
+    content: IReadOnlyList<CanonicalSymbolDefinition> GetAll()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+    content.vb: Function GetAll() As IReadOnlyList(Of CanonicalSymbolDefinition)
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll*
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass(System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass(System.String)
+  id: GetByAssetClass(System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetByAssetClass(string)
+  nameWithType: ICanonicalSymbolRegistry.GetByAssetClass(string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByAssetClass
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Gets canonical definitions filtered by asset class.
+  example: []
+  syntax:
+    content: IReadOnlyList<CanonicalSymbolDefinition> GetByAssetClass(string assetClass)
+    parameters:
+    - id: assetClass
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+    content.vb: Function GetByAssetClass(assetClass As String) As IReadOnlyList(Of CanonicalSymbolDefinition)
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass*
+  nameWithType.vb: ICanonicalSymbolRegistry.GetByAssetClass(String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass(String)
+  name.vb: GetByAssetClass(String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange(System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange(System.String)
+  id: GetByExchange(System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetByExchange(string)
+  nameWithType: ICanonicalSymbolRegistry.GetByExchange(string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByExchange
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Gets canonical definitions filtered by exchange.
+  example: []
+  syntax:
+    content: IReadOnlyList<CanonicalSymbolDefinition> GetByExchange(string exchange)
+    parameters:
+    - id: exchange
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+    content.vb: Function GetByExchange(exchange As String) As IReadOnlyList(Of CanonicalSymbolDefinition)
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange*
+  nameWithType.vb: ICanonicalSymbolRegistry.GetByExchange(String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange(String)
+  name.vb: GetByExchange(String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider(System.String,System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider(System.String,System.String)
+  id: TryResolveWithProvider(System.String,System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: TryResolveWithProvider(string, string)
+  nameWithType: ICanonicalSymbolRegistry.TryResolveWithProvider(string, string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryResolveWithProvider
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Resolves a symbol to its canonical form using a provider hint for disambiguation.
+
+    Checks provider-specific mappings first, then falls back to general resolution.
+
+    Returns null if no match is found.
+  example: []
+  syntax:
+    content: string? TryResolveWithProvider(string symbol, string provider)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Function TryResolveWithProvider(symbol As String, provider As String) As String
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider*
+  nameWithType.vb: ICanonicalSymbolRegistry.TryResolveWithProvider(String, String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider(String, String)
+  name.vb: TryResolveWithProvider(String, String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown(System.String)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown(System.String)
+  id: IsKnown(System.String)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: IsKnown(string)
+  nameWithType: ICanonicalSymbolRegistry.IsKnown(string)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsKnown
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Checks if a given identifier (canonical, alias, ISIN, FIGI, etc.) is known.
+  example: []
+  syntax:
+    content: bool IsKnown(string identifier)
+    parameters:
+    - id: identifier
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Function IsKnown(identifier As String) As Boolean
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown*
+  nameWithType.vb: ICanonicalSymbolRegistry.IsKnown(String)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown(String)
+  name.vb: IsKnown(String)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync(System.String,System.Threading.CancellationToken)
+  id: RemoveAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: RemoveAsync(string, CancellationToken)
+  nameWithType: ICanonicalSymbolRegistry.RemoveAsync(string, CancellationToken)
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveAsync
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Removes a symbol from the registry by its canonical name.
+  example: []
+  syntax:
+    content: Task<bool> RemoveAsync(string canonical, CancellationToken ct = default)
+    parameters:
+    - id: canonical
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function RemoveAsync(canonical As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync*
+  nameWithType.vb: ICanonicalSymbolRegistry.RemoveAsync(String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync(String, System.Threading.CancellationToken)
+  name.vb: RemoveAsync(String, CancellationToken)
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count
+  commentId: P:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count
+  id: Count
+  parent: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: ICanonicalSymbolRegistry.Count
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Gets the total count of registered canonical symbols.
+  example: []
+  syntax:
+    content: int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property Count As Integer
+  overload: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count*
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_ResolveToCanonical_System_String_
+  name: ResolveToCanonical
+  nameWithType: ICanonicalSymbolRegistry.ResolveToCanonical
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.ResolveToCanonical
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.SymbolId
+  commentId: T:Meridian.Contracts.Domain.SymbolId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SymbolId.html
+  name: SymbolId
+  nameWithType: SymbolId
+  fullName: Meridian.Contracts.Domain.SymbolId
+- uid: Meridian.Contracts.Domain.CanonicalSymbol
+  commentId: T:Meridian.Contracts.Domain.CanonicalSymbol
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.CanonicalSymbol.html
+  name: CanonicalSymbol
+  nameWithType: CanonicalSymbol
+  fullName: Meridian.Contracts.Domain.CanonicalSymbol
+- uid: System.Nullable{Meridian.Contracts.Domain.CanonicalSymbol}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.CanonicalSymbol}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Domain.CanonicalSymbol.html
+  name: CanonicalSymbol?
+  nameWithType: CanonicalSymbol?
+  fullName: Meridian.Contracts.Domain.CanonicalSymbol?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.CanonicalSymbol
+    name: CanonicalSymbol
+    href: Meridian.Contracts.Domain.CanonicalSymbol.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.CanonicalSymbol
+    name: CanonicalSymbol
+    href: Meridian.Contracts.Domain.CanonicalSymbol.html
+  - name: '?'
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_TryResolve_System_String_System_String_
+  name: TryResolve
+  nameWithType: ICanonicalSymbolRegistry.TryResolve
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolve
+- uid: Meridian.Contracts.Domain.ProviderSymbol
+  commentId: T:Meridian.Contracts.Domain.ProviderSymbol
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.ProviderSymbol.html
+  name: ProviderSymbol
+  nameWithType: ProviderSymbol
+  fullName: Meridian.Contracts.Domain.ProviderSymbol
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_RegisterAsync_Meridian_Contracts_Catalog_CanonicalSymbolDefinition_System_Threading_CancellationToken_
+  name: RegisterAsync
+  nameWithType: ICanonicalSymbolRegistry.RegisterAsync
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterAsync
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  commentId: T:Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html
+  name: CanonicalSymbolDefinition
+  nameWithType: CanonicalSymbolDefinition
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_RegisterBatchAsync_System_Collections_Generic_IEnumerable_Meridian_Contracts_Catalog_CanonicalSymbolDefinition__System_Threading_CancellationToken_
+  name: RegisterBatchAsync
+  nameWithType: ICanonicalSymbolRegistry.RegisterBatchAsync
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RegisterBatchAsync
+- uid: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<CanonicalSymbolDefinition>
+  nameWithType: IEnumerable<CanonicalSymbolDefinition>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Contracts.Catalog.CanonicalSymbolDefinition>
+  nameWithType.vb: IEnumerable(Of CanonicalSymbolDefinition)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Catalog.CanonicalSymbolDefinition)
+  name.vb: IEnumerable(Of CanonicalSymbolDefinition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+    name: CanonicalSymbolDefinition
+    href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+    name: CanonicalSymbolDefinition
+    href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_GetDefinition_System_String_
+  name: GetDefinition
+  nameWithType: ICanonicalSymbolRegistry.GetDefinition
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetDefinition
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_GetAll
+  name: GetAll
+  nameWithType: ICanonicalSymbolRegistry.GetAll
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetAll
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Catalog.CanonicalSymbolDefinition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CanonicalSymbolDefinition>
+  nameWithType: IReadOnlyList<CanonicalSymbolDefinition>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Catalog.CanonicalSymbolDefinition>
+  nameWithType.vb: IReadOnlyList(Of CanonicalSymbolDefinition)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Catalog.CanonicalSymbolDefinition)
+  name.vb: IReadOnlyList(Of CanonicalSymbolDefinition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+    name: CanonicalSymbolDefinition
+    href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+    name: CanonicalSymbolDefinition
+    href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_GetByAssetClass_System_String_
+  name: GetByAssetClass
+  nameWithType: ICanonicalSymbolRegistry.GetByAssetClass
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByAssetClass
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_GetByExchange_System_String_
+  name: GetByExchange
+  nameWithType: ICanonicalSymbolRegistry.GetByExchange
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.GetByExchange
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_TryResolveWithProvider_System_String_System_String_
+  name: TryResolveWithProvider
+  nameWithType: ICanonicalSymbolRegistry.TryResolveWithProvider
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.TryResolveWithProvider
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_IsKnown_System_String_
+  name: IsKnown
+  nameWithType: ICanonicalSymbolRegistry.IsKnown
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.IsKnown
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_RemoveAsync_System_String_System_Threading_CancellationToken_
+  name: RemoveAsync
+  nameWithType: ICanonicalSymbolRegistry.RemoveAsync
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.RemoveAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count*
+  commentId: Overload:Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count
+  href: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.html#Meridian_Contracts_Catalog_ICanonicalSymbolRegistry_Count
+  name: Count
+  nameWithType: ICanonicalSymbolRegistry.Count
+  fullName: Meridian.Contracts.Catalog.ICanonicalSymbolRegistry.Count
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

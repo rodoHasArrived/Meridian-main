@@ -1,0 +1,1489 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.LeanAutoExportService
+  commentId: T:Meridian.Ui.Shared.LeanAutoExportService
+  id: LeanAutoExportService
+  parent: Meridian.Ui.Shared
+  children:
+  - Meridian.Ui.Shared.LeanAutoExportService.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService})
+  - Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+  - Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  - Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Shared.LeanAutoExportService.Interval
+  - Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage
+  - Meridian.Ui.Shared.LeanAutoExportService.LastExportAt
+  - Meridian.Ui.Shared.LeanAutoExportService.LastExportError
+  - Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath
+  - Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported
+  - Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported
+  langs:
+  - csharp
+  - vb
+  name: LeanAutoExportService
+  nameWithType: LeanAutoExportService
+  fullName: Meridian.Ui.Shared.LeanAutoExportService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeanAutoExportService
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    Background service that continuously exports collected market data to a Lean-compatible
+
+    directory layout.  Runs on a configurable interval and converts JSONL files found under
+
+    the Meridian data root into the Lean zip-CSV format expected by the QuantConnect Lean Engine.
+  remarks: >-
+    <p>
+
+    Configuration is driven by two environment variables:
+
+
+    <ul><li><code>LEAN_DATA_PATH</code> — target directory where Lean data is written.
+            If unset the service starts but does nothing until the path is supplied via
+            <xref href="Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String%2cSystem.Nullable%7bSystem.Boolean%7d%2cSystem.Int32%2cSystem.Collections.Generic.IEnumerable%7bSystem.String%7d)" data-throw-if-not-resolved="false"></xref>.</li><li><code>LEAN_EXPORT_INTERVAL_SECONDS</code> — export polling interval (default 300 s).</li></ul>
+    </p>
+
+    <p>
+
+    The service can also be reconfigured at runtime through <xref href="Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String%2cSystem.Nullable%7bSystem.Boolean%7d%2cSystem.Int32%2cSystem.Collections.Generic.IEnumerable%7bSystem.String%7d)" data-throw-if-not-resolved="false"></xref> and
+
+    paused / resumed through <xref href="Meridian.Ui.Shared.LeanAutoExportService.Enabled" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class LeanAutoExportService : BackgroundService, IHostedService, IDisposable'
+    content.vb: Public NotInheritable Class LeanAutoExportService Inherits BackgroundService Implements IHostedService, IDisposable
+  inheritance:
+  - System.Object
+  - Microsoft.Extensions.Hosting.BackgroundService
+  implements:
+  - Microsoft.Extensions.Hosting.IHostedService
+  - System.IDisposable
+  inheritedMembers:
+  - Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  - Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  - Microsoft.Extensions.Hosting.BackgroundService.Dispose
+  - Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  id: Enabled
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: LeanAutoExportService.Enabled
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets whether the auto-export is currently enabled.
+  example: []
+  syntax:
+    content: public bool Enabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property Enabled As Boolean
+  overload: Meridian.Ui.Shared.LeanAutoExportService.Enabled*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath
+  id: LeanDataPath
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: LeanDataPath
+  nameWithType: LeanAutoExportService.LeanDataPath
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeanDataPath
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the configured target Lean data path, or <code>null</code> when not set.
+  example: []
+  syntax:
+    content: public string? LeanDataPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property LeanDataPath As String
+  overload: Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Interval
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.Interval
+  id: Interval
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: Interval
+  nameWithType: LeanAutoExportService.Interval
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Interval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Interval
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the polling interval between export runs.
+  example: []
+  syntax:
+    content: public TimeSpan Interval { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public ReadOnly Property Interval As TimeSpan
+  overload: Meridian.Ui.Shared.LeanAutoExportService.Interval*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LastExportAt
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.LastExportAt
+  id: LastExportAt
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: LastExportAt
+  nameWithType: LeanAutoExportService.LastExportAt
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LastExportAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastExportAt
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the timestamp of the last successful export run.
+  example: []
+  syntax:
+    content: public DateTimeOffset? LastExportAt { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public ReadOnly Property LastExportAt As DateTimeOffset?
+  overload: Meridian.Ui.Shared.LeanAutoExportService.LastExportAt*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LastExportError
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.LastExportError
+  id: LastExportError
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: LastExportError
+  nameWithType: LeanAutoExportService.LastExportError
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LastExportError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastExportError
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the timestamp of the last export error, or <code>null</code> if never.
+  example: []
+  syntax:
+    content: public DateTimeOffset? LastExportError { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public ReadOnly Property LastExportError As DateTimeOffset?
+  overload: Meridian.Ui.Shared.LeanAutoExportService.LastExportError*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage
+  id: LastErrorMessage
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: LastErrorMessage
+  nameWithType: LeanAutoExportService.LastErrorMessage
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastErrorMessage
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the last error message, or <code>null</code> if no error occurred.
+  example: []
+  syntax:
+    content: public string? LastErrorMessage { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property LastErrorMessage As String
+  overload: Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported
+  id: TotalFilesExported
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: TotalFilesExported
+  nameWithType: LeanAutoExportService.TotalFilesExported
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFilesExported
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the total number of files exported since service start.
+  example: []
+  syntax:
+    content: public long TotalFilesExported { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalFilesExported As Long
+  overload: Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported
+  id: TotalBytesExported
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: TotalBytesExported
+  nameWithType: LeanAutoExportService.TotalBytesExported
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytesExported
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Gets the total bytes written since service start.
+  example: []
+  syntax:
+    content: public long TotalBytesExported { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalBytesExported As Long
+  overload: Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported*
+- uid: Meridian.Ui.Shared.LeanAutoExportService.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService})
+  commentId: M:Meridian.Ui.Shared.LeanAutoExportService.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService})
+  id: '#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService})'
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: LeanAutoExportService(StorageOptions, ILogger<LeanAutoExportService>)
+  nameWithType: LeanAutoExportService.LeanAutoExportService(StorageOptions, ILogger<LeanAutoExportService>)
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LeanAutoExportService(Meridian.Storage.StorageOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Ui.Shared.LeanAutoExportService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  syntax:
+    content: public LeanAutoExportService(StorageOptions storageOptions, ILogger<LeanAutoExportService> logger)
+    parameters:
+    - id: storageOptions
+      type: Meridian.Storage.StorageOptions
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService}
+    content.vb: Public Sub New(storageOptions As StorageOptions, logger As ILogger(Of LeanAutoExportService))
+  overload: Meridian.Ui.Shared.LeanAutoExportService.#ctor*
+  nameWithType.vb: LeanAutoExportService.New(StorageOptions, ILogger(Of LeanAutoExportService))
+  fullName.vb: Meridian.Ui.Shared.LeanAutoExportService.New(Meridian.Storage.StorageOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Ui.Shared.LeanAutoExportService))
+  name.vb: New(StorageOptions, ILogger(Of LeanAutoExportService))
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+  id: Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: Configure(string?, bool?, int, IEnumerable<string>?)
+  nameWithType: LeanAutoExportService.Configure(string?, bool?, int, IEnumerable<string>?)
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Configure(string?, bool?, int, System.Collections.Generic.IEnumerable<string>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Configure
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Reconfigures the auto-export service at runtime.
+  example: []
+  syntax:
+    content: public void Configure(string? leanDataPath = null, bool? enabled = null, int intervalSeconds = 0, IEnumerable<string>? symbols = null)
+    parameters:
+    - id: leanDataPath
+      type: System.String
+      description: Target Lean data directory. Pass <code>null</code> to keep existing value.
+    - id: enabled
+      type: System.Nullable{System.Boolean}
+      description: Whether the service should export on its next tick.
+    - id: intervalSeconds
+      type: System.Int32
+      description: Export polling interval in seconds (minimum 10). Pass ≤0 to keep existing value.
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+      description: Symbols to export. An empty collection means "all available symbols".
+    content.vb: Public Sub Configure(leanDataPath As String = Nothing, enabled As Boolean? = Nothing, intervalSeconds As Integer = 0, symbols As IEnumerable(Of String) = Nothing)
+  overload: Meridian.Ui.Shared.LeanAutoExportService.Configure*
+  nameWithType.vb: LeanAutoExportService.Configure(String, Boolean?, Integer, IEnumerable(Of String))
+  fullName.vb: Meridian.Ui.Shared.LeanAutoExportService.Configure(String, Boolean?, Integer, System.Collections.Generic.IEnumerable(Of String))
+  name.vb: Configure(String, Boolean?, Integer, IEnumerable(Of String))
+- uid: Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync(System.Threading.CancellationToken)
+  id: ExecuteAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Shared.LeanAutoExportService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteAsync(CancellationToken)
+  nameWithType: LeanAutoExportService.ExecuteAsync(CancellationToken)
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteAsync
+    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    This method is called when the <xref href="Microsoft.Extensions.Hosting.IHostedService" data-throw-if-not-resolved="false"></xref> starts. The implementation should return a task that represents
+
+    the lifetime of the long running operation(s) being performed.
+  remarks: See <a href="https://learn.microsoft.com/dotnet/core/extensions/workers">Worker Services in .NET</a> for implementation guidelines.
+  example: []
+  syntax:
+    content: protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    parameters:
+    - id: stoppingToken
+      type: System.Threading.CancellationToken
+      description: Triggered when <xref href="Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> is called.
+    return:
+      type: System.Threading.Tasks.Task
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> that represents the long running operations.
+    content.vb: Protected Overrides Function ExecuteAsync(stoppingToken As CancellationToken) As Task
+  overridden: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  overload: Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync*
+references:
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+  isExternal: true
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Configure_System_String_System_Nullable_System_Boolean__System_Int32_System_Collections_Generic_IEnumerable_System_String__
+  name: Configure(string, bool?, int, IEnumerable<string>)
+  nameWithType: LeanAutoExportService.Configure(string, bool?, int, IEnumerable<string>)
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Configure(string, bool?, int, System.Collections.Generic.IEnumerable<string>)
+  nameWithType.vb: LeanAutoExportService.Configure(String, Boolean?, Integer, IEnumerable(Of String))
+  fullName.vb: Meridian.Ui.Shared.LeanAutoExportService.Configure(String, Boolean?, Integer, System.Collections.Generic.IEnumerable(Of String))
+  name.vb: Configure(String, Boolean?, Integer, IEnumerable(Of String))
+  spec.csharp:
+  - uid: Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+    name: Configure
+    href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Configure_System_String_System_Nullable_System_Boolean__System_Int32_System_Collections_Generic_IEnumerable_System_String__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Shared.LeanAutoExportService.Configure(System.String,System.Nullable{System.Boolean},System.Int32,System.Collections.Generic.IEnumerable{System.String})
+    name: Configure
+    href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Configure_System_String_System_Nullable_System_Boolean__System_Int32_System_Collections_Generic_IEnumerable_System_String__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  commentId: P:Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Enabled
+  name: Enabled
+  nameWithType: LeanAutoExportService.Enabled
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Enabled
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  href: Meridian.html
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Microsoft.Extensions.Hosting.BackgroundService
+  commentId: T:Microsoft.Extensions.Hosting.BackgroundService
+  parent: Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice
+  name: BackgroundService
+  nameWithType: BackgroundService
+  fullName: Microsoft.Extensions.Hosting.BackgroundService
+- uid: Microsoft.Extensions.Hosting.IHostedService
+  commentId: T:Microsoft.Extensions.Hosting.IHostedService
+  parent: Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostedservice
+  name: IHostedService
+  nameWithType: IHostedService
+  fullName: Microsoft.Extensions.Hosting.IHostedService
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync
+  name: StartAsync(CancellationToken)
+  nameWithType: BackgroundService.StartAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+    name: StartAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StartAsync(System.Threading.CancellationToken)
+    name: StartAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.stopasync
+  name: StopAsync(CancellationToken)
+  nameWithType: BackgroundService.StopAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.stopasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.stopasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Microsoft.Extensions.Hosting.BackgroundService.Dispose
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.Dispose
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose
+  name: Dispose()
+  nameWithType: BackgroundService.Dispose()
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.Dispose()
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose
+  - name: (
+  - name: )
+- uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+  commentId: P:Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executetask
+  name: ExecuteTask
+  nameWithType: BackgroundService.ExecuteTask
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.ExecuteTask
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Microsoft.Extensions.Hosting
+  commentId: N:Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Hosting
+  nameWithType: Microsoft.Extensions.Hosting
+  fullName: Microsoft.Extensions.Hosting
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Hosting
+    name: Hosting
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Hosting
+    name: Hosting
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Enabled*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.Enabled
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Enabled
+  name: Enabled
+  nameWithType: LeanAutoExportService.Enabled
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_LeanDataPath
+  name: LeanDataPath
+  nameWithType: LeanAutoExportService.LeanDataPath
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LeanDataPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Interval*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.Interval
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Interval
+  name: Interval
+  nameWithType: LeanAutoExportService.Interval
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Interval
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LastExportAt*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.LastExportAt
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_LastExportAt
+  name: LastExportAt
+  nameWithType: LeanAutoExportService.LastExportAt
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LastExportAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LastExportError*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.LastExportError
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_LastExportError
+  name: LastExportError
+  nameWithType: LeanAutoExportService.LastExportError
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LastExportError
+- uid: Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_LastErrorMessage
+  name: LastErrorMessage
+  nameWithType: LeanAutoExportService.LastErrorMessage
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LastErrorMessage
+- uid: Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_TotalFilesExported
+  name: TotalFilesExported
+  nameWithType: LeanAutoExportService.TotalFilesExported
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.TotalFilesExported
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_TotalBytesExported
+  name: TotalBytesExported
+  nameWithType: LeanAutoExportService.TotalBytesExported
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.TotalBytesExported
+- uid: Meridian.Ui.Shared.LeanAutoExportService.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.#ctor
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService__ctor_Meridian_Storage_StorageOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Ui_Shared_LeanAutoExportService__
+  name: LeanAutoExportService
+  nameWithType: LeanAutoExportService.LeanAutoExportService
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.LeanAutoExportService
+  nameWithType.vb: LeanAutoExportService.New
+  fullName.vb: Meridian.Ui.Shared.LeanAutoExportService.New
+  name.vb: New
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Shared.LeanAutoExportService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<LeanAutoExportService>
+  nameWithType: ILogger<LeanAutoExportService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Ui.Shared.LeanAutoExportService>
+  nameWithType.vb: ILogger(Of LeanAutoExportService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Ui.Shared.LeanAutoExportService)
+  name.vb: ILogger(Of LeanAutoExportService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Ui.Shared.LeanAutoExportService
+    name: LeanAutoExportService
+    href: Meridian.Ui.Shared.LeanAutoExportService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.LeanAutoExportService
+    name: LeanAutoExportService
+    href: Meridian.Ui.Shared.LeanAutoExportService.html
+  - name: )
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Ui.Shared.LeanAutoExportService.Configure*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.Configure
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_Configure_System_String_System_Nullable_System_Boolean__System_Int32_System_Collections_Generic_IEnumerable_System_String__
+  name: Configure
+  nameWithType: LeanAutoExportService.Configure
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.Configure
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.IHostedService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostedservice.stopasync
+  name: StopAsync(CancellationToken)
+  nameWithType: IHostedService.StopAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostedservice.stopasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.IHostedService.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostedservice.stopasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  commentId: M:Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  parent: Microsoft.Extensions.Hosting.BackgroundService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executeasync
+  name: ExecuteAsync(CancellationToken)
+  nameWithType: BackgroundService.ExecuteAsync(CancellationToken)
+  fullName: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+    name: ExecuteAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executeasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Hosting.BackgroundService.ExecuteAsync(System.Threading.CancellationToken)
+    name: ExecuteAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executeasync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync*
+  commentId: Overload:Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync
+  href: Meridian.Ui.Shared.LeanAutoExportService.html#Meridian_Ui_Shared_LeanAutoExportService_ExecuteAsync_System_Threading_CancellationToken_
+  name: ExecuteAsync
+  nameWithType: LeanAutoExportService.ExecuteAsync
+  fullName: Meridian.Ui.Shared.LeanAutoExportService.ExecuteAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading

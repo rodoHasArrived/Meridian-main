@@ -1,0 +1,84 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Manifest
+  commentId: N:Meridian.Contracts.Manifest
+  id: Meridian.Contracts.Manifest
+  children:
+  - Meridian.Contracts.Manifest.DataManifest
+  - Meridian.Contracts.Manifest.DataQualityMetrics
+  - Meridian.Contracts.Manifest.DateRangeInfo
+  - Meridian.Contracts.Manifest.ManifestFileEntry
+  - Meridian.Contracts.Manifest.VerificationStatusValues
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Manifest
+  nameWithType: Meridian.Contracts.Manifest
+  fullName: Meridian.Contracts.Manifest
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Manifest.DataManifest
+  commentId: T:Meridian.Contracts.Manifest.DataManifest
+  parent: Meridian.Contracts.Manifest
+  href: Meridian.Contracts.Manifest.DataManifest.html
+  name: DataManifest
+  nameWithType: DataManifest
+  fullName: Meridian.Contracts.Manifest.DataManifest
+- uid: Meridian.Contracts.Manifest.VerificationStatusValues
+  commentId: T:Meridian.Contracts.Manifest.VerificationStatusValues
+  href: Meridian.Contracts.Manifest.VerificationStatusValues.html
+  name: VerificationStatusValues
+  nameWithType: VerificationStatusValues
+  fullName: Meridian.Contracts.Manifest.VerificationStatusValues
+- uid: Meridian.Contracts.Manifest.DateRangeInfo
+  commentId: T:Meridian.Contracts.Manifest.DateRangeInfo
+  parent: Meridian.Contracts.Manifest
+  href: Meridian.Contracts.Manifest.DateRangeInfo.html
+  name: DateRangeInfo
+  nameWithType: DateRangeInfo
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry
+  commentId: T:Meridian.Contracts.Manifest.ManifestFileEntry
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html
+  name: ManifestFileEntry
+  nameWithType: ManifestFileEntry
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry
+- uid: Meridian.Contracts.Manifest.DataQualityMetrics
+  commentId: T:Meridian.Contracts.Manifest.DataQualityMetrics
+  parent: Meridian.Contracts.Manifest
+  href: Meridian.Contracts.Manifest.DataQualityMetrics.html
+  name: DataQualityMetrics
+  nameWithType: DataQualityMetrics
+  fullName: Meridian.Contracts.Manifest.DataQualityMetrics
+- uid: Meridian.Contracts.Manifest
+  commentId: N:Meridian.Contracts.Manifest
+  href: Meridian.html
+  name: Meridian.Contracts.Manifest
+  nameWithType: Meridian.Contracts.Manifest
+  fullName: Meridian.Contracts.Manifest
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html

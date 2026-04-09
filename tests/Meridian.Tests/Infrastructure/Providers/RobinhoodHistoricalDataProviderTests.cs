@@ -28,7 +28,8 @@ public sealed class RobinhoodHistoricalDataProviderTests
         };
         return new RobinhoodHistoricalDataProvider(
             accessToken: accessToken,
-            httpClient: client);
+            httpClient: client,
+            enableResilience: false);
     }
 
     private static StringContent BuildSuccessResponse(string symbol, int barCount = 5)

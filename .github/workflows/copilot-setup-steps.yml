@@ -35,8 +35,7 @@ env:
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
-    # Cold-cache runs (restore + build + Node + Playwright) can take ~22 min;
-    # give a little extra headroom.
+    # Cold-cache runs (restore + Node + Playwright) can take ~15 min.
     timeout-minutes: 30
 
     steps:
@@ -56,12 +55,6 @@ jobs:
         shell: bash
         run: dotnet restore Meridian.sln -p:EnableWindowsTargeting=true --verbosity minimal
 
-      - name: Build solution
-        id: build
-        continue-on-error: true
-        shell: bash
-        run: dotnet build Meridian.sln -c Release --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
-
       # ── Node / Playwright ─────────────────────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -70,6 +63,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Node dependencies
+        continue-on-error: true
         shell: bash
         run: npm ci
 
@@ -84,86 +78,17 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
         shell: bash
         run: npx playwright install --with-deps chromium
 
-      # ── Tests ─────────────────────────────────────────────────────────────
-      # Only attempt tests when the build succeeded; --no-build with a failed
-      # build produces misleading errors that obscure the real root cause.
-      - name: Run C# tests
-        id: csharp-tests
-        if: steps.build.outcome == 'success'
-        continue-on-error: true
-        shell: bash
-        run: |
-          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-            -c Release --no-build -p:EnableWindowsTargeting=true \
-            --verbosity minimal \
-            --logger "trx;LogFileName=test-results-csharp.trx" \
-            --results-directory ./TestResults \
-            --filter "Category!=Integration" \
-            --blame-hang-timeout 60s
-
-      - name: Run F# tests
-        id: fsharp-tests
-        if: steps.build.outcome == 'success'
-        continue-on-error: true
-        shell: bash
-        run: |
-          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj \
-            -c Release --no-build -p:EnableWindowsTargeting=true \
-            --verbosity minimal \
-            --logger "trx;LogFileName=test-results-fsharp.trx" \
-            --results-directory ./TestResults \
-            --blame-hang-timeout 60s
-
-      # ── Post-run ──────────────────────────────────────────────────────────
-      # Upload when any test step failed (continue-on-error absorbs the failure
-      # from the job's perspective, so failure() alone is not sufficient).
-      - name: Upload test results on failure
-        if: >-
-          failure() ||
-          steps.csharp-tests.outcome == 'failure' ||
-          steps.fsharp-tests.outcome == 'failure'
-        uses: actions/upload-artifact@v7
-        with:
-          name: copilot-test-results
-          path: ./TestResults/
-          retention-days: 3
-
+      # ── Summary ───────────────────────────────────────────────────────────
       - name: Write step summary
         if: always()
         shell: bash
         run: |
           echo "## Copilot Environment Setup Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Step | Status |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
-          # Use explicit case to avoid bash version-specific parameter expansions.
-          case "${{ steps.build.outcome }}" in
-            success)   BUILD_LABEL="✅ success" ;;
-            failure)   BUILD_LABEL="❌ failure" ;;
-            cancelled) BUILD_LABEL="⚠️ cancelled" ;;
-            *)         BUILD_LABEL="${{ steps.build.outcome }}" ;;
-          esac
-          echo "| Build | $BUILD_LABEL |" >> "$GITHUB_STEP_SUMMARY"
-          case "${{ steps.csharp-tests.outcome }}" in
-            success)   CS_LABEL="✅ success" ;;
-            failure)   CS_LABEL="❌ failure" ;;
-            skipped)   CS_LABEL="— skipped" ;;
-            cancelled) CS_LABEL="⚠️ cancelled" ;;
-            *)         CS_LABEL="${{ steps.csharp-tests.outcome }}" ;;
-          esac
-          echo "| C# tests | $CS_LABEL |" >> "$GITHUB_STEP_SUMMARY"
-          case "${{ steps.fsharp-tests.outcome }}" in
-            success)   FS_LABEL="✅ success" ;;
-            failure)   FS_LABEL="❌ failure" ;;
-            skipped)   FS_LABEL="— skipped" ;;
-            cancelled) FS_LABEL="⚠️ cancelled" ;;
-            *)         FS_LABEL="${{ steps.fsharp-tests.outcome }}" ;;
-          esac
-          echo "| F# tests | $FS_LABEL |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [[ "${{ steps.build.outcome }}" != "success" ]]; then
-            echo "> ⚠️ Build did not succeed — tests were skipped." >> "$GITHUB_STEP_SUMMARY"
-          fi
+          echo "- .NET SDK installed and NuGet packages restored" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Node.js installed and npm packages configured" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Playwright browser cache prepared" >> "$GITHUB_STEP_SUMMARY"

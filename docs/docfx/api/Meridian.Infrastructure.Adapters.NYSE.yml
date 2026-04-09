@@ -1,0 +1,106 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  id: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEServiceExtensions
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html
+  name: NYSEDataSource
+  nameWithType: NYSEDataSource
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html
+  name: NyseMarketDataClient
+  nameWithType: NyseMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html
+  name: NyseNationalTradesCsvParser
+  nameWithType: NyseNationalTradesCsvParser
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html
+  name: NyseTaqTradeRecord
+  nameWithType: NyseTaqTradeRecord
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html
+  name: NYSEOptions
+  nameWithType: NYSEOptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.html
+  name: NYSEFeedTier
+  nameWithType: NYSEFeedTier
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEServiceExtensions
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEServiceExtensions
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEServiceExtensions.html
+  name: NYSEServiceExtensions
+  nameWithType: NYSEServiceExtensions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEServiceExtensions
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html

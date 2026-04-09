@@ -1,0 +1,853 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  id: AdvancedCarryRiskOptions
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.#ctor(System.Double,System.Nullable{System.Double},System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Double)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing
+  langs:
+  - csharp
+  - vb
+  name: AdvancedCarryRiskOptions
+  nameWithType: AdvancedCarryRiskOptions
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdvancedCarryRiskOptions
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record AdvancedCarryRiskOptions : IEquatable<AdvancedCarryRiskOptions>'
+    content.vb: Public NotInheritable Class AdvancedCarryRiskOptions Implements IEquatable(Of AdvancedCarryRiskOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.#ctor(System.Double,System.Nullable{System.Double},System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Double)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.#ctor(System.Double,System.Nullable{System.Double},System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Double)
+  id: '#ctor(System.Double,System.Nullable{System.Double},System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Double)'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: AdvancedCarryRiskOptions(double, double?, double, double, double, double, double, bool, double, double)
+  nameWithType: AdvancedCarryRiskOptions.AdvancedCarryRiskOptions(double, double?, double, double, double, double, double, bool, double, double)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.AdvancedCarryRiskOptions(double, double?, double, double, double, double, double, bool, double, double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public AdvancedCarryRiskOptions(double MaxSinglePosition = 0.2, double? TargetVolatility = 0.1, double ConfidenceLevel = 0.95, double RateShockBps = 200, double CreditSpreadShockBps = 100, double EquityShock = -0.1, double LiquiditySpreadMultiple = 3, bool UseKellySizing = false, double KellyFraction = 0.25, double MaxKellyPosition = 0.1)
+    parameters:
+    - id: MaxSinglePosition
+      type: System.Double
+    - id: TargetVolatility
+      type: System.Nullable{System.Double}
+    - id: ConfidenceLevel
+      type: System.Double
+    - id: RateShockBps
+      type: System.Double
+    - id: CreditSpreadShockBps
+      type: System.Double
+    - id: EquityShock
+      type: System.Double
+    - id: LiquiditySpreadMultiple
+      type: System.Double
+    - id: UseKellySizing
+      type: System.Boolean
+    - id: KellyFraction
+      type: System.Double
+    - id: MaxKellyPosition
+      type: System.Double
+    content.vb: Public Sub New(MaxSinglePosition As Double = 0.2, TargetVolatility As Double? = 0.1, ConfidenceLevel As Double = 0.95, RateShockBps As Double = 200, CreditSpreadShockBps As Double = 100, EquityShock As Double = -0.1, LiquiditySpreadMultiple As Double = 3, UseKellySizing As Boolean = False, KellyFraction As Double = 0.25, MaxKellyPosition As Double = 0.1)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.#ctor*
+  nameWithType.vb: AdvancedCarryRiskOptions.New(Double, Double?, Double, Double, Double, Double, Double, Boolean, Double, Double)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.New(Double, Double?, Double, Double, Double, Double, Double, Boolean, Double, Double)
+  name.vb: New(Double, Double?, Double, Double, Double, Double, Double, Boolean, Double, Double)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition
+  id: MaxSinglePosition
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxSinglePosition
+  nameWithType: AdvancedCarryRiskOptions.MaxSinglePosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSinglePosition
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double MaxSinglePosition { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxSinglePosition As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility
+  id: TargetVolatility
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: TargetVolatility
+  nameWithType: AdvancedCarryRiskOptions.TargetVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetVolatility
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double? TargetVolatility { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property TargetVolatility As Double?
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel
+  id: ConfidenceLevel
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: ConfidenceLevel
+  nameWithType: AdvancedCarryRiskOptions.ConfidenceLevel
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfidenceLevel
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double ConfidenceLevel { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ConfidenceLevel As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps
+  id: RateShockBps
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: RateShockBps
+  nameWithType: AdvancedCarryRiskOptions.RateShockBps
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateShockBps
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double RateShockBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property RateShockBps As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps
+  id: CreditSpreadShockBps
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: CreditSpreadShockBps
+  nameWithType: AdvancedCarryRiskOptions.CreditSpreadShockBps
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreditSpreadShockBps
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double CreditSpreadShockBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CreditSpreadShockBps As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock
+  id: EquityShock
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: EquityShock
+  nameWithType: AdvancedCarryRiskOptions.EquityShock
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EquityShock
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double EquityShock { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property EquityShock As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  id: LiquiditySpreadMultiple
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: LiquiditySpreadMultiple
+  nameWithType: AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiquiditySpreadMultiple
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double LiquiditySpreadMultiple { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LiquiditySpreadMultiple As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing
+  id: UseKellySizing
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: UseKellySizing
+  nameWithType: AdvancedCarryRiskOptions.UseKellySizing
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseKellySizing
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public bool UseKellySizing { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property UseKellySizing As Boolean
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction
+  id: KellyFraction
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: KellyFraction
+  nameWithType: AdvancedCarryRiskOptions.KellyFraction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KellyFraction
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double KellyFraction { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property KellyFraction As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition
+  id: MaxKellyPosition
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxKellyPosition
+  nameWithType: AdvancedCarryRiskOptions.MaxKellyPosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxKellyPosition
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double MaxKellyPosition { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxKellyPosition As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AdvancedCarryRiskOptions>
+  nameWithType: IEquatable<AdvancedCarryRiskOptions>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions>
+  nameWithType.vb: IEquatable(Of AdvancedCarryRiskOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions)
+  name.vb: IEquatable(Of AdvancedCarryRiskOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+    name: AdvancedCarryRiskOptions
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+    name: AdvancedCarryRiskOptions
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions__ctor_System_Double_System_Nullable_System_Double__System_Double_System_Double_System_Double_System_Double_System_Double_System_Boolean_System_Double_System_Double_
+  name: AdvancedCarryRiskOptions
+  nameWithType: AdvancedCarryRiskOptions.AdvancedCarryRiskOptions
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.AdvancedCarryRiskOptions
+  nameWithType.vb: AdvancedCarryRiskOptions.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_MaxSinglePosition
+  name: MaxSinglePosition
+  nameWithType: AdvancedCarryRiskOptions.MaxSinglePosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxSinglePosition
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_TargetVolatility
+  name: TargetVolatility
+  nameWithType: AdvancedCarryRiskOptions.TargetVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.TargetVolatility
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_ConfidenceLevel
+  name: ConfidenceLevel
+  nameWithType: AdvancedCarryRiskOptions.ConfidenceLevel
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.ConfidenceLevel
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_RateShockBps
+  name: RateShockBps
+  nameWithType: AdvancedCarryRiskOptions.RateShockBps
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.RateShockBps
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_CreditSpreadShockBps
+  name: CreditSpreadShockBps
+  nameWithType: AdvancedCarryRiskOptions.CreditSpreadShockBps
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.CreditSpreadShockBps
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_EquityShock
+  name: EquityShock
+  nameWithType: AdvancedCarryRiskOptions.EquityShock
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.EquityShock
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_LiquiditySpreadMultiple
+  name: LiquiditySpreadMultiple
+  nameWithType: AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.LiquiditySpreadMultiple
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_UseKellySizing
+  name: UseKellySizing
+  nameWithType: AdvancedCarryRiskOptions.UseKellySizing
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.UseKellySizing
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_KellyFraction
+  name: KellyFraction
+  nameWithType: AdvancedCarryRiskOptions.KellyFraction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.KellyFraction
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryRiskOptions_MaxKellyPosition
+  name: MaxKellyPosition
+  nameWithType: AdvancedCarryRiskOptions.MaxKellyPosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.MaxKellyPosition

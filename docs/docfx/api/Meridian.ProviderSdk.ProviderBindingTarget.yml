@@ -1,0 +1,770 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderBindingTarget
+  commentId: T:Meridian.ProviderSdk.ProviderBindingTarget
+  id: ProviderBindingTarget
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderBindingTarget.#ctor(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid})
+  - Meridian.ProviderSdk.ProviderBindingTarget.AccountId
+  - Meridian.ProviderSdk.ProviderBindingTarget.EntityId
+  - Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId
+  - Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore(Meridian.ProviderSdk.ProviderRouteContext)
+  - Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal
+  - Meridian.ProviderSdk.ProviderBindingTarget.SleeveId
+  - Meridian.ProviderSdk.ProviderBindingTarget.VehicleId
+  - Meridian.ProviderSdk.ProviderBindingTarget.Workspace
+  langs:
+  - csharp
+  - vb
+  name: ProviderBindingTarget
+  nameWithType: ProviderBindingTarget
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderBindingTarget
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Scope used when matching a capability binding to a route request.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderBindingTarget : IEquatable<ProviderBindingTarget>'
+    content.vb: Public NotInheritable Class ProviderBindingTarget Implements IEquatable(Of ProviderBindingTarget)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.ProviderSdk.ProviderBindingTarget}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.#ctor(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid})
+  commentId: M:Meridian.ProviderSdk.ProviderBindingTarget.#ctor(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid})
+  id: '#ctor(System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid})'
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: ProviderBindingTarget(string?, string?, Guid?, Guid?, Guid?, Guid?)
+  nameWithType: ProviderBindingTarget.ProviderBindingTarget(string?, string?, Guid?, Guid?, Guid?, Guid?)
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.ProviderBindingTarget(string?, string?, System.Guid?, System.Guid?, System.Guid?, System.Guid?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Scope used when matching a capability binding to a route request.
+  example: []
+  syntax:
+    content: public ProviderBindingTarget(string? Workspace = null, string? FundProfileId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? AccountId = null)
+    parameters:
+    - id: Workspace
+      type: System.String
+    - id: FundProfileId
+      type: System.String
+    - id: EntityId
+      type: System.Nullable{System.Guid}
+    - id: SleeveId
+      type: System.Nullable{System.Guid}
+    - id: VehicleId
+      type: System.Nullable{System.Guid}
+    - id: AccountId
+      type: System.Nullable{System.Guid}
+    content.vb: Public Sub New(Workspace As String = Nothing, FundProfileId As String = Nothing, EntityId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, AccountId As Guid? = Nothing)
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.#ctor*
+  nameWithType.vb: ProviderBindingTarget.New(String, String, Guid?, Guid?, Guid?, Guid?)
+  fullName.vb: Meridian.ProviderSdk.ProviderBindingTarget.New(String, String, System.Guid?, System.Guid?, System.Guid?, System.Guid?)
+  name.vb: New(String, String, Guid?, Guid?, Guid?, Guid?)
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.Workspace
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.Workspace
+  id: Workspace
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: Workspace
+  nameWithType: ProviderBindingTarget.Workspace
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.Workspace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Workspace
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 154
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public string? Workspace { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Workspace As String
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.Workspace*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId
+  id: FundProfileId
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: ProviderBindingTarget.FundProfileId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 155
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public string? FundProfileId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundProfileId As String
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.EntityId
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.EntityId
+  id: EntityId
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: ProviderBindingTarget.EntityId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 156
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public Guid? EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property EntityId As Guid?
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.EntityId*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.SleeveId
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.SleeveId
+  id: SleeveId
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: ProviderBindingTarget.SleeveId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 157
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public Guid? SleeveId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SleeveId As Guid?
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.SleeveId*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.VehicleId
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.VehicleId
+  id: VehicleId
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: ProviderBindingTarget.VehicleId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 158
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public Guid? VehicleId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property VehicleId As Guid?
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.VehicleId*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.AccountId
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.AccountId
+  id: AccountId
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: ProviderBindingTarget.AccountId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 159
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public Guid? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property AccountId As Guid?
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.AccountId*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal
+  commentId: P:Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal
+  id: IsGlobal
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: IsGlobal
+  nameWithType: ProviderBindingTarget.IsGlobal
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsGlobal
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 161
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public bool IsGlobal { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsGlobal As Boolean
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal*
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore(Meridian.ProviderSdk.ProviderRouteContext)
+  commentId: M:Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore(Meridian.ProviderSdk.ProviderRouteContext)
+  id: GetMatchScore(Meridian.ProviderSdk.ProviderRouteContext)
+  parent: Meridian.ProviderSdk.ProviderBindingTarget
+  langs:
+  - csharp
+  - vb
+  name: GetMatchScore(ProviderRouteContext)
+  nameWithType: ProviderBindingTarget.GetMatchScore(ProviderRouteContext)
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore(Meridian.ProviderSdk.ProviderRouteContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMatchScore
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 169
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public int GetMatchScore(ProviderRouteContext context)
+    parameters:
+    - id: context
+      type: Meridian.ProviderSdk.ProviderRouteContext
+    return:
+      type: System.Int32
+    content.vb: Public Function GetMatchScore(context As ProviderRouteContext) As Integer
+  overload: Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore*
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.ProviderSdk.ProviderBindingTarget}
+  commentId: T:System.IEquatable{Meridian.ProviderSdk.ProviderBindingTarget}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderBindingTarget>
+  nameWithType: IEquatable<ProviderBindingTarget>
+  fullName: System.IEquatable<Meridian.ProviderSdk.ProviderBindingTarget>
+  nameWithType.vb: IEquatable(Of ProviderBindingTarget)
+  fullName.vb: System.IEquatable(Of Meridian.ProviderSdk.ProviderBindingTarget)
+  name.vb: IEquatable(Of ProviderBindingTarget)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderBindingTarget
+    name: ProviderBindingTarget
+    href: Meridian.ProviderSdk.ProviderBindingTarget.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderBindingTarget
+    name: ProviderBindingTarget
+    href: Meridian.ProviderSdk.ProviderBindingTarget.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.#ctor*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.#ctor
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget__ctor_System_String_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__
+  name: ProviderBindingTarget
+  nameWithType: ProviderBindingTarget.ProviderBindingTarget
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.ProviderBindingTarget
+  nameWithType.vb: ProviderBindingTarget.New
+  fullName.vb: Meridian.ProviderSdk.ProviderBindingTarget.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.Workspace*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.Workspace
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_Workspace
+  name: Workspace
+  nameWithType: ProviderBindingTarget.Workspace
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.Workspace
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_FundProfileId
+  name: FundProfileId
+  nameWithType: ProviderBindingTarget.FundProfileId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.FundProfileId
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.EntityId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.EntityId
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_EntityId
+  name: EntityId
+  nameWithType: ProviderBindingTarget.EntityId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.EntityId
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.SleeveId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.SleeveId
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_SleeveId
+  name: SleeveId
+  nameWithType: ProviderBindingTarget.SleeveId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.SleeveId
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.VehicleId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.VehicleId
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_VehicleId
+  name: VehicleId
+  nameWithType: ProviderBindingTarget.VehicleId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.VehicleId
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.AccountId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.AccountId
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_AccountId
+  name: AccountId
+  nameWithType: ProviderBindingTarget.AccountId
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.AccountId
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_IsGlobal
+  name: IsGlobal
+  nameWithType: ProviderBindingTarget.IsGlobal
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.IsGlobal
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore*
+  commentId: Overload:Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html#Meridian_ProviderSdk_ProviderBindingTarget_GetMatchScore_Meridian_ProviderSdk_ProviderRouteContext_
+  name: GetMatchScore
+  nameWithType: ProviderBindingTarget.GetMatchScore
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget.GetMatchScore
+- uid: Meridian.ProviderSdk.ProviderRouteContext
+  commentId: T:Meridian.ProviderSdk.ProviderRouteContext
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderRouteContext.html
+  name: ProviderRouteContext
+  nameWithType: ProviderRouteContext
+  fullName: Meridian.ProviderSdk.ProviderRouteContext
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

@@ -1,0 +1,1306 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  id: IRealtimeDataSource
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: IRealtimeDataSource
+  nameWithType: IRealtimeDataSource
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IRealtimeDataSource
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 11
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: >-
+    Interface for real-time data sources providing streaming market data.
+
+    Extends IDataSource with real-time specific functionality for trades,
+
+    quotes, and market depth.
+  example: []
+  syntax:
+    content: 'public interface IRealtimeDataSource : IDataSource, IAsyncDisposable'
+    content.vb: Public Interface IRealtimeDataSource Inherits IDataSource, IAsyncDisposable
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  inheritedMembers:
+  - Meridian.Infrastructure.DataSources.IDataSource.Id
+  - Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  - Meridian.Infrastructure.DataSources.IDataSource.Description
+  - Meridian.Infrastructure.DataSources.IDataSource.Type
+  - Meridian.Infrastructure.DataSources.IDataSource.Category
+  - Meridian.Infrastructure.DataSources.IDataSource.Priority
+  - Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  - Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  - Meridian.Infrastructure.DataSources.IDataSource.Health
+  - Meridian.Infrastructure.DataSources.IDataSource.Status
+  - Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  - Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  - Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IRealtimeDataSource.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 17
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Connects to the real-time data stream.
+  example: []
+  syntax:
+    content: Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IRealtimeDataSource.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 22
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Disconnects from the real-time data stream.
+  example: []
+  syntax:
+    content: Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  id: IsConnected
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: IRealtimeDataSource.IsConnected
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 27
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Whether the source is currently connected.
+  example: []
+  syntax:
+    content: bool IsConnected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsConnected As Boolean
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IRealtimeDataSource.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 36
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Subscribes to real-time trade prints for the specified symbol.
+  example: []
+  syntax:
+    content: int SubscribeTrades(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID for unsubscription.
+    content.vb: Function SubscribeTrades(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: IRealtimeDataSource.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 41
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from a trade subscription.
+  example: []
+  syntax:
+    content: void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades*
+  nameWithType.vb: IRealtimeDataSource.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  id: Trades
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: IRealtimeDataSource.Trades
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 46
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of trade events.
+  example: []
+  syntax:
+    content: IObservable<RealtimeTrade> Trades { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+    content.vb: ReadOnly Property Trades As IObservable(Of RealtimeTrade)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeQuotes(SymbolConfig)
+  nameWithType: IRealtimeDataSource.SubscribeQuotes(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeQuotes
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 55
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Subscribes to real-time BBO quotes for the specified symbol.
+  example: []
+  syntax:
+    content: int SubscribeQuotes(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID for unsubscription.
+    content.vb: Function SubscribeQuotes(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+  id: UnsubscribeQuotes(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeQuotes(int)
+  nameWithType: IRealtimeDataSource.UnsubscribeQuotes(int)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeQuotes
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 60
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from a quote subscription.
+  example: []
+  syntax:
+    content: void UnsubscribeQuotes(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Sub UnsubscribeQuotes(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes*
+  nameWithType.vb: IRealtimeDataSource.UnsubscribeQuotes(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(Integer)
+  name.vb: UnsubscribeQuotes(Integer)
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  id: Quotes
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: Quotes
+  nameWithType: IRealtimeDataSource.Quotes
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quotes
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 65
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of quote events.
+  example: []
+  syntax:
+    content: IObservable<RealtimeQuote> Quotes { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+    content.vb: ReadOnly Property Quotes As IObservable(Of RealtimeQuote)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IRealtimeDataSource.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 74
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Subscribes to market depth for the specified symbol.
+  example: []
+  syntax:
+    content: int SubscribeMarketDepth(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID for unsubscription.
+    content.vb: Function SubscribeMarketDepth(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IRealtimeDataSource.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 79
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from a depth subscription.
+  example: []
+  syntax:
+    content: void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth*
+  nameWithType.vb: IRealtimeDataSource.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  id: DepthUpdates
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdates
+  nameWithType: IRealtimeDataSource.DepthUpdates
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdates
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 84
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of market depth events.
+  example: []
+  syntax:
+    content: IObservable<RealtimeDepthUpdate> DepthUpdates { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+    content.vb: ReadOnly Property DepthUpdates As IObservable(Of RealtimeDepthUpdate)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  id: ActiveSubscriptions
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: ActiveSubscriptions
+  nameWithType: IRealtimeDataSource.ActiveSubscriptions
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveSubscriptions
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 91
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets all active subscription IDs.
+  example: []
+  syntax:
+    content: IReadOnlySet<int> ActiveSubscriptions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.Int32}
+    content.vb: ReadOnly Property ActiveSubscriptions As IReadOnlySet(Of Integer)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  id: SubscribedSymbols
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribedSymbols
+  nameWithType: IRealtimeDataSource.SubscribedSymbols
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedSymbols
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 96
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets the symbols currently subscribed.
+  example: []
+  syntax:
+    content: IReadOnlySet<string> SubscribedSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: ReadOnly Property SubscribedSymbols As IReadOnlySet(Of String)
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols*
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+  id: UnsubscribeAll
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeAll()
+  nameWithType: IRealtimeDataSource.UnsubscribeAll()
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeAll
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 101
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from all active subscriptions.
+  example: []
+  syntax:
+    content: void UnsubscribeAll()
+    content.vb: Sub UnsubscribeAll()
+  overload: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Id
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Id
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Id
+  name: Id
+  nameWithType: IDataSource.Id
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Id
+- uid: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_DisplayName
+  name: DisplayName
+  nameWithType: IDataSource.DisplayName
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Description
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Description
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Description
+  name: Description
+  nameWithType: IDataSource.Description
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Description
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Type
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Type
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Type
+  name: Type
+  nameWithType: IDataSource.Type
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Type
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Category
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Category
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Category
+  name: Category
+  nameWithType: IDataSource.Category
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Category
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Priority
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Priority
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Priority
+  name: Priority
+  nameWithType: IDataSource.Priority
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Priority
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Capabilities
+  name: Capabilities
+  nameWithType: IDataSource.Capabilities
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+- uid: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_CapabilityInfo
+  name: CapabilityInfo
+  nameWithType: IDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: IDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: IDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Health
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Health
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Health
+  name: Health
+  nameWithType: IDataSource.Health
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Health
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Status
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Status
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Status
+  name: Status
+  nameWithType: IDataSource.Status
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Status
+- uid: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_RateLimitState
+  name: RateLimitState
+  nameWithType: IDataSource.RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+- uid: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_HealthChanges
+  name: HealthChanges
+  nameWithType: IDataSource.HealthChanges
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+- uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync(CancellationToken)
+  nameWithType: IDataSource.InitializeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: IDataSource.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  name: TestConnectivityAsync(CancellationToken)
+  nameWithType: IDataSource.TestConnectivityAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IDataSource
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.IDataSource.html
+  name: IDataSource
+  nameWithType: IDataSource
+  fullName: Meridian.Infrastructure.DataSources.IDataSource
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: IRealtimeDataSource.ConnectAsync
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: IRealtimeDataSource.DisconnectAsync
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_IsConnected
+  name: IsConnected
+  nameWithType: IRealtimeDataSource.IsConnected
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: IRealtimeDataSource.SubscribeTrades
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: IRealtimeDataSource.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_Trades
+  name: Trades
+  nameWithType: IRealtimeDataSource.Trades
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeTrade>
+  nameWithType: IObservable<RealtimeTrade>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeTrade>
+  nameWithType.vb: IObservable(Of RealtimeTrade)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeTrade)
+  name.vb: IObservable(Of RealtimeTrade)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_SubscribeQuotes_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeQuotes
+  nameWithType: IRealtimeDataSource.SubscribeQuotes
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_UnsubscribeQuotes_System_Int32_
+  name: UnsubscribeQuotes
+  nameWithType: IRealtimeDataSource.UnsubscribeQuotes
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_Quotes
+  name: Quotes
+  nameWithType: IRealtimeDataSource.Quotes
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeQuote>
+  nameWithType: IObservable<RealtimeQuote>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeQuote>
+  nameWithType.vb: IObservable(Of RealtimeQuote)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeQuote)
+  name.vb: IObservable(Of RealtimeQuote)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: IRealtimeDataSource.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: IRealtimeDataSource.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_DepthUpdates
+  name: DepthUpdates
+  nameWithType: IRealtimeDataSource.DepthUpdates
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeDepthUpdate>
+  nameWithType: IObservable<RealtimeDepthUpdate>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeDepthUpdate>
+  nameWithType.vb: IObservable(Of RealtimeDepthUpdate)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeDepthUpdate)
+  name.vb: IObservable(Of RealtimeDepthUpdate)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_ActiveSubscriptions
+  name: ActiveSubscriptions
+  nameWithType: IRealtimeDataSource.ActiveSubscriptions
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+- uid: System.Collections.Generic.IReadOnlySet{System.Int32}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<int>
+  nameWithType: IReadOnlySet<int>
+  fullName: System.Collections.Generic.IReadOnlySet<int>
+  nameWithType.vb: IReadOnlySet(Of Integer)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Integer)
+  name.vb: IReadOnlySet(Of Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: IRealtimeDataSource.SubscribedSymbols
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html#Meridian_Infrastructure_DataSources_IRealtimeDataSource_UnsubscribeAll
+  name: UnsubscribeAll
+  nameWithType: IRealtimeDataSource.UnsubscribeAll
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll

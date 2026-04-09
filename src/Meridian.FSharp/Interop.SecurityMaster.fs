@@ -48,10 +48,64 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     // Idea 2: delegate to the domain function instead of duplicating the match.
     let assetClass = SecurityKind.assetClass record.Kind
 
+    let preferredTermsFromClassification classification =
+        match classification with
+        | Some (EquityClassification.Preferred preferred)
+        | Some (EquityClassification.ConvertiblePreferred (preferred, _)) -> Some preferred
+        | _ -> None
+
+    let convertibleTermsFromClassification classification =
+        match classification with
+        | Some (EquityClassification.Convertible convertible)
+        | Some (EquityClassification.ConvertiblePreferred (_, convertible)) -> Some convertible
+        | _ -> None
+
+    let serializeParticipationTerms (terms: ParticipationTerms) =
+        {| participatesInCommonDividends = terms.ParticipatesInCommonDividends
+           additionalDividendThreshold = terms.AdditionalDividendThreshold |}
+
+    let serializeLiquidationPreference preference =
+        match preference with
+        | LiquidationPreference.Pari -> {| kind = "Pari"; multiple = None |}
+        | LiquidationPreference.Senior multiple -> {| kind = "Senior"; multiple = Some multiple |}
+        | LiquidationPreference.Subordinated -> {| kind = "Subordinated"; multiple = None |}
+
+    let serializePreferredTerms (terms: PreferredTerms) =
+        {| dividendRate = terms.DividendRate
+           dividendType = DividendType.asString terms.DividendType
+           redemptionPrice = terms.RedemptionPrice
+           redemptionDate = terms.RedemptionDate
+           callableDate = terms.CallableDate
+           participationTerms = terms.ParticipationTerms |> Option.map serializeParticipationTerms
+           liquidationPreference = serializeLiquidationPreference terms.LiquidationPreference |}
+
+    let serializeConvertibleTerms (terms: ConvertibleTerms) =
+        let (SecurityId underlyingSecurityId) = terms.UnderlyingSecurityId
+
+        {| underlyingSecurityId = underlyingSecurityId
+           conversionRatio = terms.ConversionRatio
+           conversionPrice = terms.ConversionPrice
+           conversionStartDate = terms.ConversionStartDate
+           conversionEndDate = terms.ConversionEndDate |}
+
     let assetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.Equity terms ->
-            JsonSerializer.Serialize({| schemaVersion = schemaVersion; shareClass = terms.ShareClass |})
+            let votingRightsCat = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
+            let classification = terms.Classification |> Option.map EquityClassification.asString
+            let otherClassification =
+                match terms.Classification with
+                | Some (EquityClassification.Other label) -> Some label
+                | _ -> None
+
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   shareClass = terms.ShareClass
+                   votingRightsCat = votingRightsCat
+                   classification = classification
+                   otherClassification = otherClassification
+                   preferredTerms = terms.Classification |> preferredTermsFromClassification |> Option.map serializePreferredTerms
+                   convertibleTerms = terms.Classification |> convertibleTermsFromClassification |> Option.map serializeConvertibleTerms |})
         | SecurityKind.Option terms ->
             let (SecurityId underlyingId) = terms.UnderlyingId
             JsonSerializer.Serialize(
@@ -60,7 +114,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    putCall = terms.PutCall
                    strike = terms.Strike
                    expiry = terms.Expiry
-                   multiplier = terms.Multiplier |})
+                   multiplier = terms.Multiplier
+                   underlyingInstrumentType = terms.UnderlyingInstrumentType |> Option.map int |})
         | SecurityKind.Future terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -84,7 +139,8 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    isCallable = terms.IsCallable
                    callDate = terms.CallDate
                    issuerName = terms.IssuerName
-                   seniority = terms.Seniority |})
+                   seniority = terms.Seniority
+                   subclass = terms.Subclass |> Option.map BondSubclass.asString |})
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -159,6 +215,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 {| schemaVersion = schemaVersion
                    effectiveDate = terms.EffectiveDate
                    maturityDate = terms.MaturityDate
+                   calendarRefs = terms.CalendarRefs
                    legs =
                         terms.Legs
                         |> List.map (fun leg ->
@@ -262,7 +319,12 @@ type SecurityValidationErrorDto(code: string, message: string) =
 
 [<AllowNullLiteral>]
 [<Sealed>]
-type SecurityMasterCommandResultWrapper(result: Result<SecurityMasterRecord, SecurityValidationError list>) =
+type SecurityMasterCommandResultWrapper(result: Result<SecurityMasterRecord, SecurityValidationError list>, eventTypes: string array) =
+    let successfulEventTypes =
+        match result with
+        | Ok _ -> eventTypes
+        | Error _ -> Array.empty
+
     member _.IsSuccess =
         match result with
         | Ok _ -> true
@@ -288,6 +350,13 @@ type SecurityMasterCommandResultWrapper(result: Result<SecurityMasterRecord, Sec
             |> List.map (fun e -> SecurityValidationErrorDto(e.Code, e.Message))
             |> List.toArray
 
+    member _.EventTypes = successfulEventTypes
+
+    member _.PrimaryEventType =
+        successfulEventTypes
+        |> Array.tryHead
+        |> Option.defaultValue String.Empty
+
 // Idea 6: renamed from SecurityMasterAggregate to SecurityMasterCommandFacade to
 // reflect that this is a stateless facade over the aggregate command functions,
 // not a stateful aggregate object.
@@ -295,17 +364,23 @@ type SecurityMasterCommandResultWrapper(result: Result<SecurityMasterRecord, Sec
 type SecurityMasterCommandFacade private () =
     static member private ToResult(initialState: SecurityMasterRecord option, events: Result<SecurityMasterEvent list, SecurityValidationError list>) =
         match events with
-        | Error errors -> SecurityMasterCommandResultWrapper(Error errors)
+        | Error errors -> SecurityMasterCommandResultWrapper(Error errors, Array.empty)
         | Ok eventList ->
+            let eventTypes =
+                eventList
+                |> List.map SecurityMasterEvent.eventType
+                |> List.toArray
+
             let finalState = eventList |> List.fold SecurityMaster.evolve initialState
             match finalState with
-            | Some record -> SecurityMasterCommandResultWrapper(Ok record)
+            | Some record -> SecurityMasterCommandResultWrapper(Ok record, eventTypes)
             | None ->
                 SecurityMasterCommandResultWrapper(
                     Error [ {
                         Code = "missing_state"
                         Message = "Security master command produced no aggregate state."
-                    } ])
+                    } ],
+                    Array.empty)
 
     static member Create(command: CreateSecurity) =
         SecurityMasterCommandFacade.ToResult(None, SecurityMaster.create command)

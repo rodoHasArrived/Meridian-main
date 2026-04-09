@@ -13,7 +13,7 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
 {
     private readonly RunMatService _runMatService;
     private CancellationTokenSource? _runCts;
-
+    private static int _scratchCounter;
     public ObservableCollection<RunMatScriptDocument> Scripts { get; } = [];
     public ObservableCollection<RunMatOutputLine> OutputLines { get; } = [];
 
@@ -111,7 +111,7 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     public IRelayCommand NewScriptCommand { get; }
     public IRelayCommand StopRunCommand { get; }
 
-    internal RunMatViewModel(RunMatService runMatService)
+    public RunMatViewModel(RunMatService runMatService)
     {
         _runMatService = runMatService;
         InitializeCommand = new AsyncRelayCommand(InitializeAsync);
@@ -237,7 +237,7 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     private void NewScript()
     {
         SelectedScript = null;
-        ScriptName = $"scratch_{DateTime.Now:HHmmss}.m";
+        ScriptName = $"scratch_{Interlocked.Increment(ref _scratchCounter):D6}.m";
         ScriptSource = """
         x = linspace(0, 4*pi, 400);
         y = sin(x) .* exp(-x / 12);

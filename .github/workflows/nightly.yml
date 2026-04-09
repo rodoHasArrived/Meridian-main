@@ -23,7 +23,11 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
 
 jobs:
-  # All three top-level jobs (test-matrix, benchmark, integration-tests) run in parallel
+  build-artifact:
+    name: Build Artifact
+    uses: ./.github/workflows/generate-build-artifact.yml
+
+  # test-matrix and benchmark run in parallel; integration-tests depends on build-artifact
   test-matrix:
     name: Test on ${{ matrix.os }}
     strategy:
@@ -70,6 +74,7 @@ jobs:
 
   integration-tests:
     name: Integration Tests
+    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -77,20 +82,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v5
 
-    - name: Setup .NET with Cache
-      uses: ./.github/actions/setup-dotnet-cache
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v5.2.0
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-        cache-suffix: nightly
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ needs.build-artifact.outputs.artifact-name }}
 
     - name: Prepare config
       shell: bash
       run: |
         cp config/appsettings.sample.json config/appsettings.json || true
         mkdir -p data logs
-
-    - name: Build
-      run: dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true --verbosity minimal
 
     - name: Run self-tests
       shell: bash
@@ -103,7 +109,7 @@ jobs:
 
   notify:
     name: Notify on Failure
-    needs: [test-matrix, benchmark, integration-tests]
+    needs: [build-artifact, test-matrix, benchmark, integration-tests]
     runs-on: ubuntu-latest
     if: failure()
     timeout-minutes: 30
@@ -143,7 +149,7 @@ jobs:
 
   notify-on-success:
     name: Close failure issue on success
-    needs: [test-matrix, benchmark, integration-tests]
+    needs: [build-artifact, test-matrix, benchmark, integration-tests]
     runs-on: ubuntu-latest
     if: success()
     timeout-minutes: 30
@@ -180,10 +186,10 @@ jobs:
 
   ai-failure-analysis:
     name: AI Failure Analysis
-    needs: [test-matrix, benchmark, integration-tests]
+    needs: [build-artifact, test-matrix, benchmark, integration-tests]
     if: |
       always() &&
-      (needs.test-matrix.result == 'failure' || needs.benchmark.result == 'failure' || needs.integration-tests.result == 'failure')
+      (needs.build-artifact.result == 'failure' || needs.test-matrix.result == 'failure' || needs.benchmark.result == 'failure' || needs.integration-tests.result == 'failure')
     uses: ./.github/workflows/reusable-ai-analysis.yml
     with:
       summary-header: "## AI Failure Diagnosis"
@@ -215,7 +221,7 @@ jobs:
 
   nightly-summary:
     name: Nightly Summary
-    needs: [test-matrix, benchmark, integration-tests, ai-failure-analysis]
+    needs: [build-artifact, test-matrix, benchmark, integration-tests, ai-failure-analysis]
     runs-on: ubuntu-latest
     if: always()
     timeout-minutes: 30
@@ -229,12 +235,14 @@ jobs:
           echo ""
           echo "| Job | Status |"
           echo "|-----|--------|"
+          echo "| Build Artifact | ${{ needs.build-artifact.result == 'success' && '✅ Passed' || (needs.build-artifact.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
           echo "| Test Matrix | ${{ needs.test-matrix.result == 'success' && '✅ Passed' || (needs.test-matrix.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
           echo "| Benchmarks | ${{ needs.benchmark.result == 'success' && '✅ Passed' || (needs.benchmark.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
           echo "| Integration | ${{ needs.integration-tests.result == 'success' && '✅ Passed' || (needs.integration-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed') }} |"
         } >> "$GITHUB_STEP_SUMMARY"
 
-        if [[ "${{ needs.test-matrix.result }}" == "success" ]] && \
+        if [[ "${{ needs.build-artifact.result }}" == "success" ]] && \
+           [[ "${{ needs.test-matrix.result }}" == "success" ]] && \
            [[ "${{ needs.benchmark.result }}" == "success" ]] && \
            [[ "${{ needs.integration-tests.result }}" == "success" ]]; then
           echo "## ✅ All nightly checks passed!" >> "$GITHUB_STEP_SUMMARY"

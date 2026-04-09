@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 

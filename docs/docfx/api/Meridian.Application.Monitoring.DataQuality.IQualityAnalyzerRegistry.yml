@@ -1,0 +1,516 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  commentId: T:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  id: IQualityAnalyzerRegistry
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll``1
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory(Meridian.Application.Monitoring.DataQuality.QualityIssueCategory)
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get``1(System.String)
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register``1(Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{``0})
+  langs:
+  - csharp
+  - vb
+  name: IQualityAnalyzerRegistry
+  nameWithType: IQualityAnalyzerRegistry
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IQualityAnalyzerRegistry
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Registry for quality analyzers providing discovery and management.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Quality analyzer registry")]
+
+      public interface IQualityAnalyzerRegistry
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Quality analyzer registry")>
+
+      Public Interface IQualityAnalyzerRegistry
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Quality analyzer registry
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register``1(Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{``0})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register``1(Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{``0})
+  id: Register``1(Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{``0})
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  langs:
+  - csharp
+  - vb
+  name: Register<TData>(IQualityAnalyzer<TData>)
+  nameWithType: IQualityAnalyzerRegistry.Register<TData>(IQualityAnalyzer<TData>)
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register<TData>(Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer<TData>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Registers an analyzer.
+  example: []
+  syntax:
+    content: void Register<TData>(IQualityAnalyzer<TData> analyzer)
+    parameters:
+    - id: analyzer
+      type: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{{TData}}
+      description: Analyzer to register.
+    typeParameters:
+    - id: TData
+      description: Data type the analyzer processes.
+    content.vb: Sub Register(Of TData)(analyzer As IQualityAnalyzer(Of TData))
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register*
+  nameWithType.vb: IQualityAnalyzerRegistry.Register(Of TData)(IQualityAnalyzer(Of TData))
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register(Of TData)(Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer(Of TData))
+  name.vb: Register(Of TData)(IQualityAnalyzer(Of TData))
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get``1(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get``1(System.String)
+  id: Get``1(System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  langs:
+  - csharp
+  - vb
+  name: Get<TData>(string)
+  nameWithType: IQualityAnalyzerRegistry.Get<TData>(string)
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get<TData>(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Get
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets an analyzer by name.
+  example: []
+  syntax:
+    content: IQualityAnalyzer<TData>? Get<TData>(string name)
+    parameters:
+    - id: name
+      type: System.String
+      description: Analyzer name.
+    typeParameters:
+    - id: TData
+      description: Expected data type.
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{{TData}}
+      description: Analyzer or null if not found.
+    content.vb: Function [Get](Of TData)(name As String) As IQualityAnalyzer(Of TData)
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get*
+  nameWithType.vb: IQualityAnalyzerRegistry.Get(Of TData)(String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get(Of TData)(String)
+  name.vb: Get(Of TData)(String)
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll``1
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll``1
+  id: GetAll``1
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAll<TData>()
+  nameWithType: IQualityAnalyzerRegistry.GetAll<TData>()
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll<TData>()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAll
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets all analyzers for a data type.
+  example: []
+  syntax:
+    content: IReadOnlyList<IQualityAnalyzer<TData>> GetAll<TData>()
+    typeParameters:
+    - id: TData
+      description: Data type.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{{TData}}}
+      description: List of analyzers ordered by priority.
+    content.vb: Function GetAll(Of TData)() As IReadOnlyList(Of IQualityAnalyzer(Of TData))
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll*
+  nameWithType.vb: IQualityAnalyzerRegistry.GetAll(Of TData)()
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll(Of TData)()
+  name.vb: GetAll(Of TData)()
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata
+  id: GetAllMetadata
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAllMetadata()
+  nameWithType: IQualityAnalyzerRegistry.GetAllMetadata()
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllMetadata
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets metadata for all registered analyzers.
+  example: []
+  syntax:
+    content: IReadOnlyList<IQualityAnalyzerMetadata> GetAllMetadata()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata}
+      description: List of analyzer metadata.
+    content.vb: Function GetAllMetadata() As IReadOnlyList(Of IQualityAnalyzerMetadata)
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata*
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory(Meridian.Application.Monitoring.DataQuality.QualityIssueCategory)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory(Meridian.Application.Monitoring.DataQuality.QualityIssueCategory)
+  id: GetByCategory(Meridian.Application.Monitoring.DataQuality.QualityIssueCategory)
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetByCategory(QualityIssueCategory)
+  nameWithType: IQualityAnalyzerRegistry.GetByCategory(QualityIssueCategory)
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory(Meridian.Application.Monitoring.DataQuality.QualityIssueCategory)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByCategory
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets analyzers that can detect issues in a category.
+  example: []
+  syntax:
+    content: IReadOnlyList<IQualityAnalyzerMetadata> GetByCategory(QualityIssueCategory category)
+    parameters:
+    - id: category
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+      description: Issue category.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata}
+      description: List of analyzer metadata.
+    content.vb: Function GetByCategory(category As QualityIssueCategory) As IReadOnlyList(Of IQualityAnalyzerMetadata)
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalyzerRegistry_Register__1_Meridian_Application_Monitoring_DataQuality_IQualityAnalyzer___0__
+  name: Register
+  nameWithType: IQualityAnalyzerRegistry.Register
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Register
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{{TData}}
+  commentId: T:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{``0}
+  parent: Meridian.Application.Monitoring.DataQuality
+  definition: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  name: IQualityAnalyzer<TData>
+  nameWithType: IQualityAnalyzer<TData>
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer<TData>
+  nameWithType.vb: IQualityAnalyzer(Of TData)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer(Of TData)
+  name.vb: IQualityAnalyzer(Of TData)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+    name: IQualityAnalyzer
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  - name: <
+  - name: TData
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+    name: IQualityAnalyzer
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TData
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+  commentId: T:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  name: IQualityAnalyzer<TData>
+  nameWithType: IQualityAnalyzer<TData>
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer<TData>
+  nameWithType.vb: IQualityAnalyzer(Of TData)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer(Of TData)
+  name.vb: IQualityAnalyzer(Of TData)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+    name: IQualityAnalyzer
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  - name: <
+  - name: TData
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+    name: IQualityAnalyzer
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TData
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalyzerRegistry_Get__1_System_String_
+  name: Get
+  nameWithType: IQualityAnalyzerRegistry.Get
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.Get
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalyzerRegistry_GetAll__1
+  name: GetAll
+  nameWithType: IQualityAnalyzerRegistry.GetAll
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAll
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{{TData}}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer{``0}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IQualityAnalyzer<TData>>
+  nameWithType: IReadOnlyList<IQualityAnalyzer<TData>>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer<TData>>
+  nameWithType.vb: IReadOnlyList(Of IQualityAnalyzer(Of TData))
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer(Of TData))
+  name.vb: IReadOnlyList(Of IQualityAnalyzer(Of TData))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+    name: IQualityAnalyzer
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  - name: <
+  - name: TData
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer`1
+    name: IQualityAnalyzer
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TData
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalyzerRegistry_GetAllMetadata
+  name: GetAllMetadata
+  nameWithType: IQualityAnalyzerRegistry.GetAllMetadata
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetAllMetadata
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IQualityAnalyzerMetadata>
+  nameWithType: IReadOnlyList<IQualityAnalyzerMetadata>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata>
+  nameWithType.vb: IReadOnlyList(Of IQualityAnalyzerMetadata)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata)
+  name.vb: IReadOnlyList(Of IQualityAnalyzerMetadata)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata
+    name: IQualityAnalyzerMetadata
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata
+    name: IQualityAnalyzerMetadata
+    href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerMetadata.html
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalyzerRegistry_GetByCategory_Meridian_Application_Monitoring_DataQuality_QualityIssueCategory_
+  name: GetByCategory
+  nameWithType: IQualityAnalyzerRegistry.GetByCategory
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalyzerRegistry.GetByCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  commentId: T:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.html
+  name: QualityIssueCategory
+  nameWithType: QualityIssueCategory
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory

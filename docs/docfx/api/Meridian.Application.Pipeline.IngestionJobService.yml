@@ -1,0 +1,1603 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.IngestionJobService
+  commentId: T:Meridian.Application.Pipeline.IngestionJobService
+  id: IngestionJobService
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.IngestionJobService.#ctor(System.String,Meridian.Application.Coordination.IScheduledWorkOwnershipService)
+  - Meridian.Application.Pipeline.IngestionJobService.CheckpointUpdated
+  - Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync(Meridian.Contracts.Pipeline.IngestionWorkloadType,System.String[],System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},Meridian.Contracts.Pipeline.IngestionSla,System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.IngestionJobService.Dispose
+  - Meridian.Application.Pipeline.IngestionJobService.GetJob(System.String)
+  - Meridian.Application.Pipeline.IngestionJobService.GetJobs(System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState},System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType})
+  - Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs
+  - Meridian.Application.Pipeline.IngestionJobService.GetSummary
+  - Meridian.Application.Pipeline.IngestionJobService.JobStateChanged
+  - Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.IngestionJobService.TransitionAsync(System.String,Meridian.Contracts.Pipeline.IngestionJobState,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync(System.String,Meridian.Contracts.Pipeline.IngestionCheckpointToken,System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync(System.String,System.String,System.Int64,System.Nullable{System.Int64},System.Nullable{System.DateTime},System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IngestionJobService
+  nameWithType: IngestionJobService
+  fullName: Meridian.Application.Pipeline.IngestionJobService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionJobService
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Manages the lifecycle of unified <xref href="Meridian.Contracts.Pipeline.IngestionJob" data-throw-if-not-resolved="false"></xref> instances,
+
+    bridging the contract model to the existing backfill and realtime infrastructure.
+
+    Provides create, transition, checkpoint, and query operations with disk persistence.
+  remarks: >-
+    Addresses P0 gap: "No unified job contract across realtime/backfill flows"
+
+    from the Ingestion Orchestration evaluation.
+  example: []
+  syntax:
+    content: 'public sealed class IngestionJobService : IDisposable'
+    content.vb: Public NotInheritable Class IngestionJobService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.IngestionJobService.JobStateChanged
+  commentId: E:Meridian.Application.Pipeline.IngestionJobService.JobStateChanged
+  id: JobStateChanged
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: JobStateChanged
+  nameWithType: IngestionJobService.JobStateChanged
+  fullName: Meridian.Application.Pipeline.IngestionJobService.JobStateChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobStateChanged
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Event raised when a job's state changes.
+  example: []
+  syntax:
+    content: public event Action<IngestionJob, IngestionJobState, IngestionJobState>? JobStateChanged
+    return:
+      type: System.Action{Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState}
+    content.vb: Public Event JobStateChanged As Action(Of IngestionJob, IngestionJobState, IngestionJobState)
+- uid: Meridian.Application.Pipeline.IngestionJobService.CheckpointUpdated
+  commentId: E:Meridian.Application.Pipeline.IngestionJobService.CheckpointUpdated
+  id: CheckpointUpdated
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: CheckpointUpdated
+  nameWithType: IngestionJobService.CheckpointUpdated
+  fullName: Meridian.Application.Pipeline.IngestionJobService.CheckpointUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckpointUpdated
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Event raised when a job's checkpoint is updated.
+  example: []
+  syntax:
+    content: public event Action<IngestionJob, IngestionCheckpointToken>? CheckpointUpdated
+    return:
+      type: System.Action{Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Pipeline.IngestionCheckpointToken}
+    content.vb: Public Event CheckpointUpdated As Action(Of IngestionJob, IngestionCheckpointToken)
+- uid: Meridian.Application.Pipeline.IngestionJobService.#ctor(System.String,Meridian.Application.Coordination.IScheduledWorkOwnershipService)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.#ctor(System.String,Meridian.Application.Coordination.IScheduledWorkOwnershipService)
+  id: '#ctor(System.String,Meridian.Application.Coordination.IScheduledWorkOwnershipService)'
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: IngestionJobService(string?, IScheduledWorkOwnershipService?)
+  nameWithType: IngestionJobService.IngestionJobService(string?, IScheduledWorkOwnershipService?)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.IngestionJobService(string?, Meridian.Application.Coordination.IScheduledWorkOwnershipService?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public IngestionJobService(string? persistenceDir = null, IScheduledWorkOwnershipService? ownershipService = null)
+    parameters:
+    - id: persistenceDir
+      type: System.String
+    - id: ownershipService
+      type: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+    content.vb: Public Sub New(persistenceDir As String = Nothing, ownershipService As IScheduledWorkOwnershipService = Nothing)
+  overload: Meridian.Application.Pipeline.IngestionJobService.#ctor*
+  nameWithType.vb: IngestionJobService.New(String, IScheduledWorkOwnershipService)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.New(String, Meridian.Application.Coordination.IScheduledWorkOwnershipService)
+  name.vb: New(String, IScheduledWorkOwnershipService)
+- uid: Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync(System.Threading.CancellationToken)
+  id: LoadJobsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: LoadJobsAsync(CancellationToken)
+  nameWithType: IngestionJobService.LoadJobsAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadJobsAsync
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Loads persisted jobs from disk on startup.
+  example: []
+  syntax:
+    content: public Task LoadJobsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LoadJobsAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync*
+- uid: Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync(Meridian.Contracts.Pipeline.IngestionWorkloadType,System.String[],System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},Meridian.Contracts.Pipeline.IngestionSla,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync(Meridian.Contracts.Pipeline.IngestionWorkloadType,System.String[],System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},Meridian.Contracts.Pipeline.IngestionSla,System.Threading.CancellationToken)
+  id: CreateJobAsync(Meridian.Contracts.Pipeline.IngestionWorkloadType,System.String[],System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},Meridian.Contracts.Pipeline.IngestionSla,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: CreateJobAsync(IngestionWorkloadType, string[], string, DateTime?, DateTime?, IngestionSla?, CancellationToken)
+  nameWithType: IngestionJobService.CreateJobAsync(IngestionWorkloadType, string[], string, DateTime?, DateTime?, IngestionSla?, CancellationToken)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync(Meridian.Contracts.Pipeline.IngestionWorkloadType, string[], string, System.DateTime?, System.DateTime?, Meridian.Contracts.Pipeline.IngestionSla?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateJobAsync
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Creates a new ingestion job in Draft state.
+  example: []
+  syntax:
+    content: public Task<IngestionJob> CreateJobAsync(IngestionWorkloadType workloadType, string[] symbols, string provider, DateTime? fromDate = null, DateTime? toDate = null, IngestionSla? sla = null, CancellationToken ct = default)
+    parameters:
+    - id: workloadType
+      type: Meridian.Contracts.Pipeline.IngestionWorkloadType
+    - id: symbols
+      type: System.String[]
+    - id: provider
+      type: System.String
+    - id: fromDate
+      type: System.Nullable{System.DateTime}
+    - id: toDate
+      type: System.Nullable{System.DateTime}
+    - id: sla
+      type: Meridian.Contracts.Pipeline.IngestionSla
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Pipeline.IngestionJob}
+    content.vb: Public Function CreateJobAsync(workloadType As IngestionWorkloadType, symbols As String(), provider As String, fromDate As Date? = Nothing, toDate As Date? = Nothing, sla As IngestionSla = Nothing, ct As CancellationToken = Nothing) As Task(Of IngestionJob)
+  overload: Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync*
+  nameWithType.vb: IngestionJobService.CreateJobAsync(IngestionWorkloadType, String(), String, Date?, Date?, IngestionSla, CancellationToken)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync(Meridian.Contracts.Pipeline.IngestionWorkloadType, String(), String, Date?, Date?, Meridian.Contracts.Pipeline.IngestionSla, System.Threading.CancellationToken)
+  name.vb: CreateJobAsync(IngestionWorkloadType, String(), String, Date?, Date?, IngestionSla, CancellationToken)
+- uid: Meridian.Application.Pipeline.IngestionJobService.TransitionAsync(System.String,Meridian.Contracts.Pipeline.IngestionJobState,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.TransitionAsync(System.String,Meridian.Contracts.Pipeline.IngestionJobState,System.String,System.Threading.CancellationToken)
+  id: TransitionAsync(System.String,Meridian.Contracts.Pipeline.IngestionJobState,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: TransitionAsync(string, IngestionJobState, string?, CancellationToken)
+  nameWithType: IngestionJobService.TransitionAsync(string, IngestionJobState, string?, CancellationToken)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.TransitionAsync(string, Meridian.Contracts.Pipeline.IngestionJobState, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransitionAsync
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Transitions a job to a new state if the transition is valid.
+  example: []
+  syntax:
+    content: public Task<bool> TransitionAsync(string jobId, IngestionJobState newState, string? errorMessage = null, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: newState
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+    - id: errorMessage
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function TransitionAsync(jobId As String, newState As IngestionJobState, errorMessage As String = Nothing, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Pipeline.IngestionJobService.TransitionAsync*
+  nameWithType.vb: IngestionJobService.TransitionAsync(String, IngestionJobState, String, CancellationToken)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.TransitionAsync(String, Meridian.Contracts.Pipeline.IngestionJobState, String, System.Threading.CancellationToken)
+  name.vb: TransitionAsync(String, IngestionJobState, String, CancellationToken)
+- uid: Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync(System.String,Meridian.Contracts.Pipeline.IngestionCheckpointToken,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync(System.String,Meridian.Contracts.Pipeline.IngestionCheckpointToken,System.Threading.CancellationToken)
+  id: UpdateCheckpointAsync(System.String,Meridian.Contracts.Pipeline.IngestionCheckpointToken,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: UpdateCheckpointAsync(string, IngestionCheckpointToken, CancellationToken)
+  nameWithType: IngestionJobService.UpdateCheckpointAsync(string, IngestionCheckpointToken, CancellationToken)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync(string, Meridian.Contracts.Pipeline.IngestionCheckpointToken, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateCheckpointAsync
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Updates the checkpoint token for a job, enabling resume from the last durable offset.
+  example: []
+  syntax:
+    content: public Task UpdateCheckpointAsync(string jobId, IngestionCheckpointToken checkpoint, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: checkpoint
+      type: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateCheckpointAsync(jobId As String, checkpoint As IngestionCheckpointToken, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync*
+  nameWithType.vb: IngestionJobService.UpdateCheckpointAsync(String, IngestionCheckpointToken, CancellationToken)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync(String, Meridian.Contracts.Pipeline.IngestionCheckpointToken, System.Threading.CancellationToken)
+  name.vb: UpdateCheckpointAsync(String, IngestionCheckpointToken, CancellationToken)
+- uid: Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync(System.String,System.String,System.Int64,System.Nullable{System.Int64},System.Nullable{System.DateTime},System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync(System.String,System.String,System.Int64,System.Nullable{System.Int64},System.Nullable{System.DateTime},System.String,System.Threading.CancellationToken)
+  id: UpdateSymbolProgressAsync(System.String,System.String,System.Int64,System.Nullable{System.Int64},System.Nullable{System.DateTime},System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: UpdateSymbolProgressAsync(string, string, long, long?, DateTime?, string?, CancellationToken)
+  nameWithType: IngestionJobService.UpdateSymbolProgressAsync(string, string, long, long?, DateTime?, string?, CancellationToken)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync(string, string, long, long?, System.DateTime?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSymbolProgressAsync
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Updates progress for a specific symbol within a job.
+  example: []
+  syntax:
+    content: public Task UpdateSymbolProgressAsync(string jobId, string symbol, long dataPointsProcessed, long? expectedDataPoints = null, DateTime? lastCommittedDate = null, string? errorMessage = null, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: dataPointsProcessed
+      type: System.Int64
+    - id: expectedDataPoints
+      type: System.Nullable{System.Int64}
+    - id: lastCommittedDate
+      type: System.Nullable{System.DateTime}
+    - id: errorMessage
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateSymbolProgressAsync(jobId As String, symbol As String, dataPointsProcessed As Long, expectedDataPoints As Long? = Nothing, lastCommittedDate As Date? = Nothing, errorMessage As String = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync*
+  nameWithType.vb: IngestionJobService.UpdateSymbolProgressAsync(String, String, Long, Long?, Date?, String, CancellationToken)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync(String, String, Long, Long?, Date?, String, System.Threading.CancellationToken)
+  name.vb: UpdateSymbolProgressAsync(String, String, Long, Long?, Date?, String, CancellationToken)
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetJob(System.String)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.GetJob(System.String)
+  id: GetJob(System.String)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: GetJob(string)
+  nameWithType: IngestionJobService.GetJob(string)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetJob(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJob
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets a job by its ID.
+  example: []
+  syntax:
+    content: public IngestionJob? GetJob(string jobId)
+    parameters:
+    - id: jobId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJob
+    content.vb: Public Function GetJob(jobId As String) As IngestionJob
+  overload: Meridian.Application.Pipeline.IngestionJobService.GetJob*
+  nameWithType.vb: IngestionJobService.GetJob(String)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.GetJob(String)
+  name.vb: GetJob(String)
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetJobs(System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState},System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType})
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.GetJobs(System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState},System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType})
+  id: GetJobs(System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState},System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType})
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: GetJobs(IngestionJobState?, IngestionWorkloadType?)
+  nameWithType: IngestionJobService.GetJobs(IngestionJobState?, IngestionWorkloadType?)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetJobs(Meridian.Contracts.Pipeline.IngestionJobState?, Meridian.Contracts.Pipeline.IngestionWorkloadType?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 303
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets all jobs, optionally filtered by state or workload type.
+  example: []
+  syntax:
+    content: public IReadOnlyList<IngestionJob> GetJobs(IngestionJobState? stateFilter = null, IngestionWorkloadType? workloadFilter = null)
+    parameters:
+    - id: stateFilter
+      type: System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState}
+    - id: workloadFilter
+      type: System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Pipeline.IngestionJob}
+    content.vb: Public Function GetJobs(stateFilter As IngestionJobState? = Nothing, workloadFilter As IngestionWorkloadType? = Nothing) As IReadOnlyList(Of IngestionJob)
+  overload: Meridian.Application.Pipeline.IngestionJobService.GetJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs
+  id: GetResumableJobs
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: GetResumableJobs()
+  nameWithType: IngestionJobService.GetResumableJobs()
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetResumableJobs
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets all jobs that are resumable (failed or paused with a checkpoint).
+  example: []
+  syntax:
+    content: public IReadOnlyList<IngestionJob> GetResumableJobs()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Pipeline.IngestionJob}
+    content.vb: Public Function GetResumableJobs() As IReadOnlyList(Of IngestionJob)
+  overload: Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs*
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetSummary
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.GetSummary
+  id: GetSummary
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: IngestionJobService.GetSummary()
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets a summary of all jobs.
+  example: []
+  syntax:
+    content: public IngestionJobSummary GetSummary()
+    return:
+      type: Meridian.Application.Pipeline.IngestionJobSummary
+    content.vb: Public Function GetSummary() As IngestionJobSummary
+  overload: Meridian.Application.Pipeline.IngestionJobService.GetSummary*
+- uid: Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteJobAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: DeleteJobAsync(string, CancellationToken)
+  nameWithType: IngestionJobService.DeleteJobAsync(string, CancellationToken)
+  fullName: Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteJobAsync
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Deletes a terminal job by ID.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteJobAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteJobAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync*
+  nameWithType.vb: IngestionJobService.DeleteJobAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteJobAsync(String, CancellationToken)
+- uid: Meridian.Application.Pipeline.IngestionJobService.Dispose
+  commentId: M:Meridian.Application.Pipeline.IngestionJobService.Dispose
+  id: Dispose
+  parent: Meridian.Application.Pipeline.IngestionJobService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: IngestionJobService.Dispose()
+  fullName: Meridian.Application.Pipeline.IngestionJobService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IngestionJobService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Pipeline.IngestionJobService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Contracts.Pipeline.IngestionJob
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJob
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJob.html
+  name: IngestionJob
+  nameWithType: IngestionJob
+  fullName: Meridian.Contracts.Pipeline.IngestionJob
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState}
+  commentId: T:System.Action{Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Pipeline.IngestionJobState,Meridian.Contracts.Pipeline.IngestionJobState}
+  parent: System
+  definition: System.Action`3
+  href: https://learn.microsoft.com/dotnet/api/system.action-3
+  name: Action<IngestionJob, IngestionJobState, IngestionJobState>
+  nameWithType: Action<IngestionJob, IngestionJobState, IngestionJobState>
+  fullName: System.Action<Meridian.Contracts.Pipeline.IngestionJob, Meridian.Contracts.Pipeline.IngestionJobState, Meridian.Contracts.Pipeline.IngestionJobState>
+  nameWithType.vb: Action(Of IngestionJob, IngestionJobState, IngestionJobState)
+  fullName.vb: System.Action(Of Meridian.Contracts.Pipeline.IngestionJob, Meridian.Contracts.Pipeline.IngestionJobState, Meridian.Contracts.Pipeline.IngestionJobState)
+  name.vb: Action(Of IngestionJob, IngestionJobState, IngestionJobState)
+  spec.csharp:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: <
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJobState
+    name: IngestionJobState
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJobState
+    name: IngestionJobState
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJobState
+    name: IngestionJobState
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJobState
+    name: IngestionJobState
+  - name: )
+- uid: System.Action`3
+  commentId: T:System.Action`3
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-3
+  name: Action<T1, T2, T3>
+  nameWithType: Action<T1, T2, T3>
+  fullName: System.Action<T1, T2, T3>
+  nameWithType.vb: Action(Of T1, T2, T3)
+  fullName.vb: System.Action(Of T1, T2, T3)
+  name.vb: Action(Of T1, T2, T3)
+  spec.csharp:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: <
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+- uid: System.Action{Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Pipeline.IngestionCheckpointToken}
+  commentId: T:System.Action{Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Pipeline.IngestionCheckpointToken}
+  parent: System
+  definition: System.Action`2
+  href: https://learn.microsoft.com/dotnet/api/system.action-2
+  name: Action<IngestionJob, IngestionCheckpointToken>
+  nameWithType: Action<IngestionJob, IngestionCheckpointToken>
+  fullName: System.Action<Meridian.Contracts.Pipeline.IngestionJob, Meridian.Contracts.Pipeline.IngestionCheckpointToken>
+  nameWithType.vb: Action(Of IngestionJob, IngestionCheckpointToken)
+  fullName.vb: System.Action(Of Meridian.Contracts.Pipeline.IngestionJob, Meridian.Contracts.Pipeline.IngestionCheckpointToken)
+  name.vb: Action(Of IngestionJob, IngestionCheckpointToken)
+  spec.csharp:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: <
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+    name: IngestionCheckpointToken
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+    name: IngestionCheckpointToken
+  - name: )
+- uid: System.Action`2
+  commentId: T:System.Action`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-2
+  name: Action<T1, T2>
+  nameWithType: Action<T1, T2>
+  fullName: System.Action<T1, T2>
+  nameWithType.vb: Action(Of T1, T2)
+  fullName.vb: System.Action(Of T1, T2)
+  name.vb: Action(Of T1, T2)
+  spec.csharp:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: <
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`2
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: )
+- uid: Meridian.Application.Pipeline.IngestionJobService.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.#ctor
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService__ctor_System_String_Meridian_Application_Coordination_IScheduledWorkOwnershipService_
+  name: IngestionJobService
+  nameWithType: IngestionJobService.IngestionJobService
+  fullName: Meridian.Application.Pipeline.IngestionJobService.IngestionJobService
+  nameWithType.vb: IngestionJobService.New
+  fullName.vb: Meridian.Application.Pipeline.IngestionJobService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  commentId: T:Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html
+  name: IScheduledWorkOwnershipService
+  nameWithType: IScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_LoadJobsAsync_System_Threading_CancellationToken_
+  name: LoadJobsAsync
+  nameWithType: IngestionJobService.LoadJobsAsync
+  fullName: Meridian.Application.Pipeline.IngestionJobService.LoadJobsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_CreateJobAsync_Meridian_Contracts_Pipeline_IngestionWorkloadType_System_String___System_String_System_Nullable_System_DateTime__System_Nullable_System_DateTime__Meridian_Contracts_Pipeline_IngestionSla_System_Threading_CancellationToken_
+  name: CreateJobAsync
+  nameWithType: IngestionJobService.CreateJobAsync
+  fullName: Meridian.Application.Pipeline.IngestionJobService.CreateJobAsync
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  commentId: T:Meridian.Contracts.Pipeline.IngestionWorkloadType
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionWorkloadType.html
+  name: IngestionWorkloadType
+  nameWithType: IngestionWorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: Meridian.Contracts.Pipeline.IngestionSla
+  commentId: T:Meridian.Contracts.Pipeline.IngestionSla
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionSla.html
+  name: IngestionSla
+  nameWithType: IngestionSla
+  fullName: Meridian.Contracts.Pipeline.IngestionSla
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Pipeline.IngestionJob}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Pipeline.IngestionJob}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IngestionJob>
+  nameWithType: Task<IngestionJob>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Pipeline.IngestionJob>
+  nameWithType.vb: Task(Of IngestionJob)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Pipeline.IngestionJob)
+  name.vb: Task(Of IngestionJob)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Pipeline.IngestionJobService.TransitionAsync*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.TransitionAsync
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_TransitionAsync_System_String_Meridian_Contracts_Pipeline_IngestionJobState_System_String_System_Threading_CancellationToken_
+  name: TransitionAsync
+  nameWithType: IngestionJobService.TransitionAsync
+  fullName: Meridian.Application.Pipeline.IngestionJobService.TransitionAsync
+- uid: Meridian.Contracts.Pipeline.IngestionJobState
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJobState
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJobState.html
+  name: IngestionJobState
+  nameWithType: IngestionJobState
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_UpdateCheckpointAsync_System_String_Meridian_Contracts_Pipeline_IngestionCheckpointToken_System_Threading_CancellationToken_
+  name: UpdateCheckpointAsync
+  nameWithType: IngestionJobService.UpdateCheckpointAsync
+  fullName: Meridian.Application.Pipeline.IngestionJobService.UpdateCheckpointAsync
+- uid: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  commentId: T:Meridian.Contracts.Pipeline.IngestionCheckpointToken
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionCheckpointToken.html
+  name: IngestionCheckpointToken
+  nameWithType: IngestionCheckpointToken
+  fullName: Meridian.Contracts.Pipeline.IngestionCheckpointToken
+- uid: Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_UpdateSymbolProgressAsync_System_String_System_String_System_Int64_System_Nullable_System_Int64__System_Nullable_System_DateTime__System_String_System_Threading_CancellationToken_
+  name: UpdateSymbolProgressAsync
+  nameWithType: IngestionJobService.UpdateSymbolProgressAsync
+  fullName: Meridian.Application.Pipeline.IngestionJobService.UpdateSymbolProgressAsync
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetJob*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.GetJob
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_GetJob_System_String_
+  name: GetJob
+  nameWithType: IngestionJobService.GetJob
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetJob
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.GetJobs
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_GetJobs_System_Nullable_Meridian_Contracts_Pipeline_IngestionJobState__System_Nullable_Meridian_Contracts_Pipeline_IngestionWorkloadType__
+  name: GetJobs
+  nameWithType: IngestionJobService.GetJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetJobs
+- uid: System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState}
+  commentId: T:System.Nullable{Meridian.Contracts.Pipeline.IngestionJobState}
+  parent: System
+  definition: System.Nullable`1
+  name: IngestionJobState?
+  nameWithType: IngestionJobState?
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState?
+  spec.csharp:
+  - uid: Meridian.Contracts.Pipeline.IngestionJobState
+    name: IngestionJobState
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Pipeline.IngestionJobState
+    name: IngestionJobState
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType}
+  commentId: T:System.Nullable{Meridian.Contracts.Pipeline.IngestionWorkloadType}
+  parent: System
+  definition: System.Nullable`1
+  name: IngestionWorkloadType?
+  nameWithType: IngestionWorkloadType?
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType?
+  spec.csharp:
+  - uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+    name: IngestionWorkloadType
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+    name: IngestionWorkloadType
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Pipeline.IngestionJob}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Pipeline.IngestionJob}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IngestionJob>
+  nameWithType: IReadOnlyList<IngestionJob>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Pipeline.IngestionJob>
+  nameWithType.vb: IReadOnlyList(Of IngestionJob)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Pipeline.IngestionJob)
+  name.vb: IReadOnlyList(Of IngestionJob)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Pipeline.IngestionJob
+    name: IngestionJob
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_GetResumableJobs
+  name: GetResumableJobs
+  nameWithType: IngestionJobService.GetResumableJobs
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetResumableJobs
+- uid: Meridian.Application.Pipeline.IngestionJobService.GetSummary*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.GetSummary
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_GetSummary
+  name: GetSummary
+  nameWithType: IngestionJobService.GetSummary
+  fullName: Meridian.Application.Pipeline.IngestionJobService.GetSummary
+- uid: Meridian.Application.Pipeline.IngestionJobSummary
+  commentId: T:Meridian.Application.Pipeline.IngestionJobSummary
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IngestionJobSummary.html
+  name: IngestionJobSummary
+  nameWithType: IngestionJobSummary
+  fullName: Meridian.Application.Pipeline.IngestionJobSummary
+- uid: Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_DeleteJobAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteJobAsync
+  nameWithType: IngestionJobService.DeleteJobAsync
+  fullName: Meridian.Application.Pipeline.IngestionJobService.DeleteJobAsync
+- uid: Meridian.Application.Pipeline.IngestionJobService.Dispose*
+  commentId: Overload:Meridian.Application.Pipeline.IngestionJobService.Dispose
+  href: Meridian.Application.Pipeline.IngestionJobService.html#Meridian_Application_Pipeline_IngestionJobService_Dispose
+  name: Dispose
+  nameWithType: IngestionJobService.Dispose
+  fullName: Meridian.Application.Pipeline.IngestionJobService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

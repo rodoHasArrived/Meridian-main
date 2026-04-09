@@ -1,0 +1,509 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  id: RepoNavigationRouteSymbol
+  parent: Meridian.McpServer.Navigation
+  children:
+  - Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.#ctor(System.String,System.String,System.String)
+  - Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name
+  - Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path
+  - Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason
+  langs:
+  - csharp
+  - vb
+  name: RepoNavigationRouteSymbol
+  nameWithType: RepoNavigationRouteSymbol
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepoNavigationRouteSymbol
+    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    startLine: 318
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Navigation
+  syntax:
+    content: 'public sealed record RepoNavigationRouteSymbol : IEquatable<RepoNavigationRouteSymbol>'
+    content.vb: Public NotInheritable Class RepoNavigationRouteSymbol Implements IEquatable(Of RepoNavigationRouteSymbol)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.McpServer.Navigation.RepoNavigationRouteSymbol}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.#ctor(System.String,System.String,System.String)
+  commentId: M:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.#ctor(System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String)'
+  parent: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  langs:
+  - csharp
+  - vb
+  name: RepoNavigationRouteSymbol(string, string, string)
+  nameWithType: RepoNavigationRouteSymbol.RepoNavigationRouteSymbol(string, string, string)
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.RepoNavigationRouteSymbol(string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    startLine: 318
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Navigation
+  syntax:
+    content: public RepoNavigationRouteSymbol(string Name, string Path, string Reason)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: Path
+      type: System.String
+    - id: Reason
+      type: System.String
+    content.vb: Public Sub New(Name As String, Path As String, Reason As String)
+  overload: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.#ctor*
+  nameWithType.vb: RepoNavigationRouteSymbol.New(String, String, String)
+  fullName.vb: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.New(String, String, String)
+  name.vb: New(String, String, String)
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name
+  commentId: P:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name
+  id: Name
+  parent: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: RepoNavigationRouteSymbol.Name
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    startLine: 319
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Navigation
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name*
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path
+  commentId: P:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path
+  id: Path
+  parent: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: RepoNavigationRouteSymbol.Path
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    startLine: 320
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Navigation
+  syntax:
+    content: public string Path { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path*
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason
+  commentId: P:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason
+  id: Reason
+  parent: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: RepoNavigationRouteSymbol.Reason
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
+    startLine: 321
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Navigation
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason*
+references:
+- uid: Meridian.McpServer.Navigation
+  commentId: N:Meridian.McpServer.Navigation
+  href: Meridian.html
+  name: Meridian.McpServer.Navigation
+  nameWithType: Meridian.McpServer.Navigation
+  fullName: Meridian.McpServer.Navigation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.McpServer.Navigation.RepoNavigationRouteSymbol}
+  commentId: T:System.IEquatable{Meridian.McpServer.Navigation.RepoNavigationRouteSymbol}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RepoNavigationRouteSymbol>
+  nameWithType: IEquatable<RepoNavigationRouteSymbol>
+  fullName: System.IEquatable<Meridian.McpServer.Navigation.RepoNavigationRouteSymbol>
+  nameWithType.vb: IEquatable(Of RepoNavigationRouteSymbol)
+  fullName.vb: System.IEquatable(Of Meridian.McpServer.Navigation.RepoNavigationRouteSymbol)
+  name.vb: IEquatable(Of RepoNavigationRouteSymbol)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+    name: RepoNavigationRouteSymbol
+    href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol
+    name: RepoNavigationRouteSymbol
+    href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.#ctor*
+  commentId: Overload:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.#ctor
+  href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html#Meridian_McpServer_Navigation_RepoNavigationRouteSymbol__ctor_System_String_System_String_System_String_
+  name: RepoNavigationRouteSymbol
+  nameWithType: RepoNavigationRouteSymbol.RepoNavigationRouteSymbol
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.RepoNavigationRouteSymbol
+  nameWithType.vb: RepoNavigationRouteSymbol.New
+  fullName.vb: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name*
+  commentId: Overload:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name
+  href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html#Meridian_McpServer_Navigation_RepoNavigationRouteSymbol_Name
+  name: Name
+  nameWithType: RepoNavigationRouteSymbol.Name
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Name
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path*
+  commentId: Overload:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path
+  href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html#Meridian_McpServer_Navigation_RepoNavigationRouteSymbol_Path
+  name: Path
+  nameWithType: RepoNavigationRouteSymbol.Path
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Path
+- uid: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason*
+  commentId: Overload:Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason
+  href: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.html#Meridian_McpServer_Navigation_RepoNavigationRouteSymbol_Reason
+  name: Reason
+  nameWithType: RepoNavigationRouteSymbol.Reason
+  fullName: Meridian.McpServer.Navigation.RepoNavigationRouteSymbol.Reason

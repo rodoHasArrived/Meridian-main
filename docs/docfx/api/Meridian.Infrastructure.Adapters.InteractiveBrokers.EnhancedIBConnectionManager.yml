@@ -1,0 +1,778 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  id: EnhancedIBConnectionManager
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig,System.Boolean)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(System.String,System.Int32)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: EnhancedIBConnectionManager
+  nameWithType: EnhancedIBConnectionManager
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnhancedIBConnectionManager
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    IB connection manager that owns the socket/EReader loop and forwards raw callbacks into <xref href="Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter" data-throw-if-not-resolved="false"></xref>.
+
+
+    This file is buildable out-of-the-box:
+
+    - When compiled WITHOUT the official IB API reference, it exposes a small stub implementation.
+
+    - When compiled WITH the IB API (define the compilation constant IBAPI and reference IBApi),
+      it provides a full EWrapper implementation with depth routing.
+
+    Connection Resilience (IBAPI build):
+
+    - Uses ExponentialBackoffRetry for connection retry with configurable delays (1s initial, 2min max)
+
+    - Implements HeartbeatMonitor for connection health detection
+
+    - Automatic reconnection on connection loss with jitter to prevent thundering herd
+
+    - Unlimited retry attempts by default (configurable via maxRetries parameter)
+
+    - See EnhancedIBConnectionManager.IBApi.cs and Infrastructure/Performance/ConnectionWarmUp.cs for implementation
+  example: []
+  syntax:
+    content: public sealed class EnhancedIBConnectionManager
+    content.vb: Public NotInheritable Class EnhancedIBConnectionManager
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter)
+  id: '#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter)'
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: EnhancedIBConnectionManager(IBCallbackRouter)
+  nameWithType: EnhancedIBConnectionManager.EnhancedIBConnectionManager(IBCallbackRouter)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.EnhancedIBConnectionManager(Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public EnhancedIBConnectionManager(IBCallbackRouter router)
+    parameters:
+    - id: router
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter
+    content.vb: Public Sub New(router As IBCallbackRouter)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.#ctor*
+  nameWithType.vb: EnhancedIBConnectionManager.New(IBCallbackRouter)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.New(Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter)
+  name.vb: New(IBCallbackRouter)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected
+  id: IsConnected
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: EnhancedIBConnectionManager.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public bool IsConnected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsConnected As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync
+  id: ConnectAsync
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync()
+  nameWithType: EnhancedIBConnectionManager.ConnectAsync()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public Task ConnectAsync()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ConnectAsync() As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync
+  id: DisconnectAsync
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync()
+  nameWithType: EnhancedIBConnectionManager.DisconnectAsync()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public Task DisconnectAsync()
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync() As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(System.String,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(System.String,System.Int32)
+  id: SubscribeMarketDepth(System.String,System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(string, int)
+  nameWithType: EnhancedIBConnectionManager.SubscribeMarketDepth(string, int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public int SubscribeMarketDepth(string symbol, int depthLevels = 10)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: depthLevels
+      type: System.Int32
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeMarketDepth(symbol As String, depthLevels As Integer = 10) As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth*
+  nameWithType.vb: EnhancedIBConnectionManager.SubscribeMarketDepth(String, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(String, Integer)
+  name.vb: SubscribeMarketDepth(String, Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig,System.Boolean)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig,System.Boolean)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig,System.Boolean)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig, bool)
+  nameWithType: EnhancedIBConnectionManager.SubscribeMarketDepth(SymbolConfig, bool)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public int SubscribeMarketDepth(SymbolConfig cfg, bool smartDepth = true)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    - id: smartDepth
+      type: System.Boolean
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeMarketDepth(cfg As SymbolConfig, smartDepth As Boolean = True) As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth*
+  nameWithType.vb: EnhancedIBConnectionManager.SubscribeMarketDepth(SymbolConfig, Boolean)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig, Boolean)
+  name.vb: SubscribeMarketDepth(SymbolConfig, Boolean)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: EnhancedIBConnectionManager.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: EnhancedIBConnectionManager.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public void UnsubscribeTrades(int tickerId)
+    parameters:
+    - id: tickerId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeTrades(tickerId As Integer)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades*
+  nameWithType.vb: EnhancedIBConnectionManager.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: EnhancedIBConnectionManager.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/EnhancedIBConnectionManager.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public void UnsubscribeMarketDepth(int tickerId)
+    parameters:
+    - id: tickerId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeMarketDepth(tickerId As Integer)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth*
+  nameWithType.vb: EnhancedIBConnectionManager.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter.html
+  name: IBCallbackRouter
+  nameWithType: IBCallbackRouter
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.#ctor
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager__ctor_Meridian_Infrastructure_Adapters_InteractiveBrokers_IBCallbackRouter_
+  name: EnhancedIBConnectionManager
+  nameWithType: EnhancedIBConnectionManager.EnhancedIBConnectionManager
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.EnhancedIBConnectionManager
+  nameWithType.vb: EnhancedIBConnectionManager.New
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_IsConnected
+  name: IsConnected
+  nameWithType: EnhancedIBConnectionManager.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.IsConnected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_ConnectAsync
+  name: ConnectAsync
+  nameWithType: EnhancedIBConnectionManager.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.ConnectAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_DisconnectAsync
+  name: DisconnectAsync
+  nameWithType: EnhancedIBConnectionManager.DisconnectAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.DisconnectAsync
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_SubscribeMarketDepth_System_String_System_Int32_
+  name: SubscribeMarketDepth
+  nameWithType: EnhancedIBConnectionManager.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeMarketDepth
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: EnhancedIBConnectionManager.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.SubscribeTrades
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: EnhancedIBConnectionManager.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeTrades
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_EnhancedIBConnectionManager_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: EnhancedIBConnectionManager.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.UnsubscribeMarketDepth

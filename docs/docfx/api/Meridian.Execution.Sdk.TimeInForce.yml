@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.TimeInForce
+  commentId: T:Meridian.Execution.Sdk.TimeInForce
+  id: TimeInForce
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.TimeInForce.Day
+  - Meridian.Execution.Sdk.TimeInForce.FillOrKill
+  - Meridian.Execution.Sdk.TimeInForce.GoodTilCancelled
+  - Meridian.Execution.Sdk.TimeInForce.ImmediateOrCancel
+  langs:
+  - csharp
+  - vb
+  name: TimeInForce
+  nameWithType: TimeInForce
+  fullName: Meridian.Execution.Sdk.TimeInForce
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeInForce
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Order time-in-force.
+  example: []
+  syntax:
+    content: public enum TimeInForce
+    content.vb: Public Enum TimeInForce
+- uid: Meridian.Execution.Sdk.TimeInForce.Day
+  commentId: F:Meridian.Execution.Sdk.TimeInForce.Day
+  id: Day
+  parent: Meridian.Execution.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: Day
+  nameWithType: TimeInForce.Day
+  fullName: Meridian.Execution.Sdk.TimeInForce.Day
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Day
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Day = 0
+    return:
+      type: Meridian.Execution.Sdk.TimeInForce
+- uid: Meridian.Execution.Sdk.TimeInForce.GoodTilCancelled
+  commentId: F:Meridian.Execution.Sdk.TimeInForce.GoodTilCancelled
+  id: GoodTilCancelled
+  parent: Meridian.Execution.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: GoodTilCancelled
+  nameWithType: TimeInForce.GoodTilCancelled
+  fullName: Meridian.Execution.Sdk.TimeInForce.GoodTilCancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GoodTilCancelled
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: GoodTilCancelled = 1
+    return:
+      type: Meridian.Execution.Sdk.TimeInForce
+- uid: Meridian.Execution.Sdk.TimeInForce.ImmediateOrCancel
+  commentId: F:Meridian.Execution.Sdk.TimeInForce.ImmediateOrCancel
+  id: ImmediateOrCancel
+  parent: Meridian.Execution.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: ImmediateOrCancel
+  nameWithType: TimeInForce.ImmediateOrCancel
+  fullName: Meridian.Execution.Sdk.TimeInForce.ImmediateOrCancel
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImmediateOrCancel
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: ImmediateOrCancel = 2
+    return:
+      type: Meridian.Execution.Sdk.TimeInForce
+- uid: Meridian.Execution.Sdk.TimeInForce.FillOrKill
+  commentId: F:Meridian.Execution.Sdk.TimeInForce.FillOrKill
+  id: FillOrKill
+  parent: Meridian.Execution.Sdk.TimeInForce
+  langs:
+  - csharp
+  - vb
+  name: FillOrKill
+  nameWithType: TimeInForce.FillOrKill
+  fullName: Meridian.Execution.Sdk.TimeInForce.FillOrKill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillOrKill
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: FillOrKill = 3
+    return:
+      type: Meridian.Execution.Sdk.TimeInForce
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.TimeInForce
+  commentId: T:Meridian.Execution.Sdk.TimeInForce
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.TimeInForce.html
+  name: TimeInForce
+  nameWithType: TimeInForce
+  fullName: Meridian.Execution.Sdk.TimeInForce

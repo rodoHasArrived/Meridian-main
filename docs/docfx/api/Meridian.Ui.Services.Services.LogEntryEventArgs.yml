@@ -1,0 +1,635 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs
+  commentId: T:Meridian.Ui.Services.Services.LogEntryEventArgs
+  id: LogEntryEventArgs
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.LogEntryEventArgs.#ctor(Meridian.Ui.Services.Services.LogLevel,System.DateTime,System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  - Meridian.Ui.Services.Services.LogEntryEventArgs.Exception
+  - Meridian.Ui.Services.Services.LogEntryEventArgs.Level
+  - Meridian.Ui.Services.Services.LogEntryEventArgs.Message
+  - Meridian.Ui.Services.Services.LogEntryEventArgs.Properties
+  - Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: LogEntryEventArgs
+  nameWithType: LogEntryEventArgs
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogEntryEventArgs
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event arguments for log entry events.
+  example: []
+  syntax:
+    content: 'public sealed class LogEntryEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class LogEntryEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Level
+  commentId: P:Meridian.Ui.Services.Services.LogEntryEventArgs.Level
+  id: Level
+  parent: Meridian.Ui.Services.Services.LogEntryEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: LogEntryEventArgs.Level
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public LogLevel Level { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.LogLevel
+    content.vb: Public ReadOnly Property Level As LogLevel
+  overload: Meridian.Ui.Services.Services.LogEntryEventArgs.Level*
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp
+  commentId: P:Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp
+  id: Timestamp
+  parent: Meridian.Ui.Services.Services.LogEntryEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: LogEntryEventArgs.Timestamp
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime Timestamp { get; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public ReadOnly Property Timestamp As Date
+  overload: Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp*
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Message
+  commentId: P:Meridian.Ui.Services.Services.LogEntryEventArgs.Message
+  id: Message
+  parent: Meridian.Ui.Services.Services.LogEntryEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: LogEntryEventArgs.Message
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Message { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Message As String
+  overload: Meridian.Ui.Services.Services.LogEntryEventArgs.Message*
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Exception
+  commentId: P:Meridian.Ui.Services.Services.LogEntryEventArgs.Exception
+  id: Exception
+  parent: Meridian.Ui.Services.Services.LogEntryEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Exception
+  nameWithType: LogEntryEventArgs.Exception
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Exception
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exception
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Exception? Exception { get; }
+    parameters: []
+    return:
+      type: System.Exception
+    content.vb: Public ReadOnly Property Exception As Exception
+  overload: Meridian.Ui.Services.Services.LogEntryEventArgs.Exception*
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Properties
+  commentId: P:Meridian.Ui.Services.Services.LogEntryEventArgs.Properties
+  id: Properties
+  parent: Meridian.Ui.Services.Services.LogEntryEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Properties
+  nameWithType: LogEntryEventArgs.Properties
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Properties
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Properties
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public (string key, string value)[] Properties { get; }
+    parameters: []
+    return:
+      type: System.ValueTuple{System.String,System.String}[]
+    content.vb: Public ReadOnly Property Properties As (key As String, value As String)()
+  overload: Meridian.Ui.Services.Services.LogEntryEventArgs.Properties*
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.#ctor(Meridian.Ui.Services.Services.LogLevel,System.DateTime,System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  commentId: M:Meridian.Ui.Services.Services.LogEntryEventArgs.#ctor(Meridian.Ui.Services.Services.LogLevel,System.DateTime,System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  id: '#ctor(Meridian.Ui.Services.Services.LogLevel,System.DateTime,System.String,System.Exception,System.ValueTuple{System.String,System.String}[])'
+  parent: Meridian.Ui.Services.Services.LogEntryEventArgs
+  langs:
+  - csharp
+  - vb
+  name: LogEntryEventArgs(LogLevel, DateTime, string, Exception?, (string key, string value)[])
+  nameWithType: LogEntryEventArgs.LogEntryEventArgs(LogLevel, DateTime, string, Exception?, (string key, string value)[])
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.LogEntryEventArgs(Meridian.Ui.Services.Services.LogLevel, System.DateTime, string, System.Exception?, (string key, string value)[])
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public LogEntryEventArgs(LogLevel level, DateTime timestamp, string message, Exception? exception, (string key, string value)[] properties)
+    parameters:
+    - id: level
+      type: Meridian.Ui.Services.Services.LogLevel
+    - id: timestamp
+      type: System.DateTime
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    - id: properties
+      type: System.ValueTuple{System.String,System.String}[]
+    content.vb: Public Sub New(level As LogLevel, timestamp As Date, message As String, exception As Exception, properties As (key As String, value As String)())
+  overload: Meridian.Ui.Services.Services.LogEntryEventArgs.#ctor*
+  nameWithType.vb: LogEntryEventArgs.New(LogLevel, Date, String, Exception, (key As String, value As String)())
+  fullName.vb: Meridian.Ui.Services.Services.LogEntryEventArgs.New(Meridian.Ui.Services.Services.LogLevel, Date, String, System.Exception, (key As String, value As String)())
+  name.vb: New(LogLevel, Date, String, Exception, (key As String, value As String)())
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Level*
+  commentId: Overload:Meridian.Ui.Services.Services.LogEntryEventArgs.Level
+  href: Meridian.Ui.Services.Services.LogEntryEventArgs.html#Meridian_Ui_Services_Services_LogEntryEventArgs_Level
+  name: Level
+  nameWithType: LogEntryEventArgs.Level
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Level
+- uid: Meridian.Ui.Services.Services.LogLevel
+  commentId: T:Meridian.Ui.Services.Services.LogLevel
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.LogLevel.html
+  name: LogLevel
+  nameWithType: LogLevel
+  fullName: Meridian.Ui.Services.Services.LogLevel
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp*
+  commentId: Overload:Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp
+  href: Meridian.Ui.Services.Services.LogEntryEventArgs.html#Meridian_Ui_Services_Services_LogEntryEventArgs_Timestamp
+  name: Timestamp
+  nameWithType: LogEntryEventArgs.Timestamp
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Timestamp
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Message*
+  commentId: Overload:Meridian.Ui.Services.Services.LogEntryEventArgs.Message
+  href: Meridian.Ui.Services.Services.LogEntryEventArgs.html#Meridian_Ui_Services_Services_LogEntryEventArgs_Message
+  name: Message
+  nameWithType: LogEntryEventArgs.Message
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Message
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Exception*
+  commentId: Overload:Meridian.Ui.Services.Services.LogEntryEventArgs.Exception
+  href: Meridian.Ui.Services.Services.LogEntryEventArgs.html#Meridian_Ui_Services_Services_LogEntryEventArgs_Exception
+  name: Exception
+  nameWithType: LogEntryEventArgs.Exception
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Exception
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.Properties*
+  commentId: Overload:Meridian.Ui.Services.Services.LogEntryEventArgs.Properties
+  href: Meridian.Ui.Services.Services.LogEntryEventArgs.html#Meridian_Ui_Services_Services_LogEntryEventArgs_Properties
+  name: Properties
+  nameWithType: LogEntryEventArgs.Properties
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.Properties
+- uid: System.ValueTuple{System.String,System.String}[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: (string key, string value)[]
+  nameWithType: (string key, string value)[]
+  fullName: (string key, string value)[]
+  nameWithType.vb: (key As String, value As String)()
+  fullName.vb: (key As String, value As String)()
+  name.vb: (key As String, value As String)()
+  spec.csharp:
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.key
+    name: key
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.key
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.value
+    name: value
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.value
+  - name: )
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.key
+    name: key
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.key
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.value
+    name: value
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.value
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.LogEntryEventArgs.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.LogEntryEventArgs.#ctor
+  href: Meridian.Ui.Services.Services.LogEntryEventArgs.html#Meridian_Ui_Services_Services_LogEntryEventArgs__ctor_Meridian_Ui_Services_Services_LogLevel_System_DateTime_System_String_System_Exception_System_ValueTuple_System_String_System_String____
+  name: LogEntryEventArgs
+  nameWithType: LogEntryEventArgs.LogEntryEventArgs
+  fullName: Meridian.Ui.Services.Services.LogEntryEventArgs.LogEntryEventArgs
+  nameWithType.vb: LogEntryEventArgs.New
+  fullName.vb: Meridian.Ui.Services.Services.LogEntryEventArgs.New
+  name.vb: New

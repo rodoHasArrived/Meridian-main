@@ -1,0 +1,619 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DepthChartData
+  commentId: T:Meridian.Ui.Services.DepthChartData
+  id: DepthChartData
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.DepthChartData.AskPoints
+  - Meridian.Ui.Services.DepthChartData.BidPoints
+  - Meridian.Ui.Services.DepthChartData.DepthImbalance
+  - Meridian.Ui.Services.DepthChartData.Symbol
+  - Meridian.Ui.Services.DepthChartData.TotalAskDepth
+  - Meridian.Ui.Services.DepthChartData.TotalBidDepth
+  langs:
+  - csharp
+  - vb
+  name: DepthChartData
+  nameWithType: DepthChartData
+  fullName: Meridian.Ui.Services.DepthChartData
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthChartData
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 444
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Data for depth chart visualization.
+  example: []
+  syntax:
+    content: public sealed class DepthChartData
+    content.vb: Public NotInheritable Class DepthChartData
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DepthChartData.Symbol
+  commentId: P:Meridian.Ui.Services.DepthChartData.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.DepthChartData
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: DepthChartData.Symbol
+  fullName: Meridian.Ui.Services.DepthChartData.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 446
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.DepthChartData.Symbol*
+- uid: Meridian.Ui.Services.DepthChartData.BidPoints
+  commentId: P:Meridian.Ui.Services.DepthChartData.BidPoints
+  id: BidPoints
+  parent: Meridian.Ui.Services.DepthChartData
+  langs:
+  - csharp
+  - vb
+  name: BidPoints
+  nameWithType: DepthChartData.BidPoints
+  fullName: Meridian.Ui.Services.DepthChartData.BidPoints
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPoints
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<DepthPoint> BidPoints { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.DepthPoint}
+    content.vb: Public ReadOnly Property BidPoints As List(Of DepthPoint)
+  overload: Meridian.Ui.Services.DepthChartData.BidPoints*
+- uid: Meridian.Ui.Services.DepthChartData.AskPoints
+  commentId: P:Meridian.Ui.Services.DepthChartData.AskPoints
+  id: AskPoints
+  parent: Meridian.Ui.Services.DepthChartData
+  langs:
+  - csharp
+  - vb
+  name: AskPoints
+  nameWithType: DepthChartData.AskPoints
+  fullName: Meridian.Ui.Services.DepthChartData.AskPoints
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPoints
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<DepthPoint> AskPoints { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.DepthPoint}
+    content.vb: Public ReadOnly Property AskPoints As List(Of DepthPoint)
+  overload: Meridian.Ui.Services.DepthChartData.AskPoints*
+- uid: Meridian.Ui.Services.DepthChartData.TotalBidDepth
+  commentId: P:Meridian.Ui.Services.DepthChartData.TotalBidDepth
+  id: TotalBidDepth
+  parent: Meridian.Ui.Services.DepthChartData
+  langs:
+  - csharp
+  - vb
+  name: TotalBidDepth
+  nameWithType: DepthChartData.TotalBidDepth
+  fullName: Meridian.Ui.Services.DepthChartData.TotalBidDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBidDepth
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 449
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal TotalBidDepth { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalBidDepth As Decimal
+  overload: Meridian.Ui.Services.DepthChartData.TotalBidDepth*
+- uid: Meridian.Ui.Services.DepthChartData.TotalAskDepth
+  commentId: P:Meridian.Ui.Services.DepthChartData.TotalAskDepth
+  id: TotalAskDepth
+  parent: Meridian.Ui.Services.DepthChartData
+  langs:
+  - csharp
+  - vb
+  name: TotalAskDepth
+  nameWithType: DepthChartData.TotalAskDepth
+  fullName: Meridian.Ui.Services.DepthChartData.TotalAskDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAskDepth
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 450
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal TotalAskDepth { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalAskDepth As Decimal
+  overload: Meridian.Ui.Services.DepthChartData.TotalAskDepth*
+- uid: Meridian.Ui.Services.DepthChartData.DepthImbalance
+  commentId: P:Meridian.Ui.Services.DepthChartData.DepthImbalance
+  id: DepthImbalance
+  parent: Meridian.Ui.Services.DepthChartData
+  langs:
+  - csharp
+  - vb
+  name: DepthImbalance
+  nameWithType: DepthChartData.DepthImbalance
+  fullName: Meridian.Ui.Services.DepthChartData.DepthImbalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthImbalance
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 451
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal DepthImbalance { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property DepthImbalance As Decimal
+  overload: Meridian.Ui.Services.DepthChartData.DepthImbalance*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DepthChartData.Symbol*
+  commentId: Overload:Meridian.Ui.Services.DepthChartData.Symbol
+  href: Meridian.Ui.Services.DepthChartData.html#Meridian_Ui_Services_DepthChartData_Symbol
+  name: Symbol
+  nameWithType: DepthChartData.Symbol
+  fullName: Meridian.Ui.Services.DepthChartData.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.DepthChartData.BidPoints*
+  commentId: Overload:Meridian.Ui.Services.DepthChartData.BidPoints
+  href: Meridian.Ui.Services.DepthChartData.html#Meridian_Ui_Services_DepthChartData_BidPoints
+  name: BidPoints
+  nameWithType: DepthChartData.BidPoints
+  fullName: Meridian.Ui.Services.DepthChartData.BidPoints
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.DepthPoint}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.DepthPoint}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<DepthPoint>
+  nameWithType: List<DepthPoint>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.DepthPoint>
+  nameWithType.vb: List(Of DepthPoint)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.DepthPoint)
+  name.vb: List(Of DepthPoint)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.DepthPoint
+    name: DepthPoint
+    href: Meridian.Ui.Services.DepthPoint.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DepthPoint
+    name: DepthPoint
+    href: Meridian.Ui.Services.DepthPoint.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.DepthChartData.AskPoints*
+  commentId: Overload:Meridian.Ui.Services.DepthChartData.AskPoints
+  href: Meridian.Ui.Services.DepthChartData.html#Meridian_Ui_Services_DepthChartData_AskPoints
+  name: AskPoints
+  nameWithType: DepthChartData.AskPoints
+  fullName: Meridian.Ui.Services.DepthChartData.AskPoints
+- uid: Meridian.Ui.Services.DepthChartData.TotalBidDepth*
+  commentId: Overload:Meridian.Ui.Services.DepthChartData.TotalBidDepth
+  href: Meridian.Ui.Services.DepthChartData.html#Meridian_Ui_Services_DepthChartData_TotalBidDepth
+  name: TotalBidDepth
+  nameWithType: DepthChartData.TotalBidDepth
+  fullName: Meridian.Ui.Services.DepthChartData.TotalBidDepth
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ui.Services.DepthChartData.TotalAskDepth*
+  commentId: Overload:Meridian.Ui.Services.DepthChartData.TotalAskDepth
+  href: Meridian.Ui.Services.DepthChartData.html#Meridian_Ui_Services_DepthChartData_TotalAskDepth
+  name: TotalAskDepth
+  nameWithType: DepthChartData.TotalAskDepth
+  fullName: Meridian.Ui.Services.DepthChartData.TotalAskDepth
+- uid: Meridian.Ui.Services.DepthChartData.DepthImbalance*
+  commentId: Overload:Meridian.Ui.Services.DepthChartData.DepthImbalance
+  href: Meridian.Ui.Services.DepthChartData.html#Meridian_Ui_Services_DepthChartData_DepthImbalance
+  name: DepthImbalance
+  nameWithType: DepthChartData.DepthImbalance
+  fullName: Meridian.Ui.Services.DepthChartData.DepthImbalance

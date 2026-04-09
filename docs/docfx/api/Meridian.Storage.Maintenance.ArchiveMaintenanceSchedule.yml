@@ -1,0 +1,1533 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  commentId: T:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  id: ArchiveMaintenanceSchedule
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution(System.Nullable{System.DateTimeOffset})
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId
+  langs:
+  - csharp
+  - vb
+  name: ArchiveMaintenanceSchedule
+  nameWithType: ArchiveMaintenanceSchedule
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveMaintenanceSchedule
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: >-
+    Represents a scheduled archive maintenance configuration with cron-like scheduling.
+
+    Supports health checks, cleanup, compression, tier migration, and repair operations.
+  example: []
+  syntax:
+    content: public sealed class ArchiveMaintenanceSchedule
+    content.vb: Public NotInheritable Class ArchiveMaintenanceSchedule
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId
+  id: ScheduleId
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: ScheduleId
+  nameWithType: ArchiveMaintenanceSchedule.ScheduleId
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleId
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Unique identifier for this schedule.
+  example: []
+  syntax:
+    content: public string ScheduleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScheduleId As String
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name
+  id: Name
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ArchiveMaintenanceSchedule.Name
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Human-readable name for the schedule.
+  example: []
+  syntax:
+    content: public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description
+  id: Description
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ArchiveMaintenanceSchedule.Description
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Description of what this schedule does.
+  example: []
+  syntax:
+    content: public string Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled
+  id: Enabled
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: ArchiveMaintenanceSchedule.Enabled
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Whether this schedule is active.
+  example: []
+  syntax:
+    content: public bool Enabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression
+  id: CronExpression
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: CronExpression
+  nameWithType: ArchiveMaintenanceSchedule.CronExpression
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CronExpression
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: >-
+    Cron expression for scheduling (standard 5-field cron format).
+
+    Examples: "0 3 * * *" (daily at 3am), "0 4 * * 0" (weekly on Sunday at 4am)
+  example: []
+  syntax:
+    content: public string CronExpression { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CronExpression As String
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId
+  id: TimeZoneId
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: TimeZoneId
+  nameWithType: ArchiveMaintenanceSchedule.TimeZoneId
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeZoneId
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Timezone for cron expression evaluation.
+  example: []
+  syntax:
+    content: public string TimeZoneId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TimeZoneId As String
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType
+  id: TaskType
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: TaskType
+  nameWithType: ArchiveMaintenanceSchedule.TaskType
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskType
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Type of maintenance operation to perform.
+  example: []
+  syntax:
+    content: public MaintenanceTaskType TaskType { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+    content.vb: Public Property TaskType As MaintenanceTaskType
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options
+  id: Options
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: Options
+  nameWithType: ArchiveMaintenanceSchedule.Options
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Options
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Configuration options for this maintenance task.
+  example: []
+  syntax:
+    content: public MaintenanceTaskOptions Options { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+    content.vb: Public Property Options As MaintenanceTaskOptions
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths
+  id: TargetPaths
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: TargetPaths
+  nameWithType: ArchiveMaintenanceSchedule.TargetPaths
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetPaths
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Paths to include in maintenance. Empty = use configured storage root.
+  example: []
+  syntax:
+    content: public List<string> TargetPaths { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property TargetPaths As List(Of String)
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority
+  id: Priority
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ArchiveMaintenanceSchedule.Priority
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Priority level for this maintenance task.
+  example: []
+  syntax:
+    content: public MaintenancePriority Priority { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Maintenance.MaintenancePriority
+    content.vb: Public Property Priority As MaintenancePriority
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration
+  id: MaxDuration
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: MaxDuration
+  nameWithType: ArchiveMaintenanceSchedule.MaxDuration
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDuration
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Maximum duration for the maintenance operation before timeout.
+  example: []
+  syntax:
+    content: public TimeSpan MaxDuration { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MaxDuration As TimeSpan
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: ArchiveMaintenanceSchedule.MaxRetries
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Number of retries if maintenance fails.
+  example: []
+  syntax:
+    content: public int MaxRetries { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRetries As Integer
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion
+  id: NotifyOnCompletion
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: NotifyOnCompletion
+  nameWithType: ArchiveMaintenanceSchedule.NotifyOnCompletion
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyOnCompletion
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Whether to send notifications on completion/failure.
+  example: []
+  syntax:
+    content: public bool NotifyOnCompletion { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyOnCompletion As Boolean
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  id: NotifyOnFailureOnly
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: NotifyOnFailureOnly
+  nameWithType: ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyOnFailureOnly
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Whether to send notifications on failure only.
+  example: []
+  syntax:
+    content: public bool NotifyOnFailureOnly { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyOnFailureOnly As Boolean
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: ArchiveMaintenanceSchedule.CreatedAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: When the schedule was created.
+  example: []
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt
+  id: ModifiedAt
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: ModifiedAt
+  nameWithType: ArchiveMaintenanceSchedule.ModifiedAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModifiedAt
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: When the schedule was last modified.
+  example: []
+  syntax:
+    content: public DateTimeOffset ModifiedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ModifiedAt As DateTimeOffset
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt
+  id: LastExecutedAt
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: LastExecutedAt
+  nameWithType: ArchiveMaintenanceSchedule.LastExecutedAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastExecutedAt
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: When the schedule last executed.
+  example: []
+  syntax:
+    content: public DateTimeOffset? LastExecutedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastExecutedAt As DateTimeOffset?
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt
+  id: NextExecutionAt
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: NextExecutionAt
+  nameWithType: ArchiveMaintenanceSchedule.NextExecutionAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextExecutionAt
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: When the schedule is next scheduled to execute.
+  example: []
+  syntax:
+    content: public DateTimeOffset? NextExecutionAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property NextExecutionAt As DateTimeOffset?
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId
+  id: LastExecutionId
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: LastExecutionId
+  nameWithType: ArchiveMaintenanceSchedule.LastExecutionId
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastExecutionId
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: ID of the last execution for this schedule.
+  example: []
+  syntax:
+    content: public string? LastExecutionId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastExecutionId As String
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus
+  id: LastExecutionStatus
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: LastExecutionStatus
+  nameWithType: ArchiveMaintenanceSchedule.LastExecutionStatus
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastExecutionStatus
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Status of the last execution.
+  example: []
+  syntax:
+    content: public MaintenanceExecutionStatus? LastExecutionStatus { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+    content.vb: Public Property LastExecutionStatus As MaintenanceExecutionStatus?
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount
+  id: ExecutionCount
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: ExecutionCount
+  nameWithType: ArchiveMaintenanceSchedule.ExecutionCount
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionCount
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Total number of times this schedule has executed.
+  example: []
+  syntax:
+    content: public int ExecutionCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ExecutionCount As Integer
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions
+  id: SuccessfulExecutions
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: SuccessfulExecutions
+  nameWithType: ArchiveMaintenanceSchedule.SuccessfulExecutions
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessfulExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Number of successful executions.
+  example: []
+  syntax:
+    content: public int SuccessfulExecutions { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SuccessfulExecutions As Integer
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions
+  id: FailedExecutions
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: FailedExecutions
+  nameWithType: ArchiveMaintenanceSchedule.FailedExecutions
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Number of failed executions.
+  example: []
+  syntax:
+    content: public int FailedExecutions { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedExecutions As Integer
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags
+  id: Tags
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: ArchiveMaintenanceSchedule.Tags
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Tags for categorization and filtering.
+  example: []
+  syntax:
+    content: public List<string> Tags { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Tags As List(Of String)
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags*
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone
+  commentId: P:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone
+  id: TimeZone
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: TimeZone
+  nameWithType: ArchiveMaintenanceSchedule.TimeZone
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeZone
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Gets the timezone info for cron evaluation.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public TimeZoneInfo TimeZone { get; }
+    parameters: []
+    return:
+      type: System.TimeZoneInfo
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property TimeZone As TimeZoneInfo
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution(System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution(System.Nullable{System.DateTimeOffset})
+  id: CalculateNextExecution(System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule
+  langs:
+  - csharp
+  - vb
+  name: CalculateNextExecution(DateTimeOffset?)
+  nameWithType: ArchiveMaintenanceSchedule.CalculateNextExecution(DateTimeOffset?)
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution(System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateNextExecution
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Calculate the next execution time based on the cron expression.
+  example: []
+  syntax:
+    content: public DateTimeOffset? CalculateNextExecution(DateTimeOffset? from = null)
+    parameters:
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Function CalculateNextExecution(from As DateTimeOffset? = Nothing) As DateTimeOffset?
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution*
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_ScheduleId
+  name: ScheduleId
+  nameWithType: ArchiveMaintenanceSchedule.ScheduleId
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ScheduleId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_Name
+  name: Name
+  nameWithType: ArchiveMaintenanceSchedule.Name
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Name
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_Description
+  name: Description
+  nameWithType: ArchiveMaintenanceSchedule.Description
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Description
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_Enabled
+  name: Enabled
+  nameWithType: ArchiveMaintenanceSchedule.Enabled
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_CronExpression
+  name: CronExpression
+  nameWithType: ArchiveMaintenanceSchedule.CronExpression
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CronExpression
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_TimeZoneId
+  name: TimeZoneId
+  nameWithType: ArchiveMaintenanceSchedule.TimeZoneId
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZoneId
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_TaskType
+  name: TaskType
+  nameWithType: ArchiveMaintenanceSchedule.TaskType
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskType
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskType.html
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_Options
+  name: Options
+  nameWithType: ArchiveMaintenanceSchedule.Options
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Options
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html
+  name: MaintenanceTaskOptions
+  nameWithType: MaintenanceTaskOptions
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_TargetPaths
+  name: TargetPaths
+  nameWithType: ArchiveMaintenanceSchedule.TargetPaths
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TargetPaths
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_Priority
+  name: Priority
+  nameWithType: ArchiveMaintenanceSchedule.Priority
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Priority
+- uid: Meridian.Storage.Maintenance.MaintenancePriority
+  commentId: T:Meridian.Storage.Maintenance.MaintenancePriority
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenancePriority.html
+  name: MaintenancePriority
+  nameWithType: MaintenancePriority
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_MaxDuration
+  name: MaxDuration
+  nameWithType: ArchiveMaintenanceSchedule.MaxDuration
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxDuration
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_MaxRetries
+  name: MaxRetries
+  nameWithType: ArchiveMaintenanceSchedule.MaxRetries
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.MaxRetries
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_NotifyOnCompletion
+  name: NotifyOnCompletion
+  nameWithType: ArchiveMaintenanceSchedule.NotifyOnCompletion
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnCompletion
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_NotifyOnFailureOnly
+  name: NotifyOnFailureOnly
+  nameWithType: ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NotifyOnFailureOnly
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_CreatedAt
+  name: CreatedAt
+  nameWithType: ArchiveMaintenanceSchedule.CreatedAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CreatedAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_ModifiedAt
+  name: ModifiedAt
+  nameWithType: ArchiveMaintenanceSchedule.ModifiedAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ModifiedAt
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_LastExecutedAt
+  name: LastExecutedAt
+  nameWithType: ArchiveMaintenanceSchedule.LastExecutedAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutedAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_NextExecutionAt
+  name: NextExecutionAt
+  nameWithType: ArchiveMaintenanceSchedule.NextExecutionAt
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.NextExecutionAt
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_LastExecutionId
+  name: LastExecutionId
+  nameWithType: ArchiveMaintenanceSchedule.LastExecutionId
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionId
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_LastExecutionStatus
+  name: LastExecutionStatus
+  nameWithType: ArchiveMaintenanceSchedule.LastExecutionStatus
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.LastExecutionStatus
+- uid: System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+  commentId: T:System.Nullable{Meridian.Storage.Maintenance.MaintenanceExecutionStatus}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  name: MaintenanceExecutionStatus?
+  nameWithType: MaintenanceExecutionStatus?
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus?
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+    name: MaintenanceExecutionStatus
+    href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+    name: MaintenanceExecutionStatus
+    href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  - name: '?'
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_ExecutionCount
+  name: ExecutionCount
+  nameWithType: ArchiveMaintenanceSchedule.ExecutionCount
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.ExecutionCount
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_SuccessfulExecutions
+  name: SuccessfulExecutions
+  nameWithType: ArchiveMaintenanceSchedule.SuccessfulExecutions
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.SuccessfulExecutions
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_FailedExecutions
+  name: FailedExecutions
+  nameWithType: ArchiveMaintenanceSchedule.FailedExecutions
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.FailedExecutions
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_Tags
+  name: Tags
+  nameWithType: ArchiveMaintenanceSchedule.Tags
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.Tags
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_TimeZone
+  name: TimeZone
+  nameWithType: ArchiveMaintenanceSchedule.TimeZone
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.TimeZone
+- uid: System.TimeZoneInfo
+  commentId: T:System.TimeZoneInfo
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timezoneinfo
+  name: TimeZoneInfo
+  nameWithType: TimeZoneInfo
+  fullName: System.TimeZoneInfo
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.html#Meridian_Storage_Maintenance_ArchiveMaintenanceSchedule_CalculateNextExecution_System_Nullable_System_DateTimeOffset__
+  name: CalculateNextExecution
+  nameWithType: ArchiveMaintenanceSchedule.CalculateNextExecution
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule.CalculateNextExecution

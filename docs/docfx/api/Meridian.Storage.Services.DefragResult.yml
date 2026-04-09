@@ -1,0 +1,653 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.DefragResult
+  commentId: T:Meridian.Storage.Services.DefragResult
+  id: DefragResult
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.DefragResult.#ctor(System.Int32,System.Int32,System.Int64,System.Int64,System.Double,System.TimeSpan)
+  - Meridian.Storage.Services.DefragResult.BytesAfter
+  - Meridian.Storage.Services.DefragResult.BytesBefore
+  - Meridian.Storage.Services.DefragResult.CompressionImprovement
+  - Meridian.Storage.Services.DefragResult.Duration
+  - Meridian.Storage.Services.DefragResult.FilesCreated
+  - Meridian.Storage.Services.DefragResult.FilesProcessed
+  langs:
+  - csharp
+  - vb
+  name: DefragResult
+  nameWithType: DefragResult
+  fullName: Meridian.Storage.Services.DefragResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefragResult
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 666
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record DefragResult : IEquatable<DefragResult>'
+    content.vb: Public NotInheritable Class DefragResult Implements IEquatable(Of DefragResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.DefragResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.DefragResult.#ctor(System.Int32,System.Int32,System.Int64,System.Int64,System.Double,System.TimeSpan)
+  commentId: M:Meridian.Storage.Services.DefragResult.#ctor(System.Int32,System.Int32,System.Int64,System.Int64,System.Double,System.TimeSpan)
+  id: '#ctor(System.Int32,System.Int32,System.Int64,System.Int64,System.Double,System.TimeSpan)'
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: DefragResult(int, int, long, long, double, TimeSpan)
+  nameWithType: DefragResult.DefragResult(int, int, long, long, double, TimeSpan)
+  fullName: Meridian.Storage.Services.DefragResult.DefragResult(int, int, long, long, double, System.TimeSpan)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 666
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration)
+    parameters:
+    - id: FilesProcessed
+      type: System.Int32
+    - id: FilesCreated
+      type: System.Int32
+    - id: BytesBefore
+      type: System.Int64
+    - id: BytesAfter
+      type: System.Int64
+    - id: CompressionImprovement
+      type: System.Double
+    - id: Duration
+      type: System.TimeSpan
+    content.vb: Public Sub New(FilesProcessed As Integer, FilesCreated As Integer, BytesBefore As Long, BytesAfter As Long, CompressionImprovement As Double, Duration As TimeSpan)
+  overload: Meridian.Storage.Services.DefragResult.#ctor*
+  nameWithType.vb: DefragResult.New(Integer, Integer, Long, Long, Double, TimeSpan)
+  fullName.vb: Meridian.Storage.Services.DefragResult.New(Integer, Integer, Long, Long, Double, System.TimeSpan)
+  name.vb: New(Integer, Integer, Long, Long, Double, TimeSpan)
+- uid: Meridian.Storage.Services.DefragResult.FilesProcessed
+  commentId: P:Meridian.Storage.Services.DefragResult.FilesProcessed
+  id: FilesProcessed
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: FilesProcessed
+  nameWithType: DefragResult.FilesProcessed
+  fullName: Meridian.Storage.Services.DefragResult.FilesProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesProcessed
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 667
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int FilesProcessed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesProcessed As Integer
+  overload: Meridian.Storage.Services.DefragResult.FilesProcessed*
+- uid: Meridian.Storage.Services.DefragResult.FilesCreated
+  commentId: P:Meridian.Storage.Services.DefragResult.FilesCreated
+  id: FilesCreated
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: FilesCreated
+  nameWithType: DefragResult.FilesCreated
+  fullName: Meridian.Storage.Services.DefragResult.FilesCreated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesCreated
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 668
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int FilesCreated { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesCreated As Integer
+  overload: Meridian.Storage.Services.DefragResult.FilesCreated*
+- uid: Meridian.Storage.Services.DefragResult.BytesBefore
+  commentId: P:Meridian.Storage.Services.DefragResult.BytesBefore
+  id: BytesBefore
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: BytesBefore
+  nameWithType: DefragResult.BytesBefore
+  fullName: Meridian.Storage.Services.DefragResult.BytesBefore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BytesBefore
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 669
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long BytesBefore { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BytesBefore As Long
+  overload: Meridian.Storage.Services.DefragResult.BytesBefore*
+- uid: Meridian.Storage.Services.DefragResult.BytesAfter
+  commentId: P:Meridian.Storage.Services.DefragResult.BytesAfter
+  id: BytesAfter
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: BytesAfter
+  nameWithType: DefragResult.BytesAfter
+  fullName: Meridian.Storage.Services.DefragResult.BytesAfter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BytesAfter
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 670
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long BytesAfter { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BytesAfter As Long
+  overload: Meridian.Storage.Services.DefragResult.BytesAfter*
+- uid: Meridian.Storage.Services.DefragResult.CompressionImprovement
+  commentId: P:Meridian.Storage.Services.DefragResult.CompressionImprovement
+  id: CompressionImprovement
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: CompressionImprovement
+  nameWithType: DefragResult.CompressionImprovement
+  fullName: Meridian.Storage.Services.DefragResult.CompressionImprovement
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionImprovement
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 671
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double CompressionImprovement { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CompressionImprovement As Double
+  overload: Meridian.Storage.Services.DefragResult.CompressionImprovement*
+- uid: Meridian.Storage.Services.DefragResult.Duration
+  commentId: P:Meridian.Storage.Services.DefragResult.Duration
+  id: Duration
+  parent: Meridian.Storage.Services.DefragResult
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: DefragResult.Duration
+  fullName: Meridian.Storage.Services.DefragResult.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 672
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan Duration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Meridian.Storage.Services.DefragResult.Duration*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.DefragResult}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.DefragResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DefragResult>
+  nameWithType: IEquatable<DefragResult>
+  fullName: System.IEquatable<Meridian.Storage.Services.DefragResult>
+  nameWithType.vb: IEquatable(Of DefragResult)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.DefragResult)
+  name.vb: IEquatable(Of DefragResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.DefragResult
+    name: DefragResult
+    href: Meridian.Storage.Services.DefragResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DefragResult
+    name: DefragResult
+    href: Meridian.Storage.Services.DefragResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.DefragResult.#ctor*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.#ctor
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult__ctor_System_Int32_System_Int32_System_Int64_System_Int64_System_Double_System_TimeSpan_
+  name: DefragResult
+  nameWithType: DefragResult.DefragResult
+  fullName: Meridian.Storage.Services.DefragResult.DefragResult
+  nameWithType.vb: DefragResult.New
+  fullName.vb: Meridian.Storage.Services.DefragResult.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Services.DefragResult.FilesProcessed*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.FilesProcessed
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult_FilesProcessed
+  name: FilesProcessed
+  nameWithType: DefragResult.FilesProcessed
+  fullName: Meridian.Storage.Services.DefragResult.FilesProcessed
+- uid: Meridian.Storage.Services.DefragResult.FilesCreated*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.FilesCreated
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult_FilesCreated
+  name: FilesCreated
+  nameWithType: DefragResult.FilesCreated
+  fullName: Meridian.Storage.Services.DefragResult.FilesCreated
+- uid: Meridian.Storage.Services.DefragResult.BytesBefore*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.BytesBefore
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult_BytesBefore
+  name: BytesBefore
+  nameWithType: DefragResult.BytesBefore
+  fullName: Meridian.Storage.Services.DefragResult.BytesBefore
+- uid: Meridian.Storage.Services.DefragResult.BytesAfter*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.BytesAfter
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult_BytesAfter
+  name: BytesAfter
+  nameWithType: DefragResult.BytesAfter
+  fullName: Meridian.Storage.Services.DefragResult.BytesAfter
+- uid: Meridian.Storage.Services.DefragResult.CompressionImprovement*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.CompressionImprovement
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult_CompressionImprovement
+  name: CompressionImprovement
+  nameWithType: DefragResult.CompressionImprovement
+  fullName: Meridian.Storage.Services.DefragResult.CompressionImprovement
+- uid: Meridian.Storage.Services.DefragResult.Duration*
+  commentId: Overload:Meridian.Storage.Services.DefragResult.Duration
+  href: Meridian.Storage.Services.DefragResult.html#Meridian_Storage_Services_DefragResult_Duration
+  name: Duration
+  nameWithType: DefragResult.Duration
+  fullName: Meridian.Storage.Services.DefragResult.Duration

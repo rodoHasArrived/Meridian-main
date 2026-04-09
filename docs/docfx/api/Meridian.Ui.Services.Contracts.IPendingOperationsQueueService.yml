@@ -1,0 +1,418 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  commentId: T:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  id: IPendingOperationsQueueService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync``1(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync``1(``0,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IPendingOperationsQueueService
+  nameWithType: IPendingOperationsQueueService
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPendingOperationsQueueService
+    path: ../../src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for queuing and managing pending operations.
+
+    Shared between WPF desktop applications.
+  example: []
+  syntax:
+    content: public interface IPendingOperationsQueueService
+    content.vb: Public Interface IPendingOperationsQueueService
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync``1(``0,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync``1(``0,System.Threading.CancellationToken)
+  id: EnqueueAsync``1(``0,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  langs:
+  - csharp
+  - vb
+  name: EnqueueAsync<T>(T, CancellationToken)
+  nameWithType: IPendingOperationsQueueService.EnqueueAsync<T>(T, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync<T>(T, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnqueueAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task EnqueueAsync<T>(T operation, CancellationToken cancellationToken = default)
+    parameters:
+    - id: operation
+      type: '{T}'
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function EnqueueAsync(Of T)(operation As T, cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync*
+  nameWithType.vb: IPendingOperationsQueueService.EnqueueAsync(Of T)(T, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync(Of T)(T, System.Threading.CancellationToken)
+  name.vb: EnqueueAsync(Of T)(T, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync``1(System.Threading.CancellationToken)
+  id: DequeueAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  langs:
+  - csharp
+  - vb
+  name: DequeueAsync<T>(CancellationToken)
+  nameWithType: IPendingOperationsQueueService.DequeueAsync<T>(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DequeueAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task<T?> DequeueAsync<T>(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Function DequeueAsync(Of T)(cancellationToken As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync*
+  nameWithType.vb: IPendingOperationsQueueService.DequeueAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: DequeueAsync(Of T)(CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync(System.Threading.CancellationToken)
+  id: GetQueueLengthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  langs:
+  - csharp
+  - vb
+  name: GetQueueLengthAsync(CancellationToken)
+  nameWithType: IPendingOperationsQueueService.GetQueueLengthAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetQueueLengthAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task<int> GetQueueLengthAsync(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+    content.vb: Function GetQueueLengthAsync(cancellationToken As CancellationToken = Nothing) As Task(Of Integer)
+  overload: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync*
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync(System.Threading.CancellationToken)
+  id: ClearQueueAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService
+  langs:
+  - csharp
+  - vb
+  name: ClearQueueAsync(CancellationToken)
+  nameWithType: IPendingOperationsQueueService.ClearQueueAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearQueueAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IPendingOperationsQueueService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task ClearQueueAsync(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function ClearQueueAsync(cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync
+  href: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.html#Meridian_Ui_Services_Contracts_IPendingOperationsQueueService_EnqueueAsync__1___0_System_Threading_CancellationToken_
+  name: EnqueueAsync
+  nameWithType: IPendingOperationsQueueService.EnqueueAsync
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.EnqueueAsync
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync
+  href: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.html#Meridian_Ui_Services_Contracts_IPendingOperationsQueueService_DequeueAsync__1_System_Threading_CancellationToken_
+  name: DequeueAsync
+  nameWithType: IPendingOperationsQueueService.DequeueAsync
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.DequeueAsync
+- uid: System.Threading.Tasks.Task{{T}}
+  commentId: T:System.Threading.Tasks.Task{``0}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<T>
+  nameWithType: Task<T>
+  fullName: System.Threading.Tasks.Task<T>
+  nameWithType.vb: Task(Of T)
+  fullName.vb: System.Threading.Tasks.Task(Of T)
+  name.vb: Task(Of T)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync
+  href: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.html#Meridian_Ui_Services_Contracts_IPendingOperationsQueueService_GetQueueLengthAsync_System_Threading_CancellationToken_
+  name: GetQueueLengthAsync
+  nameWithType: IPendingOperationsQueueService.GetQueueLengthAsync
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.GetQueueLengthAsync
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync
+  href: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.html#Meridian_Ui_Services_Contracts_IPendingOperationsQueueService_ClearQueueAsync_System_Threading_CancellationToken_
+  name: ClearQueueAsync
+  nameWithType: IPendingOperationsQueueService.ClearQueueAsync
+  fullName: Meridian.Ui.Services.Contracts.IPendingOperationsQueueService.ClearQueueAsync

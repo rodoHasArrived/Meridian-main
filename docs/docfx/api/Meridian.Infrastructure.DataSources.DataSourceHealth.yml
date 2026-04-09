@@ -1,0 +1,991 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceHealth
+  id: DataSourceHealth
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.#ctor(System.Boolean,System.Double,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan},System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError})
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded(System.Double,System.String,System.Int32)
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy(System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.Message
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.Score
+  - Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy(System.String,System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: DataSourceHealth
+  nameWithType: DataSourceHealth
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceHealth
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 316
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Health status of a data source.
+  example: []
+  syntax:
+    content: 'public sealed record DataSourceHealth : IEquatable<DataSourceHealth>'
+    content.vb: Public NotInheritable Class DataSourceHealth Implements IEquatable(Of DataSourceHealth)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceHealth}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.#ctor(System.Boolean,System.Double,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan},System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError})
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceHealth.#ctor(System.Boolean,System.Double,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan},System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError})
+  id: '#ctor(System.Boolean,System.Double,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan},System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError})'
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: DataSourceHealth(bool, double, string?, DateTimeOffset, TimeSpan?, int, IReadOnlyList<DataSourceError>?)
+  nameWithType: DataSourceHealth.DataSourceHealth(bool, double, string?, DateTimeOffset, TimeSpan?, int, IReadOnlyList<DataSourceError>?)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.DataSourceHealth(bool, double, string?, System.DateTimeOffset, System.TimeSpan?, int, System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.DataSourceError>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 316
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Health status of a data source.
+  example: []
+  syntax:
+    content: public DataSourceHealth(bool IsHealthy, double Score, string? Message = null, DateTimeOffset LastChecked = default, TimeSpan? LastResponseTime = null, int ConsecutiveFailures = 0, IReadOnlyList<DataSourceError>? RecentErrors = null)
+    parameters:
+    - id: IsHealthy
+      type: System.Boolean
+    - id: Score
+      type: System.Double
+    - id: Message
+      type: System.String
+    - id: LastChecked
+      type: System.DateTimeOffset
+    - id: LastResponseTime
+      type: System.Nullable{System.TimeSpan}
+    - id: ConsecutiveFailures
+      type: System.Int32
+    - id: RecentErrors
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError}
+    content.vb: Public Sub New(IsHealthy As Boolean, Score As Double, Message As String = Nothing, LastChecked As DateTimeOffset = Nothing, LastResponseTime As TimeSpan? = Nothing, ConsecutiveFailures As Integer = 0, RecentErrors As IReadOnlyList(Of DataSourceError) = Nothing)
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.#ctor*
+  nameWithType.vb: DataSourceHealth.New(Boolean, Double, String, DateTimeOffset, TimeSpan?, Integer, IReadOnlyList(Of DataSourceError))
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceHealth.New(Boolean, Double, String, System.DateTimeOffset, System.TimeSpan?, Integer, System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.DataSourceError))
+  name.vb: New(Boolean, Double, String, DateTimeOffset, TimeSpan?, Integer, IReadOnlyList(Of DataSourceError))
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy
+  id: IsHealthy
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: DataSourceHealth.IsHealthy
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 317
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public bool IsHealthy { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHealthy As Boolean
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Score
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.Score
+  id: Score
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: DataSourceHealth.Score
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 318
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public double Score { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Score As Double
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.Score*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Message
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.Message
+  id: Message
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: DataSourceHealth.Message
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 319
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.Message*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked
+  id: LastChecked
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: LastChecked
+  nameWithType: DataSourceHealth.LastChecked
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastChecked
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 320
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateTimeOffset LastChecked { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastChecked As DateTimeOffset
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime
+  id: LastResponseTime
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: LastResponseTime
+  nameWithType: DataSourceHealth.LastResponseTime
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastResponseTime
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 321
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public TimeSpan? LastResponseTime { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property LastResponseTime As TimeSpan?
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures
+  id: ConsecutiveFailures
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: ConsecutiveFailures
+  nameWithType: DataSourceHealth.ConsecutiveFailures
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsecutiveFailures
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 322
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public int ConsecutiveFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ConsecutiveFailures As Integer
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors
+  id: RecentErrors
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: RecentErrors
+  nameWithType: DataSourceHealth.RecentErrors
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentErrors
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 323
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public IReadOnlyList<DataSourceError>? RecentErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError}
+    content.vb: Public Property RecentErrors As IReadOnlyList(Of DataSourceError)
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy(System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy(System.Nullable{System.TimeSpan})
+  id: Healthy(System.Nullable{System.TimeSpan})
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: Healthy(TimeSpan?)
+  nameWithType: DataSourceHealth.Healthy(TimeSpan?)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy(System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 329
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Creates a healthy status with a 100% score.
+  example: []
+  syntax:
+    content: public static DataSourceHealth Healthy(TimeSpan? responseTime = null)
+    parameters:
+    - id: responseTime
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceHealth
+    content.vb: Public Shared Function Healthy(responseTime As TimeSpan? = Nothing) As DataSourceHealth
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy*
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded(System.Double,System.String,System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded(System.Double,System.String,System.Int32)
+  id: Degraded(System.Double,System.String,System.Int32)
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: Degraded(double, string, int)
+  nameWithType: DataSourceHealth.Degraded(double, string, int)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded(double, string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Degraded
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 335
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Creates a degraded health status.
+  example: []
+  syntax:
+    content: public static DataSourceHealth Degraded(double score, string message, int failures = 0)
+    parameters:
+    - id: score
+      type: System.Double
+    - id: message
+      type: System.String
+    - id: failures
+      type: System.Int32
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceHealth
+    content.vb: Public Shared Function Degraded(score As Double, message As String, failures As Integer = 0) As DataSourceHealth
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded*
+  nameWithType.vb: DataSourceHealth.Degraded(Double, String, Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded(Double, String, Integer)
+  name.vb: Degraded(Double, String, Integer)
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy(System.String,System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy(System.String,System.Int32)
+  id: Unhealthy(System.String,System.Int32)
+  parent: Meridian.Infrastructure.DataSources.DataSourceHealth
+  langs:
+  - csharp
+  - vb
+  name: Unhealthy(string, int)
+  nameWithType: DataSourceHealth.Unhealthy(string, int)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unhealthy
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 341
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Creates an unhealthy status.
+  example: []
+  syntax:
+    content: public static DataSourceHealth Unhealthy(string message, int failures = 0)
+    parameters:
+    - id: message
+      type: System.String
+    - id: failures
+      type: System.Int32
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceHealth
+    content.vb: Public Shared Function Unhealthy(message As String, failures As Integer = 0) As DataSourceHealth
+  overload: Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy*
+  nameWithType.vb: DataSourceHealth.Unhealthy(String, Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy(String, Integer)
+  name.vb: Unhealthy(String, Integer)
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceHealth}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceHealth}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataSourceHealth>
+  nameWithType: IEquatable<DataSourceHealth>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.DataSourceHealth>
+  nameWithType.vb: IEquatable(Of DataSourceHealth)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.DataSourceHealth)
+  name.vb: IEquatable(Of DataSourceHealth)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DataSourceHealth
+    name: DataSourceHealth
+    href: Meridian.Infrastructure.DataSources.DataSourceHealth.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceHealth
+    name: DataSourceHealth
+    href: Meridian.Infrastructure.DataSources.DataSourceHealth.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.#ctor
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth__ctor_System_Boolean_System_Double_System_String_System_DateTimeOffset_System_Nullable_System_TimeSpan__System_Int32_System_Collections_Generic_IReadOnlyList_Meridian_Infrastructure_DataSources_DataSourceError__
+  name: DataSourceHealth
+  nameWithType: DataSourceHealth.DataSourceHealth
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.DataSourceHealth
+  nameWithType.vb: DataSourceHealth.New
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceHealth.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceError}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataSourceError>
+  nameWithType: IReadOnlyList<DataSourceError>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.DataSourceError>
+  nameWithType.vb: IReadOnlyList(Of DataSourceError)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.DataSourceError)
+  name.vb: IReadOnlyList(Of DataSourceError)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DataSourceError
+    name: DataSourceError
+    href: Meridian.Infrastructure.DataSources.DataSourceError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceError
+    name: DataSourceError
+    href: Meridian.Infrastructure.DataSources.DataSourceError.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_IsHealthy
+  name: IsHealthy
+  nameWithType: DataSourceHealth.IsHealthy
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.IsHealthy
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Score*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.Score
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_Score
+  name: Score
+  nameWithType: DataSourceHealth.Score
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Score
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Message*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.Message
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_Message
+  name: Message
+  nameWithType: DataSourceHealth.Message
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Message
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_LastChecked
+  name: LastChecked
+  nameWithType: DataSourceHealth.LastChecked
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.LastChecked
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_LastResponseTime
+  name: LastResponseTime
+  nameWithType: DataSourceHealth.LastResponseTime
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.LastResponseTime
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_ConsecutiveFailures
+  name: ConsecutiveFailures
+  nameWithType: DataSourceHealth.ConsecutiveFailures
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.ConsecutiveFailures
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_RecentErrors
+  name: RecentErrors
+  nameWithType: DataSourceHealth.RecentErrors
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.RecentErrors
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_Healthy_System_Nullable_System_TimeSpan__
+  name: Healthy
+  nameWithType: DataSourceHealth.Healthy
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Healthy
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceHealth
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html
+  name: DataSourceHealth
+  nameWithType: DataSourceHealth
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_Degraded_System_Double_System_String_System_Int32_
+  name: Degraded
+  nameWithType: DataSourceHealth.Degraded
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Degraded
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html#Meridian_Infrastructure_DataSources_DataSourceHealth_Unhealthy_System_String_System_Int32_
+  name: Unhealthy
+  nameWithType: DataSourceHealth.Unhealthy
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth.Unhealthy

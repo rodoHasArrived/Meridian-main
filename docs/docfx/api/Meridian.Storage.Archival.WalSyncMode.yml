@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.WalSyncMode
+  commentId: T:Meridian.Storage.Archival.WalSyncMode
+  id: WalSyncMode
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.WalSyncMode.BatchedSync
+  - Meridian.Storage.Archival.WalSyncMode.EveryWrite
+  - Meridian.Storage.Archival.WalSyncMode.NoSync
+  langs:
+  - csharp
+  - vb
+  name: WalSyncMode
+  nameWithType: WalSyncMode
+  fullName: Meridian.Storage.Archival.WalSyncMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WalSyncMode
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 991
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: WAL synchronization modes.
+  example: []
+  syntax:
+    content: 'public enum WalSyncMode : byte'
+    content.vb: Public Enum WalSyncMode As Byte
+- uid: Meridian.Storage.Archival.WalSyncMode.NoSync
+  commentId: F:Meridian.Storage.Archival.WalSyncMode.NoSync
+  id: NoSync
+  parent: Meridian.Storage.Archival.WalSyncMode
+  langs:
+  - csharp
+  - vb
+  name: NoSync
+  nameWithType: WalSyncMode.NoSync
+  fullName: Meridian.Storage.Archival.WalSyncMode.NoSync
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NoSync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 996
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: No explicit sync - relies on OS buffering (fastest, least durable).
+  example: []
+  syntax:
+    content: NoSync = 0
+    return:
+      type: Meridian.Storage.Archival.WalSyncMode
+- uid: Meridian.Storage.Archival.WalSyncMode.BatchedSync
+  commentId: F:Meridian.Storage.Archival.WalSyncMode.BatchedSync
+  id: BatchedSync
+  parent: Meridian.Storage.Archival.WalSyncMode
+  langs:
+  - csharp
+  - vb
+  name: BatchedSync
+  nameWithType: WalSyncMode.BatchedSync
+  fullName: Meridian.Storage.Archival.WalSyncMode.BatchedSync
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchedSync
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 1001
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Sync after batches of writes (balanced).
+  example: []
+  syntax:
+    content: BatchedSync = 1
+    return:
+      type: Meridian.Storage.Archival.WalSyncMode
+- uid: Meridian.Storage.Archival.WalSyncMode.EveryWrite
+  commentId: F:Meridian.Storage.Archival.WalSyncMode.EveryWrite
+  id: EveryWrite
+  parent: Meridian.Storage.Archival.WalSyncMode
+  langs:
+  - csharp
+  - vb
+  name: EveryWrite
+  nameWithType: WalSyncMode.EveryWrite
+  fullName: Meridian.Storage.Archival.WalSyncMode.EveryWrite
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EveryWrite
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 1006
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Sync after every write (slowest, most durable).
+  example: []
+  syntax:
+    content: EveryWrite = 2
+    return:
+      type: Meridian.Storage.Archival.WalSyncMode
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Storage.Archival.WalSyncMode
+  commentId: T:Meridian.Storage.Archival.WalSyncMode
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WalSyncMode.html
+  name: WalSyncMode
+  nameWithType: WalSyncMode
+  fullName: Meridian.Storage.Archival.WalSyncMode

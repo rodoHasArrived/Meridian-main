@@ -1,0 +1,795 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.AggregatedPosition
+  commentId: T:Meridian.Strategies.Services.AggregatedPosition
+  id: AggregatedPosition
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.AggregatedPosition.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution})
+  - Meridian.Strategies.Services.AggregatedPosition.Contributions
+  - Meridian.Strategies.Services.AggregatedPosition.LongQuantity
+  - Meridian.Strategies.Services.AggregatedPosition.ShortQuantity
+  - Meridian.Strategies.Services.AggregatedPosition.Symbol
+  - Meridian.Strategies.Services.AggregatedPosition.TotalQuantity
+  - Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl
+  - Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost
+  langs:
+  - csharp
+  - vb
+  name: AggregatedPosition
+  nameWithType: AggregatedPosition
+  fullName: Meridian.Strategies.Services.AggregatedPosition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregatedPosition
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Aggregated (netted) position across multiple strategy runs.
+  example: []
+  syntax:
+    content: 'public sealed record AggregatedPosition : IEquatable<AggregatedPosition>'
+    content.vb: Public NotInheritable Class AggregatedPosition Implements IEquatable(Of AggregatedPosition)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Strategies.Services.AggregatedPosition}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.AggregatedPosition.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution})
+  commentId: M:Meridian.Strategies.Services.AggregatedPosition.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution})
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution})'
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: AggregatedPosition(string, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<RunPositionContribution>)
+  nameWithType: AggregatedPosition.AggregatedPosition(string, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<RunPositionContribution>)
+  fullName: Meridian.Strategies.Services.AggregatedPosition.AggregatedPosition(string, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Services.RunPositionContribution>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Aggregated (netted) position across multiple strategy runs.
+  example: []
+  syntax:
+    content: public AggregatedPosition(string Symbol, decimal TotalQuantity, decimal LongQuantity, decimal ShortQuantity, decimal WeightedAverageCost, decimal TotalUnrealisedPnl, IReadOnlyList<RunPositionContribution> Contributions)
+    parameters:
+    - id: Symbol
+      type: System.String
+      description: Ticker symbol.
+    - id: TotalQuantity
+      type: System.Decimal
+      description: Net signed quantity (long positive, short negative).
+    - id: LongQuantity
+      type: System.Decimal
+      description: Sum of all long lots.
+    - id: ShortQuantity
+      type: System.Decimal
+      description: Sum of all short lots (absolute value).
+    - id: WeightedAverageCost
+      type: System.Decimal
+      description: Weighted average cost basis across all contributing runs.
+    - id: TotalUnrealisedPnl
+      type: System.Decimal
+      description: Aggregate unrealised P&amp;L.
+    - id: Contributions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution}
+      description: Per-run breakdown.
+    content.vb: Public Sub New(Symbol As String, TotalQuantity As Decimal, LongQuantity As Decimal, ShortQuantity As Decimal, WeightedAverageCost As Decimal, TotalUnrealisedPnl As Decimal, Contributions As IReadOnlyList(Of RunPositionContribution))
+  overload: Meridian.Strategies.Services.AggregatedPosition.#ctor*
+  nameWithType.vb: AggregatedPosition.New(String, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of RunPositionContribution))
+  fullName.vb: Meridian.Strategies.Services.AggregatedPosition.New(String, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Services.RunPositionContribution))
+  name.vb: New(String, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of RunPositionContribution))
+- uid: Meridian.Strategies.Services.AggregatedPosition.Symbol
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.Symbol
+  id: Symbol
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: AggregatedPosition.Symbol
+  fullName: Meridian.Strategies.Services.AggregatedPosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Ticker symbol.
+  example: []
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Strategies.Services.AggregatedPosition.Symbol*
+- uid: Meridian.Strategies.Services.AggregatedPosition.TotalQuantity
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.TotalQuantity
+  id: TotalQuantity
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: TotalQuantity
+  nameWithType: AggregatedPosition.TotalQuantity
+  fullName: Meridian.Strategies.Services.AggregatedPosition.TotalQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalQuantity
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Net signed quantity (long positive, short negative).
+  example: []
+  syntax:
+    content: public decimal TotalQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalQuantity As Decimal
+  overload: Meridian.Strategies.Services.AggregatedPosition.TotalQuantity*
+- uid: Meridian.Strategies.Services.AggregatedPosition.LongQuantity
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.LongQuantity
+  id: LongQuantity
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: LongQuantity
+  nameWithType: AggregatedPosition.LongQuantity
+  fullName: Meridian.Strategies.Services.AggregatedPosition.LongQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LongQuantity
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Sum of all long lots.
+  example: []
+  syntax:
+    content: public decimal LongQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LongQuantity As Decimal
+  overload: Meridian.Strategies.Services.AggregatedPosition.LongQuantity*
+- uid: Meridian.Strategies.Services.AggregatedPosition.ShortQuantity
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.ShortQuantity
+  id: ShortQuantity
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: ShortQuantity
+  nameWithType: AggregatedPosition.ShortQuantity
+  fullName: Meridian.Strategies.Services.AggregatedPosition.ShortQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortQuantity
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Sum of all short lots (absolute value).
+  example: []
+  syntax:
+    content: public decimal ShortQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ShortQuantity As Decimal
+  overload: Meridian.Strategies.Services.AggregatedPosition.ShortQuantity*
+- uid: Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost
+  id: WeightedAverageCost
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: WeightedAverageCost
+  nameWithType: AggregatedPosition.WeightedAverageCost
+  fullName: Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WeightedAverageCost
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Weighted average cost basis across all contributing runs.
+  example: []
+  syntax:
+    content: public decimal WeightedAverageCost { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property WeightedAverageCost As Decimal
+  overload: Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost*
+- uid: Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl
+  id: TotalUnrealisedPnl
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: TotalUnrealisedPnl
+  nameWithType: AggregatedPosition.TotalUnrealisedPnl
+  fullName: Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalUnrealisedPnl
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Aggregate unrealised P&amp;L.
+  example: []
+  syntax:
+    content: public decimal TotalUnrealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalUnrealisedPnl As Decimal
+  overload: Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl*
+- uid: Meridian.Strategies.Services.AggregatedPosition.Contributions
+  commentId: P:Meridian.Strategies.Services.AggregatedPosition.Contributions
+  id: Contributions
+  parent: Meridian.Strategies.Services.AggregatedPosition
+  langs:
+  - csharp
+  - vb
+  name: Contributions
+  nameWithType: AggregatedPosition.Contributions
+  fullName: Meridian.Strategies.Services.AggregatedPosition.Contributions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contributions
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Per-run breakdown.
+  example: []
+  syntax:
+    content: public IReadOnlyList<RunPositionContribution> Contributions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution}
+    content.vb: Public Property Contributions As IReadOnlyList(Of RunPositionContribution)
+  overload: Meridian.Strategies.Services.AggregatedPosition.Contributions*
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Strategies.Services.AggregatedPosition}
+  commentId: T:System.IEquatable{Meridian.Strategies.Services.AggregatedPosition}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AggregatedPosition>
+  nameWithType: IEquatable<AggregatedPosition>
+  fullName: System.IEquatable<Meridian.Strategies.Services.AggregatedPosition>
+  nameWithType.vb: IEquatable(Of AggregatedPosition)
+  fullName.vb: System.IEquatable(Of Meridian.Strategies.Services.AggregatedPosition)
+  name.vb: IEquatable(Of AggregatedPosition)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Strategies.Services.AggregatedPosition
+    name: AggregatedPosition
+    href: Meridian.Strategies.Services.AggregatedPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.AggregatedPosition
+    name: AggregatedPosition
+    href: Meridian.Strategies.Services.AggregatedPosition.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Strategies.Services.AggregatedPosition.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.#ctor
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition__ctor_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Strategies_Services_RunPositionContribution__
+  name: AggregatedPosition
+  nameWithType: AggregatedPosition.AggregatedPosition
+  fullName: Meridian.Strategies.Services.AggregatedPosition.AggregatedPosition
+  nameWithType.vb: AggregatedPosition.New
+  fullName.vb: Meridian.Strategies.Services.AggregatedPosition.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Services.RunPositionContribution}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<RunPositionContribution>
+  nameWithType: IReadOnlyList<RunPositionContribution>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Services.RunPositionContribution>
+  nameWithType.vb: IReadOnlyList(Of RunPositionContribution)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Services.RunPositionContribution)
+  name.vb: IReadOnlyList(Of RunPositionContribution)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Strategies.Services.RunPositionContribution
+    name: RunPositionContribution
+    href: Meridian.Strategies.Services.RunPositionContribution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.RunPositionContribution
+    name: RunPositionContribution
+    href: Meridian.Strategies.Services.RunPositionContribution.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Services.AggregatedPosition.Symbol*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.Symbol
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_Symbol
+  name: Symbol
+  nameWithType: AggregatedPosition.Symbol
+  fullName: Meridian.Strategies.Services.AggregatedPosition.Symbol
+- uid: Meridian.Strategies.Services.AggregatedPosition.TotalQuantity*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.TotalQuantity
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_TotalQuantity
+  name: TotalQuantity
+  nameWithType: AggregatedPosition.TotalQuantity
+  fullName: Meridian.Strategies.Services.AggregatedPosition.TotalQuantity
+- uid: Meridian.Strategies.Services.AggregatedPosition.LongQuantity*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.LongQuantity
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_LongQuantity
+  name: LongQuantity
+  nameWithType: AggregatedPosition.LongQuantity
+  fullName: Meridian.Strategies.Services.AggregatedPosition.LongQuantity
+- uid: Meridian.Strategies.Services.AggregatedPosition.ShortQuantity*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.ShortQuantity
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_ShortQuantity
+  name: ShortQuantity
+  nameWithType: AggregatedPosition.ShortQuantity
+  fullName: Meridian.Strategies.Services.AggregatedPosition.ShortQuantity
+- uid: Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_WeightedAverageCost
+  name: WeightedAverageCost
+  nameWithType: AggregatedPosition.WeightedAverageCost
+  fullName: Meridian.Strategies.Services.AggregatedPosition.WeightedAverageCost
+- uid: Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_TotalUnrealisedPnl
+  name: TotalUnrealisedPnl
+  nameWithType: AggregatedPosition.TotalUnrealisedPnl
+  fullName: Meridian.Strategies.Services.AggregatedPosition.TotalUnrealisedPnl
+- uid: Meridian.Strategies.Services.AggregatedPosition.Contributions*
+  commentId: Overload:Meridian.Strategies.Services.AggregatedPosition.Contributions
+  href: Meridian.Strategies.Services.AggregatedPosition.html#Meridian_Strategies_Services_AggregatedPosition_Contributions
+  name: Contributions
+  nameWithType: AggregatedPosition.Contributions
+  fullName: Meridian.Strategies.Services.AggregatedPosition.Contributions

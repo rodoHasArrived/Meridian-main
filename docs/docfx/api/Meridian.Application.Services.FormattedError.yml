@@ -1,0 +1,627 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.FormattedError
+  commentId: T:Meridian.Application.Services.FormattedError
+  id: FormattedError
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.FormattedError.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Application.Services.FormattedError.Code
+  - Meridian.Application.Services.FormattedError.Details
+  - Meridian.Application.Services.FormattedError.DocsLink
+  - Meridian.Application.Services.FormattedError.Message
+  - Meridian.Application.Services.FormattedError.Suggestion
+  - Meridian.Application.Services.FormattedError.Title
+  langs:
+  - csharp
+  - vb
+  name: FormattedError
+  nameWithType: FormattedError
+  fullName: Meridian.Application.Services.FormattedError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormattedError
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: A formatted error ready for display.
+  example: []
+  syntax:
+    content: 'public sealed record FormattedError : IEquatable<FormattedError>'
+    content.vb: Public NotInheritable Class FormattedError Implements IEquatable(Of FormattedError)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.FormattedError}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.FormattedError.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Services.FormattedError.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: FormattedError(string, string, string, string?, string?, string?)
+  nameWithType: FormattedError.FormattedError(string, string, string, string?, string?, string?)
+  fullName: Meridian.Application.Services.FormattedError.FormattedError(string, string, string, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: A formatted error ready for display.
+  example: []
+  syntax:
+    content: public FormattedError(string Code, string Title, string Message, string? Suggestion, string? DocsLink, string? Details)
+    parameters:
+    - id: Code
+      type: System.String
+    - id: Title
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: Suggestion
+      type: System.String
+    - id: DocsLink
+      type: System.String
+    - id: Details
+      type: System.String
+    content.vb: Public Sub New(Code As String, Title As String, Message As String, Suggestion As String, DocsLink As String, Details As String)
+  overload: Meridian.Application.Services.FormattedError.#ctor*
+  nameWithType.vb: FormattedError.New(String, String, String, String, String, String)
+  fullName.vb: Meridian.Application.Services.FormattedError.New(String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String)
+- uid: Meridian.Application.Services.FormattedError.Code
+  commentId: P:Meridian.Application.Services.FormattedError.Code
+  id: Code
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: FormattedError.Code
+  fullName: Meridian.Application.Services.FormattedError.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Application.Services.FormattedError.Code*
+- uid: Meridian.Application.Services.FormattedError.Title
+  commentId: P:Meridian.Application.Services.FormattedError.Title
+  id: Title
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: FormattedError.Title
+  fullName: Meridian.Application.Services.FormattedError.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Title { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Application.Services.FormattedError.Title*
+- uid: Meridian.Application.Services.FormattedError.Message
+  commentId: P:Meridian.Application.Services.FormattedError.Message
+  id: Message
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: FormattedError.Message
+  fullName: Meridian.Application.Services.FormattedError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Services.FormattedError.Message*
+- uid: Meridian.Application.Services.FormattedError.Suggestion
+  commentId: P:Meridian.Application.Services.FormattedError.Suggestion
+  id: Suggestion
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: Suggestion
+  nameWithType: FormattedError.Suggestion
+  fullName: Meridian.Application.Services.FormattedError.Suggestion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Suggestion
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Suggestion { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Suggestion As String
+  overload: Meridian.Application.Services.FormattedError.Suggestion*
+- uid: Meridian.Application.Services.FormattedError.DocsLink
+  commentId: P:Meridian.Application.Services.FormattedError.DocsLink
+  id: DocsLink
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: DocsLink
+  nameWithType: FormattedError.DocsLink
+  fullName: Meridian.Application.Services.FormattedError.DocsLink
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DocsLink
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? DocsLink { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DocsLink As String
+  overload: Meridian.Application.Services.FormattedError.DocsLink*
+- uid: Meridian.Application.Services.FormattedError.Details
+  commentId: P:Meridian.Application.Services.FormattedError.Details
+  id: Details
+  parent: Meridian.Application.Services.FormattedError
+  langs:
+  - csharp
+  - vb
+  name: Details
+  nameWithType: FormattedError.Details
+  fullName: Meridian.Application.Services.FormattedError.Details
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Details
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Details { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Details As String
+  overload: Meridian.Application.Services.FormattedError.Details*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.FormattedError}
+  commentId: T:System.IEquatable{Meridian.Application.Services.FormattedError}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FormattedError>
+  nameWithType: IEquatable<FormattedError>
+  fullName: System.IEquatable<Meridian.Application.Services.FormattedError>
+  nameWithType.vb: IEquatable(Of FormattedError)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.FormattedError)
+  name.vb: IEquatable(Of FormattedError)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.FormattedError
+    name: FormattedError
+    href: Meridian.Application.Services.FormattedError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.FormattedError
+    name: FormattedError
+    href: Meridian.Application.Services.FormattedError.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.FormattedError.#ctor*
+  commentId: Overload:Meridian.Application.Services.FormattedError.#ctor
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError__ctor_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: FormattedError
+  nameWithType: FormattedError.FormattedError
+  fullName: Meridian.Application.Services.FormattedError.FormattedError
+  nameWithType.vb: FormattedError.New
+  fullName.vb: Meridian.Application.Services.FormattedError.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.FormattedError.Code*
+  commentId: Overload:Meridian.Application.Services.FormattedError.Code
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError_Code
+  name: Code
+  nameWithType: FormattedError.Code
+  fullName: Meridian.Application.Services.FormattedError.Code
+- uid: Meridian.Application.Services.FormattedError.Title*
+  commentId: Overload:Meridian.Application.Services.FormattedError.Title
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError_Title
+  name: Title
+  nameWithType: FormattedError.Title
+  fullName: Meridian.Application.Services.FormattedError.Title
+- uid: Meridian.Application.Services.FormattedError.Message*
+  commentId: Overload:Meridian.Application.Services.FormattedError.Message
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError_Message
+  name: Message
+  nameWithType: FormattedError.Message
+  fullName: Meridian.Application.Services.FormattedError.Message
+- uid: Meridian.Application.Services.FormattedError.Suggestion*
+  commentId: Overload:Meridian.Application.Services.FormattedError.Suggestion
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError_Suggestion
+  name: Suggestion
+  nameWithType: FormattedError.Suggestion
+  fullName: Meridian.Application.Services.FormattedError.Suggestion
+- uid: Meridian.Application.Services.FormattedError.DocsLink*
+  commentId: Overload:Meridian.Application.Services.FormattedError.DocsLink
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError_DocsLink
+  name: DocsLink
+  nameWithType: FormattedError.DocsLink
+  fullName: Meridian.Application.Services.FormattedError.DocsLink
+- uid: Meridian.Application.Services.FormattedError.Details*
+  commentId: Overload:Meridian.Application.Services.FormattedError.Details
+  href: Meridian.Application.Services.FormattedError.html#Meridian_Application_Services_FormattedError_Details
+  name: Details
+  nameWithType: FormattedError.Details
+  fullName: Meridian.Application.Services.FormattedError.Details

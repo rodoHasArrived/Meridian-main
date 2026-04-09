@@ -1,0 +1,77 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Options
+  commentId: N:Meridian.Infrastructure.CppTrader.Options
+  id: Meridian.Infrastructure.CppTrader.Options
+  children:
+  - Meridian.Infrastructure.CppTrader.Options.CppTraderFeatureOptions
+  - Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+  - Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Options
+  nameWithType: Meridian.Infrastructure.CppTrader.Options
+  fullName: Meridian.Infrastructure.CppTrader.Options
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+  commentId: T:Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+  href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  name: CppTraderOptions
+  nameWithType: CppTraderOptions
+  fullName: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+- uid: Meridian.Infrastructure.CppTrader.Options.CppTraderFeatureOptions
+  commentId: T:Meridian.Infrastructure.CppTrader.Options.CppTraderFeatureOptions
+  parent: Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.Infrastructure.CppTrader.Options.CppTraderFeatureOptions.html
+  name: CppTraderFeatureOptions
+  nameWithType: CppTraderFeatureOptions
+  fullName: Meridian.Infrastructure.CppTrader.Options.CppTraderFeatureOptions
+- uid: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  commentId: T:Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  parent: Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification.html
+  name: CppTraderSymbolSpecification
+  nameWithType: CppTraderSymbolSpecification
+  fullName: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+- uid: Meridian.Infrastructure.CppTrader.Options
+  commentId: N:Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Options
+  nameWithType: Meridian.Infrastructure.CppTrader.Options
+  fullName: Meridian.Infrastructure.CppTrader.Options
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Options
+    name: Options
+    href: Meridian.Infrastructure.CppTrader.Options.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Options
+    name: Options
+    href: Meridian.Infrastructure.CppTrader.Options.html

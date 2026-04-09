@@ -1,6 +1,28 @@
 using System.Windows.Media;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Wpf.Models;
+
+/// <summary>
+/// Shared selected-run context that can flow between research and trading workspaces.
+/// </summary>
+public sealed class ActiveRunContext
+{
+    public string RunId { get; set; } = string.Empty;
+    public string StrategyId { get; set; } = string.Empty;
+    public string StrategyName { get; set; } = string.Empty;
+    public string ModeLabel { get; set; } = string.Empty;
+    public string StatusLabel { get; set; } = string.Empty;
+    public string FundScopeLabel { get; set; } = "Global";
+    public bool CanPromoteToPaper { get; set; }
+    public string PromotionLabel { get; set; } = "Review Promotion";
+    public string TradingHandoffLabel { get; set; } = "Open in Trading Cockpit";
+    public string PortfolioPreview { get; set; } = "No portfolio preview available.";
+    public string LedgerPreview { get; set; } = "No ledger preview available.";
+    public string RiskSummary { get; set; } = "No active risk posture.";
+    public PortfolioSummary? Portfolio { get; set; }
+    public LedgerSummary? Ledger { get; set; }
+}
 
 // ── Trading Workspace ───────────────────────────────────────────────────────
 
@@ -32,6 +54,7 @@ public sealed class TradingWorkspaceSummary
     public string PositionLimitLabel { get; set; } = "—";
     public string OrderRateLabel { get; set; } = "—";
     public IReadOnlyList<TradingActivePositionItem> ActivePositions { get; set; } = [];
+    public ActiveRunContext? ActiveRunContext { get; set; }
 }
 
 // ── Research Workspace ──────────────────────────────────────────────────────
@@ -71,4 +94,5 @@ public sealed class ResearchWorkspaceSummary
     public int PendingReviewCount { get; set; }
     public IReadOnlyList<ResearchRunSummaryItem> RecentRuns { get; set; } = [];
     public IReadOnlyList<ResearchPromotionCandidateItem> PromotionCandidates { get; set; } = [];
+    public ActiveRunContext? ActiveRunContext { get; set; }
 }

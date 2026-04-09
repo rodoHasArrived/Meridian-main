@@ -1,0 +1,984 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Services.RepoPathService
+  commentId: T:Meridian.Mcp.Services.RepoPathService
+  id: RepoPathService
+  parent: Meridian.Mcp.Services
+  children:
+  - Meridian.Mcp.Services.RepoPathService.#ctor
+  - Meridian.Mcp.Services.RepoPathService.AdaptersPath
+  - Meridian.Mcp.Services.RepoPathService.AdrPath
+  - Meridian.Mcp.Services.RepoPathService.AgentsPath
+  - Meridian.Mcp.Services.RepoPathService.AiClaudePath
+  - Meridian.Mcp.Services.RepoPathService.AiDocsPath
+  - Meridian.Mcp.Services.RepoPathService.AuditScriptPath
+  - Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile
+  - Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile
+  - Meridian.Mcp.Services.RepoPathService.DocsPath
+  - Meridian.Mcp.Services.RepoPathService.FSharpGuideFile
+  - Meridian.Mcp.Services.RepoPathService.GithubPath
+  - Meridian.Mcp.Services.RepoPathService.InstructionsPath
+  - Meridian.Mcp.Services.RepoPathService.KnownErrorsFile
+  - Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile
+  - Meridian.Mcp.Services.RepoPathService.Root
+  - Meridian.Mcp.Services.RepoPathService.StorageGuideFile
+  - Meridian.Mcp.Services.RepoPathService.TemplatesPath
+  - Meridian.Mcp.Services.RepoPathService.TestingGuideFile
+  langs:
+  - csharp
+  - vb
+  name: RepoPathService
+  nameWithType: RepoPathService
+  fullName: Meridian.Mcp.Services.RepoPathService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepoPathService
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 6
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  summary: >-
+    Locates the Meridian repository root and exposes well-known paths
+
+    used by tools and resources.
+  example: []
+  syntax:
+    content: public sealed class RepoPathService
+    content.vb: Public NotInheritable Class RepoPathService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Mcp.Services.RepoPathService.Root
+  commentId: P:Meridian.Mcp.Services.RepoPathService.Root
+  id: Root
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: Root
+  nameWithType: RepoPathService.Root
+  fullName: Meridian.Mcp.Services.RepoPathService.Root
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Root
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 11
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string Root { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Root As String
+  overload: Meridian.Mcp.Services.RepoPathService.Root*
+- uid: Meridian.Mcp.Services.RepoPathService.DocsPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.DocsPath
+  id: DocsPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: DocsPath
+  nameWithType: RepoPathService.DocsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.DocsPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DocsPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 12
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string DocsPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property DocsPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.DocsPath*
+- uid: Meridian.Mcp.Services.RepoPathService.AdrPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.AdrPath
+  id: AdrPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: AdrPath
+  nameWithType: RepoPathService.AdrPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AdrPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdrPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 13
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string AdrPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AdrPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.AdrPath*
+- uid: Meridian.Mcp.Services.RepoPathService.AiDocsPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.AiDocsPath
+  id: AiDocsPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: AiDocsPath
+  nameWithType: RepoPathService.AiDocsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AiDocsPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AiDocsPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 14
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string AiDocsPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AiDocsPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.AiDocsPath*
+- uid: Meridian.Mcp.Services.RepoPathService.GithubPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.GithubPath
+  id: GithubPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: GithubPath
+  nameWithType: RepoPathService.GithubPath
+  fullName: Meridian.Mcp.Services.RepoPathService.GithubPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GithubPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 15
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string GithubPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property GithubPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.GithubPath*
+- uid: Meridian.Mcp.Services.RepoPathService.InstructionsPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.InstructionsPath
+  id: InstructionsPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: InstructionsPath
+  nameWithType: RepoPathService.InstructionsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.InstructionsPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstructionsPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 16
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string InstructionsPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property InstructionsPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.InstructionsPath*
+- uid: Meridian.Mcp.Services.RepoPathService.AgentsPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.AgentsPath
+  id: AgentsPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: AgentsPath
+  nameWithType: RepoPathService.AgentsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AgentsPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AgentsPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 17
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string AgentsPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AgentsPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.AgentsPath*
+- uid: Meridian.Mcp.Services.RepoPathService.AiClaudePath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.AiClaudePath
+  id: AiClaudePath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: AiClaudePath
+  nameWithType: RepoPathService.AiClaudePath
+  fullName: Meridian.Mcp.Services.RepoPathService.AiClaudePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AiClaudePath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 18
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string AiClaudePath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AiClaudePath As String
+  overload: Meridian.Mcp.Services.RepoPathService.AiClaudePath*
+- uid: Meridian.Mcp.Services.RepoPathService.TemplatesPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.TemplatesPath
+  id: TemplatesPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: TemplatesPath
+  nameWithType: RepoPathService.TemplatesPath
+  fullName: Meridian.Mcp.Services.RepoPathService.TemplatesPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TemplatesPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 19
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string TemplatesPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property TemplatesPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.TemplatesPath*
+- uid: Meridian.Mcp.Services.RepoPathService.AdaptersPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.AdaptersPath
+  id: AdaptersPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: AdaptersPath
+  nameWithType: RepoPathService.AdaptersPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AdaptersPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdaptersPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 20
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string AdaptersPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AdaptersPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.AdaptersPath*
+- uid: Meridian.Mcp.Services.RepoPathService.AuditScriptPath
+  commentId: P:Meridian.Mcp.Services.RepoPathService.AuditScriptPath
+  id: AuditScriptPath
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: AuditScriptPath
+  nameWithType: RepoPathService.AuditScriptPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AuditScriptPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditScriptPath
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 21
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string AuditScriptPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AuditScriptPath As String
+  overload: Meridian.Mcp.Services.RepoPathService.AuditScriptPath*
+- uid: Meridian.Mcp.Services.RepoPathService.#ctor
+  commentId: M:Meridian.Mcp.Services.RepoPathService.#ctor
+  id: '#ctor'
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: RepoPathService()
+  nameWithType: RepoPathService.RepoPathService()
+  fullName: Meridian.Mcp.Services.RepoPathService.RepoPathService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 23
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public RepoPathService()
+    content.vb: Public Sub New()
+  overload: Meridian.Mcp.Services.RepoPathService.#ctor*
+  nameWithType.vb: RepoPathService.New()
+  fullName.vb: Meridian.Mcp.Services.RepoPathService.New()
+  name.vb: New()
+- uid: Meridian.Mcp.Services.RepoPathService.KnownErrorsFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.KnownErrorsFile
+  id: KnownErrorsFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: KnownErrorsFile
+  nameWithType: RepoPathService.KnownErrorsFile
+  fullName: Meridian.Mcp.Services.RepoPathService.KnownErrorsFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KnownErrorsFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 53
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string KnownErrorsFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property KnownErrorsFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.KnownErrorsFile*
+- uid: Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile
+  id: CSharpInstructionsFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: CSharpInstructionsFile
+  nameWithType: RepoPathService.CSharpInstructionsFile
+  fullName: Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CSharpInstructionsFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 54
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string CSharpInstructionsFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property CSharpInstructionsFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile*
+- uid: Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile
+  id: CodeReviewAgentFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: CodeReviewAgentFile
+  nameWithType: RepoPathService.CodeReviewAgentFile
+  fullName: Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CodeReviewAgentFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 55
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string CodeReviewAgentFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property CodeReviewAgentFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile*
+- uid: Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile
+  id: ProvidersGuideFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: ProvidersGuideFile
+  nameWithType: RepoPathService.ProvidersGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProvidersGuideFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 56
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string ProvidersGuideFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProvidersGuideFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile*
+- uid: Meridian.Mcp.Services.RepoPathService.TestingGuideFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.TestingGuideFile
+  id: TestingGuideFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: TestingGuideFile
+  nameWithType: RepoPathService.TestingGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.TestingGuideFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestingGuideFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 57
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string TestingGuideFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property TestingGuideFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.TestingGuideFile*
+- uid: Meridian.Mcp.Services.RepoPathService.StorageGuideFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.StorageGuideFile
+  id: StorageGuideFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: StorageGuideFile
+  nameWithType: RepoPathService.StorageGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.StorageGuideFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageGuideFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 58
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string StorageGuideFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property StorageGuideFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.StorageGuideFile*
+- uid: Meridian.Mcp.Services.RepoPathService.FSharpGuideFile
+  commentId: P:Meridian.Mcp.Services.RepoPathService.FSharpGuideFile
+  id: FSharpGuideFile
+  parent: Meridian.Mcp.Services.RepoPathService
+  langs:
+  - csharp
+  - vb
+  name: FSharpGuideFile
+  nameWithType: RepoPathService.FSharpGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.FSharpGuideFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Mcp/Services/RepoPathService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FSharpGuideFile
+    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    startLine: 59
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Services
+  syntax:
+    content: public string FSharpGuideFile { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property FSharpGuideFile As String
+  overload: Meridian.Mcp.Services.RepoPathService.FSharpGuideFile*
+references:
+- uid: Meridian.Mcp.Services
+  commentId: N:Meridian.Mcp.Services
+  href: Meridian.html
+  name: Meridian.Mcp.Services
+  nameWithType: Meridian.Mcp.Services
+  fullName: Meridian.Mcp.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Mcp.Services.RepoPathService.Root*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.Root
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_Root
+  name: Root
+  nameWithType: RepoPathService.Root
+  fullName: Meridian.Mcp.Services.RepoPathService.Root
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Mcp.Services.RepoPathService.DocsPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.DocsPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_DocsPath
+  name: DocsPath
+  nameWithType: RepoPathService.DocsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.DocsPath
+- uid: Meridian.Mcp.Services.RepoPathService.AdrPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.AdrPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_AdrPath
+  name: AdrPath
+  nameWithType: RepoPathService.AdrPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AdrPath
+- uid: Meridian.Mcp.Services.RepoPathService.AiDocsPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.AiDocsPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_AiDocsPath
+  name: AiDocsPath
+  nameWithType: RepoPathService.AiDocsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AiDocsPath
+- uid: Meridian.Mcp.Services.RepoPathService.GithubPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.GithubPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_GithubPath
+  name: GithubPath
+  nameWithType: RepoPathService.GithubPath
+  fullName: Meridian.Mcp.Services.RepoPathService.GithubPath
+- uid: Meridian.Mcp.Services.RepoPathService.InstructionsPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.InstructionsPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_InstructionsPath
+  name: InstructionsPath
+  nameWithType: RepoPathService.InstructionsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.InstructionsPath
+- uid: Meridian.Mcp.Services.RepoPathService.AgentsPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.AgentsPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_AgentsPath
+  name: AgentsPath
+  nameWithType: RepoPathService.AgentsPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AgentsPath
+- uid: Meridian.Mcp.Services.RepoPathService.AiClaudePath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.AiClaudePath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_AiClaudePath
+  name: AiClaudePath
+  nameWithType: RepoPathService.AiClaudePath
+  fullName: Meridian.Mcp.Services.RepoPathService.AiClaudePath
+- uid: Meridian.Mcp.Services.RepoPathService.TemplatesPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.TemplatesPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_TemplatesPath
+  name: TemplatesPath
+  nameWithType: RepoPathService.TemplatesPath
+  fullName: Meridian.Mcp.Services.RepoPathService.TemplatesPath
+- uid: Meridian.Mcp.Services.RepoPathService.AdaptersPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.AdaptersPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_AdaptersPath
+  name: AdaptersPath
+  nameWithType: RepoPathService.AdaptersPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AdaptersPath
+- uid: Meridian.Mcp.Services.RepoPathService.AuditScriptPath*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.AuditScriptPath
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_AuditScriptPath
+  name: AuditScriptPath
+  nameWithType: RepoPathService.AuditScriptPath
+  fullName: Meridian.Mcp.Services.RepoPathService.AuditScriptPath
+- uid: Meridian.Mcp.Services.RepoPathService.#ctor*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.#ctor
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService__ctor
+  name: RepoPathService
+  nameWithType: RepoPathService.RepoPathService
+  fullName: Meridian.Mcp.Services.RepoPathService.RepoPathService
+  nameWithType.vb: RepoPathService.New
+  fullName.vb: Meridian.Mcp.Services.RepoPathService.New
+  name.vb: New
+- uid: Meridian.Mcp.Services.RepoPathService.KnownErrorsFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.KnownErrorsFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_KnownErrorsFile
+  name: KnownErrorsFile
+  nameWithType: RepoPathService.KnownErrorsFile
+  fullName: Meridian.Mcp.Services.RepoPathService.KnownErrorsFile
+- uid: Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_CSharpInstructionsFile
+  name: CSharpInstructionsFile
+  nameWithType: RepoPathService.CSharpInstructionsFile
+  fullName: Meridian.Mcp.Services.RepoPathService.CSharpInstructionsFile
+- uid: Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_CodeReviewAgentFile
+  name: CodeReviewAgentFile
+  nameWithType: RepoPathService.CodeReviewAgentFile
+  fullName: Meridian.Mcp.Services.RepoPathService.CodeReviewAgentFile
+- uid: Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_ProvidersGuideFile
+  name: ProvidersGuideFile
+  nameWithType: RepoPathService.ProvidersGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.ProvidersGuideFile
+- uid: Meridian.Mcp.Services.RepoPathService.TestingGuideFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.TestingGuideFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_TestingGuideFile
+  name: TestingGuideFile
+  nameWithType: RepoPathService.TestingGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.TestingGuideFile
+- uid: Meridian.Mcp.Services.RepoPathService.StorageGuideFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.StorageGuideFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_StorageGuideFile
+  name: StorageGuideFile
+  nameWithType: RepoPathService.StorageGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.StorageGuideFile
+- uid: Meridian.Mcp.Services.RepoPathService.FSharpGuideFile*
+  commentId: Overload:Meridian.Mcp.Services.RepoPathService.FSharpGuideFile
+  href: Meridian.Mcp.Services.RepoPathService.html#Meridian_Mcp_Services_RepoPathService_FSharpGuideFile
+  name: FSharpGuideFile
+  nameWithType: RepoPathService.FSharpGuideFile
+  fullName: Meridian.Mcp.Services.RepoPathService.FSharpGuideFile

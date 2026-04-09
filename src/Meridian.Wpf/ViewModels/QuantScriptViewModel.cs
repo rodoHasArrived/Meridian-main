@@ -1,12 +1,13 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
-using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Ui.Services.Collections;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
+using Meridian.Ui.Services.Collections;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Microsoft.Extensions.Logging;
@@ -15,14 +16,23 @@ using Microsoft.Extensions.Options;
 namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
-/// ViewModel for the QuantScript interactive C# scripting environment.
-/// Drives a three-column layout: script browser / editor / results tabs.
+/// ViewModel for Meridian's notebook-style QuantScript workspace.
 /// </summary>
 public sealed class QuantScriptViewModel : BindableBase, IDisposable
 {
+    private static readonly System.Windows.Media.Color[] LegendPalette =
+    [
+        System.Windows.Media.Color.FromRgb(66, 153, 225),
+        System.Windows.Media.Color.FromRgb(159, 122, 234),
+        System.Windows.Media.Color.FromRgb(56, 178, 172),
+        System.Windows.Media.Color.FromRgb(72, 187, 120),
+        System.Windows.Media.Color.FromRgb(245, 101, 101)
+    ];
+
     private readonly IScriptRunner _runner;
     private readonly IQuantScriptCompiler _compiler;
-    private readonly PlotQueue _plotQueue;
+    private readonly NotebookExecutionSession _executionSession;
+    private readonly IQuantScriptNotebookStore _notebookStore;
     private readonly IQuantScriptLayoutService _layoutService;
     private readonly QuantScriptOptions _options;
     private readonly ILogger<QuantScriptViewModel> _logger;
@@ -30,178 +40,66 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
+    private string? _currentDocumentPath;
+    private bool _isLegacyImport;
     private bool _disposed;
+    private bool _isLoadingDocument;
 
-    // ── Asset / date context ─────────────────────────────────────────────────
-
-    private string _assetSymbol = string.Empty;
-    public string AssetSymbol { get => _assetSymbol; set => SetProperty(ref _assetSymbol, value); }
-
-    private DateTime _fromDate = DateTime.Today.AddYears(-1);
-    public DateTime FromDate { get => _fromDate; set => SetProperty(ref _fromDate, value); }
-
-    private DateTime _toDate = DateTime.Today;
-    public DateTime ToDate { get => _toDate; set => SetProperty(ref _toDate, value); }
-
-    private string _selectedInterval = "Daily (Custom)";
-    public string SelectedInterval { get => _selectedInterval; set => SetProperty(ref _selectedInterval, value); }
-
-    public static IReadOnlyList<string> Intervals { get; } =
-        ["Daily", "Daily (Custom)", "Weekly", "Monthly"];
-
-    // ── Primary chart (shown in top chart area) ──────────────────────────────
-
-    /// <summary>The <see cref="PlotRequest"/> of the first chart result, or <c>null</c> when no charts exist.</summary>
-    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
-
-    /// <summary>Title of the first chart result, or empty when no charts exist.</summary>
-    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
-
-    /// <summary>True once the script has produced at least one chart.</summary>
-    public bool HasChart => Charts.Count > 0;
-
-    /// <summary>True when no chart result exists — drives empty-state placeholder visibility.</summary>
-    public bool HasNoChart => Charts.Count == 0;
-
-    /// <summary>True when the primary chart has at least one named legend entry.</summary>
-    public bool HasLegend => LegendEntries.Count > 0;
-
-    // Series palette matching PlotRenderBehavior so legend colors stay in sync.
-    private static readonly System.Windows.Media.Color[] _legendPalette =
-    [
-        System.Windows.Media.Color.FromRgb(66,  153, 225),  // ChartPrimary   blue
-        System.Windows.Media.Color.FromRgb(159, 122, 234),  // ChartSecondary purple
-        System.Windows.Media.Color.FromRgb(56,  178, 172),  // ChartTertiary  teal
-        System.Windows.Media.Color.FromRgb(72,  187, 120),  // ChartPositive  green
-        System.Windows.Media.Color.FromRgb(245, 101, 101),  // ChartNegative  red
-    ];
-
-    /// <summary>Legend entries extracted from the first chart result.</summary>
-    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
-
-
-
-    private string _scriptSource = string.Empty;
-    public string ScriptSource
-    {
-        get => _scriptSource;
-        set
-        {
-            if (SetProperty(ref _scriptSource, value))
-                UpdateParameters(value);
-        }
-    }
-
-    // ── Script browser ───────────────────────────────────────────────────────
-
-    public ObservableCollection<ScriptFileEntry> ScriptFiles { get; } = [];
-
-    private ScriptFileEntry? _selectedScript;
-    public ScriptFileEntry? SelectedScript
-    {
-        get => _selectedScript;
-        set
-        {
-            if (SetProperty(ref _selectedScript, value) && value != null)
-                LoadScriptFile(value.FullPath);
-        }
-    }
-
-    // ── Parameters ───────────────────────────────────────────────────────────
-
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
-
-    // ── Results ──────────────────────────────────────────────────────────────
-
-    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } =
-        new BoundedObservableCollection<ConsoleEntry>(10_000);
-
-    public ObservableCollection<PlotViewModel> Charts { get; } = [];
-    public ObservableCollection<MetricEntry> Metrics { get; } = [];
-    public ObservableCollection<TradeEntry> Trades { get; } = [];
-    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
-
-    // ── Tab headers ──────────────────────────────────────────────────────────
-
-    public string ConsoleTabHeader
-        => ConsoleOutput.Count > 0 ? $"Console ({ConsoleOutput.Count})" : "Console";
-
-    public string ChartsTabHeader
-        => Charts.Count > 0 ? $"Charts ({Charts.Count})" : "Charts";
-
-    public string MetricsTabHeader
-        => Metrics.Count > 0 ? $"Metrics ({Metrics.Count})" : "Metrics";
-
-    public string TradesTabHeader
-        => Trades.Count > 0 ? $"Trades ({Trades.Count})" : "Trades";
-
-    public string DiagnosticsTabHeader
-        => Diagnostics.Count > 0 ? $"Diagnostics ({Diagnostics.Count})" : "Diagnostics";
-
-    // ── Status ───────────────────────────────────────────────────────────────
-
+    private QuantScriptDocumentEntry? _selectedDocument;
+    private QuantScriptCellViewModel? _selectedCell;
+    private string? _selectedCellId;
     private bool _isRunning;
-    public bool IsRunning
-    {
-        get => _isRunning;
-        private set
-        {
-            if (SetProperty(ref _isRunning, value))
-            {
-                RaisePropertyChanged(nameof(CanRun));
-                RunScriptCommand.NotifyCanExecuteChanged();
-                StopCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
-
     private double _progressFraction;
-    public double ProgressFraction { get => _progressFraction; private set => SetProperty(ref _progressFraction, value); }
-
     private string _statusText = "Ready";
-    public string StatusText { get => _statusText; private set => SetProperty(ref _statusText, value); }
-
     private string _elapsedText = "--";
-    public string ElapsedText { get => _elapsedText; private set => SetProperty(ref _elapsedText, value); }
-
     private string _memoryText = "--";
-    public string MemoryText { get => _memoryText; private set => SetProperty(ref _memoryText, value); }
-
-    public bool CanRun => !_isRunning;
-
     private int _activeResultsTab;
-    public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
-
-    // ── Commands ─────────────────────────────────────────────────────────────
-
-    public IAsyncRelayCommand RunScriptCommand { get; }
-    public IRelayCommand StopCommand { get; }
-    public IRelayCommand NewScriptCommand { get; }
-    public IAsyncRelayCommand SaveScriptCommand { get; }
-    public IRelayCommand RefreshScriptsCommand { get; }
-    public IRelayCommand ClearConsoleCommand { get; }
+    private string _notebookTitle = "QuantScript Notebook";
+    private string? _documentWarningText;
+    private bool _hasUnsavedChanges;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
         IQuantScriptCompiler compiler,
-        PlotQueue plotQueue,
+        NotebookExecutionSession executionSession,
+        IQuantScriptNotebookStore notebookStore,
         IQuantScriptLayoutService layoutService,
         IOptions<QuantScriptOptions> options,
         ILogger<QuantScriptViewModel> logger)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
-        _plotQueue = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue));
+        _executionSession = executionSession ?? throw new ArgumentNullException(nameof(executionSession));
+        _notebookStore = notebookStore ?? throw new ArgumentNullException(nameof(notebookStore));
         _layoutService = layoutService ?? throw new ArgumentNullException(nameof(layoutService));
         _options = options?.Value ?? new QuantScriptOptions();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        RunScriptCommand = new AsyncRelayCommand(RunAsync, () => CanRun);
-        StopCommand = new RelayCommand(() => RunScriptCommand.Cancel(), () => IsRunning);
-        NewScriptCommand = new RelayCommand(NewScript);
-        SaveScriptCommand = new AsyncRelayCommand(SaveScriptAsync);
-        RefreshScriptsCommand = new RelayCommand(RefreshScripts);
-        ClearConsoleCommand = new RelayCommand(ClearConsole);
+        Documents = [];
+        Cells = [];
+        Parameters = [];
+        ConsoleOutput = new BoundedObservableCollection<ConsoleEntry>(10_000);
+        Charts = [];
+        Metrics = [];
+        Trades = [];
+        Diagnostics = [];
+        LegendEntries = [];
+
+        RunAllCommand = new AsyncRelayCommand(RunAllAsync, () => CanRun);
+        RunCellCommand = new AsyncRelayCommand<QuantScriptCellViewModel?>(
+            (cell, ct) => RunCellAsync(cell, false, ct),
+            cell => CanRun && cell is not null);
+        RunCellAndAdvanceCommand = new AsyncRelayCommand<QuantScriptCellViewModel?>(
+            (cell, ct) => RunCellAsync(cell, true, ct),
+            cell => CanRun && cell is not null);
+        StopCommand = new RelayCommand(StopExecution, () => IsRunning);
+        NewNotebookCommand = new RelayCommand(CreateNewNotebook);
+        SaveNotebookCommand = new AsyncRelayCommand(SaveNotebookAsync, () => !IsRunning);
+        RefreshDocumentsCommand = new RelayCommand(RefreshDocuments);
+        ClearConsoleCommand = new RelayCommand(() => ConsoleOutput.Clear());
+        AddCellBelowCommand = new RelayCommand<QuantScriptCellViewModel?>(AddCellBelow);
+        DeleteCellCommand = new RelayCommand<QuantScriptCellViewModel?>(DeleteCell, cell => cell is not null && Cells.Count > 1);
+        SelectCellCommand = new RelayCommand<QuantScriptCellViewModel?>(SelectCell);
 
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
         Charts.CollectionChanged += (_, _) =>
@@ -212,14 +110,219 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         Metrics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(MetricsTabHeader));
         Trades.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(TradesTabHeader));
         Diagnostics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DiagnosticsTabHeader));
+        Cells.CollectionChanged += (_, _) =>
+        {
+            UpdateDocumentWarning();
+            DeleteCellCommand.NotifyCanExecuteChanged();
+            RaisePropertyChanged(nameof(DocumentDisplayName));
+        };
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────────────────
+    public ObservableCollection<QuantScriptDocumentEntry> Documents { get; }
 
-    /// <summary>
-    /// Called from code-behind on every page load. Returns the persisted row heights so
-    /// the view can apply them to its Grid — the ViewModel must not touch UI elements directly.
-    /// </summary>
+    public ObservableCollection<QuantScriptCellViewModel> Cells { get; }
+
+    public ObservableCollection<ParameterViewModel> Parameters { get; }
+
+    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; }
+
+    public ObservableCollection<PlotViewModel> Charts { get; }
+
+    public ObservableCollection<MetricEntry> Metrics { get; }
+
+    public ObservableCollection<TradeEntry> Trades { get; }
+
+    public ObservableCollection<DiagnosticEntry> Diagnostics { get; }
+
+    public ObservableCollection<ChartLegendEntry> LegendEntries { get; }
+
+    public QuantScriptDocumentEntry? SelectedDocument
+    {
+        get => _selectedDocument;
+        set => SetSelectedDocument(value, openDocument: true);
+    }
+
+    public QuantScriptCellViewModel? SelectedCell
+    {
+        get => _selectedCell;
+        private set
+        {
+            if (!SetProperty(ref _selectedCell, value))
+                return;
+
+            SelectedCellId = value?.CellId;
+        }
+    }
+
+    public string? SelectedCellId
+    {
+        get => _selectedCellId;
+        private set => SetProperty(ref _selectedCellId, value);
+    }
+
+    public string NotebookTitle
+    {
+        get => _notebookTitle;
+        set
+        {
+            if (!SetProperty(ref _notebookTitle, value))
+                return;
+
+            if (!_isLoadingDocument)
+                HasUnsavedChanges = true;
+
+            RefreshNotebookChrome();
+        }
+    }
+
+    public string? DocumentWarningText
+    {
+        get => _documentWarningText;
+        private set => SetProperty(ref _documentWarningText, value);
+    }
+
+    public bool HasUnsavedChanges
+    {
+        get => _hasUnsavedChanges;
+        private set
+        {
+            if (!SetProperty(ref _hasUnsavedChanges, value))
+                return;
+
+            RaisePropertyChanged(nameof(DocumentStateText));
+        }
+    }
+
+    public string DocumentDisplayName => _isLegacyImport
+        ? $"{NotebookTitle} (.csx import)"
+        : !string.IsNullOrWhiteSpace(_currentDocumentPath)
+            ? Path.GetFileName(_currentDocumentPath)
+            : "Unsaved notebook";
+
+    public string DocumentStateText => _isLegacyImport
+        ? "Imported legacy script"
+        : HasUnsavedChanges
+            ? "Unsaved changes"
+            : !string.IsNullOrWhiteSpace(_currentDocumentPath)
+                ? "Saved"
+                : "Draft";
+
+    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
+
+    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
+
+    public bool HasChart => Charts.Count > 0;
+
+    public bool HasNoChart => Charts.Count == 0;
+
+    public bool HasLegend => LegendEntries.Count > 0;
+
+    public string ConsoleTabHeader => ConsoleOutput.Count > 0 ? $"Console ({ConsoleOutput.Count})" : "Console";
+
+    public string ChartsTabHeader => Charts.Count > 0 ? $"Charts ({Charts.Count})" : "Charts";
+
+    public string MetricsTabHeader => Metrics.Count > 0 ? $"Metrics ({Metrics.Count})" : "Metrics";
+
+    public string TradesTabHeader => Trades.Count > 0 ? $"Trades ({Trades.Count})" : "Trades";
+
+    public string DiagnosticsTabHeader => Diagnostics.Count > 0 ? $"Diagnostics ({Diagnostics.Count})" : "Diagnostics";
+
+    public bool IsRunning
+    {
+        get => _isRunning;
+        private set
+        {
+            if (!SetProperty(ref _isRunning, value))
+                return;
+
+            RaisePropertyChanged(nameof(CanRun));
+            RunAllCommand.NotifyCanExecuteChanged();
+            RunCellCommand.NotifyCanExecuteChanged();
+            RunCellAndAdvanceCommand.NotifyCanExecuteChanged();
+            StopCommand.NotifyCanExecuteChanged();
+            SaveNotebookCommand.NotifyCanExecuteChanged();
+            RaisePropertyChanged(nameof(RunReadinessText));
+        }
+    }
+
+    public double ProgressFraction
+    {
+        get => _progressFraction;
+        private set => SetProperty(ref _progressFraction, value);
+    }
+
+    public string StatusText
+    {
+        get => _statusText;
+        private set => SetProperty(ref _statusText, value);
+    }
+
+    public string ElapsedText
+    {
+        get => _elapsedText;
+        private set => SetProperty(ref _elapsedText, value);
+    }
+
+    public string MemoryText
+    {
+        get => _memoryText;
+        private set => SetProperty(ref _memoryText, value);
+    }
+
+    public int ActiveResultsTab
+    {
+        get => _activeResultsTab;
+        set => SetProperty(ref _activeResultsTab, value);
+    }
+
+    public bool HasInvalidParameters => Parameters.Any(parameter => !parameter.IsValid);
+
+    public int InvalidParameterCount => Parameters.Count(parameter => !parameter.IsValid);
+
+    public string ParameterSummaryText => Parameters.Count == 0
+        ? "No script parameters"
+        : InvalidParameterCount > 0
+            ? $"{Parameters.Count} parameters | {InvalidParameterCount} invalid"
+            : $"{Parameters.Count} parameters ready";
+
+    public string ParameterHintText => Parameters.Count == 0
+        ? "Declare [ScriptParam] inputs in code to surface configurable notebook settings."
+        : InvalidParameterCount > 0
+            ? $"Fix {InvalidParameterCount} invalid parameter value(s) before running the notebook."
+            : "Parameter values stay with this session while you edit the notebook.";
+
+    public string RunReadinessText => HasInvalidParameters
+        ? "Execution is blocked until invalid parameters are fixed."
+        : IsRunning
+            ? "Execution is in progress."
+            : "Ready to run notebook cells.";
+
+    public string ShortcutHintText => "Ctrl+Enter run cell | Shift+Enter run and advance | Ctrl+S save | F5 run all";
+
+    public bool CanRun => !IsRunning && !HasInvalidParameters;
+
+    public IAsyncRelayCommand RunAllCommand { get; }
+
+    public IAsyncRelayCommand<QuantScriptCellViewModel?> RunCellCommand { get; }
+
+    public IAsyncRelayCommand<QuantScriptCellViewModel?> RunCellAndAdvanceCommand { get; }
+
+    public IRelayCommand StopCommand { get; }
+
+    public IRelayCommand NewNotebookCommand { get; }
+
+    public IAsyncRelayCommand SaveNotebookCommand { get; }
+
+    public IRelayCommand RefreshDocumentsCommand { get; }
+
+    public IRelayCommand ClearConsoleCommand { get; }
+
+    public IRelayCommand<QuantScriptCellViewModel?> AddCellBelowCommand { get; }
+
+    public IRelayCommand<QuantScriptCellViewModel?> DeleteCellCommand { get; }
+
+    public IRelayCommand<QuantScriptCellViewModel?> SelectCellCommand { get; }
+
     internal (double ChartHeight, double EditorHeight) OnActivated()
     {
         var (chartHeight, editorHeight) = _layoutService.LoadRowHeights();
@@ -236,7 +339,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
 
         SetupFileWatcher();
-        RefreshScripts();
+        RefreshDocuments();
+
+        if (Cells.Count == 0)
+            CreateNewNotebook();
+
         return (chartHeight, editorHeight);
     }
 
@@ -248,153 +355,163 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
-        _disposed = true;
+        if (_disposed)
+            return;
 
+        _disposed = true;
         _elapsedTimer?.Stop();
         _fileWatcher?.Dispose();
-        _plotQueue.Complete();
-
-        if (IsRunning) RunScriptCommand.Cancel();
+        StopExecution();
     }
 
-    // ── Script execution ─────────────────────────────────────────────────────
-
-    private async Task RunAsync(CancellationToken ct)
+    private async Task RunAllAsync(CancellationToken ct)
     {
-        ClearResults();
+        if (Cells.Count == 0)
+            return;
+
+        _executionSession.Reset();
+        foreach (var cell in Cells)
+        {
+            if (cell.Status != QuantScriptCellStatus.Running)
+                cell.Status = QuantScriptCellStatus.Stale;
+        }
+
+        await ExecuteCellsAsync(0, Cells.Count - 1, advanceSelection: false, ct).ConfigureAwait(false);
+    }
+
+    private Task RunCellAsync(QuantScriptCellViewModel? cell, bool advanceSelection, CancellationToken ct)
+    {
+        if (cell is null)
+            return Task.CompletedTask;
+
+        var index = Cells.IndexOf(cell);
+        if (index < 0)
+            return Task.CompletedTask;
+
+        return ExecuteCellsAsync(
+            _executionSession.GetReplayStartIndex(BuildExecutionIdentities(), index),
+            index,
+            advanceSelection,
+            ct);
+    }
+
+    private async Task ExecuteCellsAsync(
+        int startIndex,
+        int targetIndex,
+        bool advanceSelection,
+        CancellationToken externalCt)
+    {
+        if (startIndex < 0 || targetIndex < 0 || startIndex >= Cells.Count || targetIndex >= Cells.Count)
+            return;
+
+        if (HasInvalidParameters)
+        {
+            StatusText = "Fix invalid parameters";
+            ActiveResultsTab = 0;
+            AppendConsole(
+                $"Fix {InvalidParameterCount} invalid parameter value(s) in the sidebar before running the notebook.",
+                ConsoleEntryKind.Warning);
+            return;
+        }
+
         IsRunning = true;
-        StatusText = "Compiling\u2026";
-        ProgressFraction = 0.0;
+        StatusText = startIndex == 0 && targetIndex == Cells.Count - 1 ? "Running notebook…" : "Running cell…";
+        ProgressFraction = 0;
         _runStopwatch = System.Diagnostics.Stopwatch.StartNew();
         _elapsedTimer?.Start();
 
         try
         {
-            var paramDict = Parameters.ToDictionary(
-                p => p.Name,
-                p => p.ParsedValue,
-                StringComparer.OrdinalIgnoreCase);
+            var parameters = BuildParameterDictionary();
+            var identities = BuildExecutionIdentities();
+            var total = Math.Max(1, targetIndex - startIndex + 1);
 
-            StatusText = "Running\u2026";
+            for (var index = startIndex; index <= targetIndex; index++)
+            {
+                externalCt.ThrowIfCancellationRequested();
 
-            var result = await Task.Run(
-                () => _runner.RunAsync(_scriptSource, paramDict, ct), ct)
-                .ConfigureAwait(false);
+                var cell = Cells[index];
+                SelectCell(cell);
+                cell.Status = QuantScriptCellStatus.Running;
+                cell.RuntimeError = null;
 
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                ApplyResult(result), DispatcherPriority.Normal);
+                var previousCheckpoint = _executionSession.GetPreviousCheckpoint(identities, index);
+                // Resume on the WPF synchronization context so collection and brush updates stay UI-owned.
+                var result = await _runner
+                    .RunAsync(cell.SourceCode, parameters, previousCheckpoint, externalCt);
+
+                ApplyCellResult(cell, result);
+
+                if (result.Success && result.Checkpoint is not null)
+                {
+                    _executionSession.RecordSuccessfulRun(identities[index], result.Checkpoint);
+                }
+                else
+                {
+                    _executionSession.RecordFailedRun(identities, index);
+                    MarkCellsStale(index + 1);
+                    break;
+                }
+
+                ProgressFraction = (index - startIndex + 1d) / total;
+            }
+
+            RebuildAggregateResults();
+            if (advanceSelection && targetIndex < Cells.Count)
+                AdvanceSelectionFrom(targetIndex);
         }
         catch (OperationCanceledException)
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                StatusText = "Cancelled";
-                AppendConsole("Script was cancelled.", ConsoleEntryKind.Warning);
-            }, DispatcherPriority.Normal);
+            StatusText = "Cancelled";
+            AppendConsole("Notebook execution was cancelled.", ConsoleEntryKind.Warning);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled error in QuantScript runner");
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                StatusText = "Error";
-                AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
-            }, DispatcherPriority.Normal);
+            _logger.LogError(ex, "Unhandled error during QuantScript notebook execution");
+            StatusText = "Error";
+            AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
         }
         finally
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                _runStopwatch?.Stop();
-                _elapsedTimer?.Stop();
-                IsRunning = false;
-                ProgressFraction = 1.0;
-            }, DispatcherPriority.Normal);
+            _runStopwatch?.Stop();
+            _elapsedTimer?.Stop();
+            IsRunning = false;
+            ProgressFraction = 1;
         }
     }
 
-    private void ApplyResult(ScriptRunResult result)
+    private void ApplyCellResult(QuantScriptCellViewModel cell, ScriptRunResult result)
     {
-        if (!string.IsNullOrEmpty(result.ConsoleOutput))
-        {
-            foreach (var line in result.ConsoleOutput.Split(Environment.NewLine))
-                AppendConsole(line, ConsoleEntryKind.Output);
-        }
+        cell.OutputPlots.Clear();
+        cell.OutputMetrics.Clear();
 
-        if (result.RuntimeError != null)
-            AppendConsole($"Error: {result.RuntimeError}", ConsoleEntryKind.Error);
-
-        foreach (var diag in result.CompilationErrors)
-            AppendConsole($"[{diag.Line}:{diag.Column}] {diag.Message}", ConsoleEntryKind.Error);
-
-        foreach (var kv in result.Metrics)
-            Metrics.Add(new MetricEntry(kv.Key, kv.Value));
+        foreach (var metric in result.Metrics)
+            cell.OutputMetrics.Add(new MetricEntry(metric.Key, metric.Value));
 
         foreach (var plot in result.Plots)
-            Charts.Add(new PlotViewModel(plot.Title, plot));
+            cell.OutputPlots.Add(new CellPlotViewModel(plot.Title, plot));
 
-        if (result.Metrics.Count > 0 && result.Plots.Count == 0)
-            ActiveResultsTab = 1; // Data Sheet
-        else if (result.Trades.Count > 0 && result.Plots.Count == 0)
-            ActiveResultsTab = 4; // Backtest Output
+        cell.OutputText = result.ConsoleOutput;
+        cell.ElapsedTime = result.Elapsed;
 
-        Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
-        Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
-        Diagnostics.Add(new DiagnosticEntry("Peak memory", $"{result.PeakMemoryBytes / 1024.0:F0} KB"));
-
-        StatusText = result.Success
-            ? $"Completed in {result.Elapsed.TotalSeconds:F1}s"
-            : result.CompilationErrors.Count > 0
-                ? $"Compilation failed ({result.CompilationErrors.Count} error(s))"
-                : "Failed";
-
-        ElapsedText = $"{result.Elapsed.TotalSeconds:F1}s";
-        MemoryText = $"{result.PeakMemoryBytes / 1024.0:F0} KB";
-    }
-
-    // ── Commands implementation ───────────────────────────────────────────────
-
-    private void NewScript()
-    {
-        _selectedScript = null;
-        RaisePropertyChanged(nameof(SelectedScript));
-        ScriptSource = "// New QuantScript\n";
-        StatusText = "New script";
-    }
-
-    private async Task SaveScriptAsync()
-    {
-        if (SelectedScript is not null)
+        if (result.CompilationErrors.Count > 0)
         {
-            await File.WriteAllTextAsync(SelectedScript.FullPath, _scriptSource).ConfigureAwait(false);
-            _logger.LogInformation("Saved script to {Path}", SelectedScript.FullPath);
-            StatusText = $"Saved {SelectedScript.Name}";
+            cell.RuntimeError = string.Join(
+                Environment.NewLine,
+                result.CompilationErrors.Select(diagnostic => $"[{diagnostic.Line}:{diagnostic.Column}] {diagnostic.Message}"));
+            cell.Status = QuantScriptCellStatus.Error;
+        }
+        else if (!string.IsNullOrWhiteSpace(result.RuntimeError))
+        {
+            cell.RuntimeError = result.RuntimeError;
+            cell.Status = QuantScriptCellStatus.Error;
         }
         else
         {
-            var dir = _options.ScriptsDirectory;
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            var path = Path.Combine(dir, $"script-{DateTime.Now:yyyyMMddHHmmss}.csx");
-            await File.WriteAllTextAsync(path, _scriptSource).ConfigureAwait(false);
-            _logger.LogInformation("Saved new script to {Path}", path);
-            RefreshScripts();
+            cell.RuntimeError = null;
+            cell.Status = QuantScriptCellStatus.Success;
         }
     }
-
-    private void RefreshScripts()
-    {
-        ScriptFiles.Clear();
-        var dir = _options.ScriptsDirectory;
-        if (!Directory.Exists(dir)) return;
-
-        foreach (var file in Directory.GetFiles(dir, "*.csx", SearchOption.TopDirectoryOnly).OrderBy(f => f))
-            ScriptFiles.Add(new ScriptFileEntry(Path.GetFileName(file), file));
-    }
-
-    private void ClearConsole() => ConsoleOutput.Clear();
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private void UpdatePrimaryChart()
     {
@@ -402,20 +519,19 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
         if (Charts.Count > 0)
         {
-            var req = Charts[0].Request;
-
-            if (req.MultiSeries is { Count: > 0 } multi)
+            var request = Charts[0].Request;
+            if (request.MultiSeries is { Count: > 0 } multiSeries)
             {
-                var idx = 0;
-                foreach (var (label, _) in multi)
+                var index = 0;
+                foreach (var (label, _) in multiSeries)
                 {
-                    LegendEntries.Add(new ChartLegendEntry(label, _legendPalette[idx % _legendPalette.Length]));
-                    idx++;
+                    LegendEntries.Add(new ChartLegendEntry(label, LegendPalette[index % LegendPalette.Length]));
+                    index++;
                 }
             }
-            else if (req.Series is { Count: > 0 })
+            else if (request.Series is { Count: > 0 })
             {
-                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, _legendPalette[0]));
+                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, LegendPalette[0]));
             }
         }
 
@@ -426,66 +542,413 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasLegend));
     }
 
-    private void ClearResults()
+    private void RebuildAggregateResults()
     {
         ConsoleOutput.Clear();
-        Charts.Clear(); // triggers UpdatePrimaryChart via CollectionChanged
+        Charts.Clear();
         Metrics.Clear();
         Trades.Clear();
         Diagnostics.Clear();
-        ProgressFraction = 0;
-        ActiveResultsTab = 0;
-        ElapsedText = "--";
-        MemoryText = "--";
+
+        var frontier = _executionSession.GetValidFrontierIndex(BuildExecutionIdentities());
+
+        for (var index = 0; index <= frontier; index++)
+        {
+            var cell = Cells[index];
+
+            if (!string.IsNullOrWhiteSpace(cell.OutputText))
+            {
+                foreach (var line in cell.OutputText.Split(Environment.NewLine))
+                    AppendConsole($"[{index + 1}] {line}", ConsoleEntryKind.Output);
+            }
+
+            foreach (var plot in cell.OutputPlots)
+                Charts.Add(new PlotViewModel(plot.Title, plot.Request));
+
+            foreach (var metric in cell.OutputMetrics)
+                Metrics.Add(metric);
+
+            Diagnostics.Add(new DiagnosticEntry(
+                $"Cell {index + 1}",
+                $"{cell.StatusText} ({cell.ElapsedTime.TotalMilliseconds:F0} ms)"));
+        }
+
+        Diagnostics.Add(new DiagnosticEntry("Valid frontier", frontier >= 0 ? $"Cell {frontier + 1}" : "None"));
+        Diagnostics.Add(new DiagnosticEntry("Notebook title", NotebookTitle));
+        ElapsedText = _runStopwatch is { } stopwatch ? $"{stopwatch.Elapsed.TotalSeconds:F1}s" : "--";
+        MemoryText = $"{GC.GetTotalMemory(false) / 1024.0:F0} KB";
+
+        StatusText = frontier == Cells.Count - 1
+            ? $"Notebook ready ({Cells.Count} cells)"
+            : frontier >= 0
+                ? $"Ready through cell {frontier + 1}"
+                : "Ready";
+
+        if (Charts.Count > 0)
+            ActiveResultsTab = 1;
+        else if (Metrics.Count > 0)
+            ActiveResultsTab = 2;
+        else
+            ActiveResultsTab = 0;
     }
 
-    private void AppendConsole(string text, ConsoleEntryKind kind)
+    private void CreateNewNotebook()
     {
-        ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.Now, text, kind));
+        _isLoadingDocument = true;
+        _currentDocumentPath = null;
+        _isLegacyImport = false;
+        NotebookTitle = "QuantScript Notebook";
+        LoadNotebookDocument(new QuantScriptNotebookDocument());
+        _isLoadingDocument = false;
+        HasUnsavedChanges = false;
+        StatusText = "New notebook";
+        RefreshNotebookChrome();
     }
 
-    private void LoadScriptFile(string path)
+    private async Task SaveNotebookAsync(CancellationToken ct)
+    {
+        var document = new QuantScriptNotebookDocument
+        {
+            Title = NotebookTitle,
+            Cells = Cells.Select(cell => new QuantScriptNotebookCellDocument(cell.CellId, cell.SourceCode)).ToList()
+        };
+
+        var targetPath = _currentDocumentPath;
+        if (string.IsNullOrWhiteSpace(targetPath) || _isLegacyImport)
+            targetPath = _notebookStore.GetSuggestedNotebookPath(NotebookTitle);
+
+        await _notebookStore.SaveNotebookAsync(targetPath, document, ct).ConfigureAwait(false);
+
+        _currentDocumentPath = targetPath;
+        _isLegacyImport = false;
+        HasUnsavedChanges = false;
+        StatusText = $"Saved {Path.GetFileName(targetPath)}";
+        RefreshNotebookChrome();
+
+        await RunOnUiThreadAsync(() =>
+        {
+            RefreshDocuments();
+            SetSelectedDocument(
+                Documents.FirstOrDefault(doc =>
+                    string.Equals(doc.FullPath, targetPath, StringComparison.OrdinalIgnoreCase)),
+                openDocument: false);
+        }).ConfigureAwait(false);
+    }
+
+    private void RefreshDocuments()
+    {
+        Documents.Clear();
+        foreach (var document in _notebookStore.ListDocuments().OrderBy(item => item.Kind).ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase))
+            Documents.Add(new QuantScriptDocumentEntry(document.Name, document.FullPath, document.Kind));
+    }
+
+    private void SetSelectedDocument(QuantScriptDocumentEntry? document, bool openDocument)
+    {
+        if (!SetProperty(ref _selectedDocument, document) || _isLoadingDocument || document is null || !openDocument)
+            return;
+
+        _ = OpenDocumentAsync(document);
+    }
+
+    private async Task OpenDocumentAsync(QuantScriptDocumentEntry document)
     {
         try
         {
-            // Set backing field directly to avoid double-triggering UpdateParameters,
-            // then notify and parse parameters once.
-            _scriptSource = File.ReadAllText(path);
-            RaisePropertyChanged(nameof(ScriptSource));
-            UpdateParameters(_scriptSource);
+            _isLoadingDocument = true;
+
+            QuantScriptNotebookDocument notebook;
+            if (document.Kind == QuantScriptDocumentKind.LegacyScript)
+            {
+                notebook = await _notebookStore.ImportLegacyScriptAsync(document.FullPath).ConfigureAwait(false);
+                _currentDocumentPath = null;
+                _isLegacyImport = true;
+            }
+            else
+            {
+                notebook = await _notebookStore.LoadNotebookAsync(document.FullPath).ConfigureAwait(false);
+                _currentDocumentPath = document.FullPath;
+                _isLegacyImport = false;
+            }
+
+            await RunOnUiThreadAsync(() =>
+            {
+                NotebookTitle = notebook.Title;
+                LoadNotebookDocument(notebook);
+                StatusText = document.Kind == QuantScriptDocumentKind.LegacyScript
+                    ? $"Imported {document.Name}"
+                    : $"Loaded {document.Name}";
+                HasUnsavedChanges = false;
+                RefreshNotebookChrome();
+            }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load script from {Path}", path);
-            AppendConsole($"Failed to load: {ex.Message}", ConsoleEntryKind.Error);
+            _logger.LogError(ex, "Failed to open QuantScript document {Path}", document.FullPath);
+            await RunOnUiThreadAsync(() =>
+            {
+                StatusText = "Open failed";
+                AppendConsole($"Failed to open {document.Name}: {ex.Message}", ConsoleEntryKind.Error);
+            }).ConfigureAwait(false);
+        }
+        finally
+        {
+            _isLoadingDocument = false;
         }
     }
 
-    private void UpdateParameters(string source)
+    private void LoadNotebookDocument(QuantScriptNotebookDocument notebook)
     {
-        Parameters.Clear();
-        var descriptors = _compiler.ExtractParameters(source);
-        foreach (var d in descriptors)
+        Cells.Clear();
+        _executionSession.Reset();
+        ConsoleOutput.Clear();
+        Charts.Clear();
+        Metrics.Clear();
+        Trades.Clear();
+        Diagnostics.Clear();
+
+        foreach (var cell in notebook.Cells)
+            Cells.Add(new QuantScriptCellViewModel(cell.Id, cell.Source, HandleCellEdited));
+
+        if (Cells.Count == 0)
+            Cells.Add(CreateEmptyCell());
+
+        UpdateParameters();
+        UpdateDocumentWarning();
+        SelectCell(Cells[0]);
+        RebuildAggregateResults();
+        RefreshNotebookChrome();
+    }
+
+    private void HandleCellEdited(QuantScriptCellViewModel editedCell)
+    {
+        if (_isLoadingDocument)
+            return;
+
+        var index = Cells.IndexOf(editedCell);
+        if (index < 0)
+            return;
+
+        _executionSession.InvalidateFrom(BuildExecutionIdentities(), index);
+        MarkCellsStale(index);
+        UpdateParameters();
+        RebuildAggregateResults();
+        HasUnsavedChanges = true;
+        RefreshNotebookChrome();
+    }
+
+    private void MarkCellsStale(int startIndex)
+    {
+        if (startIndex < 0)
+            startIndex = 0;
+
+        for (var index = startIndex; index < Cells.Count; index++)
         {
-            var type = Type.GetType(d.TypeName) ?? typeof(string);
-            Parameters.Add(new ParameterViewModel(d.Name, d.DefaultValue, type));
+            if (Cells[index].Status != QuantScriptCellStatus.Running)
+                Cells[index].Status = QuantScriptCellStatus.Stale;
         }
+    }
+
+    private IReadOnlyDictionary<string, object?> BuildParameterDictionary()
+        => Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.ParsedValue, StringComparer.OrdinalIgnoreCase);
+
+    private void UpdateParameters()
+    {
+        var existingValues = Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.RawValue, StringComparer.OrdinalIgnoreCase);
+        foreach (var parameter in Parameters)
+            parameter.PropertyChanged -= OnParameterPropertyChanged;
+
+        Parameters.Clear();
+        var source = string.Join(Environment.NewLine + Environment.NewLine, Cells.Select(cell => cell.SourceCode));
+        foreach (var descriptor in _compiler.ExtractParameters(source))
+        {
+            var parameterType = ResolveParameterType(descriptor.TypeName);
+            var parameter = new ParameterViewModel(descriptor.Name, descriptor.DefaultValue, parameterType);
+            if (existingValues.TryGetValue(descriptor.Name, out var rawValue))
+                parameter.RawValue = rawValue;
+
+            parameter.PropertyChanged += OnParameterPropertyChanged;
+            Parameters.Add(parameter);
+        }
+
+        RefreshParameterPresentation();
+    }
+
+    private static Type ResolveParameterType(string typeName)
+    {
+        var normalized = typeName.Trim().ToLowerInvariant();
+        return normalized switch
+        {
+            "int" => typeof(int),
+            "long" => typeof(long),
+            "double" => typeof(double),
+            "float" => typeof(float),
+            "decimal" => typeof(decimal),
+            "bool" => typeof(bool),
+            _ => typeof(string)
+        };
+    }
+
+    private List<NotebookCellExecutionIdentity> BuildExecutionIdentities()
+        => Cells.Select(cell => new NotebookCellExecutionIdentity(cell.CellId, cell.Revision)).ToList();
+
+    private void AddCellBelow(QuantScriptCellViewModel? currentCell)
+    {
+        var insertIndex = currentCell is null ? Cells.Count : Cells.IndexOf(currentCell) + 1;
+        if (insertIndex < 0)
+            insertIndex = Cells.Count;
+
+        var cell = CreateEmptyCell();
+        Cells.Insert(insertIndex, cell);
+        _executionSession.InvalidateFrom(BuildExecutionIdentities(), insertIndex);
+        MarkCellsStale(insertIndex + 1);
+        UpdateParameters();
+        SelectCell(cell);
+        RebuildAggregateResults();
+        HasUnsavedChanges = true;
+        RefreshNotebookChrome();
+    }
+
+    private void DeleteCell(QuantScriptCellViewModel? currentCell)
+    {
+        if (currentCell is null || Cells.Count <= 1)
+            return;
+
+        var index = Cells.IndexOf(currentCell);
+        if (index < 0)
+            return;
+
+        Cells.RemoveAt(index);
+        _executionSession.InvalidateFrom(BuildExecutionIdentities(), index);
+        MarkCellsStale(index);
+        UpdateParameters();
+
+        var nextIndex = Math.Min(index, Cells.Count - 1);
+        if (nextIndex >= 0)
+            SelectCell(Cells[nextIndex]);
+
+        RebuildAggregateResults();
+        HasUnsavedChanges = true;
+        RefreshNotebookChrome();
+    }
+
+    private void SelectCell(QuantScriptCellViewModel? cell)
+    {
+        foreach (var existing in Cells)
+            existing.IsSelected = ReferenceEquals(existing, cell);
+
+        SelectedCell = cell;
+    }
+
+    private void AdvanceSelectionFrom(int index)
+    {
+        if (index < 0)
+            return;
+
+        if (index == Cells.Count - 1)
+        {
+            var newCell = CreateEmptyCell();
+            Cells.Add(newCell);
+            SelectCell(newCell);
+            HasUnsavedChanges = true;
+            RefreshNotebookChrome();
+            return;
+        }
+
+        SelectCell(Cells[index + 1]);
+    }
+
+    private QuantScriptCellViewModel CreateEmptyCell()
+        => new(Guid.NewGuid().ToString("N"), string.Empty, HandleCellEdited);
+
+    private void StopExecution()
+    {
+        RunAllCommand.Cancel();
+        RunCellCommand.Cancel();
+        RunCellAndAdvanceCommand.Cancel();
+    }
+
+    private void AppendConsole(string text, ConsoleEntryKind kind)
+        => ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.Now, text, kind));
+
+    private void UpdateDocumentWarning()
+    {
+        DocumentWarningText = Cells.Count > _options.NotebookCellWarningThreshold
+            ? $"Notebook has {Cells.Count} cells; performance may degrade without virtualization."
+            : null;
+    }
+
+    private void OnParameterPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ParameterViewModel.RawValue)
+            or nameof(ParameterViewModel.IsValid)
+            or nameof(ParameterViewModel.ValidationMessage))
+        {
+            RefreshParameterPresentation();
+        }
+    }
+
+    private void RefreshParameterPresentation()
+    {
+        RaisePropertyChanged(nameof(HasInvalidParameters));
+        RaisePropertyChanged(nameof(InvalidParameterCount));
+        RaisePropertyChanged(nameof(ParameterSummaryText));
+        RaisePropertyChanged(nameof(ParameterHintText));
+        RaisePropertyChanged(nameof(RunReadinessText));
+        RaisePropertyChanged(nameof(CanRun));
+        RunAllCommand.NotifyCanExecuteChanged();
+        RunCellCommand.NotifyCanExecuteChanged();
+        RunCellAndAdvanceCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RefreshNotebookChrome()
+    {
+        RaisePropertyChanged(nameof(DocumentDisplayName));
+        RaisePropertyChanged(nameof(DocumentStateText));
+        RefreshParameterPresentation();
     }
 
     private void SetupFileWatcher()
     {
-        var dir = _options.ScriptsDirectory;
-        if (!Directory.Exists(dir)) return;
+        Directory.CreateDirectory(_notebookStore.ScriptsDirectory);
 
         _fileWatcher?.Dispose();
-        _fileWatcher = new FileSystemWatcher(dir, "*.csx")
+        _fileWatcher = new FileSystemWatcher(_notebookStore.ScriptsDirectory)
         {
             NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
+            Filter = "*.*",
             EnableRaisingEvents = true
         };
 
-        _fileWatcher.Created += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        _fileWatcher.Deleted += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
-        _fileWatcher.Renamed += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+        FileSystemEventHandler refreshHandler = (_, _) =>
+        {
+            if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
+                dispatcher.InvokeAsync(RefreshDocuments, DispatcherPriority.Background);
+            else
+                RefreshDocuments();
+        };
+
+        RenamedEventHandler renameHandler = (_, _) =>
+        {
+            if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
+                dispatcher.InvokeAsync(RefreshDocuments, DispatcherPriority.Background);
+            else
+                RefreshDocuments();
+        };
+
+        _fileWatcher.Created += refreshHandler;
+        _fileWatcher.Deleted += refreshHandler;
+        _fileWatcher.Changed += refreshHandler;
+        _fileWatcher.Renamed += renameHandler;
+    }
+
+    private static Task RunOnUiThreadAsync(Action action)
+    {
+        if (System.Windows.Application.Current?.Dispatcher is not { } dispatcher || dispatcher.CheckAccess())
+        {
+            action();
+            return Task.CompletedTask;
+        }
+
+        return dispatcher.InvokeAsync(action, DispatcherPriority.Normal).Task;
     }
 }

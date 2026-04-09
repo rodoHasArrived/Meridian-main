@@ -1,0 +1,681 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.AnomalyEvent
+  commentId: T:Meridian.Ui.Services.Services.AnomalyEvent
+  id: AnomalyEvent
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.AnomalyEvent.Description
+  - Meridian.Ui.Services.Services.AnomalyEvent.Details
+  - Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt
+  - Meridian.Ui.Services.Services.AnomalyEvent.Id
+  - Meridian.Ui.Services.Services.AnomalyEvent.Severity
+  - Meridian.Ui.Services.Services.AnomalyEvent.Symbol
+  - Meridian.Ui.Services.Services.AnomalyEvent.Type
+  langs:
+  - csharp
+  - vb
+  name: AnomalyEvent
+  nameWithType: AnomalyEvent
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyEvent
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public sealed class AnomalyEvent
+    content.vb: Public NotInheritable Class AnomalyEvent
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Id
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.Id
+  id: Id
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: AnomalyEvent.Id
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.Id*
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Type
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.Type
+  id: Type
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: AnomalyEvent.Type
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Type { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Type As String
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.Type*
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Symbol
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: AnomalyEvent.Symbol
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.Symbol*
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Description
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.Description
+  id: Description
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: AnomalyEvent.Description
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.Description*
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Severity
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.Severity
+  id: Severity
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: AnomalyEvent.Severity
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Severity { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Severity As String
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.Severity*
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt
+  id: DetectedAt
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: DetectedAt
+  nameWithType: AnomalyEvent.DetectedAt
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedAt
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime DetectedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property DetectedAt As Date
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt*
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Details
+  commentId: P:Meridian.Ui.Services.Services.AnomalyEvent.Details
+  id: Details
+  parent: Meridian.Ui.Services.Services.AnomalyEvent
+  langs:
+  - csharp
+  - vb
+  name: Details
+  nameWithType: AnomalyEvent.Details
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Details
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Details
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public Dictionary<string, object> Details { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    content.vb: Public Property Details As Dictionary(Of String, Object)
+  overload: Meridian.Ui.Services.Services.AnomalyEvent.Details*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Id*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.Id
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_Id
+  name: Id
+  nameWithType: AnomalyEvent.Id
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Type*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.Type
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_Type
+  name: Type
+  nameWithType: AnomalyEvent.Type
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Type
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Symbol*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.Symbol
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_Symbol
+  name: Symbol
+  nameWithType: AnomalyEvent.Symbol
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Symbol
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Description*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.Description
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_Description
+  name: Description
+  nameWithType: AnomalyEvent.Description
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Description
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Severity*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.Severity
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_Severity
+  name: Severity
+  nameWithType: AnomalyEvent.Severity
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Severity
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_DetectedAt
+  name: DetectedAt
+  nameWithType: AnomalyEvent.DetectedAt
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.DetectedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Services.AnomalyEvent.Details*
+  commentId: Overload:Meridian.Ui.Services.Services.AnomalyEvent.Details
+  href: Meridian.Ui.Services.Services.AnomalyEvent.html#Meridian_Ui_Services_Services_AnomalyEvent_Details
+  name: Details
+  nameWithType: AnomalyEvent.Details
+  fullName: Meridian.Ui.Services.Services.AnomalyEvent.Details
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

@@ -31,8 +31,6 @@ public partial class SymbolsPage : Page
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService)
     {
-        InitializeComponent();
-
         _navigationService = navigationService;
         _workspaceService = WpfServices.WorkspaceService.Instance;
         _vm = new SymbolsPageViewModel(
@@ -43,6 +41,8 @@ public partial class SymbolsPage : Page
             navigationService,
             SymbolManagementService.Instance,
             CommandPaletteService.Instance);
+
+        InitializeComponent();
         DataContext = _vm;
 
         SymbolsListView.ItemsSource = _vm.FilteredSymbols;
@@ -64,11 +64,18 @@ public partial class SymbolsPage : Page
         CallApplyFilters();
     }
 
-    private void CallApplyFilters() =>
+    private void CallApplyFilters()
+    {
+        if (SymbolSearchBox is null || FilterCombo is null || ExchangeFilterCombo is null)
+        {
+            return;
+        }
+
         _vm.ApplyFilters(
             SymbolSearchBox.Text?.ToUpper() ?? "",
             GetComboSelectedTag(FilterCombo) ?? "All",
             GetComboSelectedTag(ExchangeFilterCombo) ?? "All");
+    }
 
     private void SymbolSearch_TextChanged(object sender, TextChangedEventArgs e) => CallApplyFilters();
 
@@ -324,13 +331,18 @@ public partial class SymbolsPage : Page
         if (exchange is not null) SelectComboItemByTag(ExchangeFilterCombo, exchange);
     }
 
-    private static void SelectComboItemByTag(ComboBox combo, string tag)
+    private static void SelectComboItemByTag(ComboBox? combo, string tag)
     {
+        if (combo is null)
+        {
+            return;
+        }
+
         foreach (var item in combo.Items)
             if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == tag)
             { combo.SelectedItem = item; return; }
     }
 
-    private static string? GetComboSelectedTag(ComboBox combo) =>
-        (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+    private static string? GetComboSelectedTag(ComboBox? combo) =>
+        (combo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();
 }

@@ -1,8 +1,8 @@
 # Updated Content for ufl-equity-target-state-v2
 
-**Last Updated:** 2026-04-01
+**Last Updated:** 2026-04-06
 **Status:** active
-**Reviewed:** 2026-03-26 | **Phase 1.5 Added:** 2026-04-01
+**Reviewed:** 2026-04-06 | **Phase 1.5 Added:** 2026-04-01
 
 > **Naming standard:** All new F# types and DTOs in this package must follow the
 > [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
@@ -95,7 +95,15 @@ type EquityTerms = {
 }
 ```
 
+### 2.4A Legacy Compatibility and Interop Guardrails
+
+- `ConvertiblePreferred` must remain distinct in the legacy `SecurityEconomicDefinition` projection. Use `Classification.TypeName = "ConvertiblePreferredEquity"` instead of collapsing to plain preferred equity.
+- `SecurityMasterSnapshotWrapper.AssetSpecificTermsJson` must emit both `preferredTerms` and `convertibleTerms` for convertible preferred securities, alongside `shareClass`, `votingRightsCat`, and `classification`.
+- `DateOnly` values in wrapper JSON continue to serialize as ISO-8601 strings; regression tests should assert that wire format directly.
+
 ### 3.4 Equity-Type-Specific Domain Events
+
+Current repo status as of 2026-04-06: `PreferredTermsAmended` and `ConversionTermsAmended` are now implemented in the Security Master domain and preserved in persisted Security Master event history. Execution events remain planned.
 
 - `PreferredTermsAmended` (dividend rate, redemption terms, callable terms)
 - `ConversionTermsAmended` (underlying security, conversion ratio, date windows)
@@ -186,12 +194,16 @@ Deliver preferred and convertible equity support with dividend schedules, conver
 
 ### 8.4 Preferred Equity Endpoints
 
+Current repo status as of 2026-04-07: `GET /api/security-master/equities/{securityId}/preferred-terms` is implemented as a typed current-terms endpoint, and `PATCH /api/security-master/equities/{securityId}/preferred-terms` now reuses the existing Security Master amend/event flow for preferred-term updates. Dividend schedule and current-yield endpoints remain planned.
+
 - `GET /api/security-master/equities/{securityId}/preferred-terms` → `PreferredEquityProjection`
 - `GET /api/security-master/equities/{securityId}/dividend-schedule?fromDate=X&toDate=Y` → `DividendScheduleRow[]`
 - `GET /api/security-master/equities/{securityId}/current-yield` → `{ yieldPercent: decimal }`
 - `PATCH /api/security-master/equities/{securityId}/preferred-terms` → update dividend/redemption/callable terms
 
 ### 8.5 Convertible Equity Endpoints
+
+Current repo status as of 2026-04-07: `GET /api/security-master/equities/{securityId}/conversion-terms` is implemented as a typed current-terms endpoint via the active Security Master query seam. Price-derived parity, callable-window, and redemption-term endpoints remain planned.
 
 - `GET /api/security-master/equities/{securityId}/conversion-parity` → `ConversionProjection`
 - `GET /api/security-master/equities/{securityId}/callable-windows` → `CallableWindow[]`
@@ -230,13 +242,13 @@ Index strategy:
 10. Add workstation governance views for equity lifecycle inspection.
 
 ### Phase 1.5 Tickets (Preferred & Convertible Equity)
-1. Add EquityClassification discriminator and PreferredTerms domain model
-2. Extend event model for preferred and convertible equity mutations
+1. Add EquityClassification discriminator and PreferredTerms domain model *(implemented 2026-04-06)*
+2. Extend event model for preferred and convertible equity mutations *(implemented 2026-04-06 for `PreferredTermsAmended` and `ConversionTermsAmended`)*
 3. Add dividend schedule and conversion parity projection storage
 4. Implement dividend schedule projection builder
 5. Implement conversion parity projection builder
-6. Extend IEquityReferenceService with preferred and convertible lookups
-7. Add API endpoints for preferred and convertible equity queries
+6. Extend IEquityReferenceService with preferred and convertible lookups *(active repo seam uses `ISecurityMasterQueryService`; initial preferred/conversion term lookups implemented 2026-04-06)*
+7. Add API endpoints for preferred and convertible equity queries *(preferred-terms GET/PATCH and conversion-terms GET implemented by 2026-04-07; schedule/yield/parity endpoints remain planned)*
 8. Implement conversion execution workflow
 9. Implement redemption/call execution workflow
 10. Add deterministic tests for preferred and convertible flows

@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Auth
+  commentId: N:Meridian.Contracts.Auth
+  id: Meridian.Contracts.Auth
+  children:
+  - Meridian.Contracts.Auth.RolePermissions
+  - Meridian.Contracts.Auth.UserPermission
+  - Meridian.Contracts.Auth.UserRole
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Auth
+  nameWithType: Meridian.Contracts.Auth
+  fullName: Meridian.Contracts.Auth
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Auth.RolePermissions
+  commentId: T:Meridian.Contracts.Auth.RolePermissions
+  href: Meridian.Contracts.Auth.RolePermissions.html
+  name: RolePermissions
+  nameWithType: RolePermissions
+  fullName: Meridian.Contracts.Auth.RolePermissions
+- uid: Meridian.Contracts.Auth.UserPermission
+  commentId: T:Meridian.Contracts.Auth.UserPermission
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserPermission.html
+  name: UserPermission
+  nameWithType: UserPermission
+  fullName: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserRole
+  commentId: T:Meridian.Contracts.Auth.UserRole
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserRole.html
+  name: UserRole
+  nameWithType: UserRole
+  fullName: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth
+  commentId: N:Meridian.Contracts.Auth
+  href: Meridian.html
+  name: Meridian.Contracts.Auth
+  nameWithType: Meridian.Contracts.Auth
+  fullName: Meridian.Contracts.Auth
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html

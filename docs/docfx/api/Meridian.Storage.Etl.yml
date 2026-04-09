@@ -1,0 +1,70 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Etl
+  commentId: N:Meridian.Storage.Etl
+  id: Meridian.Storage.Etl
+  children:
+  - Meridian.Storage.Etl.EtlAuditStore
+  - Meridian.Storage.Etl.EtlRejectSink
+  - Meridian.Storage.Etl.EtlStagingStore
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Etl
+  nameWithType: Meridian.Storage.Etl
+  fullName: Meridian.Storage.Etl
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Etl.EtlStagingStore
+  commentId: T:Meridian.Storage.Etl.EtlStagingStore
+  parent: Meridian.Storage.Etl
+  href: Meridian.Storage.Etl.EtlStagingStore.html
+  name: EtlStagingStore
+  nameWithType: EtlStagingStore
+  fullName: Meridian.Storage.Etl.EtlStagingStore
+- uid: Meridian.Storage.Etl.EtlAuditStore
+  commentId: T:Meridian.Storage.Etl.EtlAuditStore
+  parent: Meridian.Storage.Etl
+  href: Meridian.Storage.Etl.EtlAuditStore.html
+  name: EtlAuditStore
+  nameWithType: EtlAuditStore
+  fullName: Meridian.Storage.Etl.EtlAuditStore
+- uid: Meridian.Storage.Etl.EtlRejectSink
+  commentId: T:Meridian.Storage.Etl.EtlRejectSink
+  parent: Meridian.Storage.Etl
+  href: Meridian.Storage.Etl.EtlRejectSink.html
+  name: EtlRejectSink
+  nameWithType: EtlRejectSink
+  fullName: Meridian.Storage.Etl.EtlRejectSink
+- uid: Meridian.Storage.Etl
+  commentId: N:Meridian.Storage.Etl
+  href: Meridian.html
+  name: Meridian.Storage.Etl
+  nameWithType: Meridian.Storage.Etl
+  fullName: Meridian.Storage.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html

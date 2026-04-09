@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.ExecutionMode
+  commentId: T:Meridian.Execution.Models.ExecutionMode
+  id: ExecutionMode
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.ExecutionMode.Live
+  - Meridian.Execution.Models.ExecutionMode.Paper
+  - Meridian.Execution.Models.ExecutionMode.Simulation
+  langs:
+  - csharp
+  - vb
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Models.ExecutionMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/ExecutionMode.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionMode
+    path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Distinguishes paper (simulated) from live (real-money) execution modes.
+  example: []
+  syntax:
+    content: public enum ExecutionMode
+    content.vb: Public Enum ExecutionMode
+- uid: Meridian.Execution.Models.ExecutionMode.Paper
+  commentId: F:Meridian.Execution.Models.ExecutionMode.Paper
+  id: Paper
+  parent: Meridian.Execution.Models.ExecutionMode
+  langs:
+  - csharp
+  - vb
+  name: Paper
+  nameWithType: ExecutionMode.Paper
+  fullName: Meridian.Execution.Models.ExecutionMode.Paper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/ExecutionMode.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paper
+    path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Orders are simulated against a live or historical feed. No real orders are placed.
+  example: []
+  syntax:
+    content: Paper = 0
+    return:
+      type: Meridian.Execution.Models.ExecutionMode
+- uid: Meridian.Execution.Models.ExecutionMode.Simulation
+  commentId: F:Meridian.Execution.Models.ExecutionMode.Simulation
+  id: Simulation
+  parent: Meridian.Execution.Models.ExecutionMode
+  langs:
+  - csharp
+  - vb
+  name: Simulation
+  nameWithType: ExecutionMode.Simulation
+  fullName: Meridian.Execution.Models.ExecutionMode.Simulation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/ExecutionMode.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Simulation
+    path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Orders are simulated specifically against historical or replayed data.
+  example: []
+  syntax:
+    content: Simulation = 1
+    return:
+      type: Meridian.Execution.Models.ExecutionMode
+- uid: Meridian.Execution.Models.ExecutionMode.Live
+  commentId: F:Meridian.Execution.Models.ExecutionMode.Live
+  id: Live
+  parent: Meridian.Execution.Models.ExecutionMode
+  langs:
+  - csharp
+  - vb
+  name: Live
+  nameWithType: ExecutionMode.Live
+  fullName: Meridian.Execution.Models.ExecutionMode.Live
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/ExecutionMode.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Live
+    path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Orders are routed to a real broker. Requires explicit opt-in; never the default.
+  example: []
+  syntax:
+    content: Live = 2
+    return:
+      type: Meridian.Execution.Models.ExecutionMode
+references:
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Models.ExecutionMode
+  commentId: T:Meridian.Execution.Models.ExecutionMode
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionMode.html
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Models.ExecutionMode

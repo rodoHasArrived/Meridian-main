@@ -1,0 +1,1344 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService
+  commentId: T:Meridian.Execution.Services.PaperSessionPersistenceService
+  id: PaperSessionPersistenceService
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.PaperSessionPersistenceService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService},Meridian.Execution.Services.IPaperSessionStore)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync(Meridian.Execution.Services.CreatePaperSessionDto,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio(System.String)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger(System.String)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.GetSession(System.String)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions
+  - Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PaperSessionPersistenceService
+  nameWithType: PaperSessionPersistenceService
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaperSessionPersistenceService
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Manages paper trading session lifecycle and persistence.
+
+    Tracks session metadata, portfolio snapshots, and order history
+
+    across session boundaries.
+  remarks: >-
+    When constructed with an <xref href="Meridian.Execution.Services.IPaperSessionStore" data-throw-if-not-resolved="false"></xref> all session
+
+    metadata, fills, and order updates are written to durable storage.
+
+    Call <xref href="Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> on startup to reload sessions and
+
+    reconstruct portfolio state from the persisted fill log.
+
+    Without a store the service falls back to in-memory operation and
+
+    sessions are lost on process restart.
+  example: []
+  syntax:
+    content: public sealed class PaperSessionPersistenceService
+    content.vb: Public NotInheritable Class PaperSessionPersistenceService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService},Meridian.Execution.Services.IPaperSessionStore)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService},Meridian.Execution.Services.IPaperSessionStore)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService},Meridian.Execution.Services.IPaperSessionStore)'
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: PaperSessionPersistenceService(ILogger<PaperSessionPersistenceService>, IPaperSessionStore?)
+  nameWithType: PaperSessionPersistenceService.PaperSessionPersistenceService(ILogger<PaperSessionPersistenceService>, IPaperSessionStore?)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.PaperSessionPersistenceService(Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Services.PaperSessionPersistenceService>, Meridian.Execution.Services.IPaperSessionStore?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public PaperSessionPersistenceService(ILogger<PaperSessionPersistenceService> logger, IPaperSessionStore? store = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService}
+    - id: store
+      type: Meridian.Execution.Services.IPaperSessionStore
+    content.vb: Public Sub New(logger As ILogger(Of PaperSessionPersistenceService), store As IPaperSessionStore = Nothing)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.#ctor*
+  nameWithType.vb: PaperSessionPersistenceService.New(ILogger(Of PaperSessionPersistenceService), IPaperSessionStore)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Services.PaperSessionPersistenceService), Meridian.Execution.Services.IPaperSessionStore)
+  name.vb: New(ILogger(Of PaperSessionPersistenceService), IPaperSessionStore)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  id: InitialiseAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: InitialiseAsync(CancellationToken)
+  nameWithType: PaperSessionPersistenceService.InitialiseAsync(CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialiseAsync
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Loads all sessions from the durable store and reconstructs portfolio
+
+    state by replaying the persisted fill log.  Safe to call multiple times;
+
+    only executes once.  No-op when no <xref href="Meridian.Execution.Services.IPaperSessionStore" data-throw-if-not-resolved="false"></xref> was
+
+    provided.
+  example: []
+  syntax:
+    content: public Task InitialiseAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitialiseAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync*
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync(Meridian.Execution.Services.CreatePaperSessionDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync(Meridian.Execution.Services.CreatePaperSessionDto,System.Threading.CancellationToken)
+  id: CreateSessionAsync(Meridian.Execution.Services.CreatePaperSessionDto,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: CreateSessionAsync(CreatePaperSessionDto, CancellationToken)
+  nameWithType: PaperSessionPersistenceService.CreateSessionAsync(CreatePaperSessionDto, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync(Meridian.Execution.Services.CreatePaperSessionDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSessionAsync
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Creates a new paper trading session and returns its summary.
+  example: []
+  syntax:
+    content: public Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Services.CreatePaperSessionDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Services.PaperSessionSummaryDto}
+    content.vb: Public Function CreateSessionAsync(request As CreatePaperSessionDto, ct As CancellationToken = Nothing) As Task(Of PaperSessionSummaryDto)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync*
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync(System.String,System.Threading.CancellationToken)
+  id: CloseSessionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: CloseSessionAsync(string, CancellationToken)
+  nameWithType: PaperSessionPersistenceService.CloseSessionAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CloseSessionAsync
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Closes a paper trading session and snapshots its final state.
+  example: []
+  syntax:
+    content: public Task<bool> CloseSessionAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function CloseSessionAsync(sessionId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync*
+  nameWithType.vb: PaperSessionPersistenceService.CloseSessionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync(String, System.Threading.CancellationToken)
+  name.vb: CloseSessionAsync(String, CancellationToken)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions
+  id: GetSessions
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: GetSessions()
+  nameWithType: PaperSessionPersistenceService.GetSessions()
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSessions
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns summaries of all tracked sessions.
+  example: []
+  syntax:
+    content: public IReadOnlyList<PaperSessionSummaryDto> GetSessions()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PaperSessionSummaryDto}
+    content.vb: Public Function GetSessions() As IReadOnlyList(Of PaperSessionSummaryDto)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions*
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetSession(System.String)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.GetSession(System.String)
+  id: GetSession(System.String)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: GetSession(string)
+  nameWithType: PaperSessionPersistenceService.GetSession(string)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetSession(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSession
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns detailed session state or <code>null</code> if not found.
+  example: []
+  syntax:
+    content: public PaperSessionDetailDto? GetSession(string sessionId)
+    parameters:
+    - id: sessionId
+      type: System.String
+    return:
+      type: Meridian.Execution.Services.PaperSessionDetailDto
+    content.vb: Public Function GetSession(sessionId As String) As PaperSessionDetailDto
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.GetSession*
+  nameWithType.vb: PaperSessionPersistenceService.GetSession(String)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.GetSession(String)
+  name.vb: GetSession(String)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio(System.String)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio(System.String)
+  id: GetActivePortfolio(System.String)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: GetActivePortfolio(string)
+  nameWithType: PaperSessionPersistenceService.GetActivePortfolio(string)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActivePortfolio
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns the portfolio state for a live session, or null.
+  example: []
+  syntax:
+    content: public PaperTradingPortfolio? GetActivePortfolio(string sessionId)
+    parameters:
+    - id: sessionId
+      type: System.String
+    return:
+      type: Meridian.Execution.Services.PaperTradingPortfolio
+    content.vb: Public Function GetActivePortfolio(sessionId As String) As PaperTradingPortfolio
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio*
+  nameWithType.vb: PaperSessionPersistenceService.GetActivePortfolio(String)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio(String)
+  name.vb: GetActivePortfolio(String)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger(System.String)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger(System.String)
+  id: GetLedger(System.String)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: GetLedger(string)
+  nameWithType: PaperSessionPersistenceService.GetLedger(string)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLedger
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Returns the double-entry ledger for a session — either the live ledger (active sessions)
+
+    or the ledger reconstructed from the persisted journal (closed sessions).
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no ledger data is available for the session.
+  example: []
+  syntax:
+    content: public IReadOnlyLedger? GetLedger(string sessionId)
+    parameters:
+    - id: sessionId
+      type: System.String
+    return:
+      type: Meridian.Ledger.IReadOnlyLedger
+    content.vb: Public Function GetLedger(sessionId As String) As IReadOnlyLedger
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger*
+  nameWithType.vb: PaperSessionPersistenceService.GetLedger(String)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger(String)
+  name.vb: GetLedger(String)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
+  id: RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: RecordOrderUpdate(string, OrderState)
+  nameWithType: PaperSessionPersistenceService.RecordOrderUpdate(string, OrderState)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(string, Meridian.Execution.Sdk.OrderState)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordOrderUpdate
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Records an order status update for a session.
+  example: []
+  syntax:
+    content: public void RecordOrderUpdate(string sessionId, OrderState orderState)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: orderState
+      type: Meridian.Execution.Sdk.OrderState
+    content.vb: Public Sub RecordOrderUpdate(sessionId As String, orderState As OrderState)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate*
+  nameWithType.vb: PaperSessionPersistenceService.RecordOrderUpdate(String, OrderState)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(String, Meridian.Execution.Sdk.OrderState)
+  name.vb: RecordOrderUpdate(String, OrderState)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  id: RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: RecordFillAsync(string, ExecutionReport, CancellationToken)
+  nameWithType: PaperSessionPersistenceService.RecordFillAsync(string, ExecutionReport, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(string, Meridian.Execution.Sdk.ExecutionReport, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordFillAsync
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Applies a fill execution report to the session portfolio and persists
+
+    the fill event to the durable store for future replay.
+
+    No-op for non-fill reports (accepted, cancelled, rejected).
+  example: []
+  syntax:
+    content: public Task RecordFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: fill
+      type: Meridian.Execution.Sdk.ExecutionReport
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordFillAsync(sessionId As String, fill As ExecutionReport, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync*
+  nameWithType.vb: PaperSessionPersistenceService.RecordFillAsync(String, ExecutionReport, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(String, Meridian.Execution.Sdk.ExecutionReport, System.Threading.CancellationToken)
+  name.vb: RecordFillAsync(String, ExecutionReport, CancellationToken)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(System.String,System.Threading.CancellationToken)
+  id: ReplaySessionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: ReplaySessionAsync(string, CancellationToken)
+  nameWithType: PaperSessionPersistenceService.ReplaySessionAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReplaySessionAsync
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Replays the persisted fill log for <code class="paramref">sessionId</code> through a
+
+    fresh <xref href="Meridian.Execution.Services.PaperTradingPortfolio" data-throw-if-not-resolved="false"></xref> and returns the reconstructed
+
+    portfolio snapshot.
+  remarks: >-
+    When no durable store is configured the current in-memory portfolio state
+
+    is returned instead.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the session does not exist.
+  example: []
+  syntax:
+    content: public Task<ExecutionPortfolioSnapshotDto?> ReplaySessionAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionPortfolioSnapshotDto}
+    content.vb: Public Function ReplaySessionAsync(sessionId As String, ct As CancellationToken = Nothing) As Task(Of ExecutionPortfolioSnapshotDto)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync*
+  nameWithType.vb: PaperSessionPersistenceService.ReplaySessionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(String, System.Threading.CancellationToken)
+  name.vb: ReplaySessionAsync(String, CancellationToken)
+references:
+- uid: Meridian.Execution.Services.IPaperSessionStore
+  commentId: T:Meridian.Execution.Services.IPaperSessionStore
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.IPaperSessionStore.html
+  name: IPaperSessionStore
+  nameWithType: IPaperSessionStore
+  fullName: Meridian.Execution.Services.IPaperSessionStore
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_InitialiseAsync_System_Threading_CancellationToken_
+  name: InitialiseAsync(CancellationToken)
+  nameWithType: PaperSessionPersistenceService.InitialiseAsync(CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+    name: InitialiseAsync
+    href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_InitialiseAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
+    name: InitialiseAsync
+    href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_InitialiseAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.#ctor*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.#ctor
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Execution_Services_PaperSessionPersistenceService__Meridian_Execution_Services_IPaperSessionStore_
+  name: PaperSessionPersistenceService
+  nameWithType: PaperSessionPersistenceService.PaperSessionPersistenceService
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.PaperSessionPersistenceService
+  nameWithType.vb: PaperSessionPersistenceService.New
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.PaperSessionPersistenceService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<PaperSessionPersistenceService>
+  nameWithType: ILogger<PaperSessionPersistenceService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Services.PaperSessionPersistenceService>
+  nameWithType.vb: ILogger(Of PaperSessionPersistenceService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Services.PaperSessionPersistenceService)
+  name.vb: ILogger(Of PaperSessionPersistenceService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Execution.Services.PaperSessionPersistenceService
+    name: PaperSessionPersistenceService
+    href: Meridian.Execution.Services.PaperSessionPersistenceService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PaperSessionPersistenceService
+    name: PaperSessionPersistenceService
+    href: Meridian.Execution.Services.PaperSessionPersistenceService.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_InitialiseAsync_System_Threading_CancellationToken_
+  name: InitialiseAsync
+  nameWithType: PaperSessionPersistenceService.InitialiseAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_CreateSessionAsync_Meridian_Execution_Services_CreatePaperSessionDto_System_Threading_CancellationToken_
+  name: CreateSessionAsync
+  nameWithType: PaperSessionPersistenceService.CreateSessionAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.CreateSessionAsync
+- uid: Meridian.Execution.Services.CreatePaperSessionDto
+  commentId: T:Meridian.Execution.Services.CreatePaperSessionDto
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.CreatePaperSessionDto.html
+  name: CreatePaperSessionDto
+  nameWithType: CreatePaperSessionDto
+  fullName: Meridian.Execution.Services.CreatePaperSessionDto
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Services.PaperSessionSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Services.PaperSessionSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PaperSessionSummaryDto>
+  nameWithType: Task<PaperSessionSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Services.PaperSessionSummaryDto>
+  nameWithType.vb: Task(Of PaperSessionSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Services.PaperSessionSummaryDto)
+  name.vb: Task(Of PaperSessionSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Services.PaperSessionSummaryDto
+    name: PaperSessionSummaryDto
+    href: Meridian.Execution.Services.PaperSessionSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PaperSessionSummaryDto
+    name: PaperSessionSummaryDto
+    href: Meridian.Execution.Services.PaperSessionSummaryDto.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_CloseSessionAsync_System_String_System_Threading_CancellationToken_
+  name: CloseSessionAsync
+  nameWithType: PaperSessionPersistenceService.CloseSessionAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.CloseSessionAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_GetSessions
+  name: GetSessions
+  nameWithType: PaperSessionPersistenceService.GetSessions
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PaperSessionSummaryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.PaperSessionSummaryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PaperSessionSummaryDto>
+  nameWithType: IReadOnlyList<PaperSessionSummaryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.PaperSessionSummaryDto>
+  nameWithType.vb: IReadOnlyList(Of PaperSessionSummaryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.PaperSessionSummaryDto)
+  name.vb: IReadOnlyList(Of PaperSessionSummaryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.PaperSessionSummaryDto
+    name: PaperSessionSummaryDto
+    href: Meridian.Execution.Services.PaperSessionSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PaperSessionSummaryDto
+    name: PaperSessionSummaryDto
+    href: Meridian.Execution.Services.PaperSessionSummaryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetSession*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.GetSession
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_GetSession_System_String_
+  name: GetSession
+  nameWithType: PaperSessionPersistenceService.GetSession
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetSession
+- uid: Meridian.Execution.Services.PaperSessionDetailDto
+  commentId: T:Meridian.Execution.Services.PaperSessionDetailDto
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PaperSessionDetailDto.html
+  name: PaperSessionDetailDto
+  nameWithType: PaperSessionDetailDto
+  fullName: Meridian.Execution.Services.PaperSessionDetailDto
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_GetActivePortfolio_System_String_
+  name: GetActivePortfolio
+  nameWithType: PaperSessionPersistenceService.GetActivePortfolio
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetActivePortfolio
+- uid: Meridian.Execution.Services.PaperTradingPortfolio
+  commentId: T:Meridian.Execution.Services.PaperTradingPortfolio
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html
+  name: PaperTradingPortfolio
+  nameWithType: PaperTradingPortfolio
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_GetLedger_System_String_
+  name: GetLedger
+  nameWithType: PaperSessionPersistenceService.GetLedger
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger
+- uid: Meridian.Ledger.IReadOnlyLedger
+  commentId: T:Meridian.Ledger.IReadOnlyLedger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.IReadOnlyLedger.html
+  name: IReadOnlyLedger
+  nameWithType: IReadOnlyLedger
+  fullName: Meridian.Ledger.IReadOnlyLedger
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_RecordOrderUpdate_System_String_Meridian_Execution_Sdk_OrderState_
+  name: RecordOrderUpdate
+  nameWithType: PaperSessionPersistenceService.RecordOrderUpdate
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate
+- uid: Meridian.Execution.Sdk.OrderState
+  commentId: T:Meridian.Execution.Sdk.OrderState
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderState.html
+  name: OrderState
+  nameWithType: OrderState
+  fullName: Meridian.Execution.Sdk.OrderState
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_RecordFillAsync_System_String_Meridian_Execution_Sdk_ExecutionReport_System_Threading_CancellationToken_
+  name: RecordFillAsync
+  nameWithType: PaperSessionPersistenceService.RecordFillAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync
+- uid: Meridian.Execution.Sdk.ExecutionReport
+  commentId: T:Meridian.Execution.Sdk.ExecutionReport
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionReport.html
+  name: ExecutionReport
+  nameWithType: ExecutionReport
+  fullName: Meridian.Execution.Sdk.ExecutionReport
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_ReplaySessionAsync_System_String_System_Threading_CancellationToken_
+  name: ReplaySessionAsync
+  nameWithType: PaperSessionPersistenceService.ReplaySessionAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionPortfolioSnapshotDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionPortfolioSnapshotDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ExecutionPortfolioSnapshotDto>
+  nameWithType: Task<ExecutionPortfolioSnapshotDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Services.ExecutionPortfolioSnapshotDto>
+  nameWithType.vb: Task(Of ExecutionPortfolioSnapshotDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Services.ExecutionPortfolioSnapshotDto)
+  name.vb: Task(Of ExecutionPortfolioSnapshotDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
+    name: ExecutionPortfolioSnapshotDto
+    href: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
+    name: ExecutionPortfolioSnapshotDto
+    href: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto.html
+  - name: )

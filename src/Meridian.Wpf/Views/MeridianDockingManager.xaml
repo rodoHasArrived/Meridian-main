@@ -5,46 +5,164 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:avalondock="https://github.com/Dirkster99/AvalonDock"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="900"
+             d:DesignHeight="600"
+             d:DesignWidth="900"
              AllowDrop="True"
              DragLeave="OnDragLeave"
              DragOver="OnDragOver"
              Drop="OnDrop">
 
     <Grid>
-        <!-- ── AvalonDock DockingManager ─────────────────────────────────── -->
         <avalondock:DockingManager x:Name="DockManager"
                                    AllowMixedOrientation="True"
                                    BorderBrush="{DynamicResource CommandBarBorderBrush}"
                                    BorderThickness="1"
                                    Background="{DynamicResource ConsoleBackgroundDarkBrush}">
 
-            <!-- Default theme — overridden by Meridian's own token-driven styles below -->
-            <avalondock:DockingManager.Theme>
-                <avalondock:MetroTheme />
-            </avalondock:DockingManager.Theme>
-
             <avalondock:LayoutRoot>
-                <avalondock:LayoutPanel Orientation="Horizontal">
-                    <!-- Primary document well — LoadPage() adds LayoutDocuments here -->
-                    <avalondock:LayoutDocumentPane x:Name="PrimaryDocumentPane" />
+                <avalondock:LayoutPanel Orientation="Vertical">
+                    <avalondock:LayoutPanel Orientation="Horizontal">
+                        <avalondock:LayoutAnchorablePaneGroup DockWidth="300">
+                            <avalondock:LayoutAnchorablePane x:Name="LeftToolPane" />
+                        </avalondock:LayoutAnchorablePaneGroup>
+
+                        <avalondock:LayoutDocumentPaneGroup>
+                            <avalondock:LayoutDocumentPane x:Name="PrimaryDocumentPane" />
+                        </avalondock:LayoutDocumentPaneGroup>
+
+                        <avalondock:LayoutAnchorablePaneGroup DockWidth="340">
+                            <avalondock:LayoutAnchorablePane x:Name="RightToolPane" />
+                        </avalondock:LayoutAnchorablePaneGroup>
+                    </avalondock:LayoutPanel>
+
+                    <avalondock:LayoutAnchorablePaneGroup DockHeight="240">
+                        <avalondock:LayoutAnchorablePane x:Name="BottomToolPane" />
+                    </avalondock:LayoutAnchorablePaneGroup>
                 </avalondock:LayoutPanel>
             </avalondock:LayoutRoot>
 
         </avalondock:DockingManager>
 
-        <!-- ── Drag-and-drop drop-target overlay (preserves existing page-tag protocol) ── -->
-        <Border x:Name="DropOverlay"
-                Background="#22007ACC"
-                BorderBrush="#66007ACC"
-                BorderThickness="2"
-                Visibility="Collapsed">
-            <TextBlock HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="20"
-                       FontWeight="SemiBold"
-                       Foreground="White"
-                       Text="Drop Page Here" />
-        </Border>
+        <Grid x:Name="DropOverlay"
+              Visibility="Collapsed"
+              Background="#66050B14">
+            <Border Width="280"
+                    Height="220"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="#F20E1726"
+                    BorderBrush="#5F7DB3"
+                    BorderThickness="1"
+                    CornerRadius="16"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border x:Name="OpenTabTarget"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="6"
+                            Padding="10,8"
+                            CornerRadius="10"
+                            Background="#10263D"
+                            BorderBrush="#365A84"
+                            BorderThickness="1">
+                        <TextBlock Text="Open Tab"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <Border x:Name="FloatTarget"
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Margin="6"
+                            Padding="10,8"
+                            CornerRadius="10"
+                            Background="#10263D"
+                            BorderBrush="#365A84"
+                            BorderThickness="1">
+                        <TextBlock Text="Float"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <Border x:Name="SplitLeftTarget"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="6"
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="#10263D"
+                            BorderBrush="#365A84"
+                            BorderThickness="1">
+                        <TextBlock Text="Left Rail"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <Border x:Name="ReplaceTarget"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="6"
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="#153157"
+                            BorderBrush="#4B8CDB"
+                            BorderThickness="1">
+                        <TextBlock Text="Document"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <Border x:Name="SplitRightTarget"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Margin="6"
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="#10263D"
+                            BorderBrush="#365A84"
+                            BorderThickness="1">
+                        <TextBlock Text="Right Rail"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <Border x:Name="SplitBelowTarget"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="6"
+                            Padding="12"
+                            CornerRadius="10"
+                            Background="#10263D"
+                            BorderBrush="#365A84"
+                            BorderThickness="1">
+                        <TextBlock Text="Bottom Rail"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

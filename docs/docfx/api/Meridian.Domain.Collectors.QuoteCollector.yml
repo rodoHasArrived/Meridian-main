@@ -1,0 +1,897 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Collectors.QuoteCollector
+  commentId: T:Meridian.Domain.Collectors.QuoteCollector
+  id: QuoteCollector
+  parent: Meridian.Domain.Collectors
+  children:
+  - Meridian.Domain.Collectors.QuoteCollector.#ctor(Meridian.Domain.Events.IMarketEventPublisher)
+  - Meridian.Domain.Collectors.QuoteCollector.OnQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  - Meridian.Domain.Collectors.QuoteCollector.Snapshot
+  - Meridian.Domain.Collectors.QuoteCollector.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  - Meridian.Domain.Collectors.QuoteCollector.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  - Meridian.Domain.Collectors.QuoteCollector.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  langs:
+  - csharp
+  - vb
+  name: QuoteCollector
+  nameWithType: QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuoteCollector
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Maintains per-symbol Best-Bid/Offer (BBO) state and emits BboQuote market events.
+  example: []
+  syntax:
+    content: 'public sealed class QuoteCollector : IQuoteStateStore'
+    content.vb: Public NotInheritable Class QuoteCollector Implements IQuoteStateStore
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Domain.Collectors.IQuoteStateStore
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Domain.Collectors.QuoteCollector.#ctor(Meridian.Domain.Events.IMarketEventPublisher)
+  commentId: M:Meridian.Domain.Collectors.QuoteCollector.#ctor(Meridian.Domain.Events.IMarketEventPublisher)
+  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher)'
+  parent: Meridian.Domain.Collectors.QuoteCollector
+  langs:
+  - csharp
+  - vb
+  name: QuoteCollector(IMarketEventPublisher)
+  nameWithType: QuoteCollector.QuoteCollector(IMarketEventPublisher)
+  fullName: Meridian.Domain.Collectors.QuoteCollector.QuoteCollector(Meridian.Domain.Events.IMarketEventPublisher)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  syntax:
+    content: public QuoteCollector(IMarketEventPublisher publisher)
+    parameters:
+    - id: publisher
+      type: Meridian.Domain.Events.IMarketEventPublisher
+    content.vb: Public Sub New(publisher As IMarketEventPublisher)
+  overload: Meridian.Domain.Collectors.QuoteCollector.#ctor*
+  nameWithType.vb: QuoteCollector.New(IMarketEventPublisher)
+  fullName.vb: Meridian.Domain.Collectors.QuoteCollector.New(Meridian.Domain.Events.IMarketEventPublisher)
+  name.vb: New(IMarketEventPublisher)
+- uid: Meridian.Domain.Collectors.QuoteCollector.OnQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  commentId: M:Meridian.Domain.Collectors.QuoteCollector.OnQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  id: OnQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  parent: Meridian.Domain.Collectors.QuoteCollector
+  langs:
+  - csharp
+  - vb
+  name: OnQuote(MarketQuoteUpdate)
+  nameWithType: QuoteCollector.OnQuote(MarketQuoteUpdate)
+  fullName: Meridian.Domain.Collectors.QuoteCollector.OnQuote(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnQuote
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Adapter entry point (e.g., Alpaca WebSocket quote updates).
+  example: []
+  syntax:
+    content: public void OnQuote(MarketQuoteUpdate update)
+    parameters:
+    - id: update
+      type: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+    content.vb: Public Sub OnQuote(update As MarketQuoteUpdate)
+  overload: Meridian.Domain.Collectors.QuoteCollector.OnQuote*
+- uid: Meridian.Domain.Collectors.QuoteCollector.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  commentId: M:Meridian.Domain.Collectors.QuoteCollector.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  id: TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  parent: Meridian.Domain.Collectors.QuoteCollector
+  langs:
+  - csharp
+  - vb
+  name: TryGet(string, out BboQuotePayload?)
+  nameWithType: QuoteCollector.TryGet(string, out BboQuotePayload?)
+  fullName: Meridian.Domain.Collectors.QuoteCollector.TryGet(string, out Meridian.Contracts.Domain.Models.BboQuotePayload?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGet
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Try get the latest BBO for a symbol.
+  example: []
+  syntax:
+    content: public bool TryGet(string symbol, out BboQuotePayload? quote)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryGet(symbol As String, quote As BboQuotePayload) As Boolean
+  overload: Meridian.Domain.Collectors.QuoteCollector.TryGet*
+  implements:
+  - Meridian.Domain.Collectors.IQuoteStateStore.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  nameWithType.vb: QuoteCollector.TryGet(String, BboQuotePayload)
+  fullName.vb: Meridian.Domain.Collectors.QuoteCollector.TryGet(String, Meridian.Contracts.Domain.Models.BboQuotePayload)
+  name.vb: TryGet(String, BboQuotePayload)
+- uid: Meridian.Domain.Collectors.QuoteCollector.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  commentId: M:Meridian.Domain.Collectors.QuoteCollector.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  id: Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  parent: Meridian.Domain.Collectors.QuoteCollector
+  langs:
+  - csharp
+  - vb
+  name: Upsert(MarketQuoteUpdate)
+  nameWithType: QuoteCollector.Upsert(MarketQuoteUpdate)
+  fullName: Meridian.Domain.Collectors.QuoteCollector.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Upsert
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Upsert a BBO update and return the resulting payload that callers can reuse for publishing/logging.
+  remarks: Implementations should treat the incoming update as authoritative, replacing any existing entry for the symbol.
+  example: []
+  syntax:
+    content: public BboQuotePayload Upsert(MarketQuoteUpdate update)
+    parameters:
+    - id: update
+      type: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+    return:
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    content.vb: Public Function Upsert(update As MarketQuoteUpdate) As BboQuotePayload
+  overload: Meridian.Domain.Collectors.QuoteCollector.Upsert*
+  implements:
+  - Meridian.Domain.Collectors.IQuoteStateStore.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+- uid: Meridian.Domain.Collectors.QuoteCollector.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  commentId: M:Meridian.Domain.Collectors.QuoteCollector.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  id: TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  parent: Meridian.Domain.Collectors.QuoteCollector
+  langs:
+  - csharp
+  - vb
+  name: TryRemove(string, out BboQuotePayload?)
+  nameWithType: QuoteCollector.TryRemove(string, out BboQuotePayload?)
+  fullName: Meridian.Domain.Collectors.QuoteCollector.TryRemove(string, out Meridian.Contracts.Domain.Models.BboQuotePayload?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryRemove
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Remove cached state for a symbol. Returns <code>true</code> if the symbol existed.
+  example: []
+  syntax:
+    content: public bool TryRemove(string symbol, out BboQuotePayload? removed)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: removed
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryRemove(symbol As String, removed As BboQuotePayload) As Boolean
+  overload: Meridian.Domain.Collectors.QuoteCollector.TryRemove*
+  implements:
+  - Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  nameWithType.vb: QuoteCollector.TryRemove(String, BboQuotePayload)
+  fullName.vb: Meridian.Domain.Collectors.QuoteCollector.TryRemove(String, Meridian.Contracts.Domain.Models.BboQuotePayload)
+  name.vb: TryRemove(String, BboQuotePayload)
+- uid: Meridian.Domain.Collectors.QuoteCollector.Snapshot
+  commentId: M:Meridian.Domain.Collectors.QuoteCollector.Snapshot
+  id: Snapshot
+  parent: Meridian.Domain.Collectors.QuoteCollector
+  langs:
+  - csharp
+  - vb
+  name: Snapshot()
+  nameWithType: QuoteCollector.Snapshot()
+  fullName: Meridian.Domain.Collectors.QuoteCollector.Snapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/QuoteCollector.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snapshot
+    path: ../../src/Meridian.Domain/Collectors/QuoteCollector.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Snapshot the current cache for inspection/monitoring without exposing internal mutability.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, BboQuotePayload> Snapshot()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Domain.Models.BboQuotePayload}
+    content.vb: Public Function Snapshot() As IReadOnlyDictionary(Of String, BboQuotePayload)
+  overload: Meridian.Domain.Collectors.QuoteCollector.Snapshot*
+  implements:
+  - Meridian.Domain.Collectors.IQuoteStateStore.Snapshot
+references:
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Domain.Collectors.IQuoteStateStore
+  commentId: T:Meridian.Domain.Collectors.IQuoteStateStore
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.IQuoteStateStore.html
+  name: IQuoteStateStore
+  nameWithType: IQuoteStateStore
+  fullName: Meridian.Domain.Collectors.IQuoteStateStore
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Domain.Collectors.QuoteCollector.#ctor*
+  commentId: Overload:Meridian.Domain.Collectors.QuoteCollector.#ctor
+  href: Meridian.Domain.Collectors.QuoteCollector.html#Meridian_Domain_Collectors_QuoteCollector__ctor_Meridian_Domain_Events_IMarketEventPublisher_
+  name: QuoteCollector
+  nameWithType: QuoteCollector.QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector.QuoteCollector
+  nameWithType.vb: QuoteCollector.New
+  fullName.vb: Meridian.Domain.Collectors.QuoteCollector.New
+  name.vb: New
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Collectors.QuoteCollector.OnQuote*
+  commentId: Overload:Meridian.Domain.Collectors.QuoteCollector.OnQuote
+  href: Meridian.Domain.Collectors.QuoteCollector.html#Meridian_Domain_Collectors_QuoteCollector_OnQuote_Meridian_Contracts_Domain_Models_MarketQuoteUpdate_
+  name: OnQuote
+  nameWithType: QuoteCollector.OnQuote
+  fullName: Meridian.Domain.Collectors.QuoteCollector.OnQuote
+- uid: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+  commentId: T:Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.MarketQuoteUpdate.html
+  name: MarketQuoteUpdate
+  nameWithType: MarketQuoteUpdate
+  fullName: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Domain.Collectors.QuoteCollector.TryGet*
+  commentId: Overload:Meridian.Domain.Collectors.QuoteCollector.TryGet
+  href: Meridian.Domain.Collectors.QuoteCollector.html#Meridian_Domain_Collectors_QuoteCollector_TryGet_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  name: TryGet
+  nameWithType: QuoteCollector.TryGet
+  fullName: Meridian.Domain.Collectors.QuoteCollector.TryGet
+- uid: Meridian.Domain.Collectors.IQuoteStateStore.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  commentId: M:Meridian.Domain.Collectors.IQuoteStateStore.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  parent: Meridian.Domain.Collectors.IQuoteStateStore
+  isExternal: true
+  href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_TryGet_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  name: TryGet(string, out BboQuotePayload)
+  nameWithType: IQuoteStateStore.TryGet(string, out BboQuotePayload)
+  fullName: Meridian.Domain.Collectors.IQuoteStateStore.TryGet(string, out Meridian.Contracts.Domain.Models.BboQuotePayload)
+  nameWithType.vb: IQuoteStateStore.TryGet(String, BboQuotePayload)
+  fullName.vb: Meridian.Domain.Collectors.IQuoteStateStore.TryGet(String, Meridian.Contracts.Domain.Models.BboQuotePayload)
+  name.vb: TryGet(String, BboQuotePayload)
+  spec.csharp:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+    name: TryGet
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_TryGet_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: out
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.TryGet(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+    name: TryGet
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_TryGet_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+  commentId: T:Meridian.Contracts.Domain.Models.BboQuotePayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.BboQuotePayload.html
+  name: BboQuotePayload
+  nameWithType: BboQuotePayload
+  fullName: Meridian.Contracts.Domain.Models.BboQuotePayload
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Domain.Collectors.QuoteCollector.Upsert*
+  commentId: Overload:Meridian.Domain.Collectors.QuoteCollector.Upsert
+  href: Meridian.Domain.Collectors.QuoteCollector.html#Meridian_Domain_Collectors_QuoteCollector_Upsert_Meridian_Contracts_Domain_Models_MarketQuoteUpdate_
+  name: Upsert
+  nameWithType: QuoteCollector.Upsert
+  fullName: Meridian.Domain.Collectors.QuoteCollector.Upsert
+- uid: Meridian.Domain.Collectors.IQuoteStateStore.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  commentId: M:Meridian.Domain.Collectors.IQuoteStateStore.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  parent: Meridian.Domain.Collectors.IQuoteStateStore
+  href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_Upsert_Meridian_Contracts_Domain_Models_MarketQuoteUpdate_
+  name: Upsert(MarketQuoteUpdate)
+  nameWithType: IQuoteStateStore.Upsert(MarketQuoteUpdate)
+  fullName: Meridian.Domain.Collectors.IQuoteStateStore.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+  spec.csharp:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+    name: Upsert
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_Upsert_Meridian_Contracts_Domain_Models_MarketQuoteUpdate_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+    name: MarketQuoteUpdate
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.Upsert(Meridian.Contracts.Domain.Models.MarketQuoteUpdate)
+    name: Upsert
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_Upsert_Meridian_Contracts_Domain_Models_MarketQuoteUpdate_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.MarketQuoteUpdate
+    name: MarketQuoteUpdate
+  - name: )
+- uid: Meridian.Domain.Collectors.QuoteCollector.TryRemove*
+  commentId: Overload:Meridian.Domain.Collectors.QuoteCollector.TryRemove
+  href: Meridian.Domain.Collectors.QuoteCollector.html#Meridian_Domain_Collectors_QuoteCollector_TryRemove_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  name: TryRemove
+  nameWithType: QuoteCollector.TryRemove
+  fullName: Meridian.Domain.Collectors.QuoteCollector.TryRemove
+- uid: Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  commentId: M:Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+  parent: Meridian.Domain.Collectors.IQuoteStateStore
+  isExternal: true
+  href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_TryRemove_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  name: TryRemove(string, out BboQuotePayload)
+  nameWithType: IQuoteStateStore.TryRemove(string, out BboQuotePayload)
+  fullName: Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(string, out Meridian.Contracts.Domain.Models.BboQuotePayload)
+  nameWithType.vb: IQuoteStateStore.TryRemove(String, BboQuotePayload)
+  fullName.vb: Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(String, Meridian.Contracts.Domain.Models.BboQuotePayload)
+  name.vb: TryRemove(String, BboQuotePayload)
+  spec.csharp:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+    name: TryRemove
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_TryRemove_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - name: out
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.TryRemove(System.String,Meridian.Contracts.Domain.Models.BboQuotePayload@)
+    name: TryRemove
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_TryRemove_System_String_Meridian_Contracts_Domain_Models_BboQuotePayload__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: )
+- uid: Meridian.Domain.Collectors.QuoteCollector.Snapshot*
+  commentId: Overload:Meridian.Domain.Collectors.QuoteCollector.Snapshot
+  href: Meridian.Domain.Collectors.QuoteCollector.html#Meridian_Domain_Collectors_QuoteCollector_Snapshot
+  name: Snapshot
+  nameWithType: QuoteCollector.Snapshot
+  fullName: Meridian.Domain.Collectors.QuoteCollector.Snapshot
+- uid: Meridian.Domain.Collectors.IQuoteStateStore.Snapshot
+  commentId: M:Meridian.Domain.Collectors.IQuoteStateStore.Snapshot
+  parent: Meridian.Domain.Collectors.IQuoteStateStore
+  href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_Snapshot
+  name: Snapshot()
+  nameWithType: IQuoteStateStore.Snapshot()
+  fullName: Meridian.Domain.Collectors.IQuoteStateStore.Snapshot()
+  spec.csharp:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.Snapshot
+    name: Snapshot
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_Snapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Collectors.IQuoteStateStore.Snapshot
+    name: Snapshot
+    href: Meridian.Domain.Collectors.IQuoteStateStore.html#Meridian_Domain_Collectors_IQuoteStateStore_Snapshot
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Domain.Models.BboQuotePayload}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.Domain.Models.BboQuotePayload}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, BboQuotePayload>
+  nameWithType: IReadOnlyDictionary<string, BboQuotePayload>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Contracts.Domain.Models.BboQuotePayload>
+  nameWithType.vb: IReadOnlyDictionary(Of String, BboQuotePayload)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Contracts.Domain.Models.BboQuotePayload)
+  name.vb: IReadOnlyDictionary(Of String, BboQuotePayload)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

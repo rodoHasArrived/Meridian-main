@@ -1,0 +1,1053 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.FileSearchQuery
+  commentId: T:Meridian.Storage.Services.FileSearchQuery
+  id: FileSearchQuery
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.FileSearchQuery.#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.String[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Nullable{System.Double},System.String,Meridian.Storage.Services.SortField,System.Boolean,System.Int32,System.Int32)
+  - Meridian.Storage.Services.FileSearchQuery.Descending
+  - Meridian.Storage.Services.FileSearchQuery.From
+  - Meridian.Storage.Services.FileSearchQuery.MaxSize
+  - Meridian.Storage.Services.FileSearchQuery.MinQualityScore
+  - Meridian.Storage.Services.FileSearchQuery.MinSize
+  - Meridian.Storage.Services.FileSearchQuery.PathPattern
+  - Meridian.Storage.Services.FileSearchQuery.Skip
+  - Meridian.Storage.Services.FileSearchQuery.SortBy
+  - Meridian.Storage.Services.FileSearchQuery.Sources
+  - Meridian.Storage.Services.FileSearchQuery.Symbols
+  - Meridian.Storage.Services.FileSearchQuery.Take
+  - Meridian.Storage.Services.FileSearchQuery.To
+  - Meridian.Storage.Services.FileSearchQuery.Types
+  langs:
+  - csharp
+  - vb
+  name: FileSearchQuery
+  nameWithType: FileSearchQuery
+  fullName: Meridian.Storage.Services.FileSearchQuery
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileSearchQuery
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 608
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record FileSearchQuery : IEquatable<FileSearchQuery>'
+    content.vb: Public NotInheritable Class FileSearchQuery Implements IEquatable(Of FileSearchQuery)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.FileSearchQuery}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.FileSearchQuery.#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.String[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Nullable{System.Double},System.String,Meridian.Storage.Services.SortField,System.Boolean,System.Int32,System.Int32)
+  commentId: M:Meridian.Storage.Services.FileSearchQuery.#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.String[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Nullable{System.Double},System.String,Meridian.Storage.Services.SortField,System.Boolean,System.Int32,System.Int32)
+  id: '#ctor(System.String[],Meridian.Contracts.Domain.Enums.MarketEventType[],System.String[],System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Nullable{System.Double},System.String,Meridian.Storage.Services.SortField,System.Boolean,System.Int32,System.Int32)'
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: FileSearchQuery(string[]?, MarketEventType[]?, string[]?, DateTimeOffset?, DateTimeOffset?, long?, long?, double?, string?, SortField, bool, int, int)
+  nameWithType: FileSearchQuery.FileSearchQuery(string[]?, MarketEventType[]?, string[]?, DateTimeOffset?, DateTimeOffset?, long?, long?, double?, string?, SortField, bool, int, int)
+  fullName: Meridian.Storage.Services.FileSearchQuery.FileSearchQuery(string[]?, Meridian.Contracts.Domain.Enums.MarketEventType[]?, string[]?, System.DateTimeOffset?, System.DateTimeOffset?, long?, long?, double?, string?, Meridian.Storage.Services.SortField, bool, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 608
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public FileSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, long? MinSize = null, long? MaxSize = null, double? MinQualityScore = null, string? PathPattern = null, SortField SortBy = SortField.Date, bool Descending = true, int Skip = 0, int Take = 100)
+    parameters:
+    - id: Symbols
+      type: System.String[]
+    - id: Types
+      type: Meridian.Contracts.Domain.Enums.MarketEventType[]
+    - id: Sources
+      type: System.String[]
+    - id: From
+      type: System.Nullable{System.DateTimeOffset}
+    - id: To
+      type: System.Nullable{System.DateTimeOffset}
+    - id: MinSize
+      type: System.Nullable{System.Int64}
+    - id: MaxSize
+      type: System.Nullable{System.Int64}
+    - id: MinQualityScore
+      type: System.Nullable{System.Double}
+    - id: PathPattern
+      type: System.String
+    - id: SortBy
+      type: Meridian.Storage.Services.SortField
+    - id: Descending
+      type: System.Boolean
+    - id: Skip
+      type: System.Int32
+    - id: Take
+      type: System.Int32
+    content.vb: Public Sub New(Symbols As String() = Nothing, Types As MarketEventType() = Nothing, Sources As String() = Nothing, From As DateTimeOffset? = Nothing, [To] As DateTimeOffset? = Nothing, MinSize As Long? = Nothing, MaxSize As Long? = Nothing, MinQualityScore As Double? = Nothing, PathPattern As String = Nothing, SortBy As SortField = SortField.Date, Descending As Boolean = True, Skip As Integer = 0, Take As Integer = 100)
+  overload: Meridian.Storage.Services.FileSearchQuery.#ctor*
+  nameWithType.vb: FileSearchQuery.New(String(), MarketEventType(), String(), DateTimeOffset?, DateTimeOffset?, Long?, Long?, Double?, String, SortField, Boolean, Integer, Integer)
+  fullName.vb: Meridian.Storage.Services.FileSearchQuery.New(String(), Meridian.Contracts.Domain.Enums.MarketEventType(), String(), System.DateTimeOffset?, System.DateTimeOffset?, Long?, Long?, Double?, String, Meridian.Storage.Services.SortField, Boolean, Integer, Integer)
+  name.vb: New(String(), MarketEventType(), String(), DateTimeOffset?, DateTimeOffset?, Long?, Long?, Double?, String, SortField, Boolean, Integer, Integer)
+- uid: Meridian.Storage.Services.FileSearchQuery.Symbols
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.Symbols
+  id: Symbols
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: FileSearchQuery.Symbols
+  fullName: Meridian.Storage.Services.FileSearchQuery.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 609
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Storage.Services.FileSearchQuery.Symbols*
+- uid: Meridian.Storage.Services.FileSearchQuery.Types
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.Types
+  id: Types
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Types
+  nameWithType: FileSearchQuery.Types
+  fullName: Meridian.Storage.Services.FileSearchQuery.Types
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Types
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 610
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MarketEventType[]? Types { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType[]
+    content.vb: Public Property Types As MarketEventType()
+  overload: Meridian.Storage.Services.FileSearchQuery.Types*
+- uid: Meridian.Storage.Services.FileSearchQuery.Sources
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.Sources
+  id: Sources
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: FileSearchQuery.Sources
+  fullName: Meridian.Storage.Services.FileSearchQuery.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 611
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string[]? Sources { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Sources As String()
+  overload: Meridian.Storage.Services.FileSearchQuery.Sources*
+- uid: Meridian.Storage.Services.FileSearchQuery.From
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.From
+  id: From
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: FileSearchQuery.From
+  fullName: Meridian.Storage.Services.FileSearchQuery.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 612
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset? From { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property From As DateTimeOffset?
+  overload: Meridian.Storage.Services.FileSearchQuery.From*
+- uid: Meridian.Storage.Services.FileSearchQuery.To
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.To
+  id: To
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: FileSearchQuery.To
+  fullName: Meridian.Storage.Services.FileSearchQuery.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 613
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset? To { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property [To] As DateTimeOffset?
+  overload: Meridian.Storage.Services.FileSearchQuery.To*
+- uid: Meridian.Storage.Services.FileSearchQuery.MinSize
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.MinSize
+  id: MinSize
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: MinSize
+  nameWithType: FileSearchQuery.MinSize
+  fullName: Meridian.Storage.Services.FileSearchQuery.MinSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSize
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 614
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? MinSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MinSize As Long?
+  overload: Meridian.Storage.Services.FileSearchQuery.MinSize*
+- uid: Meridian.Storage.Services.FileSearchQuery.MaxSize
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.MaxSize
+  id: MaxSize
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: MaxSize
+  nameWithType: FileSearchQuery.MaxSize
+  fullName: Meridian.Storage.Services.FileSearchQuery.MaxSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSize
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 615
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? MaxSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MaxSize As Long?
+  overload: Meridian.Storage.Services.FileSearchQuery.MaxSize*
+- uid: Meridian.Storage.Services.FileSearchQuery.MinQualityScore
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.MinQualityScore
+  id: MinQualityScore
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: MinQualityScore
+  nameWithType: FileSearchQuery.MinQualityScore
+  fullName: Meridian.Storage.Services.FileSearchQuery.MinQualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinQualityScore
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double? MinQualityScore { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property MinQualityScore As Double?
+  overload: Meridian.Storage.Services.FileSearchQuery.MinQualityScore*
+- uid: Meridian.Storage.Services.FileSearchQuery.PathPattern
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.PathPattern
+  id: PathPattern
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: PathPattern
+  nameWithType: FileSearchQuery.PathPattern
+  fullName: Meridian.Storage.Services.FileSearchQuery.PathPattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PathPattern
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 617
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? PathPattern { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PathPattern As String
+  overload: Meridian.Storage.Services.FileSearchQuery.PathPattern*
+- uid: Meridian.Storage.Services.FileSearchQuery.SortBy
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.SortBy
+  id: SortBy
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: SortBy
+  nameWithType: FileSearchQuery.SortBy
+  fullName: Meridian.Storage.Services.FileSearchQuery.SortBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SortBy
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 618
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public SortField SortBy { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.SortField
+    content.vb: Public Property SortBy As SortField
+  overload: Meridian.Storage.Services.FileSearchQuery.SortBy*
+- uid: Meridian.Storage.Services.FileSearchQuery.Descending
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.Descending
+  id: Descending
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Descending
+  nameWithType: FileSearchQuery.Descending
+  fullName: Meridian.Storage.Services.FileSearchQuery.Descending
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Descending
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 619
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public bool Descending { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Descending As Boolean
+  overload: Meridian.Storage.Services.FileSearchQuery.Descending*
+- uid: Meridian.Storage.Services.FileSearchQuery.Skip
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.Skip
+  id: Skip
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Skip
+  nameWithType: FileSearchQuery.Skip
+  fullName: Meridian.Storage.Services.FileSearchQuery.Skip
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skip
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 620
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int Skip { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Skip As Integer
+  overload: Meridian.Storage.Services.FileSearchQuery.Skip*
+- uid: Meridian.Storage.Services.FileSearchQuery.Take
+  commentId: P:Meridian.Storage.Services.FileSearchQuery.Take
+  id: Take
+  parent: Meridian.Storage.Services.FileSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Take
+  nameWithType: FileSearchQuery.Take
+  fullName: Meridian.Storage.Services.FileSearchQuery.Take
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Take
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 621
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int Take { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Take As Integer
+  overload: Meridian.Storage.Services.FileSearchQuery.Take*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.FileSearchQuery}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.FileSearchQuery}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FileSearchQuery>
+  nameWithType: IEquatable<FileSearchQuery>
+  fullName: System.IEquatable<Meridian.Storage.Services.FileSearchQuery>
+  nameWithType.vb: IEquatable(Of FileSearchQuery)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.FileSearchQuery)
+  name.vb: IEquatable(Of FileSearchQuery)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.FileSearchQuery
+    name: FileSearchQuery
+    href: Meridian.Storage.Services.FileSearchQuery.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.FileSearchQuery
+    name: FileSearchQuery
+    href: Meridian.Storage.Services.FileSearchQuery.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.FileSearchQuery.#ctor*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.#ctor
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery__ctor_System_String___Meridian_Contracts_Domain_Enums_MarketEventType___System_String___System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Nullable_System_Int64__System_Nullable_System_Int64__System_Nullable_System_Double__System_String_Meridian_Storage_Services_SortField_System_Boolean_System_Int32_System_Int32_
+  name: FileSearchQuery
+  nameWithType: FileSearchQuery.FileSearchQuery
+  fullName: Meridian.Storage.Services.FileSearchQuery.FileSearchQuery
+  nameWithType.vb: FileSearchQuery.New
+  fullName.vb: Meridian.Storage.Services.FileSearchQuery.New
+  name.vb: New
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType[]
+  isExternal: true
+  name: MarketEventType[]
+  nameWithType: MarketEventType[]
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType[]
+  nameWithType.vb: MarketEventType()
+  fullName.vb: Meridian.Contracts.Domain.Enums.MarketEventType()
+  name.vb: MarketEventType()
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.MarketEventType
+    name: MarketEventType
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.MarketEventType
+    name: MarketEventType
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.SortField
+  commentId: T:Meridian.Storage.Services.SortField
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.SortField.html
+  name: SortField
+  nameWithType: SortField
+  fullName: Meridian.Storage.Services.SortField
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.FileSearchQuery.Symbols*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.Symbols
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_Symbols
+  name: Symbols
+  nameWithType: FileSearchQuery.Symbols
+  fullName: Meridian.Storage.Services.FileSearchQuery.Symbols
+- uid: Meridian.Storage.Services.FileSearchQuery.Types*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.Types
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_Types
+  name: Types
+  nameWithType: FileSearchQuery.Types
+  fullName: Meridian.Storage.Services.FileSearchQuery.Types
+- uid: Meridian.Storage.Services.FileSearchQuery.Sources*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.Sources
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_Sources
+  name: Sources
+  nameWithType: FileSearchQuery.Sources
+  fullName: Meridian.Storage.Services.FileSearchQuery.Sources
+- uid: Meridian.Storage.Services.FileSearchQuery.From*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.From
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_From
+  name: From
+  nameWithType: FileSearchQuery.From
+  fullName: Meridian.Storage.Services.FileSearchQuery.From
+- uid: Meridian.Storage.Services.FileSearchQuery.To*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.To
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_To
+  name: To
+  nameWithType: FileSearchQuery.To
+  fullName: Meridian.Storage.Services.FileSearchQuery.To
+- uid: Meridian.Storage.Services.FileSearchQuery.MinSize*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.MinSize
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_MinSize
+  name: MinSize
+  nameWithType: FileSearchQuery.MinSize
+  fullName: Meridian.Storage.Services.FileSearchQuery.MinSize
+- uid: Meridian.Storage.Services.FileSearchQuery.MaxSize*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.MaxSize
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_MaxSize
+  name: MaxSize
+  nameWithType: FileSearchQuery.MaxSize
+  fullName: Meridian.Storage.Services.FileSearchQuery.MaxSize
+- uid: Meridian.Storage.Services.FileSearchQuery.MinQualityScore*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.MinQualityScore
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_MinQualityScore
+  name: MinQualityScore
+  nameWithType: FileSearchQuery.MinQualityScore
+  fullName: Meridian.Storage.Services.FileSearchQuery.MinQualityScore
+- uid: Meridian.Storage.Services.FileSearchQuery.PathPattern*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.PathPattern
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_PathPattern
+  name: PathPattern
+  nameWithType: FileSearchQuery.PathPattern
+  fullName: Meridian.Storage.Services.FileSearchQuery.PathPattern
+- uid: Meridian.Storage.Services.FileSearchQuery.SortBy*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.SortBy
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_SortBy
+  name: SortBy
+  nameWithType: FileSearchQuery.SortBy
+  fullName: Meridian.Storage.Services.FileSearchQuery.SortBy
+- uid: Meridian.Storage.Services.FileSearchQuery.Descending*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.Descending
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_Descending
+  name: Descending
+  nameWithType: FileSearchQuery.Descending
+  fullName: Meridian.Storage.Services.FileSearchQuery.Descending
+- uid: Meridian.Storage.Services.FileSearchQuery.Skip*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.Skip
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_Skip
+  name: Skip
+  nameWithType: FileSearchQuery.Skip
+  fullName: Meridian.Storage.Services.FileSearchQuery.Skip
+- uid: Meridian.Storage.Services.FileSearchQuery.Take*
+  commentId: Overload:Meridian.Storage.Services.FileSearchQuery.Take
+  href: Meridian.Storage.Services.FileSearchQuery.html#Meridian_Storage_Services_FileSearchQuery_Take
+  name: Take
+  nameWithType: FileSearchQuery.Take
+  fullName: Meridian.Storage.Services.FileSearchQuery.Take

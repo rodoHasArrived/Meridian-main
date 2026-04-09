@@ -1,0 +1,585 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  id: CarryTailRiskEstimate
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.#ctor(System.String,System.Double,System.Double,System.Decimal)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction
+  langs:
+  - csharp
+  - vb
+  name: CarryTailRiskEstimate
+  nameWithType: CarryTailRiskEstimate
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryTailRiskEstimate
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record CarryTailRiskEstimate : IEquatable<CarryTailRiskEstimate>'
+    content.vb: Public NotInheritable Class CarryTailRiskEstimate Implements IEquatable(Of CarryTailRiskEstimate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.#ctor(System.String,System.Double,System.Double,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.#ctor(System.String,System.Double,System.Double,System.Decimal)
+  id: '#ctor(System.String,System.Double,System.Double,System.Decimal)'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  langs:
+  - csharp
+  - vb
+  name: CarryTailRiskEstimate(string, double, double, decimal)
+  nameWithType: CarryTailRiskEstimate.CarryTailRiskEstimate(string, double, double, decimal)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.CarryTailRiskEstimate(string, double, double, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public CarryTailRiskEstimate(string Method, double ConfidenceLevel, double ReturnFraction, decimal Amount)
+    parameters:
+    - id: Method
+      type: System.String
+    - id: ConfidenceLevel
+      type: System.Double
+    - id: ReturnFraction
+      type: System.Double
+    - id: Amount
+      type: System.Decimal
+    content.vb: Public Sub New(Method As String, ConfidenceLevel As Double, ReturnFraction As Double, Amount As Decimal)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.#ctor*
+  nameWithType.vb: CarryTailRiskEstimate.New(String, Double, Double, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.New(String, Double, Double, Decimal)
+  name.vb: New(String, Double, Double, Decimal)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method
+  id: Method
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  langs:
+  - csharp
+  - vb
+  name: Method
+  nameWithType: CarryTailRiskEstimate.Method
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Method
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public string Method { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Method As String
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel
+  id: ConfidenceLevel
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  langs:
+  - csharp
+  - vb
+  name: ConfidenceLevel
+  nameWithType: CarryTailRiskEstimate.ConfidenceLevel
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfidenceLevel
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double ConfidenceLevel { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ConfidenceLevel As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction
+  id: ReturnFraction
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  langs:
+  - csharp
+  - vb
+  name: ReturnFraction
+  nameWithType: CarryTailRiskEstimate.ReturnFraction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReturnFraction
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double ReturnFraction { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ReturnFraction As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount
+  id: Amount
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  langs:
+  - csharp
+  - vb
+  name: Amount
+  nameWithType: CarryTailRiskEstimate.Amount
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Amount
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public decimal Amount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Amount As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CarryTailRiskEstimate>
+  nameWithType: IEquatable<CarryTailRiskEstimate>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate>
+  nameWithType.vb: IEquatable(Of CarryTailRiskEstimate)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate)
+  name.vb: IEquatable(Of CarryTailRiskEstimate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+    name: CarryTailRiskEstimate
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+    name: CarryTailRiskEstimate
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTailRiskEstimate__ctor_System_String_System_Double_System_Double_System_Decimal_
+  name: CarryTailRiskEstimate
+  nameWithType: CarryTailRiskEstimate.CarryTailRiskEstimate
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.CarryTailRiskEstimate
+  nameWithType.vb: CarryTailRiskEstimate.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTailRiskEstimate_Method
+  name: Method
+  nameWithType: CarryTailRiskEstimate.Method
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Method
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTailRiskEstimate_ConfidenceLevel
+  name: ConfidenceLevel
+  nameWithType: CarryTailRiskEstimate.ConfidenceLevel
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ConfidenceLevel
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTailRiskEstimate_ReturnFraction
+  name: ReturnFraction
+  nameWithType: CarryTailRiskEstimate.ReturnFraction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.ReturnFraction
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTailRiskEstimate_Amount
+  name: Amount
+  nameWithType: CarryTailRiskEstimate.Amount
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.Amount

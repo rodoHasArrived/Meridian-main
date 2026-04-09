@@ -1,0 +1,3981 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  id: NYSEDataSource
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.#ctor(Meridian.Infrastructure.Adapters.NYSE.NYSEOptions,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.DataSources.DataSourceOptions,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes(System.Int32)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades(System.Int32)
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: NYSEDataSource
+  nameWithType: NYSEDataSource
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NYSEDataSource
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    NYSE Direct Connection data source providing real-time and historical market data
+
+    directly from the New York Stock Exchange.
+
+
+    Features:
+
+    - Real-time trades and quotes via NYSE Integrated Feed
+
+    - Historical daily OHLCV bars via NYSE Historical Data API
+
+    - Level 2 market depth (Premium/Professional tiers)
+
+    - Trade conditions and participant IDs
+
+    - Pre-market and after-hours data
+
+    - Corporate actions (dividends, splits)
+
+
+    Requires NYSE Connect API credentials and appropriate data subscriptions.
+  example: []
+  syntax:
+    content: >-
+      [DataSource("nyse", "NYSE Direct", DataSourceType.Hybrid, DataSourceCategory.Exchange, Priority = 5, Description = "Direct connection to NYSE for real-time and historical US equity data")]
+
+      [ImplementsAdr("ADR-001", "NYSE streaming and historical data provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHistoricalDataSource, IDataSource, IAsyncDisposable
+    content.vb: >-
+      <DataSource("nyse", "NYSE Direct", DataSourceType.Hybrid, DataSourceCategory.Exchange, Priority:=5, Description:="Direct connection to NYSE for real-time and historical US equity data")>
+
+      <ImplementsAdr("ADR-001", "NYSE streaming and historical data provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      Public NotInheritable Class NYSEDataSource Inherits DataSourceBase Implements IRealtimeDataSource, IHistoricalDataSource, IDataSource, IAsyncDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Infrastructure.DataSources.DataSourceBase
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  - Meridian.Infrastructure.DataSources.IDataSource
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - Meridian.Infrastructure.DataSources.DataSourceBase.Priority
+  - Meridian.Infrastructure.DataSources.DataSourceBase.Health
+  - Meridian.Infrastructure.DataSources.DataSourceBase.Status
+  - Meridian.Infrastructure.DataSources.DataSourceBase.RateLimitState
+  - Meridian.Infrastructure.DataSources.DataSourceBase.HealthChanges
+  - Meridian.Infrastructure.DataSources.DataSourceBase.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.DataSourceBase.DisposeAsync
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: nyse
+    - type: System.String
+      value: NYSE Direct
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 2
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 0
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 5
+    - name: Description
+      type: System.String
+      value: Direct connection to NYSE for real-time and historical US equity data
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: NYSE streaming and historical data provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id
+  id: Id
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: NYSEDataSource.Id
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unique identifier for this data source (e.g., "alpaca", "yahoo", "ib").
+  example: []
+  syntax:
+    content: public override string Id { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Id As String
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.Id
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.Id
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: NYSEDataSource.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public override string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property DisplayName As String
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.DisplayName
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description
+  id: Description
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: NYSEDataSource.Description
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Description of the data source and its capabilities.
+  example: []
+  syntax:
+    content: public override string Description { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Description As String
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.Description
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.Description
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type
+  id: Type
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: NYSEDataSource.Type
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: 'Type of data provided: Realtime, Historical, or Hybrid.'
+  example: []
+  syntax:
+    content: public override DataSourceType Type { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceType
+    content.vb: Public Overrides ReadOnly Property Type As DataSourceType
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.Type
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.Type
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category
+  id: Category
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: NYSEDataSource.Category
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: 'Category of the data source: Exchange, Broker, Aggregator, Free, Premium.'
+  example: []
+  syntax:
+    content: public override DataSourceCategory Category { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+    content.vb: Public Overrides ReadOnly Property Category As DataSourceCategory
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.Category
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.Category
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: NYSEDataSource.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Bitwise capabilities supported by this source.
+  example: []
+  syntax:
+    content: public override DataSourceCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+    content.vb: Public Overrides ReadOnly Property Capabilities As DataSourceCapabilities
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.Capabilities
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo
+  id: CapabilityInfo
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: CapabilityInfo
+  nameWithType: NYSEDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CapabilityInfo
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Detailed capability information including limits and supported features.
+  example: []
+  syntax:
+    content: public override DataSourceCapabilityInfo CapabilityInfo { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+    content.vb: Public Overrides ReadOnly Property CapabilityInfo As DataSourceCapabilityInfo
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.CapabilityInfo
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets
+  id: SupportedMarkets
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportedMarkets
+  nameWithType: NYSEDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedMarkets
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Market regions/countries supported (e.g., "US", "UK", "DE").
+  example: []
+  syntax:
+    content: public override IReadOnlySet<string> SupportedMarkets { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: Public Overrides ReadOnly Property SupportedMarkets As IReadOnlySet(Of String)
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.SupportedMarkets
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses
+  id: SupportedAssetClasses
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetClasses
+  nameWithType: NYSEDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetClasses
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Asset classes supported by this source.
+  example: []
+  syntax:
+    content: public override IReadOnlySet<AssetClass> SupportedAssetClasses { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Infrastructure.DataSources.AssetClass}
+    content.vb: Public Overrides ReadOnly Property SupportedAssetClasses As IReadOnlySet(Of AssetClass)
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.SupportedAssetClasses
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.#ctor(Meridian.Infrastructure.Adapters.NYSE.NYSEOptions,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.DataSources.DataSourceOptions,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.#ctor(Meridian.Infrastructure.Adapters.NYSE.NYSEOptions,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.DataSources.DataSourceOptions,Serilog.ILogger)
+  id: '#ctor(Meridian.Infrastructure.Adapters.NYSE.NYSEOptions,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.DataSources.DataSourceOptions,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: NYSEDataSource(NYSEOptions, IHttpClientFactory, DataSourceOptions?, ILogger?)
+  nameWithType: NYSEDataSource.NYSEDataSource(NYSEOptions, IHttpClientFactory, DataSourceOptions?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.NYSEDataSource(Meridian.Infrastructure.Adapters.NYSE.NYSEOptions, System.Net.Http.IHttpClientFactory, Meridian.Infrastructure.DataSources.DataSourceOptions?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public NYSEDataSource(NYSEOptions options, IHttpClientFactory httpClientFactory, DataSourceOptions? sourceOptions = null, ILogger? logger = null)
+    parameters:
+    - id: options
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+    - id: httpClientFactory
+      type: System.Net.Http.IHttpClientFactory
+    - id: sourceOptions
+      type: Meridian.Infrastructure.DataSources.DataSourceOptions
+    - id: logger
+      type: Serilog.ILogger
+    content.vb: Public Sub New(options As NYSEOptions, httpClientFactory As IHttpClientFactory, sourceOptions As DataSourceOptions = Nothing, logger As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.#ctor*
+  nameWithType.vb: NYSEDataSource.New(NYSEOptions, IHttpClientFactory, DataSourceOptions, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.New(Meridian.Infrastructure.Adapters.NYSE.NYSEOptions, System.Net.Http.IHttpClientFactory, Meridian.Infrastructure.DataSources.DataSourceOptions, Serilog.ILogger)
+  name.vb: New(NYSEOptions, IHttpClientFactory, DataSourceOptions, ILogger)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  id: ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: NYSEDataSource.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateCredentialsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Validates that credentials are properly configured.
+
+    Returns true if no credentials are required or if they are valid.
+  example: []
+  syntax:
+    content: public override Task<bool> ValidateCredentialsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Overrides Function ValidateCredentialsAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  id: TestConnectivityAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: TestConnectivityAsync(CancellationToken)
+  nameWithType: NYSEDataSource.TestConnectivityAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestConnectivityAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Tests connectivity to the data source.
+  example: []
+  syntax:
+    content: public override Task<bool> TestConnectivityAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Overrides Function TestConnectivityAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.TestConnectivityAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync
+  id: OnDisposeAsync
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: OnDisposeAsync()
+  nameWithType: NYSEDataSource.OnDisposeAsync()
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnDisposeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Override to provide custom dispose logic.
+  example: []
+  syntax:
+    content: protected override ValueTask OnDisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Protected Overrides Function OnDisposeAsync() As ValueTask
+  overridden: Meridian.Infrastructure.DataSources.DataSourceBase.OnDisposeAsync
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected
+  id: IsConnected
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: NYSEDataSource.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether the source is currently connected.
+  example: []
+  syntax:
+    content: public bool IsConnected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsConnected As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: NYSEDataSource.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Connects to the real-time data stream.
+  example: []
+  syntax:
+    content: public Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: NYSEDataSource.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Disconnects from the real-time data stream.
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades
+  id: Trades
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: NYSEDataSource.Trades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Observable stream of trade events.
+  example: []
+  syntax:
+    content: public IObservable<RealtimeTrade> Trades { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+    content.vb: Public ReadOnly Property Trades As IObservable(Of RealtimeTrade)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: NYSEDataSource.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 303
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Subscribes to real-time trade prints for the specified symbol.
+  example: []
+  syntax:
+    content: public int SubscribeTrades(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID for unsubscription.
+    content.vb: Public Function SubscribeTrades(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: NYSEDataSource.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unsubscribes from a trade subscription.
+  example: []
+  syntax:
+    content: public void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+  nameWithType.vb: NYSEDataSource.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes
+  id: Quotes
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: Quotes
+  nameWithType: NYSEDataSource.Quotes
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quotes
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Observable stream of quote events.
+  example: []
+  syntax:
+    content: public IObservable<RealtimeQuote> Quotes { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+    content.vb: Public ReadOnly Property Quotes As IObservable(Of RealtimeQuote)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeQuotes(SymbolConfig)
+  nameWithType: NYSEDataSource.SubscribeQuotes(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeQuotes
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Subscribes to real-time BBO quotes for the specified symbol.
+  example: []
+  syntax:
+    content: public int SubscribeQuotes(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID for unsubscription.
+    content.vb: Public Function SubscribeQuotes(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes(System.Int32)
+  id: UnsubscribeQuotes(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeQuotes(int)
+  nameWithType: NYSEDataSource.UnsubscribeQuotes(int)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeQuotes
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unsubscribes from a quote subscription.
+  example: []
+  syntax:
+    content: public void UnsubscribeQuotes(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeQuotes(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+  nameWithType.vb: NYSEDataSource.UnsubscribeQuotes(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes(Integer)
+  name.vb: UnsubscribeQuotes(Integer)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates
+  id: DepthUpdates
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdates
+  nameWithType: NYSEDataSource.DepthUpdates
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdates
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Observable stream of market depth events.
+  example: []
+  syntax:
+    content: public IObservable<RealtimeDepthUpdate> DepthUpdates { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+    content.vb: Public ReadOnly Property DepthUpdates As IObservable(Of RealtimeDepthUpdate)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: NYSEDataSource.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Subscribes to market depth for the specified symbol.
+  example: []
+  syntax:
+    content: public int SubscribeMarketDepth(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID for unsubscription.
+    content.vb: Public Function SubscribeMarketDepth(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: NYSEDataSource.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unsubscribes from a depth subscription.
+  example: []
+  syntax:
+    content: public void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+  nameWithType.vb: NYSEDataSource.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions
+  id: ActiveSubscriptions
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: ActiveSubscriptions
+  nameWithType: NYSEDataSource.ActiveSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveSubscriptions
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 399
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets all active subscription IDs.
+  example: []
+  syntax:
+    content: public IReadOnlySet<int> ActiveSubscriptions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.Int32}
+    content.vb: Public ReadOnly Property ActiveSubscriptions As IReadOnlySet(Of Integer)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols
+  id: SubscribedSymbols
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribedSymbols
+  nameWithType: NYSEDataSource.SubscribedSymbols
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedSymbols
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets the symbols currently subscribed.
+  example: []
+  syntax:
+    content: public IReadOnlySet<string> SubscribedSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: Public ReadOnly Property SubscribedSymbols As IReadOnlySet(Of String)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll
+  id: UnsubscribeAll
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeAll()
+  nameWithType: NYSEDataSource.UnsubscribeAll()
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeAll
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unsubscribes from all active subscriptions.
+  example: []
+  syntax:
+    content: public void UnsubscribeAll()
+    content.vb: Public Sub UnsubscribeAll()
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll*
+  implements:
+  - Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday
+  id: SupportsIntraday
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportsIntraday
+  nameWithType: NYSEDataSource.SupportsIntraday
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsIntraday
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether this source supports intraday bar data.
+  example: []
+  syntax:
+    content: public bool SupportsIntraday { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property SupportsIntraday As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals
+  id: SupportedBarIntervals
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportedBarIntervals
+  nameWithType: NYSEDataSource.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedBarIntervals
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 426
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Supported bar intervals (e.g., "1Min", "5Min", "15Min", "1Hour").
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedBarIntervals { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SupportedBarIntervals As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends
+  id: SupportsDividends
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportsDividends
+  nameWithType: NYSEDataSource.SupportsDividends
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsDividends
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether this source supports dividend data.
+  example: []
+  syntax:
+    content: public bool SupportsDividends { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property SupportsDividends As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits
+  id: SupportsSplits
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportsSplits
+  nameWithType: NYSEDataSource.SupportsSplits
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsSplits
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Whether this source supports split data.
+  example: []
+  syntax:
+    content: public bool SupportsSplits { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property SupportsSplits As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: NYSEDataSource.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDailyBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 430
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets historical daily OHLCV bars for a symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: The symbol to fetch.
+    - id: from
+      type: System.Nullable{System.DateOnly}
+      description: Start date (inclusive). If null, uses earliest available.
+    - id: to
+      type: System.Nullable{System.DateOnly}
+      description: End date (inclusive). If null, uses latest available.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+      description: List of historical bars ordered by date.
+    content.vb: Public Function GetDailyBarsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of HistoricalBar))
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  nameWithType.vb: NYSEDataSource.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: NYSEDataSource.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdjustedDailyBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 440
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets historical daily bars with adjustment information.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+    content.vb: Public Function GetAdjustedDailyBarsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  nameWithType.vb: NYSEDataSource.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  id: GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  nameWithType: NYSEDataSource.GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync(string, string, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetIntradayBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets historical intraday bars for a symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<IntradayBar>> GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from = null, DateTimeOffset? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: The symbol to fetch.
+    - id: interval
+      type: System.String
+      description: Bar interval (e.g., "1Min", "5Min").
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+      description: Start datetime (inclusive).
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+      description: End datetime (inclusive).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+      description: List of intraday bars ordered by time.
+    content.vb: Public Function GetIntradayBarsAsync(symbol As String, interval As String, from As DateTimeOffset? = Nothing, [to] As DateTimeOffset? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of IntradayBar))
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  nameWithType.vb: NYSEDataSource.GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync(String, String, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetDividendsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: NYSEDataSource.GetDividendsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDividendsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets dividend history for a symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<DividendInfo>> GetDividendsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DividendInfo}}
+    content.vb: Public Function GetDividendsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of DividendInfo))
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  nameWithType.vb: NYSEDataSource.GetDividendsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDividendsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  langs:
+  - csharp
+  - vb
+  name: GetSplitsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: NYSEDataSource.GetSplitsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSplitsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs
+    startLine: 606
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Gets stock split history for a symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SplitInfo>> GetSplitsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.SplitInfo}}
+    content.vb: Public Function GetSplitsAsync(symbol As String, from As DateOnly? = Nothing, [to] As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SplitInfo))
+  overload: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync*
+  implements:
+  - Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  nameWithType.vb: NYSEDataSource.GetSplitsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetSplitsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceBase
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html
+  name: DataSourceBase
+  nameWithType: DataSourceBase
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.IRealtimeDataSource.html
+  name: IRealtimeDataSource
+  nameWithType: IRealtimeDataSource
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.IHistoricalDataSource.html
+  name: IHistoricalDataSource
+  nameWithType: IHistoricalDataSource
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+- uid: Meridian.Infrastructure.DataSources.IDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IDataSource
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.IDataSource.html
+  name: IDataSource
+  nameWithType: IDataSource
+  fullName: Meridian.Infrastructure.DataSources.IDataSource
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Priority
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Priority
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Priority
+  name: Priority
+  nameWithType: DataSourceBase.Priority
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Priority
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Health
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Health
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Health
+  name: Health
+  nameWithType: DataSourceBase.Health
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Health
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Status
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Status
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Status
+  name: Status
+  nameWithType: DataSourceBase.Status
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Status
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.RateLimitState
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.RateLimitState
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_RateLimitState
+  name: RateLimitState
+  nameWithType: DataSourceBase.RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.RateLimitState
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.HealthChanges
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.HealthChanges
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_HealthChanges
+  name: HealthChanges
+  nameWithType: DataSourceBase.HealthChanges
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.HealthChanges
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceBase.InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync(CancellationToken)
+  nameWithType: DataSourceBase.InitializeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.InitializeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.InitializeAsync(System.Threading.CancellationToken)
+    name: InitializeAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_InitializeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.DisposeAsync
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceBase.DisposeAsync
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_DisposeAsync
+  name: DisposeAsync()
+  nameWithType: DataSourceBase.DisposeAsync()
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.DisposeAsync()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.DisposeAsync
+    name: DisposeAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_DisposeAsync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.DisposeAsync
+    name: DisposeAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_DisposeAsync
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Id
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Id
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Id
+  name: Id
+  nameWithType: DataSourceBase.Id
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Id
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Id
+  name: Id
+  nameWithType: NYSEDataSource.Id
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Id
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Id
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Id
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Id
+  name: Id
+  nameWithType: IDataSource.Id
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.DisplayName
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.DisplayName
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_DisplayName
+  name: DisplayName
+  nameWithType: DataSourceBase.DisplayName
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.DisplayName
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_DisplayName
+  name: DisplayName
+  nameWithType: NYSEDataSource.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisplayName
+- uid: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_DisplayName
+  name: DisplayName
+  nameWithType: IDataSource.DisplayName
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Description
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Description
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Description
+  name: Description
+  nameWithType: DataSourceBase.Description
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Description
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Description
+  name: Description
+  nameWithType: NYSEDataSource.Description
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Description
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Description
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Description
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Description
+  name: Description
+  nameWithType: IDataSource.Description
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Description
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Type
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Type
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Type
+  name: Type
+  nameWithType: DataSourceBase.Type
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Type
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Type
+  name: Type
+  nameWithType: NYSEDataSource.Type
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Type
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Type
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Type
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Type
+  name: Type
+  nameWithType: IDataSource.Type
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Type
+- uid: Meridian.Infrastructure.DataSources.DataSourceType
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceType
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceType.html
+  name: DataSourceType
+  nameWithType: DataSourceType
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Category
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Category
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Category
+  name: Category
+  nameWithType: DataSourceBase.Category
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Category
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Category
+  name: Category
+  nameWithType: NYSEDataSource.Category
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Category
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Category
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Category
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Category
+  name: Category
+  nameWithType: IDataSource.Category
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Category
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCategory
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCategory.html
+  name: DataSourceCategory
+  nameWithType: DataSourceCategory
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.Capabilities
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.Capabilities
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_Capabilities
+  name: Capabilities
+  nameWithType: DataSourceBase.Capabilities
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.Capabilities
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Capabilities
+  name: Capabilities
+  nameWithType: NYSEDataSource.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Capabilities
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Capabilities
+  name: Capabilities
+  nameWithType: IDataSource.Capabilities
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCapabilities.html
+  name: DataSourceCapabilities
+  nameWithType: DataSourceCapabilities
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.CapabilityInfo
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.CapabilityInfo
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_CapabilityInfo
+  name: CapabilityInfo
+  nameWithType: DataSourceBase.CapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.CapabilityInfo
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_CapabilityInfo
+  name: CapabilityInfo
+  nameWithType: NYSEDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.CapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_CapabilityInfo
+  name: CapabilityInfo
+  nameWithType: IDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo.html
+  name: DataSourceCapabilityInfo
+  nameWithType: DataSourceCapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.SupportedMarkets
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: DataSourceBase.SupportedMarkets
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.SupportedMarkets
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: NYSEDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedMarkets
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: IDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.SupportedAssetClasses
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceBase.SupportedAssetClasses
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: DataSourceBase.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.SupportedAssetClasses
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: NYSEDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedAssetClasses
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: IDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Infrastructure.DataSources.AssetClass}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Infrastructure.DataSources.AssetClass}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<AssetClass>
+  nameWithType: IReadOnlySet<AssetClass>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Infrastructure.DataSources.AssetClass>
+  nameWithType.vb: IReadOnlySet(Of AssetClass)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Infrastructure.DataSources.AssetClass)
+  name.vb: IReadOnlySet(Of AssetClass)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.AssetClass
+    name: AssetClass
+    href: Meridian.Infrastructure.DataSources.AssetClass.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.AssetClass
+    name: AssetClass
+    href: Meridian.Infrastructure.DataSources.AssetClass.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.#ctor
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource__ctor_Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_System_Net_Http_IHttpClientFactory_Meridian_Infrastructure_DataSources_DataSourceOptions_Serilog_ILogger_
+  name: NYSEDataSource
+  nameWithType: NYSEDataSource.NYSEDataSource
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.NYSEDataSource
+  nameWithType.vb: NYSEDataSource.New
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html
+  name: NYSEOptions
+  nameWithType: NYSEOptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+- uid: System.Net.Http.IHttpClientFactory
+  commentId: T:System.Net.Http.IHttpClientFactory
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory
+  name: IHttpClientFactory
+  nameWithType: IHttpClientFactory
+  fullName: System.Net.Http.IHttpClientFactory
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html
+  name: DataSourceOptions
+  nameWithType: DataSourceOptions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceBase.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: DataSourceBase.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync
+  nameWithType: NYSEDataSource.ValidateCredentialsAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ValidateCredentialsAsync
+- uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: IDataSource.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+    name: ValidateCredentialsAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.TestConnectivityAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceBase.TestConnectivityAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_TestConnectivityAsync_System_Threading_CancellationToken_
+  name: TestConnectivityAsync(CancellationToken)
+  nameWithType: DataSourceBase.TestConnectivityAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.TestConnectivityAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  name: TestConnectivityAsync
+  nameWithType: NYSEDataSource.TestConnectivityAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.TestConnectivityAsync
+- uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  isExternal: true
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  name: TestConnectivityAsync(CancellationToken)
+  nameWithType: IDataSource.TestConnectivityAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+    name: TestConnectivityAsync
+    href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceBase.OnDisposeAsync
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceBase.OnDisposeAsync
+  parent: Meridian.Infrastructure.DataSources.DataSourceBase
+  href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_OnDisposeAsync
+  name: OnDisposeAsync()
+  nameWithType: DataSourceBase.OnDisposeAsync()
+  fullName: Meridian.Infrastructure.DataSources.DataSourceBase.OnDisposeAsync()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.OnDisposeAsync
+    name: OnDisposeAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_OnDisposeAsync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.DataSourceBase.OnDisposeAsync
+    name: OnDisposeAsync
+    href: Meridian.Infrastructure.DataSources.DataSourceBase.html#Meridian_Infrastructure_DataSources_DataSourceBase_OnDisposeAsync
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_OnDisposeAsync
+  name: OnDisposeAsync
+  nameWithType: NYSEDataSource.OnDisposeAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.OnDisposeAsync
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_IsConnected
+  name: IsConnected
+  nameWithType: NYSEDataSource.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.IsConnected
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: IsConnected
+  nameWithType: IRealtimeDataSource.IsConnected
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.IsConnected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: NYSEDataSource.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ConnectAsync
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IRealtimeDataSource.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: NYSEDataSource.DisconnectAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DisconnectAsync
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IRealtimeDataSource.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Trades
+  name: Trades
+  nameWithType: NYSEDataSource.Trades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Trades
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: Trades
+  nameWithType: IRealtimeDataSource.Trades
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Trades
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeTrade>
+  nameWithType: IObservable<RealtimeTrade>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeTrade>
+  nameWithType.vb: IObservable(Of RealtimeTrade)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeTrade)
+  name.vb: IObservable(Of RealtimeTrade)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: NYSEDataSource.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeTrades
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IRealtimeDataSource.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: NYSEDataSource.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeTrades
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeTrades(int)
+  nameWithType: IRealtimeDataSource.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(int)
+  nameWithType.vb: IRealtimeDataSource.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_Quotes
+  name: Quotes
+  nameWithType: NYSEDataSource.Quotes
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.Quotes
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: Quotes
+  nameWithType: IRealtimeDataSource.Quotes
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.Quotes
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeQuote>
+  nameWithType: IObservable<RealtimeQuote>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeQuote>
+  nameWithType.vb: IObservable(Of RealtimeQuote)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeQuote)
+  name.vb: IObservable(Of RealtimeQuote)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SubscribeQuotes_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeQuotes
+  nameWithType: NYSEDataSource.SubscribeQuotes
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeQuotes
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: SubscribeQuotes(SymbolConfig)
+  nameWithType: IRealtimeDataSource.SubscribeQuotes(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeQuotes
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeQuotes
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_UnsubscribeQuotes_System_Int32_
+  name: UnsubscribeQuotes
+  nameWithType: NYSEDataSource.UnsubscribeQuotes
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeQuotes
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeQuotes(int)
+  nameWithType: IRealtimeDataSource.UnsubscribeQuotes(int)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(int)
+  nameWithType.vb: IRealtimeDataSource.UnsubscribeQuotes(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(Integer)
+  name.vb: UnsubscribeQuotes(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+    name: UnsubscribeQuotes
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeQuotes(System.Int32)
+    name: UnsubscribeQuotes
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_DepthUpdates
+  name: DepthUpdates
+  nameWithType: NYSEDataSource.DepthUpdates
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.DepthUpdates
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: DepthUpdates
+  nameWithType: IRealtimeDataSource.DepthUpdates
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.DepthUpdates
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeDepthUpdate>
+  nameWithType: IObservable<RealtimeDepthUpdate>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeDepthUpdate>
+  nameWithType.vb: IObservable(Of RealtimeDepthUpdate)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeDepthUpdate)
+  name.vb: IObservable(Of RealtimeDepthUpdate)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: NYSEDataSource.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IRealtimeDataSource.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: NYSEDataSource.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IRealtimeDataSource.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(int)
+  nameWithType.vb: IRealtimeDataSource.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_ActiveSubscriptions
+  name: ActiveSubscriptions
+  nameWithType: NYSEDataSource.ActiveSubscriptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.ActiveSubscriptions
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: ActiveSubscriptions
+  nameWithType: IRealtimeDataSource.ActiveSubscriptions
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.ActiveSubscriptions
+- uid: System.Collections.Generic.IReadOnlySet{System.Int32}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<int>
+  nameWithType: IReadOnlySet<int>
+  fullName: System.Collections.Generic.IReadOnlySet<int>
+  nameWithType.vb: IReadOnlySet(Of Integer)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Integer)
+  name.vb: IReadOnlySet(Of Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: NYSEDataSource.SubscribedSymbols
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SubscribedSymbols
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  commentId: P:Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: SubscribedSymbols
+  nameWithType: IRealtimeDataSource.SubscribedSymbols
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.SubscribedSymbols
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_UnsubscribeAll
+  name: UnsubscribeAll
+  nameWithType: NYSEDataSource.UnsubscribeAll
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.UnsubscribeAll
+- uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+  commentId: M:Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+  parent: Meridian.Infrastructure.DataSources.IRealtimeDataSource
+  name: UnsubscribeAll()
+  nameWithType: IRealtimeDataSource.UnsubscribeAll()
+  fullName: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+    name: UnsubscribeAll
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IRealtimeDataSource.UnsubscribeAll
+    name: UnsubscribeAll
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SupportsIntraday
+  name: SupportsIntraday
+  nameWithType: NYSEDataSource.SupportsIntraday
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsIntraday
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  name: SupportsIntraday
+  nameWithType: IHistoricalDataSource.SupportsIntraday
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsIntraday
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SupportedBarIntervals
+  name: SupportedBarIntervals
+  nameWithType: NYSEDataSource.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportedBarIntervals
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  name: SupportedBarIntervals
+  nameWithType: IHistoricalDataSource.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportedBarIntervals
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SupportsDividends
+  name: SupportsDividends
+  nameWithType: NYSEDataSource.SupportsDividends
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsDividends
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  name: SupportsDividends
+  nameWithType: IHistoricalDataSource.SupportsDividends
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsDividends
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_SupportsSplits
+  name: SupportsSplits
+  nameWithType: NYSEDataSource.SupportsSplits
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.SupportsSplits
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  commentId: P:Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  name: SupportsSplits
+  nameWithType: IHistoricalDataSource.SupportsSplits
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.SupportsSplits
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDailyBarsAsync
+  nameWithType: NYSEDataSource.GetDailyBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDailyBarsAsync
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalDataSource.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDailyBarsAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDailyBarsAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<HistoricalBar>>
+  nameWithType: Task<IReadOnlyList<HistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAdjustedDailyBarsAsync
+  nameWithType: NYSEDataSource.GetAdjustedDailyBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetAdjustedDailyBarsAsync
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalDataSource.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAdjustedDailyBarsAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAdjustedDailyBarsAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  nameWithType: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AdjustedHistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AdjustedHistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_GetIntradayBarsAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  name: GetIntradayBarsAsync
+  nameWithType: NYSEDataSource.GetIntradayBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetIntradayBarsAsync
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(string, string, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalDataSource.GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(String, String, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+    name: GetIntradayBarsAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+    name: GetIntradayBarsAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<IntradayBar>>
+  nameWithType: Task<IReadOnlyList<IntradayBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.IntradayBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.IntradayBar))
+  name.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_GetDividendsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDividendsAsync
+  nameWithType: NYSEDataSource.GetDividendsAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetDividendsAsync
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetDividendsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetDividendsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalDataSource.GetDividendsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDividendsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDividendsAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetDividendsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDividendsAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DividendInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DividendInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<DividendInfo>>
+  nameWithType: Task<IReadOnlyList<DividendInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.DividendInfo>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of DividendInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.DividendInfo))
+  name.vb: Task(Of IReadOnlyList(Of DividendInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DividendInfo
+    name: DividendInfo
+    href: Meridian.Infrastructure.DataSources.DividendInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DividendInfo
+    name: DividendInfo
+    href: Meridian.Infrastructure.DataSources.DividendInfo.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html#Meridian_Infrastructure_Adapters_NYSE_NYSEDataSource_GetSplitsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetSplitsAsync
+  nameWithType: NYSEDataSource.GetSplitsAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.GetSplitsAsync
+- uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IHistoricalDataSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetSplitsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalDataSource.GetSplitsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalDataSource.GetSplitsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetSplitsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetSplitsAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.DataSources.IHistoricalDataSource.GetSplitsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetSplitsAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.SplitInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.SplitInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SplitInfo>>
+  nameWithType: Task<IReadOnlyList<SplitInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.SplitInfo>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SplitInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.SplitInfo))
+  name.vb: Task(Of IReadOnlyList(Of SplitInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.SplitInfo
+    name: SplitInfo
+    href: Meridian.Infrastructure.DataSources.SplitInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.SplitInfo
+    name: SplitInfo
+    href: Meridian.Infrastructure.DataSources.SplitInfo.html
+  - name: )
+  - name: )

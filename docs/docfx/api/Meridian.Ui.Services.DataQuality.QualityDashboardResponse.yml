@@ -1,0 +1,638 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  commentId: T:Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  id: QualityDashboardResponse
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats
+  - Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats
+  - Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats
+  - Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics
+  - Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies
+  - Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats
+  langs:
+  - csharp
+  - vb
+  name: QualityDashboardResponse
+  nameWithType: QualityDashboardResponse
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityDashboardResponse
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public sealed class QualityDashboardResponse
+    content.vb: Public NotInheritable Class QualityDashboardResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics
+  commentId: P:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics
+  id: RealTimeMetrics
+  parent: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  langs:
+  - csharp
+  - vb
+  name: RealTimeMetrics
+  nameWithType: QualityDashboardResponse.RealTimeMetrics
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealTimeMetrics
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public QualityDashboardMetricsResponse? RealTimeMetrics { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DataQuality.QualityDashboardMetricsResponse
+    content.vb: Public Property RealTimeMetrics As QualityDashboardMetricsResponse
+  overload: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics*
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats
+  commentId: P:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats
+  id: CompletenessStats
+  parent: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  langs:
+  - csharp
+  - vb
+  name: CompletenessStats
+  nameWithType: QualityDashboardResponse.CompletenessStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessStats
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public QualityCompletenessStatsResponse? CompletenessStats { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DataQuality.QualityCompletenessStatsResponse
+    content.vb: Public Property CompletenessStats As QualityCompletenessStatsResponse
+  overload: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats*
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats
+  commentId: P:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats
+  id: GapStats
+  parent: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  langs:
+  - csharp
+  - vb
+  name: GapStats
+  nameWithType: QualityDashboardResponse.GapStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapStats
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public QualityGapStatsResponse? GapStats { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DataQuality.QualityGapStatsResponse
+    content.vb: Public Property GapStats As QualityGapStatsResponse
+  overload: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats*
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats
+  commentId: P:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats
+  id: SequenceStats
+  parent: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  langs:
+  - csharp
+  - vb
+  name: SequenceStats
+  nameWithType: QualityDashboardResponse.SequenceStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceStats
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public QualitySequenceStatsResponse? SequenceStats { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DataQuality.QualitySequenceStatsResponse
+    content.vb: Public Property SequenceStats As QualitySequenceStatsResponse
+  overload: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats*
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats
+  commentId: P:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats
+  id: AnomalyStats
+  parent: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  langs:
+  - csharp
+  - vb
+  name: AnomalyStats
+  nameWithType: QualityDashboardResponse.AnomalyStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnomalyStats
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public QualityAnomalyStatsResponse? AnomalyStats { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.DataQuality.QualityAnomalyStatsResponse
+    content.vb: Public Property AnomalyStats As QualityAnomalyStatsResponse
+  overload: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats*
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies
+  commentId: P:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies
+  id: RecentAnomalies
+  parent: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+  langs:
+  - csharp
+  - vb
+  name: RecentAnomalies
+  nameWithType: QualityDashboardResponse.RecentAnomalies
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentAnomalies
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public List<QualityAnomalyResponse> RecentAnomalies { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.DataQuality.QualityAnomalyResponse}
+    content.vb: Public Property RecentAnomalies As List(Of QualityAnomalyResponse)
+  overload: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies*
+references:
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html#Meridian_Ui_Services_DataQuality_QualityDashboardResponse_RealTimeMetrics
+  name: RealTimeMetrics
+  nameWithType: QualityDashboardResponse.RealTimeMetrics
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RealTimeMetrics
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardMetricsResponse
+  commentId: T:Meridian.Ui.Services.DataQuality.QualityDashboardMetricsResponse
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardMetricsResponse.html
+  name: QualityDashboardMetricsResponse
+  nameWithType: QualityDashboardMetricsResponse
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardMetricsResponse
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html#Meridian_Ui_Services_DataQuality_QualityDashboardResponse_CompletenessStats
+  name: CompletenessStats
+  nameWithType: QualityDashboardResponse.CompletenessStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.CompletenessStats
+- uid: Meridian.Ui.Services.DataQuality.QualityCompletenessStatsResponse
+  commentId: T:Meridian.Ui.Services.DataQuality.QualityCompletenessStatsResponse
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.QualityCompletenessStatsResponse.html
+  name: QualityCompletenessStatsResponse
+  nameWithType: QualityCompletenessStatsResponse
+  fullName: Meridian.Ui.Services.DataQuality.QualityCompletenessStatsResponse
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html#Meridian_Ui_Services_DataQuality_QualityDashboardResponse_GapStats
+  name: GapStats
+  nameWithType: QualityDashboardResponse.GapStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.GapStats
+- uid: Meridian.Ui.Services.DataQuality.QualityGapStatsResponse
+  commentId: T:Meridian.Ui.Services.DataQuality.QualityGapStatsResponse
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.QualityGapStatsResponse.html
+  name: QualityGapStatsResponse
+  nameWithType: QualityGapStatsResponse
+  fullName: Meridian.Ui.Services.DataQuality.QualityGapStatsResponse
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html#Meridian_Ui_Services_DataQuality_QualityDashboardResponse_SequenceStats
+  name: SequenceStats
+  nameWithType: QualityDashboardResponse.SequenceStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.SequenceStats
+- uid: Meridian.Ui.Services.DataQuality.QualitySequenceStatsResponse
+  commentId: T:Meridian.Ui.Services.DataQuality.QualitySequenceStatsResponse
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.QualitySequenceStatsResponse.html
+  name: QualitySequenceStatsResponse
+  nameWithType: QualitySequenceStatsResponse
+  fullName: Meridian.Ui.Services.DataQuality.QualitySequenceStatsResponse
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html#Meridian_Ui_Services_DataQuality_QualityDashboardResponse_AnomalyStats
+  name: AnomalyStats
+  nameWithType: QualityDashboardResponse.AnomalyStats
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.AnomalyStats
+- uid: Meridian.Ui.Services.DataQuality.QualityAnomalyStatsResponse
+  commentId: T:Meridian.Ui.Services.DataQuality.QualityAnomalyStatsResponse
+  parent: Meridian.Ui.Services.DataQuality
+  href: Meridian.Ui.Services.DataQuality.QualityAnomalyStatsResponse.html
+  name: QualityAnomalyStatsResponse
+  nameWithType: QualityAnomalyStatsResponse
+  fullName: Meridian.Ui.Services.DataQuality.QualityAnomalyStatsResponse
+- uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies
+  href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html#Meridian_Ui_Services_DataQuality_QualityDashboardResponse_RecentAnomalies
+  name: RecentAnomalies
+  nameWithType: QualityDashboardResponse.RecentAnomalies
+  fullName: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.RecentAnomalies
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.DataQuality.QualityAnomalyResponse}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.DataQuality.QualityAnomalyResponse}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<QualityAnomalyResponse>
+  nameWithType: List<QualityAnomalyResponse>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.DataQuality.QualityAnomalyResponse>
+  nameWithType.vb: List(Of QualityAnomalyResponse)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.DataQuality.QualityAnomalyResponse)
+  name.vb: List(Of QualityAnomalyResponse)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse
+    name: QualityAnomalyResponse
+    href: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse
+    name: QualityAnomalyResponse
+    href: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

@@ -1,0 +1,2523 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  commentId: T:Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  id: BoundedObservableCollection`1
+  parent: Meridian.Ui.Services.Collections
+  children:
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.#ctor(System.Int32)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Add(`0)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Clear
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CollectionChanged
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Contains(`0)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CopyTo(`0[],System.Int32)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Count
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.GetEnumerator
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IndexOf(`0)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Insert(System.Int32,`0)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IsReadOnly
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Item(System.Int32)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.MaxCapacity
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Prepend(`0)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PrependRange(System.Collections.Generic.IEnumerable{`0})
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PropertyChanged
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Remove(`0)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.RemoveAt(System.Int32)
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ReplaceAll(System.Collections.Generic.IEnumerable{`0})
+  - Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ToList
+  langs:
+  - csharp
+  - vb
+  name: BoundedObservableCollection<T>
+  nameWithType: BoundedObservableCollection<T>
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BoundedObservableCollection
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    An observable collection optimized for prepending items with a fixed maximum size.
+
+    Uses an internal deque pattern to achieve O(1) prepend operations instead of O(n) Insert(0).
+
+    Thread-safe for single-threaded UI operations with proper change notifications.
+  example: []
+  syntax:
+    content: 'public sealed class BoundedObservableCollection<T> : INotifyCollectionChanged, INotifyPropertyChanged, IList<T>, ICollection<T>, IReadOnlyList<T>, IReadOnlyCollection<T>, IEnumerable<T>, IEnumerable'
+    typeParameters:
+    - id: T
+      description: The type of elements in the collection.
+    content.vb: Public NotInheritable Class BoundedObservableCollection(Of T) Implements INotifyCollectionChanged, INotifyPropertyChanged, IList(Of T), ICollection(Of T), IReadOnlyList(Of T), IReadOnlyCollection(Of T), IEnumerable(Of T), IEnumerable
+  inheritance:
+  - System.Object
+  implements:
+  - System.Collections.Specialized.INotifyCollectionChanged
+  - System.ComponentModel.INotifyPropertyChanged
+  - System.Collections.Generic.IList{{T}}
+  - System.Collections.Generic.ICollection{{T}}
+  - System.Collections.Generic.IReadOnlyList{{T}}
+  - System.Collections.Generic.IReadOnlyCollection{{T}}
+  - System.Collections.Generic.IEnumerable{{T}}
+  - System.Collections.IEnumerable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  nameWithType.vb: BoundedObservableCollection(Of T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T)
+  name.vb: BoundedObservableCollection(Of T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CollectionChanged
+  commentId: E:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CollectionChanged
+  id: CollectionChanged
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: CollectionChanged
+  nameWithType: BoundedObservableCollection<T>.CollectionChanged
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.CollectionChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectionChanged
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Occurs when the collection changes.
+  example: []
+  syntax:
+    content: public event NotifyCollectionChangedEventHandler? CollectionChanged
+    return:
+      type: System.Collections.Specialized.NotifyCollectionChangedEventHandler
+    content.vb: Public Event CollectionChanged As NotifyCollectionChangedEventHandler
+  implements:
+  - System.Collections.Specialized.INotifyCollectionChanged.CollectionChanged
+  nameWithType.vb: BoundedObservableCollection(Of T).CollectionChanged
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).CollectionChanged
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PropertyChanged
+  commentId: E:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PropertyChanged
+  id: PropertyChanged
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: PropertyChanged
+  nameWithType: BoundedObservableCollection<T>.PropertyChanged
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.PropertyChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PropertyChanged
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Occurs when a property value changes.
+  example: []
+  syntax:
+    content: public event PropertyChangedEventHandler? PropertyChanged
+    return:
+      type: System.ComponentModel.PropertyChangedEventHandler
+    content.vb: Public Event PropertyChanged As PropertyChangedEventHandler
+  implements:
+  - System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+  nameWithType.vb: BoundedObservableCollection(Of T).PropertyChanged
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).PropertyChanged
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.#ctor(System.Int32)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: BoundedObservableCollection(int)
+  nameWithType: BoundedObservableCollection<T>.BoundedObservableCollection(int)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.BoundedObservableCollection(int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Creates a new bounded observable collection with the specified maximum capacity.
+  example: []
+  syntax:
+    content: public BoundedObservableCollection(int maxCapacity = 100)
+    parameters:
+    - id: maxCapacity
+      type: System.Int32
+      description: The maximum number of items the collection can hold.
+    content.vb: Public Sub New(maxCapacity As Integer = 100)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.#ctor*
+  nameWithType.vb: BoundedObservableCollection(Of T).New(Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).New(Integer)
+  name.vb: New(Integer)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Count
+  commentId: P:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Count
+  id: Count
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: BoundedObservableCollection<T>.Count
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets the number of elements in the collection.
+  example: []
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Count*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.Count
+  - System.Collections.Generic.IReadOnlyCollection{{T}}.Count
+  nameWithType.vb: BoundedObservableCollection(Of T).Count
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Count
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.MaxCapacity
+  commentId: P:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.MaxCapacity
+  id: MaxCapacity
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: MaxCapacity
+  nameWithType: BoundedObservableCollection<T>.MaxCapacity
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.MaxCapacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxCapacity
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets the maximum capacity of the collection.
+  example: []
+  syntax:
+    content: public int MaxCapacity { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property MaxCapacity As Integer
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.MaxCapacity*
+  nameWithType.vb: BoundedObservableCollection(Of T).MaxCapacity
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).MaxCapacity
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IsReadOnly
+  commentId: P:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IsReadOnly
+  id: IsReadOnly
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: IsReadOnly
+  nameWithType: BoundedObservableCollection<T>.IsReadOnly
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.IsReadOnly
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsReadOnly
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets a value indicating whether the collection is read-only.
+  example: []
+  syntax:
+    content: public bool IsReadOnly { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsReadOnly As Boolean
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IsReadOnly*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.IsReadOnly
+  nameWithType.vb: BoundedObservableCollection(Of T).IsReadOnly
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).IsReadOnly
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Item(System.Int32)
+  commentId: P:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Item(System.Int32)
+  id: Item(System.Int32)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: this[int]
+  nameWithType: BoundedObservableCollection<T>.this[int]
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.this[int]
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: this[]
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Gets or sets the element at the specified index.
+  example: []
+  syntax:
+    content: public T this[int index] { get; set; }
+    parameters:
+    - id: index
+      type: System.Int32
+    return:
+      type: '{T}'
+    content.vb: Public Default Property this[](index As Integer) As T
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Item*
+  implements:
+  - System.Collections.Generic.IList{{T}}.Item(System.Int32)
+  - System.Collections.Generic.IReadOnlyList{{T}}.Item(System.Int32)
+  nameWithType.vb: BoundedObservableCollection(Of T).this[](Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).this[](Integer)
+  name.vb: this[](Integer)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Prepend(`0)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Prepend(`0)
+  id: Prepend(`0)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Prepend(T)
+  nameWithType: BoundedObservableCollection<T>.Prepend(T)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Prepend(T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Prepend
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    Prepends an item to the beginning of the collection.
+
+    If the collection is at capacity, the oldest item (at the end) is automatically removed.
+
+    This is an O(1) amortized operation due to efficient internal management.
+  example: []
+  syntax:
+    content: public void Prepend(T item)
+    parameters:
+    - id: item
+      type: '{T}'
+      description: The item to prepend.
+    content.vb: Public Sub Prepend(item As T)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Prepend*
+  nameWithType.vb: BoundedObservableCollection(Of T).Prepend(T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Prepend(T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PrependRange(System.Collections.Generic.IEnumerable{`0})
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PrependRange(System.Collections.Generic.IEnumerable{`0})
+  id: PrependRange(System.Collections.Generic.IEnumerable{`0})
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: PrependRange(IEnumerable<T>)
+  nameWithType: BoundedObservableCollection<T>.PrependRange(IEnumerable<T>)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.PrependRange(System.Collections.Generic.IEnumerable<T>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrependRange
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    Prepends multiple items to the beginning of the collection efficiently.
+
+    Items are added in order, so the first item in the enumerable will be at index 0.
+  example: []
+  syntax:
+    content: public void PrependRange(IEnumerable<T> items)
+    parameters:
+    - id: items
+      type: System.Collections.Generic.IEnumerable{{T}}
+      description: The items to prepend.
+    content.vb: Public Sub PrependRange(items As IEnumerable(Of T))
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PrependRange*
+  nameWithType.vb: BoundedObservableCollection(Of T).PrependRange(IEnumerable(Of T))
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).PrependRange(System.Collections.Generic.IEnumerable(Of T))
+  name.vb: PrependRange(IEnumerable(Of T))
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Add(`0)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Add(`0)
+  id: Add(`0)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Add(T)
+  nameWithType: BoundedObservableCollection<T>.Add(T)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Add(T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Add
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: >-
+    Adds an item to the end of the collection.
+
+    If the collection is at capacity, the oldest item (at index 0) is automatically removed.
+  example: []
+  syntax:
+    content: public void Add(T item)
+    parameters:
+    - id: item
+      type: '{T}'
+    content.vb: Public Sub Add(item As T)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Add*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.Add({T})
+  nameWithType.vb: BoundedObservableCollection(Of T).Add(T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Add(T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Clear
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Clear
+  id: Clear
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Clear()
+  nameWithType: BoundedObservableCollection<T>.Clear()
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Clear()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Clear
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Removes all items from the collection.
+  example: []
+  syntax:
+    content: public void Clear()
+    content.vb: Public Sub Clear()
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Clear*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.Clear
+  nameWithType.vb: BoundedObservableCollection(Of T).Clear()
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Clear()
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Contains(`0)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Contains(`0)
+  id: Contains(`0)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Contains(T)
+  nameWithType: BoundedObservableCollection<T>.Contains(T)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Contains(T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contains
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Determines whether the collection contains a specific item.
+  example: []
+  syntax:
+    content: public bool Contains(T item)
+    parameters:
+    - id: item
+      type: '{T}'
+    return:
+      type: System.Boolean
+    content.vb: Public Function Contains(item As T) As Boolean
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Contains*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.Contains({T})
+  nameWithType.vb: BoundedObservableCollection(Of T).Contains(T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Contains(T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CopyTo(`0[],System.Int32)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CopyTo(`0[],System.Int32)
+  id: CopyTo(`0[],System.Int32)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: CopyTo(T[], int)
+  nameWithType: BoundedObservableCollection<T>.CopyTo(T[], int)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.CopyTo(T[], int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CopyTo
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Copies the elements of the collection to an array.
+  example: []
+  syntax:
+    content: public void CopyTo(T[] array, int arrayIndex)
+    parameters:
+    - id: array
+      type: '{T}[]'
+    - id: arrayIndex
+      type: System.Int32
+    content.vb: Public Sub CopyTo(array As T(), arrayIndex As Integer)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CopyTo*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.CopyTo({T}[],System.Int32)
+  nameWithType.vb: BoundedObservableCollection(Of T).CopyTo(T(), Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).CopyTo(T(), Integer)
+  name.vb: CopyTo(T(), Integer)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.GetEnumerator
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.GetEnumerator
+  id: GetEnumerator
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: GetEnumerator()
+  nameWithType: BoundedObservableCollection<T>.GetEnumerator()
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.GetEnumerator()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEnumerator
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Returns an enumerator that iterates through the collection.
+  example: []
+  syntax:
+    content: public IEnumerator<T> GetEnumerator()
+    return:
+      type: System.Collections.Generic.IEnumerator{{T}}
+    content.vb: Public Function GetEnumerator() As IEnumerator(Of T)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.GetEnumerator*
+  implements:
+  - System.Collections.Generic.IEnumerable{{T}}.GetEnumerator
+  nameWithType.vb: BoundedObservableCollection(Of T).GetEnumerator()
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).GetEnumerator()
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IndexOf(`0)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IndexOf(`0)
+  id: IndexOf(`0)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: IndexOf(T)
+  nameWithType: BoundedObservableCollection<T>.IndexOf(T)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.IndexOf(T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexOf
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Searches for the specified item and returns its index.
+  example: []
+  syntax:
+    content: public int IndexOf(T item)
+    parameters:
+    - id: item
+      type: '{T}'
+    return:
+      type: System.Int32
+    content.vb: Public Function IndexOf(item As T) As Integer
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IndexOf*
+  implements:
+  - System.Collections.Generic.IList{{T}}.IndexOf({T})
+  nameWithType.vb: BoundedObservableCollection(Of T).IndexOf(T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).IndexOf(T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Insert(System.Int32,`0)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Insert(System.Int32,`0)
+  id: Insert(System.Int32,`0)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Insert(int, T)
+  nameWithType: BoundedObservableCollection<T>.Insert(int, T)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Insert(int, T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Insert
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Inserts an item at the specified index.
+  example: []
+  syntax:
+    content: public void Insert(int index, T item)
+    parameters:
+    - id: index
+      type: System.Int32
+    - id: item
+      type: '{T}'
+    content.vb: Public Sub Insert(index As Integer, item As T)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Insert*
+  implements:
+  - System.Collections.Generic.IList{{T}}.Insert(System.Int32,{T})
+  nameWithType.vb: BoundedObservableCollection(Of T).Insert(Integer, T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Insert(Integer, T)
+  name.vb: Insert(Integer, T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Remove(`0)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Remove(`0)
+  id: Remove(`0)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: Remove(T)
+  nameWithType: BoundedObservableCollection<T>.Remove(T)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Remove(T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Remove
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Removes the first occurrence of a specific item from the collection.
+  example: []
+  syntax:
+    content: public bool Remove(T item)
+    parameters:
+    - id: item
+      type: '{T}'
+    return:
+      type: System.Boolean
+    content.vb: Public Function Remove(item As T) As Boolean
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Remove*
+  implements:
+  - System.Collections.Generic.ICollection{{T}}.Remove({T})
+  nameWithType.vb: BoundedObservableCollection(Of T).Remove(T)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Remove(T)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.RemoveAt(System.Int32)
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.RemoveAt(System.Int32)
+  id: RemoveAt(System.Int32)
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: RemoveAt(int)
+  nameWithType: BoundedObservableCollection<T>.RemoveAt(int)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.RemoveAt(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveAt
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Removes the item at the specified index.
+  example: []
+  syntax:
+    content: public void RemoveAt(int index)
+    parameters:
+    - id: index
+      type: System.Int32
+    content.vb: Public Sub RemoveAt(index As Integer)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.RemoveAt*
+  implements:
+  - System.Collections.Generic.IList{{T}}.RemoveAt(System.Int32)
+  nameWithType.vb: BoundedObservableCollection(Of T).RemoveAt(Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).RemoveAt(Integer)
+  name.vb: RemoveAt(Integer)
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ReplaceAll(System.Collections.Generic.IEnumerable{`0})
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ReplaceAll(System.Collections.Generic.IEnumerable{`0})
+  id: ReplaceAll(System.Collections.Generic.IEnumerable{`0})
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: ReplaceAll(IEnumerable<T>)
+  nameWithType: BoundedObservableCollection<T>.ReplaceAll(IEnumerable<T>)
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.ReplaceAll(System.Collections.Generic.IEnumerable<T>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReplaceAll
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Replaces the contents of this collection with items from another enumerable.
+  example: []
+  syntax:
+    content: public void ReplaceAll(IEnumerable<T> items)
+    parameters:
+    - id: items
+      type: System.Collections.Generic.IEnumerable{{T}}
+      description: The items to replace with.
+    content.vb: Public Sub ReplaceAll(items As IEnumerable(Of T))
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ReplaceAll*
+  nameWithType.vb: BoundedObservableCollection(Of T).ReplaceAll(IEnumerable(Of T))
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).ReplaceAll(System.Collections.Generic.IEnumerable(Of T))
+  name.vb: ReplaceAll(IEnumerable(Of T))
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ToList
+  commentId: M:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ToList
+  id: ToList
+  parent: Meridian.Ui.Services.Collections.BoundedObservableCollection`1
+  langs:
+  - csharp
+  - vb
+  name: ToList()
+  nameWithType: BoundedObservableCollection<T>.ToList()
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.ToList()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToList
+    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Creates a snapshot of the current items as a list.
+  example: []
+  syntax:
+    content: public List<T> ToList()
+    return:
+      type: System.Collections.Generic.List{{T}}
+    content.vb: Public Function ToList() As List(Of T)
+  overload: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ToList*
+  nameWithType.vb: BoundedObservableCollection(Of T).ToList()
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).ToList()
+references:
+- uid: Meridian.Ui.Services.Collections
+  commentId: N:Meridian.Ui.Services.Collections
+  href: Meridian.html
+  name: Meridian.Ui.Services.Collections
+  nameWithType: Meridian.Ui.Services.Collections
+  fullName: Meridian.Ui.Services.Collections
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Collections.Specialized.INotifyCollectionChanged
+  commentId: T:System.Collections.Specialized.INotifyCollectionChanged
+  parent: System.Collections.Specialized
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.specialized.inotifycollectionchanged
+  name: INotifyCollectionChanged
+  nameWithType: INotifyCollectionChanged
+  fullName: System.Collections.Specialized.INotifyCollectionChanged
+- uid: System.ComponentModel.INotifyPropertyChanged
+  commentId: T:System.ComponentModel.INotifyPropertyChanged
+  parent: System.ComponentModel
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.componentmodel.inotifypropertychanged
+  name: INotifyPropertyChanged
+  nameWithType: INotifyPropertyChanged
+  fullName: System.ComponentModel.INotifyPropertyChanged
+- uid: System.Collections.Generic.IList{{T}}
+  commentId: T:System.Collections.Generic.IList{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1
+  name: IList<T>
+  nameWithType: IList<T>
+  fullName: System.Collections.Generic.IList<T>
+  nameWithType.vb: IList(Of T)
+  fullName.vb: System.Collections.Generic.IList(Of T)
+  name.vb: IList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList`1
+    name: IList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IList`1
+    name: IList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.ICollection{{T}}
+  commentId: T:System.Collections.Generic.ICollection{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.ICollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1
+  name: ICollection<T>
+  nameWithType: ICollection<T>
+  fullName: System.Collections.Generic.ICollection<T>
+  nameWithType.vb: ICollection(Of T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T)
+  name.vb: ICollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1
+    name: ICollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1
+    name: ICollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{{T}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{``0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection{{T}}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IEnumerable{{T}}
+  commentId: T:System.Collections.Generic.IEnumerable{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.IEnumerable
+  commentId: T:System.Collections.IEnumerable
+  parent: System.Collections
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.ienumerable
+  name: IEnumerable
+  nameWithType: IEnumerable
+  fullName: System.Collections.IEnumerable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Collections.Specialized
+  commentId: N:System.Collections.Specialized
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Specialized
+  nameWithType: System.Collections.Specialized
+  fullName: System.Collections.Specialized
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Specialized
+    name: Specialized
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.specialized
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Specialized
+    name: Specialized
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.specialized
+- uid: System.ComponentModel
+  commentId: N:System.ComponentModel
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.ComponentModel
+  nameWithType: System.ComponentModel
+  fullName: System.ComponentModel
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.ComponentModel
+    name: ComponentModel
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.componentmodel
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.ComponentModel
+    name: ComponentModel
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.componentmodel
+- uid: System.Collections.Generic.IList`1
+  commentId: T:System.Collections.Generic.IList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1
+  name: IList<T>
+  nameWithType: IList<T>
+  fullName: System.Collections.Generic.IList<T>
+  nameWithType.vb: IList(Of T)
+  fullName.vb: System.Collections.Generic.IList(Of T)
+  name.vb: IList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList`1
+    name: IList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IList`1
+    name: IList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.ICollection`1
+  commentId: T:System.Collections.Generic.ICollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1
+  name: ICollection<T>
+  nameWithType: ICollection<T>
+  fullName: System.Collections.Generic.ICollection<T>
+  nameWithType.vb: ICollection(Of T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T)
+  name.vb: ICollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1
+    name: ICollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1
+    name: ICollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections
+  commentId: N:System.Collections
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections
+  nameWithType: System.Collections
+  fullName: System.Collections
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+- uid: System.Collections.Specialized.INotifyCollectionChanged.CollectionChanged
+  commentId: E:System.Collections.Specialized.INotifyCollectionChanged.CollectionChanged
+  parent: System.Collections.Specialized.INotifyCollectionChanged
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.specialized.inotifycollectionchanged.collectionchanged
+  name: CollectionChanged
+  nameWithType: INotifyCollectionChanged.CollectionChanged
+  fullName: System.Collections.Specialized.INotifyCollectionChanged.CollectionChanged
+- uid: System.Collections.Specialized.NotifyCollectionChangedEventHandler
+  commentId: T:System.Collections.Specialized.NotifyCollectionChangedEventHandler
+  parent: System.Collections.Specialized
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.specialized.notifycollectionchangedeventhandler
+  name: NotifyCollectionChangedEventHandler
+  nameWithType: NotifyCollectionChangedEventHandler
+  fullName: System.Collections.Specialized.NotifyCollectionChangedEventHandler
+- uid: System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+  commentId: E:System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+  parent: System.ComponentModel.INotifyPropertyChanged
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.componentmodel.inotifypropertychanged.propertychanged
+  name: PropertyChanged
+  nameWithType: INotifyPropertyChanged.PropertyChanged
+  fullName: System.ComponentModel.INotifyPropertyChanged.PropertyChanged
+- uid: System.ComponentModel.PropertyChangedEventHandler
+  commentId: T:System.ComponentModel.PropertyChangedEventHandler
+  parent: System.ComponentModel
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.componentmodel.propertychangedeventhandler
+  name: PropertyChangedEventHandler
+  nameWithType: PropertyChangedEventHandler
+  fullName: System.ComponentModel.PropertyChangedEventHandler
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.#ctor
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1__ctor_System_Int32_
+  name: BoundedObservableCollection
+  nameWithType: BoundedObservableCollection<T>.BoundedObservableCollection
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.BoundedObservableCollection
+  nameWithType.vb: BoundedObservableCollection(Of T).New
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Count*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Count
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Count
+  name: Count
+  nameWithType: BoundedObservableCollection<T>.Count
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Count
+  nameWithType.vb: BoundedObservableCollection(Of T).Count
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Count
+- uid: System.Collections.Generic.ICollection{{T}}.Count
+  commentId: P:System.Collections.Generic.ICollection{`0}.Count
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.Count
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.count
+  name: Count
+  nameWithType: ICollection<T>.Count
+  fullName: System.Collections.Generic.ICollection<T>.Count
+  nameWithType.vb: ICollection(Of T).Count
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Count
+- uid: System.Collections.Generic.IReadOnlyCollection{{T}}.Count
+  commentId: P:System.Collections.Generic.IReadOnlyCollection{`0}.Count
+  parent: System.Collections.Generic.IReadOnlyCollection{{T}}
+  definition: System.Collections.Generic.IReadOnlyCollection`1.Count
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1.count
+  name: Count
+  nameWithType: IReadOnlyCollection<T>.Count
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>.Count
+  nameWithType.vb: IReadOnlyCollection(Of T).Count
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T).Count
+- uid: System.Collections.Generic.ICollection`1.Count
+  commentId: P:System.Collections.Generic.ICollection`1.Count
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.count
+  name: Count
+  nameWithType: ICollection<T>.Count
+  fullName: System.Collections.Generic.ICollection<T>.Count
+  nameWithType.vb: ICollection(Of T).Count
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Count
+- uid: System.Collections.Generic.IReadOnlyCollection`1.Count
+  commentId: P:System.Collections.Generic.IReadOnlyCollection`1.Count
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1.count
+  name: Count
+  nameWithType: IReadOnlyCollection<T>.Count
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>.Count
+  nameWithType.vb: IReadOnlyCollection(Of T).Count
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T).Count
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.MaxCapacity*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.MaxCapacity
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_MaxCapacity
+  name: MaxCapacity
+  nameWithType: BoundedObservableCollection<T>.MaxCapacity
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.MaxCapacity
+  nameWithType.vb: BoundedObservableCollection(Of T).MaxCapacity
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).MaxCapacity
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IsReadOnly*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IsReadOnly
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_IsReadOnly
+  name: IsReadOnly
+  nameWithType: BoundedObservableCollection<T>.IsReadOnly
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.IsReadOnly
+  nameWithType.vb: BoundedObservableCollection(Of T).IsReadOnly
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).IsReadOnly
+- uid: System.Collections.Generic.ICollection{{T}}.IsReadOnly
+  commentId: P:System.Collections.Generic.ICollection{`0}.IsReadOnly
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.IsReadOnly
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.isreadonly
+  name: IsReadOnly
+  nameWithType: ICollection<T>.IsReadOnly
+  fullName: System.Collections.Generic.ICollection<T>.IsReadOnly
+  nameWithType.vb: ICollection(Of T).IsReadOnly
+  fullName.vb: System.Collections.Generic.ICollection(Of T).IsReadOnly
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.ICollection`1.IsReadOnly
+  commentId: P:System.Collections.Generic.ICollection`1.IsReadOnly
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.isreadonly
+  name: IsReadOnly
+  nameWithType: ICollection<T>.IsReadOnly
+  fullName: System.Collections.Generic.ICollection<T>.IsReadOnly
+  nameWithType.vb: ICollection(Of T).IsReadOnly
+  fullName.vb: System.Collections.Generic.ICollection(Of T).IsReadOnly
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Item*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Item
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Item_System_Int32_
+  name: this
+  nameWithType: BoundedObservableCollection<T>.this
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.this
+  nameWithType.vb: BoundedObservableCollection(Of T).this[]
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).this[]
+  name.vb: this[]
+- uid: System.Collections.Generic.IList{{T}}.Item(System.Int32)
+  commentId: P:System.Collections.Generic.IList{`0}.Item(System.Int32)
+  parent: System.Collections.Generic.IList{{T}}
+  definition: System.Collections.Generic.IList`1.Item(System.Int32)
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: this[int]
+  nameWithType: IList<T>.this[int]
+  fullName: System.Collections.Generic.IList<T>.this[int]
+  nameWithType.vb: IList(Of T).this[](Integer)
+  fullName.vb: System.Collections.Generic.IList(Of T).this[](Integer)
+  name.vb: this[](Integer)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ']'
+  spec.vb:
+  - uid: System.Collections.Generic.IList{`0}.Item(System.Int32)
+    name: this[]
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.item
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{{T}}.Item(System.Int32)
+  commentId: P:System.Collections.Generic.IReadOnlyList{`0}.Item(System.Int32)
+  parent: System.Collections.Generic.IReadOnlyList{{T}}
+  definition: System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: this[int]
+  nameWithType: IReadOnlyList<T>.this[int]
+  fullName: System.Collections.Generic.IReadOnlyList<T>.this[int]
+  nameWithType.vb: IReadOnlyList(Of T).this[](Integer)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T).this[](Integer)
+  name.vb: this[](Integer)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ']'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList{`0}.Item(System.Int32)
+    name: this[]
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1.item
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Collections.Generic.IList`1.Item(System.Int32)
+  commentId: P:System.Collections.Generic.IList`1.Item(System.Int32)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: this[int]
+  nameWithType: IList<T>.this[int]
+  fullName: System.Collections.Generic.IList<T>.this[int]
+  nameWithType.vb: IList(Of T).this[](Integer)
+  fullName.vb: System.Collections.Generic.IList(Of T).this[](Integer)
+  name.vb: this[](Integer)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ']'
+  spec.vb:
+  - uid: System.Collections.Generic.IList`1.Item(System.Int32)
+    name: this[]
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.item
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)
+  commentId: P:System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: this[int]
+  nameWithType: IReadOnlyList<T>.this[int]
+  fullName: System.Collections.Generic.IReadOnlyList<T>.this[int]
+  nameWithType.vb: IReadOnlyList(Of T).this[](Integer)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T).this[](Integer)
+  name.vb: this[](Integer)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ']'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1.Item(System.Int32)
+    name: this[]
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1.item
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Prepend*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Prepend
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Prepend__0_
+  name: Prepend
+  nameWithType: BoundedObservableCollection<T>.Prepend
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Prepend
+  nameWithType.vb: BoundedObservableCollection(Of T).Prepend
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Prepend
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PrependRange*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.PrependRange
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_PrependRange_System_Collections_Generic_IEnumerable__0__
+  name: PrependRange
+  nameWithType: BoundedObservableCollection<T>.PrependRange
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.PrependRange
+  nameWithType.vb: BoundedObservableCollection(Of T).PrependRange
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).PrependRange
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Add*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Add
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Add__0_
+  name: Add
+  nameWithType: BoundedObservableCollection<T>.Add
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Add
+  nameWithType.vb: BoundedObservableCollection(Of T).Add
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Add
+- uid: System.Collections.Generic.ICollection{{T}}.Add({T})
+  commentId: M:System.Collections.Generic.ICollection{`0}.Add(`0)
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.Add(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.add
+  name: Add(T)
+  nameWithType: ICollection<T>.Add(T)
+  fullName: System.Collections.Generic.ICollection<T>.Add(T)
+  nameWithType.vb: ICollection(Of T).Add(T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Add(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection{`0}.Add(`0)
+    name: Add
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.add
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection{`0}.Add(`0)
+    name: Add
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.add
+  - name: (
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.ICollection`1.Add(`0)
+  commentId: M:System.Collections.Generic.ICollection`1.Add(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.add
+  name: Add(T)
+  nameWithType: ICollection<T>.Add(T)
+  fullName: System.Collections.Generic.ICollection<T>.Add(T)
+  nameWithType.vb: ICollection(Of T).Add(T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Add(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1.Add(`0)
+    name: Add
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.add
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1.Add(`0)
+    name: Add
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.add
+  - name: (
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Clear*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Clear
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Clear
+  name: Clear
+  nameWithType: BoundedObservableCollection<T>.Clear
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Clear
+  nameWithType.vb: BoundedObservableCollection(Of T).Clear
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Clear
+- uid: System.Collections.Generic.ICollection{{T}}.Clear
+  commentId: M:System.Collections.Generic.ICollection{`0}.Clear
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.Clear
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.clear
+  name: Clear()
+  nameWithType: ICollection<T>.Clear()
+  fullName: System.Collections.Generic.ICollection<T>.Clear()
+  nameWithType.vb: ICollection(Of T).Clear()
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Clear()
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection{`0}.Clear
+    name: Clear
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.clear
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection{`0}.Clear
+    name: Clear
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.clear
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.ICollection`1.Clear
+  commentId: M:System.Collections.Generic.ICollection`1.Clear
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.clear
+  name: Clear()
+  nameWithType: ICollection<T>.Clear()
+  fullName: System.Collections.Generic.ICollection<T>.Clear()
+  nameWithType.vb: ICollection(Of T).Clear()
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Clear()
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1.Clear
+    name: Clear
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.clear
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1.Clear
+    name: Clear
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.clear
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Contains*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Contains
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Contains__0_
+  name: Contains
+  nameWithType: BoundedObservableCollection<T>.Contains
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Contains
+  nameWithType.vb: BoundedObservableCollection(Of T).Contains
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Contains
+- uid: System.Collections.Generic.ICollection{{T}}.Contains({T})
+  commentId: M:System.Collections.Generic.ICollection{`0}.Contains(`0)
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.Contains(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.contains
+  name: Contains(T)
+  nameWithType: ICollection<T>.Contains(T)
+  fullName: System.Collections.Generic.ICollection<T>.Contains(T)
+  nameWithType.vb: ICollection(Of T).Contains(T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Contains(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection{`0}.Contains(`0)
+    name: Contains
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.contains
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection{`0}.Contains(`0)
+    name: Contains
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.contains
+  - name: (
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.ICollection`1.Contains(`0)
+  commentId: M:System.Collections.Generic.ICollection`1.Contains(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.contains
+  name: Contains(T)
+  nameWithType: ICollection<T>.Contains(T)
+  fullName: System.Collections.Generic.ICollection<T>.Contains(T)
+  nameWithType.vb: ICollection(Of T).Contains(T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Contains(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1.Contains(`0)
+    name: Contains
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.contains
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1.Contains(`0)
+    name: Contains
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.contains
+  - name: (
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CopyTo*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.CopyTo
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_CopyTo__0___System_Int32_
+  name: CopyTo
+  nameWithType: BoundedObservableCollection<T>.CopyTo
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.CopyTo
+  nameWithType.vb: BoundedObservableCollection(Of T).CopyTo
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).CopyTo
+- uid: System.Collections.Generic.ICollection{{T}}.CopyTo({T}[],System.Int32)
+  commentId: M:System.Collections.Generic.ICollection{`0}.CopyTo(`0[],System.Int32)
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.CopyTo(`0[],System.Int32)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.copyto
+  name: CopyTo(T[], int)
+  nameWithType: ICollection<T>.CopyTo(T[], int)
+  fullName: System.Collections.Generic.ICollection<T>.CopyTo(T[], int)
+  nameWithType.vb: ICollection(Of T).CopyTo(T(), Integer)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).CopyTo(T(), Integer)
+  name.vb: CopyTo(T(), Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection{`0}.CopyTo(`0[],System.Int32)
+    name: CopyTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.copyto
+  - name: (
+  - name: T
+  - name: '['
+  - name: ']'
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection{`0}.CopyTo(`0[],System.Int32)
+    name: CopyTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.copyto
+  - name: (
+  - name: T
+  - name: (
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: '{T}[]'
+  isExternal: true
+  name: T[]
+  nameWithType: T[]
+  fullName: T[]
+  nameWithType.vb: T()
+  fullName.vb: T()
+  name.vb: T()
+  spec.csharp:
+  - name: T
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - name: T
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.ICollection`1.CopyTo(`0[],System.Int32)
+  commentId: M:System.Collections.Generic.ICollection`1.CopyTo(`0[],System.Int32)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.copyto
+  name: CopyTo(T[], int)
+  nameWithType: ICollection<T>.CopyTo(T[], int)
+  fullName: System.Collections.Generic.ICollection<T>.CopyTo(T[], int)
+  nameWithType.vb: ICollection(Of T).CopyTo(T(), Integer)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).CopyTo(T(), Integer)
+  name.vb: CopyTo(T(), Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1.CopyTo(`0[],System.Int32)
+    name: CopyTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.copyto
+  - name: (
+  - name: T
+  - name: '['
+  - name: ']'
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1.CopyTo(`0[],System.Int32)
+    name: CopyTo
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.copyto
+  - name: (
+  - name: T
+  - name: (
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.GetEnumerator*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.GetEnumerator
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_GetEnumerator
+  name: GetEnumerator
+  nameWithType: BoundedObservableCollection<T>.GetEnumerator
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.GetEnumerator
+  nameWithType.vb: BoundedObservableCollection(Of T).GetEnumerator
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).GetEnumerator
+- uid: System.Collections.Generic.IEnumerable{{T}}.GetEnumerator
+  commentId: M:System.Collections.Generic.IEnumerable{`0}.GetEnumerator
+  parent: System.Collections.Generic.IEnumerable{{T}}
+  definition: System.Collections.Generic.IEnumerable`1.GetEnumerator
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  name: GetEnumerator()
+  nameWithType: IEnumerable<T>.GetEnumerator()
+  fullName: System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+  nameWithType.vb: IEnumerable(Of T).GetEnumerator()
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T).GetEnumerator()
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable{`0}.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable{`0}.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerator{{T}}
+  commentId: T:System.Collections.Generic.IEnumerator{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerator`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  name: IEnumerator<T>
+  nameWithType: IEnumerator<T>
+  fullName: System.Collections.Generic.IEnumerator<T>
+  nameWithType.vb: IEnumerator(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerator(Of T)
+  name.vb: IEnumerator(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1.GetEnumerator
+  commentId: M:System.Collections.Generic.IEnumerable`1.GetEnumerator
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  name: GetEnumerator()
+  nameWithType: IEnumerable<T>.GetEnumerator()
+  fullName: System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+  nameWithType.vb: IEnumerable(Of T).GetEnumerator()
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T).GetEnumerator()
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1.getenumerator
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerator`1
+  commentId: T:System.Collections.Generic.IEnumerator`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  name: IEnumerator<T>
+  nameWithType: IEnumerator<T>
+  fullName: System.Collections.Generic.IEnumerator<T>
+  nameWithType.vb: IEnumerator(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerator(Of T)
+  name.vb: IEnumerator(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerator`1
+    name: IEnumerator
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IndexOf*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.IndexOf
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_IndexOf__0_
+  name: IndexOf
+  nameWithType: BoundedObservableCollection<T>.IndexOf
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.IndexOf
+  nameWithType.vb: BoundedObservableCollection(Of T).IndexOf
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).IndexOf
+- uid: System.Collections.Generic.IList{{T}}.IndexOf({T})
+  commentId: M:System.Collections.Generic.IList{`0}.IndexOf(`0)
+  parent: System.Collections.Generic.IList{{T}}
+  definition: System.Collections.Generic.IList`1.IndexOf(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.indexof
+  name: IndexOf(T)
+  nameWithType: IList<T>.IndexOf(T)
+  fullName: System.Collections.Generic.IList<T>.IndexOf(T)
+  nameWithType.vb: IList(Of T).IndexOf(T)
+  fullName.vb: System.Collections.Generic.IList(Of T).IndexOf(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList{`0}.IndexOf(`0)
+    name: IndexOf
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.indexof
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IList{`0}.IndexOf(`0)
+    name: IndexOf
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.indexof
+  - name: (
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IList`1.IndexOf(`0)
+  commentId: M:System.Collections.Generic.IList`1.IndexOf(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.indexof
+  name: IndexOf(T)
+  nameWithType: IList<T>.IndexOf(T)
+  fullName: System.Collections.Generic.IList<T>.IndexOf(T)
+  nameWithType.vb: IList(Of T).IndexOf(T)
+  fullName.vb: System.Collections.Generic.IList(Of T).IndexOf(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList`1.IndexOf(`0)
+    name: IndexOf
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.indexof
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IList`1.IndexOf(`0)
+    name: IndexOf
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.indexof
+  - name: (
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Insert*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Insert
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Insert_System_Int32__0_
+  name: Insert
+  nameWithType: BoundedObservableCollection<T>.Insert
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Insert
+  nameWithType.vb: BoundedObservableCollection(Of T).Insert
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Insert
+- uid: System.Collections.Generic.IList{{T}}.Insert(System.Int32,{T})
+  commentId: M:System.Collections.Generic.IList{`0}.Insert(System.Int32,`0)
+  parent: System.Collections.Generic.IList{{T}}
+  definition: System.Collections.Generic.IList`1.Insert(System.Int32,`0)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.insert
+  name: Insert(int, T)
+  nameWithType: IList<T>.Insert(int, T)
+  fullName: System.Collections.Generic.IList<T>.Insert(int, T)
+  nameWithType.vb: IList(Of T).Insert(Integer, T)
+  fullName.vb: System.Collections.Generic.IList(Of T).Insert(Integer, T)
+  name.vb: Insert(Integer, T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList{`0}.Insert(System.Int32,`0)
+    name: Insert
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.insert
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IList{`0}.Insert(System.Int32,`0)
+    name: Insert
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.insert
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IList`1.Insert(System.Int32,`0)
+  commentId: M:System.Collections.Generic.IList`1.Insert(System.Int32,`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.insert
+  name: Insert(int, T)
+  nameWithType: IList<T>.Insert(int, T)
+  fullName: System.Collections.Generic.IList<T>.Insert(int, T)
+  nameWithType.vb: IList(Of T).Insert(Integer, T)
+  fullName.vb: System.Collections.Generic.IList(Of T).Insert(Integer, T)
+  name.vb: Insert(Integer, T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList`1.Insert(System.Int32,`0)
+    name: Insert
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.insert
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IList`1.Insert(System.Int32,`0)
+    name: Insert
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.insert
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Remove*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.Remove
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_Remove__0_
+  name: Remove
+  nameWithType: BoundedObservableCollection<T>.Remove
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.Remove
+  nameWithType.vb: BoundedObservableCollection(Of T).Remove
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).Remove
+- uid: System.Collections.Generic.ICollection{{T}}.Remove({T})
+  commentId: M:System.Collections.Generic.ICollection{`0}.Remove(`0)
+  parent: System.Collections.Generic.ICollection{{T}}
+  definition: System.Collections.Generic.ICollection`1.Remove(`0)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.remove
+  name: Remove(T)
+  nameWithType: ICollection<T>.Remove(T)
+  fullName: System.Collections.Generic.ICollection<T>.Remove(T)
+  nameWithType.vb: ICollection(Of T).Remove(T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Remove(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection{`0}.Remove(`0)
+    name: Remove
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.remove
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection{`0}.Remove(`0)
+    name: Remove
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.remove
+  - name: (
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.ICollection`1.Remove(`0)
+  commentId: M:System.Collections.Generic.ICollection`1.Remove(`0)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.remove
+  name: Remove(T)
+  nameWithType: ICollection<T>.Remove(T)
+  fullName: System.Collections.Generic.ICollection<T>.Remove(T)
+  nameWithType.vb: ICollection(Of T).Remove(T)
+  fullName.vb: System.Collections.Generic.ICollection(Of T).Remove(T)
+  spec.csharp:
+  - uid: System.Collections.Generic.ICollection`1.Remove(`0)
+    name: Remove
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.remove
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.ICollection`1.Remove(`0)
+    name: Remove
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.icollection-1.remove
+  - name: (
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.RemoveAt*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.RemoveAt
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_RemoveAt_System_Int32_
+  name: RemoveAt
+  nameWithType: BoundedObservableCollection<T>.RemoveAt
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.RemoveAt
+  nameWithType.vb: BoundedObservableCollection(Of T).RemoveAt
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).RemoveAt
+- uid: System.Collections.Generic.IList{{T}}.RemoveAt(System.Int32)
+  commentId: M:System.Collections.Generic.IList{`0}.RemoveAt(System.Int32)
+  parent: System.Collections.Generic.IList{{T}}
+  definition: System.Collections.Generic.IList`1.RemoveAt(System.Int32)
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.removeat
+  name: RemoveAt(int)
+  nameWithType: IList<T>.RemoveAt(int)
+  fullName: System.Collections.Generic.IList<T>.RemoveAt(int)
+  nameWithType.vb: IList(Of T).RemoveAt(Integer)
+  fullName.vb: System.Collections.Generic.IList(Of T).RemoveAt(Integer)
+  name.vb: RemoveAt(Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList{`0}.RemoveAt(System.Int32)
+    name: RemoveAt
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.removeat
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IList{`0}.RemoveAt(System.Int32)
+    name: RemoveAt
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.removeat
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.IList`1.RemoveAt(System.Int32)
+  commentId: M:System.Collections.Generic.IList`1.RemoveAt(System.Int32)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.removeat
+  name: RemoveAt(int)
+  nameWithType: IList<T>.RemoveAt(int)
+  fullName: System.Collections.Generic.IList<T>.RemoveAt(int)
+  nameWithType.vb: IList(Of T).RemoveAt(Integer)
+  fullName.vb: System.Collections.Generic.IList(Of T).RemoveAt(Integer)
+  name.vb: RemoveAt(Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.IList`1.RemoveAt(System.Int32)
+    name: RemoveAt
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.removeat
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: System.Collections.Generic.IList`1.RemoveAt(System.Int32)
+    name: RemoveAt
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ilist-1.removeat
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ReplaceAll*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ReplaceAll
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_ReplaceAll_System_Collections_Generic_IEnumerable__0__
+  name: ReplaceAll
+  nameWithType: BoundedObservableCollection<T>.ReplaceAll
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.ReplaceAll
+  nameWithType.vb: BoundedObservableCollection(Of T).ReplaceAll
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).ReplaceAll
+- uid: Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ToList*
+  commentId: Overload:Meridian.Ui.Services.Collections.BoundedObservableCollection`1.ToList
+  href: Meridian.Ui.Services.Collections.BoundedObservableCollection-1.html#Meridian_Ui_Services_Collections_BoundedObservableCollection_1_ToList
+  name: ToList
+  nameWithType: BoundedObservableCollection<T>.ToList
+  fullName: Meridian.Ui.Services.Collections.BoundedObservableCollection<T>.ToList
+  nameWithType.vb: BoundedObservableCollection(Of T).ToList
+  fullName.vb: Meridian.Ui.Services.Collections.BoundedObservableCollection(Of T).ToList
+- uid: System.Collections.Generic.List{{T}}
+  commentId: T:System.Collections.Generic.List{`0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

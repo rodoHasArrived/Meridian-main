@@ -14,10 +14,10 @@ public sealed class SplitPaneHostControlTests
     {
         WpfTestThread.Run(() =>
         {
-            var sut = CreateArrangedControl(PaneLayouts.ResearchData);
+            var sut = CreateArrangedControl(PaneLayouts.ResearchStudio);
 
             InvokeHitTestPaneIndex(sut, new Point(100, 100)).Should().Be(0);
-            InvokeHitTestPaneIndex(sut, new Point(700, 100)).Should().Be(1);
+            InvokeHitTestPaneIndex(sut, new Point(420, 100)).Should().Be(1);
         });
     }
 
@@ -26,7 +26,7 @@ public sealed class SplitPaneHostControlTests
     {
         WpfTestThread.Run(() =>
         {
-            var sut = CreateArrangedControl(PaneLayouts.ResearchData);
+            var sut = CreateArrangedControl(PaneLayouts.ResearchStudio);
             sut.ActivePaneIndex = 1;
 
             InvokeHitTestPaneIndex(sut, new Point(-10, -10)).Should().Be(1);
@@ -34,14 +34,25 @@ public sealed class SplitPaneHostControlTests
     }
 
     [Fact]
-    public void RebuildPanes_MultiPaneLayout_ExpandsDropOverlayAcrossAllColumns()
+    public void TradingCockpitLayout_BottomRailHitTestTargetsBottomPane()
     {
         WpfTestThread.Run(() =>
         {
             var sut = CreateArrangedControl(PaneLayouts.TradingCockpit);
-            var overlay = sut.FindName("DropOverlay").Should().BeOfType<Border>().Subject;
+            InvokeHitTestPaneIndex(sut, new Point(400, 260)).Should().Be(3);
+        });
+    }
 
-            Grid.GetColumnSpan(overlay).Should().Be(5);
+    [Fact]
+    public void HitTestDropAction_LeftEdge_RequestsSplitLeft()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var sut = CreateArrangedControl(PaneLayouts.Single);
+
+            InvokeHitTestDropAction(sut, new Point(10, 150)).Should().Be(PaneDropAction.SplitLeft);
+            InvokeHitTestDropAction(sut, new Point(790, 150)).Should().Be(PaneDropAction.SplitRight);
+            InvokeHitTestDropAction(sut, new Point(400, 290)).Should().Be(PaneDropAction.SplitBelow);
         });
     }
 
@@ -80,5 +91,15 @@ public sealed class SplitPaneHostControlTests
 
         method.Should().NotBeNull();
         return (int)method!.Invoke(sut, [point])!;
+    }
+
+    private static PaneDropAction InvokeHitTestDropAction(SplitPaneHostControl sut, Point point)
+    {
+        var method = typeof(SplitPaneHostControl).GetMethod(
+            "HitTestDropAction",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        method.Should().NotBeNull();
+        return (PaneDropAction)method!.Invoke(sut, [point])!;
     }
 }

@@ -1,0 +1,120 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.StockSharp
+  commentId: N:Meridian.Infrastructure.Adapters.StockSharp
+  id: Meridian.Infrastructure.Adapters.StockSharp
+  children:
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  - Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities
+  - Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
+  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.StockSharp
+  nameWithType: Meridian.Infrastructure.Adapters.StockSharp
+  fullName: Meridian.Infrastructure.Adapters.StockSharp
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities
+  href: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities.html
+  name: StockSharpConnectorCapabilities
+  nameWithType: StockSharpConnectorCapabilities
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities.html
+  name: ConnectorCapabilities
+  nameWithType: ConnectorCapabilities
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities
+- uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory
+  href: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory.html
+  name: StockSharpConnectorFactory
+  nameWithType: StockSharpConnectorFactory
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory
+- uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider.html
+  name: StockSharpHistoricalDataProvider
+  nameWithType: StockSharpHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
+  href: Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient.html
+  name: StockSharpMarketDataClient
+  nameWithType: StockSharpMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.html
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.html
+  name: SubscriptionType
+  nameWithType: SubscriptionType
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+- uid: Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics
+  href: Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics.html
+  name: ProviderHealthMetrics
+  nameWithType: ProviderHealthMetrics
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics
+- uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider.html
+  name: StockSharpSymbolSearchProvider
+  nameWithType: StockSharpSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.StockSharp
+  commentId: N:Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.StockSharp
+  nameWithType: Meridian.Infrastructure.Adapters.StockSharp
+  fullName: Meridian.Infrastructure.Adapters.StockSharp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.StockSharp
+    name: StockSharp
+    href: Meridian.Infrastructure.Adapters.StockSharp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.StockSharp
+    name: StockSharp
+    href: Meridian.Infrastructure.Adapters.StockSharp.html

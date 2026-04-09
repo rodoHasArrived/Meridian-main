@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.TwelveData
+  commentId: N:Meridian.Infrastructure.Adapters.TwelveData
+  id: Meridian.Infrastructure.Adapters.TwelveData
+  children:
+  - Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.TwelveData
+  nameWithType: Meridian.Infrastructure.Adapters.TwelveData
+  fullName: Meridian.Infrastructure.Adapters.TwelveData
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider.html
+  name: TwelveDataHistoricalDataProvider
+  nameWithType: TwelveDataHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider

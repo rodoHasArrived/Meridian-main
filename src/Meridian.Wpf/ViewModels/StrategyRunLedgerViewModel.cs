@@ -10,6 +10,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     private readonly StrategyRunWorkspaceService _runService;
     private readonly NavigationService _navigationService;
     private string? _runId;
+    private string? _fundProfileId;
     private object? _parameter;
 
     public object? Parameter
@@ -108,6 +109,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenCashFlowCommand { get; }
+    public IRelayCommand OpenFundContextCommand { get; }
 
     internal StrategyRunLedgerViewModel(
         StrategyRunWorkspaceService runService,
@@ -119,6 +121,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
         OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenFundContextCommand = new RelayCommand(OpenFundContext, () => !string.IsNullOrWhiteSpace(_fundProfileId));
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -134,9 +137,13 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         var ledger = await _runService.GetLedgerAsync(runId, ct);
         if (ledger is null)
         {
+            _fundProfileId = null;
             StatusText = $"No ledger is available for run '{runId}'.";
+            OpenFundContextCommand.NotifyCanExecuteChanged();
             return;
         }
+
+        _fundProfileId = ledger.FundProfileId;
 
         Title = $"Ledger {ledger.LedgerReference}";
         StatusText = ledger.SecurityMissingCount > 0
@@ -167,6 +174,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OpenFundContextCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenRunDetail()
@@ -191,5 +199,18 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         {
             _navigationService.NavigateTo("RunCashFlow", _runId);
         }
+    }
+
+    private void OpenFundContext()
+    {
+        if (string.IsNullOrWhiteSpace(_fundProfileId))
+        {
+            return;
+        }
+
+        _navigationService.NavigateTo("FundTrialBalance", new FundOperationsNavigationContext(
+            Tab: FundOperationsTab.TrialBalance,
+            FundProfileId: _fundProfileId,
+            RunId: _runId));
     }
 }

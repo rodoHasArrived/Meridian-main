@@ -1,0 +1,667 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QuotaScanResult
+  commentId: T:Meridian.Storage.Services.QuotaScanResult
+  id: QuotaScanResult
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QuotaScanResult.#ctor(System.DateTime,System.Int32,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation})
+  - Meridian.Storage.Services.QuotaScanResult.FilesScanned
+  - Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc
+  - Meridian.Storage.Services.QuotaScanResult.TotalBytes
+  - Meridian.Storage.Services.QuotaScanResult.Violations
+  langs:
+  - csharp
+  - vb
+  name: QuotaScanResult
+  nameWithType: QuotaScanResult
+  fullName: Meridian.Storage.Services.QuotaScanResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotaScanResult
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record QuotaScanResult : IEquatable<QuotaScanResult>'
+    content.vb: Public NotInheritable Class QuotaScanResult Implements IEquatable(Of QuotaScanResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.QuotaScanResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.QuotaScanResult.#ctor(System.DateTime,System.Int32,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation})
+  commentId: M:Meridian.Storage.Services.QuotaScanResult.#ctor(System.DateTime,System.Int32,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation})
+  id: '#ctor(System.DateTime,System.Int32,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation})'
+  parent: Meridian.Storage.Services.QuotaScanResult
+  langs:
+  - csharp
+  - vb
+  name: QuotaScanResult(DateTime, int, long, IReadOnlyList<QuotaViolation>)
+  nameWithType: QuotaScanResult.QuotaScanResult(DateTime, int, long, IReadOnlyList<QuotaViolation>)
+  fullName: Meridian.Storage.Services.QuotaScanResult.QuotaScanResult(System.DateTime, int, long, System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.QuotaViolation>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public QuotaScanResult(DateTime ScannedAtUtc, int FilesScanned, long TotalBytes, IReadOnlyList<QuotaViolation> Violations)
+    parameters:
+    - id: ScannedAtUtc
+      type: System.DateTime
+    - id: FilesScanned
+      type: System.Int32
+    - id: TotalBytes
+      type: System.Int64
+    - id: Violations
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation}
+    content.vb: Public Sub New(ScannedAtUtc As Date, FilesScanned As Integer, TotalBytes As Long, Violations As IReadOnlyList(Of QuotaViolation))
+  overload: Meridian.Storage.Services.QuotaScanResult.#ctor*
+  nameWithType.vb: QuotaScanResult.New(Date, Integer, Long, IReadOnlyList(Of QuotaViolation))
+  fullName.vb: Meridian.Storage.Services.QuotaScanResult.New(Date, Integer, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.QuotaViolation))
+  name.vb: New(Date, Integer, Long, IReadOnlyList(Of QuotaViolation))
+- uid: Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc
+  commentId: P:Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc
+  id: ScannedAtUtc
+  parent: Meridian.Storage.Services.QuotaScanResult
+  langs:
+  - csharp
+  - vb
+  name: ScannedAtUtc
+  nameWithType: QuotaScanResult.ScannedAtUtc
+  fullName: Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScannedAtUtc
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime ScannedAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property ScannedAtUtc As Date
+  overload: Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc*
+- uid: Meridian.Storage.Services.QuotaScanResult.FilesScanned
+  commentId: P:Meridian.Storage.Services.QuotaScanResult.FilesScanned
+  id: FilesScanned
+  parent: Meridian.Storage.Services.QuotaScanResult
+  langs:
+  - csharp
+  - vb
+  name: FilesScanned
+  nameWithType: QuotaScanResult.FilesScanned
+  fullName: Meridian.Storage.Services.QuotaScanResult.FilesScanned
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesScanned
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int FilesScanned { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesScanned As Integer
+  overload: Meridian.Storage.Services.QuotaScanResult.FilesScanned*
+- uid: Meridian.Storage.Services.QuotaScanResult.TotalBytes
+  commentId: P:Meridian.Storage.Services.QuotaScanResult.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Storage.Services.QuotaScanResult
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: QuotaScanResult.TotalBytes
+  fullName: Meridian.Storage.Services.QuotaScanResult.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 375
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBytes As Long
+  overload: Meridian.Storage.Services.QuotaScanResult.TotalBytes*
+- uid: Meridian.Storage.Services.QuotaScanResult.Violations
+  commentId: P:Meridian.Storage.Services.QuotaScanResult.Violations
+  id: Violations
+  parent: Meridian.Storage.Services.QuotaScanResult
+  langs:
+  - csharp
+  - vb
+  name: Violations
+  nameWithType: QuotaScanResult.Violations
+  fullName: Meridian.Storage.Services.QuotaScanResult.Violations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Violations
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<QuotaViolation> Violations { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation}
+    content.vb: Public Property Violations As IReadOnlyList(Of QuotaViolation)
+  overload: Meridian.Storage.Services.QuotaScanResult.Violations*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.QuotaScanResult}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.QuotaScanResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QuotaScanResult>
+  nameWithType: IEquatable<QuotaScanResult>
+  fullName: System.IEquatable<Meridian.Storage.Services.QuotaScanResult>
+  nameWithType.vb: IEquatable(Of QuotaScanResult)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.QuotaScanResult)
+  name.vb: IEquatable(Of QuotaScanResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.QuotaScanResult
+    name: QuotaScanResult
+    href: Meridian.Storage.Services.QuotaScanResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QuotaScanResult
+    name: QuotaScanResult
+    href: Meridian.Storage.Services.QuotaScanResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.QuotaScanResult.#ctor*
+  commentId: Overload:Meridian.Storage.Services.QuotaScanResult.#ctor
+  href: Meridian.Storage.Services.QuotaScanResult.html#Meridian_Storage_Services_QuotaScanResult__ctor_System_DateTime_System_Int32_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Storage_Services_QuotaViolation__
+  name: QuotaScanResult
+  nameWithType: QuotaScanResult.QuotaScanResult
+  fullName: Meridian.Storage.Services.QuotaScanResult.QuotaScanResult
+  nameWithType.vb: QuotaScanResult.New
+  fullName.vb: Meridian.Storage.Services.QuotaScanResult.New
+  name.vb: New
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.QuotaViolation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<QuotaViolation>
+  nameWithType: IReadOnlyList<QuotaViolation>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.QuotaViolation>
+  nameWithType.vb: IReadOnlyList(Of QuotaViolation)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.QuotaViolation)
+  name.vb: IReadOnlyList(Of QuotaViolation)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.QuotaViolation
+    name: QuotaViolation
+    href: Meridian.Storage.Services.QuotaViolation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QuotaViolation
+    name: QuotaViolation
+    href: Meridian.Storage.Services.QuotaViolation.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc*
+  commentId: Overload:Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc
+  href: Meridian.Storage.Services.QuotaScanResult.html#Meridian_Storage_Services_QuotaScanResult_ScannedAtUtc
+  name: ScannedAtUtc
+  nameWithType: QuotaScanResult.ScannedAtUtc
+  fullName: Meridian.Storage.Services.QuotaScanResult.ScannedAtUtc
+- uid: Meridian.Storage.Services.QuotaScanResult.FilesScanned*
+  commentId: Overload:Meridian.Storage.Services.QuotaScanResult.FilesScanned
+  href: Meridian.Storage.Services.QuotaScanResult.html#Meridian_Storage_Services_QuotaScanResult_FilesScanned
+  name: FilesScanned
+  nameWithType: QuotaScanResult.FilesScanned
+  fullName: Meridian.Storage.Services.QuotaScanResult.FilesScanned
+- uid: Meridian.Storage.Services.QuotaScanResult.TotalBytes*
+  commentId: Overload:Meridian.Storage.Services.QuotaScanResult.TotalBytes
+  href: Meridian.Storage.Services.QuotaScanResult.html#Meridian_Storage_Services_QuotaScanResult_TotalBytes
+  name: TotalBytes
+  nameWithType: QuotaScanResult.TotalBytes
+  fullName: Meridian.Storage.Services.QuotaScanResult.TotalBytes
+- uid: Meridian.Storage.Services.QuotaScanResult.Violations*
+  commentId: Overload:Meridian.Storage.Services.QuotaScanResult.Violations
+  href: Meridian.Storage.Services.QuotaScanResult.html#Meridian_Storage_Services_QuotaScanResult_Violations
+  name: Violations
+  nameWithType: QuotaScanResult.Violations
+  fullName: Meridian.Storage.Services.QuotaScanResult.Violations

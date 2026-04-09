@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.ImportScriptTarget
+  commentId: T:Meridian.Storage.Packaging.ImportScriptTarget
+  id: ImportScriptTarget
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.ImportScriptTarget.ClickHouse
+  - Meridian.Storage.Packaging.ImportScriptTarget.DuckDb
+  - Meridian.Storage.Packaging.ImportScriptTarget.PostgreSql
+  - Meridian.Storage.Packaging.ImportScriptTarget.Python
+  - Meridian.Storage.Packaging.ImportScriptTarget.R
+  - Meridian.Storage.Packaging.ImportScriptTarget.Spark
+  langs:
+  - csharp
+  - vb
+  name: ImportScriptTarget
+  nameWithType: ImportScriptTarget
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportScriptTarget
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Target platforms for import script generation.
+  example: []
+  syntax:
+    content: 'public enum ImportScriptTarget : byte'
+    content.vb: Public Enum ImportScriptTarget As Byte
+- uid: Meridian.Storage.Packaging.ImportScriptTarget.Python
+  commentId: F:Meridian.Storage.Packaging.ImportScriptTarget.Python
+  id: Python
+  parent: Meridian.Storage.Packaging.ImportScriptTarget
+  langs:
+  - csharp
+  - vb
+  name: Python
+  nameWithType: ImportScriptTarget.Python
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget.Python
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Python
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Python with pandas.
+  example: []
+  syntax:
+    content: Python = 0
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget
+- uid: Meridian.Storage.Packaging.ImportScriptTarget.R
+  commentId: F:Meridian.Storage.Packaging.ImportScriptTarget.R
+  id: R
+  parent: Meridian.Storage.Packaging.ImportScriptTarget
+  langs:
+  - csharp
+  - vb
+  name: R
+  nameWithType: ImportScriptTarget.R
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget.R
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: R
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: R with tidyverse.
+  example: []
+  syntax:
+    content: R = 1
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget
+- uid: Meridian.Storage.Packaging.ImportScriptTarget.PostgreSql
+  commentId: F:Meridian.Storage.Packaging.ImportScriptTarget.PostgreSql
+  id: PostgreSql
+  parent: Meridian.Storage.Packaging.ImportScriptTarget
+  langs:
+  - csharp
+  - vb
+  name: PostgreSql
+  nameWithType: ImportScriptTarget.PostgreSql
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget.PostgreSql
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostgreSql
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: PostgreSQL/TimescaleDB.
+  example: []
+  syntax:
+    content: PostgreSql = 2
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget
+- uid: Meridian.Storage.Packaging.ImportScriptTarget.ClickHouse
+  commentId: F:Meridian.Storage.Packaging.ImportScriptTarget.ClickHouse
+  id: ClickHouse
+  parent: Meridian.Storage.Packaging.ImportScriptTarget
+  langs:
+  - csharp
+  - vb
+  name: ClickHouse
+  nameWithType: ImportScriptTarget.ClickHouse
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget.ClickHouse
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClickHouse
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: ClickHouse.
+  example: []
+  syntax:
+    content: ClickHouse = 3
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget
+- uid: Meridian.Storage.Packaging.ImportScriptTarget.Spark
+  commentId: F:Meridian.Storage.Packaging.ImportScriptTarget.Spark
+  id: Spark
+  parent: Meridian.Storage.Packaging.ImportScriptTarget
+  langs:
+  - csharp
+  - vb
+  name: Spark
+  nameWithType: ImportScriptTarget.Spark
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget.Spark
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Spark
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Apache Spark.
+  example: []
+  syntax:
+    content: Spark = 4
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget
+- uid: Meridian.Storage.Packaging.ImportScriptTarget.DuckDb
+  commentId: F:Meridian.Storage.Packaging.ImportScriptTarget.DuckDb
+  id: DuckDb
+  parent: Meridian.Storage.Packaging.ImportScriptTarget
+  langs:
+  - csharp
+  - vb
+  name: DuckDb
+  nameWithType: ImportScriptTarget.DuckDb
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget.DuckDb
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuckDb
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: DuckDB.
+  example: []
+  syntax:
+    content: DuckDb = 5
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: Meridian.Storage.Packaging.ImportScriptTarget
+  commentId: T:Meridian.Storage.Packaging.ImportScriptTarget
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.ImportScriptTarget.html
+  name: ImportScriptTarget
+  nameWithType: ImportScriptTarget
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget

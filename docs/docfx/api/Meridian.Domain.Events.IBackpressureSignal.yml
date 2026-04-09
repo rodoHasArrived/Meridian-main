@@ -1,0 +1,209 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Events.IBackpressureSignal
+  commentId: T:Meridian.Domain.Events.IBackpressureSignal
+  id: IBackpressureSignal
+  parent: Meridian.Domain.Events
+  children:
+  - Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  - Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  langs:
+  - csharp
+  - vb
+  name: IBackpressureSignal
+  nameWithType: IBackpressureSignal
+  fullName: Meridian.Domain.Events.IBackpressureSignal
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/IBackpressureSignal.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBackpressureSignal
+    path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    Exposes pipeline backpressure state so upstream producers can self-throttle
+
+    instead of having events silently dropped.
+  remarks: >-
+    Producers (adapters, collectors) should query <xref href="Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure" data-throw-if-not-resolved="false"></xref> before
+
+    publishing a new event and pause or reduce their publishing rate when the signal is active.
+
+    The <xref href="Meridian.Domain.Events.IBackpressureSignal.QueueUtilization" data-throw-if-not-resolved="false"></xref> property can be used for more nuanced throttling
+
+    (e.g. introduce delay when utilization exceeds a threshold).
+  example: []
+  syntax:
+    content: public interface IBackpressureSignal
+    content.vb: Public Interface IBackpressureSignal
+  derivedClasses:
+  - Meridian.Application.Pipeline.DualPathEventPipeline
+  - Meridian.Application.Pipeline.EventPipeline
+- uid: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  id: IsUnderPressure
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  langs:
+  - csharp
+  - vb
+  name: IsUnderPressure
+  nameWithType: IBackpressureSignal.IsUnderPressure
+  fullName: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/IBackpressureSignal.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsUnderPressure
+    path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when the downstream queue utilization has reached or
+
+    exceeded the warning threshold (typically 80 %).
+
+    Producers should pause or slow down when this returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.
+  example: []
+  syntax:
+    content: bool IsUnderPressure { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsUnderPressure As Boolean
+  overload: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure*
+- uid: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  id: QueueUtilization
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  langs:
+  - csharp
+  - vb
+  name: QueueUtilization
+  nameWithType: IBackpressureSignal.QueueUtilization
+  fullName: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/IBackpressureSignal.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueUtilization
+    path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    Current queue fill level as a value between 0.0 and 1.0 (0 % – 100 %).
+
+    Useful for graduated throttling: e.g. skip non-critical events above 0.9.
+  example: []
+  syntax:
+    content: double QueueUtilization { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: ReadOnly Property QueueUtilization As Double
+  overload: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization*
+references:
+- uid: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_IsUnderPressure
+  name: IsUnderPressure
+  nameWithType: IBackpressureSignal.IsUnderPressure
+  fullName: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+- uid: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_QueueUtilization
+  name: QueueUtilization
+  nameWithType: IBackpressureSignal.QueueUtilization
+  fullName: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Events.IBackpressureSignal
+  commentId: T:Meridian.Domain.Events.IBackpressureSignal
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IBackpressureSignal.html
+  name: IBackpressureSignal
+  nameWithType: IBackpressureSignal
+  fullName: Meridian.Domain.Events.IBackpressureSignal
+- uid: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure*
+  commentId: Overload:Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_IsUnderPressure
+  name: IsUnderPressure
+  nameWithType: IBackpressureSignal.IsUnderPressure
+  fullName: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization*
+  commentId: Overload:Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_QueueUtilization
+  name: QueueUtilization
+  nameWithType: IBackpressureSignal.QueueUtilization
+  fullName: Meridian.Domain.Events.IBackpressureSignal.QueueUtilization
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

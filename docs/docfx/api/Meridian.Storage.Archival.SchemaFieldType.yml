@@ -1,0 +1,257 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.SchemaFieldType
+  commentId: T:Meridian.Storage.Archival.SchemaFieldType
+  id: SchemaFieldType
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.SchemaFieldType.Array
+  - Meridian.Storage.Archival.SchemaFieldType.Boolean
+  - Meridian.Storage.Archival.SchemaFieldType.DateTime
+  - Meridian.Storage.Archival.SchemaFieldType.Decimal
+  - Meridian.Storage.Archival.SchemaFieldType.Integer
+  - Meridian.Storage.Archival.SchemaFieldType.Object
+  - Meridian.Storage.Archival.SchemaFieldType.String
+  langs:
+  - csharp
+  - vb
+  name: SchemaFieldType
+  nameWithType: SchemaFieldType
+  fullName: Meridian.Storage.Archival.SchemaFieldType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaFieldType
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 590
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Field type enum.
+  example: []
+  syntax:
+    content: 'public enum SchemaFieldType : byte'
+    content.vb: Public Enum SchemaFieldType As Byte
+- uid: Meridian.Storage.Archival.SchemaFieldType.String
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.String
+  id: String
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: String
+  nameWithType: SchemaFieldType.String
+  fullName: Meridian.Storage.Archival.SchemaFieldType.String
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: String
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: String = 0
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+- uid: Meridian.Storage.Archival.SchemaFieldType.Integer
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.Integer
+  id: Integer
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: Integer
+  nameWithType: SchemaFieldType.Integer
+  fullName: Meridian.Storage.Archival.SchemaFieldType.Integer
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integer
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 593
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: Integer = 1
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+- uid: Meridian.Storage.Archival.SchemaFieldType.Decimal
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.Decimal
+  id: Decimal
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: Decimal
+  nameWithType: SchemaFieldType.Decimal
+  fullName: Meridian.Storage.Archival.SchemaFieldType.Decimal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Decimal
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 594
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: Decimal = 2
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+- uid: Meridian.Storage.Archival.SchemaFieldType.Boolean
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.Boolean
+  id: Boolean
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: Boolean
+  nameWithType: SchemaFieldType.Boolean
+  fullName: Meridian.Storage.Archival.SchemaFieldType.Boolean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Boolean
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: Boolean = 3
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+- uid: Meridian.Storage.Archival.SchemaFieldType.DateTime
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.DateTime
+  id: DateTime
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: DateTime
+  nameWithType: SchemaFieldType.DateTime
+  fullName: Meridian.Storage.Archival.SchemaFieldType.DateTime
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateTime
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 596
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: DateTime = 4
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+- uid: Meridian.Storage.Archival.SchemaFieldType.Array
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.Array
+  id: Array
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: Array
+  nameWithType: SchemaFieldType.Array
+  fullName: Meridian.Storage.Archival.SchemaFieldType.Array
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Array
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 597
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: Array = 5
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+- uid: Meridian.Storage.Archival.SchemaFieldType.Object
+  commentId: F:Meridian.Storage.Archival.SchemaFieldType.Object
+  id: Object
+  parent: Meridian.Storage.Archival.SchemaFieldType
+  langs:
+  - csharp
+  - vb
+  name: Object
+  nameWithType: SchemaFieldType.Object
+  fullName: Meridian.Storage.Archival.SchemaFieldType.Object
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Object
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 598
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: Object = 6
+    return:
+      type: Meridian.Storage.Archival.SchemaFieldType
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Storage.Archival.SchemaFieldType
+  commentId: T:Meridian.Storage.Archival.SchemaFieldType
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.SchemaFieldType.html
+  name: SchemaFieldType
+  nameWithType: SchemaFieldType
+  fullName: Meridian.Storage.Archival.SchemaFieldType

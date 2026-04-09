@@ -20,10 +20,9 @@ public partial class OrderBookPage : Page
         WpfServices.ConnectionService connectionService,
         WpfServices.LoggingService loggingService)
     {
-        InitializeComponent();
-
         _viewModel = new OrderBookViewModel(statusService, connectionService, loggingService);
         DataContext = _viewModel;
+        InitializeComponent();
 
         // ColumnDefinition.Width does not support data binding — relay via PropertyChanged.
         _viewModel.PropertyChanged += (_, e) =>
@@ -53,13 +52,13 @@ public partial class OrderBookPage : Page
 
     private void Symbol_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (SymbolComboBox.SelectedItem is string symbol)
+        if (sender is ComboBox { SelectedItem: string symbol })
             _viewModel.SetSymbol(symbol);
     }
 
     private void Levels_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (LevelsComboBox.SelectedItem is ComboBoxItem item &&
+        if (sender is ComboBox { SelectedItem: ComboBoxItem item } &&
             int.TryParse(item.Content?.ToString(), out var levels))
         {
             _viewModel.SetDepthLevels(levels);

@@ -1,0 +1,257 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.CompletenessLevel
+  commentId: T:Meridian.Ui.Services.CompletenessLevel
+  id: CompletenessLevel
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.CompletenessLevel.Complete
+  - Meridian.Ui.Services.CompletenessLevel.Good
+  - Meridian.Ui.Services.CompletenessLevel.Minimal
+  - Meridian.Ui.Services.CompletenessLevel.Missing
+  - Meridian.Ui.Services.CompletenessLevel.NonTrading
+  - Meridian.Ui.Services.CompletenessLevel.Partial
+  - Meridian.Ui.Services.CompletenessLevel.Poor
+  langs:
+  - csharp
+  - vb
+  name: CompletenessLevel
+  nameWithType: CompletenessLevel
+  fullName: Meridian.Ui.Services.CompletenessLevel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessLevel
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 550
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Completeness level for heatmap coloring.
+  example: []
+  syntax:
+    content: 'public enum CompletenessLevel : byte'
+    content.vb: Public Enum CompletenessLevel As Byte
+- uid: Meridian.Ui.Services.CompletenessLevel.NonTrading
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.NonTrading
+  id: NonTrading
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: NonTrading
+  nameWithType: CompletenessLevel.NonTrading
+  fullName: Meridian.Ui.Services.CompletenessLevel.NonTrading
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NonTrading
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 552
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: NonTrading = 0
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel.Missing
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.Missing
+  id: Missing
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: Missing
+  nameWithType: CompletenessLevel.Missing
+  fullName: Meridian.Ui.Services.CompletenessLevel.Missing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Missing
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Missing = 1
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel.Minimal
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.Minimal
+  id: Minimal
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: Minimal
+  nameWithType: CompletenessLevel.Minimal
+  fullName: Meridian.Ui.Services.CompletenessLevel.Minimal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minimal
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 554
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minimal = 2
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel.Poor
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.Poor
+  id: Poor
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: Poor
+  nameWithType: CompletenessLevel.Poor
+  fullName: Meridian.Ui.Services.CompletenessLevel.Poor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Poor
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 555
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Poor = 3
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel.Partial
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.Partial
+  id: Partial
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: Partial
+  nameWithType: CompletenessLevel.Partial
+  fullName: Meridian.Ui.Services.CompletenessLevel.Partial
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Partial
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 556
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Partial = 4
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel.Good
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.Good
+  id: Good
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: Good
+  nameWithType: CompletenessLevel.Good
+  fullName: Meridian.Ui.Services.CompletenessLevel.Good
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Good
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 557
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Good = 5
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+- uid: Meridian.Ui.Services.CompletenessLevel.Complete
+  commentId: F:Meridian.Ui.Services.CompletenessLevel.Complete
+  id: Complete
+  parent: Meridian.Ui.Services.CompletenessLevel
+  langs:
+  - csharp
+  - vb
+  name: Complete
+  nameWithType: CompletenessLevel.Complete
+  fullName: Meridian.Ui.Services.CompletenessLevel.Complete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Complete
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Complete = 6
+    return:
+      type: Meridian.Ui.Services.CompletenessLevel
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.CompletenessLevel
+  commentId: T:Meridian.Ui.Services.CompletenessLevel
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CompletenessLevel.html
+  name: CompletenessLevel
+  nameWithType: CompletenessLevel
+  fullName: Meridian.Ui.Services.CompletenessLevel

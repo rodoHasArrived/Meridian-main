@@ -1,0 +1,1084 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.DeadLetterSink
+  commentId: T:Meridian.Application.Pipeline.DeadLetterSink
+  id: DeadLetterSink
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.DeadLetterSink.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink})
+  - Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync
+  - Meridian.Application.Pipeline.DeadLetterSink.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.DeadLetterSink.GetStatistics
+  - Meridian.Application.Pipeline.DeadLetterSink.RecordAsync(Meridian.Domain.Events.MarketEvent,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol
+  - Meridian.Application.Pipeline.DeadLetterSink.TotalRejected
+  langs:
+  - csharp
+  - vb
+  name: DeadLetterSink
+  nameWithType: DeadLetterSink
+  fullName: Meridian.Application.Pipeline.DeadLetterSink
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeadLetterSink
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Persists events that failed validation to a JSONL dead-letter file for later inspection
+
+    and replay. Each line contains the original event together with the validation errors
+
+    that caused rejection.
+  remarks: >-
+    The dead-letter directory is created lazily on the first rejected event to avoid
+
+    unnecessary file-system operations when all events pass validation. A
+
+    <xref href="System.Threading.SemaphoreSlim" data-throw-if-not-resolved="false"></xref> serialises writes so the file remains well-formed even
+
+    when multiple callers record rejections concurrently.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-007", "Dead-letter persistence for events rejected by the validation gate")]
+
+      public sealed class DeadLetterSink : IAsyncDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-007", "Dead-letter persistence for events rejected by the validation gate")>
+
+      Public NotInheritable Class DeadLetterSink Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-007
+    - type: System.String
+      value: Dead-letter persistence for events rejected by the validation gate
+- uid: Meridian.Application.Pipeline.DeadLetterSink.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink})
+  commentId: M:Meridian.Application.Pipeline.DeadLetterSink.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink})
+  id: '#ctor(System.String,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink})'
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: DeadLetterSink(string, ILogger<DeadLetterSink>?)
+  nameWithType: DeadLetterSink.DeadLetterSink(string, ILogger<DeadLetterSink>?)
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.DeadLetterSink(string, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.DeadLetterSink>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Initialises a new <xref href="Meridian.Application.Pipeline.DeadLetterSink" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public DeadLetterSink(string dataRoot, ILogger<DeadLetterSink>? logger = null)
+    parameters:
+    - id: dataRoot
+      type: System.String
+      description: Base data directory. A <code>_dead_letter/</code> subdirectory will be created beneath it.
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink}
+      description: Logger for structured diagnostics.
+    content.vb: Public Sub New(dataRoot As String, logger As ILogger(Of DeadLetterSink) = Nothing)
+  overload: Meridian.Application.Pipeline.DeadLetterSink.#ctor*
+  nameWithType.vb: DeadLetterSink.New(String, ILogger(Of DeadLetterSink))
+  fullName.vb: Meridian.Application.Pipeline.DeadLetterSink.New(String, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.DeadLetterSink))
+  name.vb: New(String, ILogger(Of DeadLetterSink))
+- uid: Meridian.Application.Pipeline.DeadLetterSink.TotalRejected
+  commentId: P:Meridian.Application.Pipeline.DeadLetterSink.TotalRejected
+  id: TotalRejected
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: TotalRejected
+  nameWithType: DeadLetterSink.TotalRejected
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.TotalRejected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRejected
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of rejected events recorded so far.
+  example: []
+  syntax:
+    content: public long TotalRejected { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalRejected As Long
+  overload: Meridian.Application.Pipeline.DeadLetterSink.TotalRejected*
+- uid: Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol
+  commentId: P:Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol
+  id: RejectedCountsBySymbol
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: RejectedCountsBySymbol
+  nameWithType: DeadLetterSink.RejectedCountsBySymbol
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectedCountsBySymbol
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets rejection counts keyed by effective symbol.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, long> RejectedCountsBySymbol { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public ReadOnly Property RejectedCountsBySymbol As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol*
+- uid: Meridian.Application.Pipeline.DeadLetterSink.RecordAsync(Meridian.Domain.Events.MarketEvent,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.DeadLetterSink.RecordAsync(Meridian.Domain.Events.MarketEvent,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  id: RecordAsync(Meridian.Domain.Events.MarketEvent,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: RecordAsync(MarketEvent, IReadOnlyList<string>, CancellationToken)
+  nameWithType: DeadLetterSink.RecordAsync(MarketEvent, IReadOnlyList<string>, CancellationToken)
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.RecordAsync(Meridian.Domain.Events.MarketEvent, System.Collections.Generic.IReadOnlyList<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordAsync
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Records a rejected event and its validation errors to the dead-letter file.
+  example: []
+  syntax:
+    content: public ValueTask RecordAsync(MarketEvent evt, IReadOnlyList<string> errors, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+      description: The market event that failed validation.
+    - id: errors
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: The validation error descriptions.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Public Function RecordAsync(evt As MarketEvent, errors As IReadOnlyList(Of String), ct As CancellationToken = Nothing) As ValueTask
+  overload: Meridian.Application.Pipeline.DeadLetterSink.RecordAsync*
+  nameWithType.vb: DeadLetterSink.RecordAsync(MarketEvent, IReadOnlyList(Of String), CancellationToken)
+  fullName.vb: Meridian.Application.Pipeline.DeadLetterSink.RecordAsync(Meridian.Domain.Events.MarketEvent, System.Collections.Generic.IReadOnlyList(Of String), System.Threading.CancellationToken)
+  name.vb: RecordAsync(MarketEvent, IReadOnlyList(Of String), CancellationToken)
+- uid: Meridian.Application.Pipeline.DeadLetterSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.DeadLetterSink.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: DeadLetterSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Flushes any buffered dead-letter records to disk.
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.DeadLetterSink.FlushAsync*
+- uid: Meridian.Application.Pipeline.DeadLetterSink.GetStatistics
+  commentId: M:Meridian.Application.Pipeline.DeadLetterSink.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: DeadLetterSink.GetStatistics()
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Returns a snapshot of dead-letter statistics.
+  example: []
+  syntax:
+    content: public DeadLetterStatistics GetStatistics()
+    return:
+      type: Meridian.Application.Pipeline.DeadLetterStatistics
+    content.vb: Public Function GetStatistics() As DeadLetterStatistics
+  overload: Meridian.Application.Pipeline.DeadLetterSink.GetStatistics*
+- uid: Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync
+  commentId: M:Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Pipeline.DeadLetterSink
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: DeadLetterSink.DisposeAsync()
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: System.Threading.SemaphoreSlim
+  commentId: T:System.Threading.SemaphoreSlim
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.semaphoreslim
+  name: SemaphoreSlim
+  nameWithType: SemaphoreSlim
+  fullName: System.Threading.SemaphoreSlim
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Pipeline.DeadLetterSink
+  commentId: T:Meridian.Application.Pipeline.DeadLetterSink
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DeadLetterSink.html
+  name: DeadLetterSink
+  nameWithType: DeadLetterSink
+  fullName: Meridian.Application.Pipeline.DeadLetterSink
+- uid: Meridian.Application.Pipeline.DeadLetterSink.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.#ctor
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink__ctor_System_String_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Pipeline_DeadLetterSink__
+  name: DeadLetterSink
+  nameWithType: DeadLetterSink.DeadLetterSink
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.DeadLetterSink
+  nameWithType.vb: DeadLetterSink.New
+  fullName.vb: Meridian.Application.Pipeline.DeadLetterSink.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.DeadLetterSink}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<DeadLetterSink>
+  nameWithType: ILogger<DeadLetterSink>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.DeadLetterSink>
+  nameWithType.vb: ILogger(Of DeadLetterSink)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.DeadLetterSink)
+  name.vb: ILogger(Of DeadLetterSink)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.DeadLetterSink
+    name: DeadLetterSink
+    href: Meridian.Application.Pipeline.DeadLetterSink.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.DeadLetterSink
+    name: DeadLetterSink
+    href: Meridian.Application.Pipeline.DeadLetterSink.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.Pipeline.DeadLetterSink.TotalRejected*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.TotalRejected
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink_TotalRejected
+  name: TotalRejected
+  nameWithType: DeadLetterSink.TotalRejected
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.TotalRejected
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink_RejectedCountsBySymbol
+  name: RejectedCountsBySymbol
+  nameWithType: DeadLetterSink.RejectedCountsBySymbol
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.RejectedCountsBySymbol
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, long>
+  nameWithType: IReadOnlyDictionary<string, long>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, long>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Long)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Long)
+  name.vb: IReadOnlyDictionary(Of String, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Pipeline.DeadLetterSink.RecordAsync*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.RecordAsync
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink_RecordAsync_Meridian_Domain_Events_MarketEvent_System_Collections_Generic_IReadOnlyList_System_String__System_Threading_CancellationToken_
+  name: RecordAsync
+  nameWithType: DeadLetterSink.RecordAsync
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.RecordAsync
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Pipeline.DeadLetterSink.FlushAsync*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.FlushAsync
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: DeadLetterSink.FlushAsync
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.FlushAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Application.Pipeline.DeadLetterSink.GetStatistics*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.GetStatistics
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink_GetStatistics
+  name: GetStatistics
+  nameWithType: DeadLetterSink.GetStatistics
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.GetStatistics
+- uid: Meridian.Application.Pipeline.DeadLetterStatistics
+  commentId: T:Meridian.Application.Pipeline.DeadLetterStatistics
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DeadLetterStatistics.html
+  name: DeadLetterStatistics
+  nameWithType: DeadLetterStatistics
+  fullName: Meridian.Application.Pipeline.DeadLetterStatistics
+- uid: Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync*
+  commentId: Overload:Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync
+  href: Meridian.Application.Pipeline.DeadLetterSink.html#Meridian_Application_Pipeline_DeadLetterSink_DisposeAsync
+  name: DisposeAsync
+  nameWithType: DeadLetterSink.DisposeAsync
+  fullName: Meridian.Application.Pipeline.DeadLetterSink.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )

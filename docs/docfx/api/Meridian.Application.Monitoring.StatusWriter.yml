@@ -1,0 +1,651 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.StatusWriter
+  commentId: T:Meridian.Application.Monitoring.StatusWriter
+  id: StatusWriter
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.StatusWriter.#ctor(System.String,System.Func{Meridian.Application.Config.AppConfig},Meridian.Application.Monitoring.IEventMetrics)
+  - Meridian.Application.Monitoring.StatusWriter.DisposeAsync
+  - Meridian.Application.Monitoring.StatusWriter.Start(System.TimeSpan)
+  - Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StatusWriter
+  nameWithType: StatusWriter
+  fullName: Meridian.Application.Monitoring.StatusWriter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatusWriter
+    path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Periodically writes a small status snapshot JSON file for dashboards.
+  example: []
+  syntax:
+    content: 'public sealed class StatusWriter : IAsyncDisposable'
+    content.vb: Public NotInheritable Class StatusWriter Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.StatusWriter.#ctor(System.String,System.Func{Meridian.Application.Config.AppConfig},Meridian.Application.Monitoring.IEventMetrics)
+  commentId: M:Meridian.Application.Monitoring.StatusWriter.#ctor(System.String,System.Func{Meridian.Application.Config.AppConfig},Meridian.Application.Monitoring.IEventMetrics)
+  id: '#ctor(System.String,System.Func{Meridian.Application.Config.AppConfig},Meridian.Application.Monitoring.IEventMetrics)'
+  parent: Meridian.Application.Monitoring.StatusWriter
+  langs:
+  - csharp
+  - vb
+  name: StatusWriter(string, Func<AppConfig>, IEventMetrics?)
+  nameWithType: StatusWriter.StatusWriter(string, Func<AppConfig>, IEventMetrics?)
+  fullName: Meridian.Application.Monitoring.StatusWriter.StatusWriter(string, System.Func<Meridian.Application.Config.AppConfig>, Meridian.Application.Monitoring.IEventMetrics?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public StatusWriter(string path, Func<AppConfig> configProvider, IEventMetrics? metrics = null)
+    parameters:
+    - id: path
+      type: System.String
+    - id: configProvider
+      type: System.Func{Meridian.Application.Config.AppConfig}
+    - id: metrics
+      type: Meridian.Application.Monitoring.IEventMetrics
+    content.vb: Public Sub New(path As String, configProvider As Func(Of AppConfig), metrics As IEventMetrics = Nothing)
+  overload: Meridian.Application.Monitoring.StatusWriter.#ctor*
+  nameWithType.vb: StatusWriter.New(String, Func(Of AppConfig), IEventMetrics)
+  fullName.vb: Meridian.Application.Monitoring.StatusWriter.New(String, System.Func(Of Meridian.Application.Config.AppConfig), Meridian.Application.Monitoring.IEventMetrics)
+  name.vb: New(String, Func(Of AppConfig), IEventMetrics)
+- uid: Meridian.Application.Monitoring.StatusWriter.Start(System.TimeSpan)
+  commentId: M:Meridian.Application.Monitoring.StatusWriter.Start(System.TimeSpan)
+  id: Start(System.TimeSpan)
+  parent: Meridian.Application.Monitoring.StatusWriter
+  langs:
+  - csharp
+  - vb
+  name: Start(TimeSpan)
+  nameWithType: StatusWriter.Start(TimeSpan)
+  fullName: Meridian.Application.Monitoring.StatusWriter.Start(System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public void Start(TimeSpan interval)
+    parameters:
+    - id: interval
+      type: System.TimeSpan
+    content.vb: Public Sub Start(interval As TimeSpan)
+  overload: Meridian.Application.Monitoring.StatusWriter.Start*
+- uid: Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync(System.Threading.CancellationToken)
+  id: WriteOnceAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.StatusWriter
+  langs:
+  - csharp
+  - vb
+  name: WriteOnceAsync(CancellationToken)
+  nameWithType: StatusWriter.WriteOnceAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteOnceAsync
+    path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public Task WriteOnceAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WriteOnceAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync*
+- uid: Meridian.Application.Monitoring.StatusWriter.DisposeAsync
+  commentId: M:Meridian.Application.Monitoring.StatusWriter.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Monitoring.StatusWriter
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: StatusWriter.DisposeAsync()
+  fullName: Meridian.Application.Monitoring.StatusWriter.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusWriter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Monitoring.StatusWriter.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.StatusWriter.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.StatusWriter.#ctor
+  href: Meridian.Application.Monitoring.StatusWriter.html#Meridian_Application_Monitoring_StatusWriter__ctor_System_String_System_Func_Meridian_Application_Config_AppConfig__Meridian_Application_Monitoring_IEventMetrics_
+  name: StatusWriter
+  nameWithType: StatusWriter.StatusWriter
+  fullName: Meridian.Application.Monitoring.StatusWriter.StatusWriter
+  nameWithType.vb: StatusWriter.New
+  fullName.vb: Meridian.Application.Monitoring.StatusWriter.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Func{Meridian.Application.Config.AppConfig}
+  commentId: T:System.Func{Meridian.Application.Config.AppConfig}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<AppConfig>
+  nameWithType: Func<AppConfig>
+  fullName: System.Func<Meridian.Application.Config.AppConfig>
+  nameWithType.vb: Func(Of AppConfig)
+  fullName.vb: System.Func(Of Meridian.Application.Config.AppConfig)
+  name.vb: Func(Of AppConfig)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: )
+- uid: Meridian.Application.Monitoring.IEventMetrics
+  commentId: T:Meridian.Application.Monitoring.IEventMetrics
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IEventMetrics.html
+  name: IEventMetrics
+  nameWithType: IEventMetrics
+  fullName: Meridian.Application.Monitoring.IEventMetrics
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Monitoring.StatusWriter.Start*
+  commentId: Overload:Meridian.Application.Monitoring.StatusWriter.Start
+  href: Meridian.Application.Monitoring.StatusWriter.html#Meridian_Application_Monitoring_StatusWriter_Start_System_TimeSpan_
+  name: Start
+  nameWithType: StatusWriter.Start
+  fullName: Meridian.Application.Monitoring.StatusWriter.Start
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync*
+  commentId: Overload:Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync
+  href: Meridian.Application.Monitoring.StatusWriter.html#Meridian_Application_Monitoring_StatusWriter_WriteOnceAsync_System_Threading_CancellationToken_
+  name: WriteOnceAsync
+  nameWithType: StatusWriter.WriteOnceAsync
+  fullName: Meridian.Application.Monitoring.StatusWriter.WriteOnceAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.StatusWriter.DisposeAsync*
+  commentId: Overload:Meridian.Application.Monitoring.StatusWriter.DisposeAsync
+  href: Meridian.Application.Monitoring.StatusWriter.html#Meridian_Application_Monitoring_StatusWriter_DisposeAsync
+  name: DisposeAsync
+  nameWithType: StatusWriter.DisposeAsync
+  fullName: Meridian.Application.Monitoring.StatusWriter.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

@@ -1,0 +1,1001 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.OnboardingTourService
+  commentId: T:Meridian.Ui.Services.OnboardingTourService
+  id: OnboardingTourService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.OnboardingTourService.ActiveSession
+  - Meridian.Ui.Services.OnboardingTourService.DismissTour
+  - Meridian.Ui.Services.OnboardingTourService.GetAvailableTours
+  - Meridian.Ui.Services.OnboardingTourService.GetTourForPage(System.String)
+  - Meridian.Ui.Services.OnboardingTourService.Instance
+  - Meridian.Ui.Services.OnboardingTourService.IsTourActive
+  - Meridian.Ui.Services.OnboardingTourService.NextStep
+  - Meridian.Ui.Services.OnboardingTourService.PreviousStep
+  - Meridian.Ui.Services.OnboardingTourService.ResetAllTours
+  - Meridian.Ui.Services.OnboardingTourService.ResetTour(System.String)
+  - Meridian.Ui.Services.OnboardingTourService.StartTour(System.String)
+  - Meridian.Ui.Services.OnboardingTourService.StepChanged
+  - Meridian.Ui.Services.OnboardingTourService.TourCompleted
+  langs:
+  - csharp
+  - vb
+  name: OnboardingTourService
+  nameWithType: OnboardingTourService
+  fullName: Meridian.Ui.Services.OnboardingTourService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnboardingTourService
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for managing interactive onboarding tours that guide new users
+
+    through key application features. Tracks tour progress and completion state.
+  example: []
+  syntax:
+    content: public sealed class OnboardingTourService
+    content.vb: Public NotInheritable Class OnboardingTourService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.OnboardingTourService.Instance
+  commentId: P:Meridian.Ui.Services.OnboardingTourService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: OnboardingTourService.Instance
+  fullName: Meridian.Ui.Services.OnboardingTourService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static OnboardingTourService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.OnboardingTourService
+    content.vb: Public Shared ReadOnly Property Instance As OnboardingTourService
+  overload: Meridian.Ui.Services.OnboardingTourService.Instance*
+- uid: Meridian.Ui.Services.OnboardingTourService.StepChanged
+  commentId: E:Meridian.Ui.Services.OnboardingTourService.StepChanged
+  id: StepChanged
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: StepChanged
+  nameWithType: OnboardingTourService.StepChanged
+  fullName: Meridian.Ui.Services.OnboardingTourService.StepChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StepChanged
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a tour step changes.
+  example: []
+  syntax:
+    content: public event EventHandler<TourStepEventArgs>? StepChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.TourStepEventArgs}
+    content.vb: Public Event StepChanged As EventHandler(Of TourStepEventArgs)
+- uid: Meridian.Ui.Services.OnboardingTourService.TourCompleted
+  commentId: E:Meridian.Ui.Services.OnboardingTourService.TourCompleted
+  id: TourCompleted
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: TourCompleted
+  nameWithType: OnboardingTourService.TourCompleted
+  fullName: Meridian.Ui.Services.OnboardingTourService.TourCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TourCompleted
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a tour is completed.
+  example: []
+  syntax:
+    content: public event EventHandler<TourCompletedEventArgs>? TourCompleted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.TourCompletedEventArgs}
+    content.vb: Public Event TourCompleted As EventHandler(Of TourCompletedEventArgs)
+- uid: Meridian.Ui.Services.OnboardingTourService.IsTourActive
+  commentId: P:Meridian.Ui.Services.OnboardingTourService.IsTourActive
+  id: IsTourActive
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: IsTourActive
+  nameWithType: OnboardingTourService.IsTourActive
+  fullName: Meridian.Ui.Services.OnboardingTourService.IsTourActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTourActive
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets whether any tour is currently active.
+  example: []
+  syntax:
+    content: public bool IsTourActive { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsTourActive As Boolean
+  overload: Meridian.Ui.Services.OnboardingTourService.IsTourActive*
+- uid: Meridian.Ui.Services.OnboardingTourService.ActiveSession
+  commentId: P:Meridian.Ui.Services.OnboardingTourService.ActiveSession
+  id: ActiveSession
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: ActiveSession
+  nameWithType: OnboardingTourService.ActiveSession
+  fullName: Meridian.Ui.Services.OnboardingTourService.ActiveSession
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveSession
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the currently active tour session, if any.
+  example: []
+  syntax:
+    content: public TourSession? ActiveSession { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.TourSession
+    content.vb: Public ReadOnly Property ActiveSession As TourSession
+  overload: Meridian.Ui.Services.OnboardingTourService.ActiveSession*
+- uid: Meridian.Ui.Services.OnboardingTourService.GetAvailableTours
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.GetAvailableTours
+  id: GetAvailableTours
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: GetAvailableTours()
+  nameWithType: OnboardingTourService.GetAvailableTours()
+  fullName: Meridian.Ui.Services.OnboardingTourService.GetAvailableTours()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAvailableTours
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all available tours with their completion status.
+  example: []
+  syntax:
+    content: public IReadOnlyList<TourInfo> GetAvailableTours()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.TourInfo}
+    content.vb: Public Function GetAvailableTours() As IReadOnlyList(Of TourInfo)
+  overload: Meridian.Ui.Services.OnboardingTourService.GetAvailableTours*
+- uid: Meridian.Ui.Services.OnboardingTourService.GetTourForPage(System.String)
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.GetTourForPage(System.String)
+  id: GetTourForPage(System.String)
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: GetTourForPage(string)
+  nameWithType: OnboardingTourService.GetTourForPage(string)
+  fullName: Meridian.Ui.Services.OnboardingTourService.GetTourForPage(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTourForPage
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets tours that should be shown to a first-time user for a specific page.
+  example: []
+  syntax:
+    content: public TourDefinition? GetTourForPage(string pageTag)
+    parameters:
+    - id: pageTag
+      type: System.String
+    return:
+      type: Meridian.Ui.Services.TourDefinition
+    content.vb: Public Function GetTourForPage(pageTag As String) As TourDefinition
+  overload: Meridian.Ui.Services.OnboardingTourService.GetTourForPage*
+  nameWithType.vb: OnboardingTourService.GetTourForPage(String)
+  fullName.vb: Meridian.Ui.Services.OnboardingTourService.GetTourForPage(String)
+  name.vb: GetTourForPage(String)
+- uid: Meridian.Ui.Services.OnboardingTourService.StartTour(System.String)
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.StartTour(System.String)
+  id: StartTour(System.String)
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: StartTour(string)
+  nameWithType: OnboardingTourService.StartTour(string)
+  fullName: Meridian.Ui.Services.OnboardingTourService.StartTour(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartTour
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts a tour by its ID.
+  example: []
+  syntax:
+    content: public bool StartTour(string tourId)
+    parameters:
+    - id: tourId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function StartTour(tourId As String) As Boolean
+  overload: Meridian.Ui.Services.OnboardingTourService.StartTour*
+  nameWithType.vb: OnboardingTourService.StartTour(String)
+  fullName.vb: Meridian.Ui.Services.OnboardingTourService.StartTour(String)
+  name.vb: StartTour(String)
+- uid: Meridian.Ui.Services.OnboardingTourService.NextStep
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.NextStep
+  id: NextStep
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: NextStep()
+  nameWithType: OnboardingTourService.NextStep()
+  fullName: Meridian.Ui.Services.OnboardingTourService.NextStep()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextStep
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Advances to the next step in the active tour.
+  example: []
+  syntax:
+    content: public bool NextStep()
+    return:
+      type: System.Boolean
+    content.vb: Public Function NextStep() As Boolean
+  overload: Meridian.Ui.Services.OnboardingTourService.NextStep*
+- uid: Meridian.Ui.Services.OnboardingTourService.PreviousStep
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.PreviousStep
+  id: PreviousStep
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: PreviousStep()
+  nameWithType: OnboardingTourService.PreviousStep()
+  fullName: Meridian.Ui.Services.OnboardingTourService.PreviousStep()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousStep
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Goes back to the previous step in the active tour.
+  example: []
+  syntax:
+    content: public bool PreviousStep()
+    return:
+      type: System.Boolean
+    content.vb: Public Function PreviousStep() As Boolean
+  overload: Meridian.Ui.Services.OnboardingTourService.PreviousStep*
+- uid: Meridian.Ui.Services.OnboardingTourService.DismissTour
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.DismissTour
+  id: DismissTour
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: DismissTour()
+  nameWithType: OnboardingTourService.DismissTour()
+  fullName: Meridian.Ui.Services.OnboardingTourService.DismissTour()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DismissTour
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Dismisses the active tour without completing it.
+  example: []
+  syntax:
+    content: public void DismissTour()
+    content.vb: Public Sub DismissTour()
+  overload: Meridian.Ui.Services.OnboardingTourService.DismissTour*
+- uid: Meridian.Ui.Services.OnboardingTourService.ResetTour(System.String)
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.ResetTour(System.String)
+  id: ResetTour(System.String)
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: ResetTour(string)
+  nameWithType: OnboardingTourService.ResetTour(string)
+  fullName: Meridian.Ui.Services.OnboardingTourService.ResetTour(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetTour
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Resets a dismissed tour so it can be shown again.
+  example: []
+  syntax:
+    content: public void ResetTour(string tourId)
+    parameters:
+    - id: tourId
+      type: System.String
+    content.vb: Public Sub ResetTour(tourId As String)
+  overload: Meridian.Ui.Services.OnboardingTourService.ResetTour*
+  nameWithType.vb: OnboardingTourService.ResetTour(String)
+  fullName.vb: Meridian.Ui.Services.OnboardingTourService.ResetTour(String)
+  name.vb: ResetTour(String)
+- uid: Meridian.Ui.Services.OnboardingTourService.ResetAllTours
+  commentId: M:Meridian.Ui.Services.OnboardingTourService.ResetAllTours
+  id: ResetAllTours
+  parent: Meridian.Ui.Services.OnboardingTourService
+  langs:
+  - csharp
+  - vb
+  name: ResetAllTours()
+  nameWithType: OnboardingTourService.ResetAllTours()
+  fullName: Meridian.Ui.Services.OnboardingTourService.ResetAllTours()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetAllTours
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Resets all tours for a fresh onboarding experience.
+  example: []
+  syntax:
+    content: public void ResetAllTours()
+    content.vb: Public Sub ResetAllTours()
+  overload: Meridian.Ui.Services.OnboardingTourService.ResetAllTours*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.OnboardingTourService.Instance*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.Instance
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_Instance
+  name: Instance
+  nameWithType: OnboardingTourService.Instance
+  fullName: Meridian.Ui.Services.OnboardingTourService.Instance
+- uid: Meridian.Ui.Services.OnboardingTourService
+  commentId: T:Meridian.Ui.Services.OnboardingTourService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.OnboardingTourService.html
+  name: OnboardingTourService
+  nameWithType: OnboardingTourService
+  fullName: Meridian.Ui.Services.OnboardingTourService
+- uid: System.EventHandler{Meridian.Ui.Services.TourStepEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.TourStepEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TourStepEventArgs>
+  nameWithType: EventHandler<TourStepEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.TourStepEventArgs>
+  nameWithType.vb: EventHandler(Of TourStepEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.TourStepEventArgs)
+  name.vb: EventHandler(Of TourStepEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.TourStepEventArgs
+    name: TourStepEventArgs
+    href: Meridian.Ui.Services.TourStepEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TourStepEventArgs
+    name: TourStepEventArgs
+    href: Meridian.Ui.Services.TourStepEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.TourCompletedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.TourCompletedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TourCompletedEventArgs>
+  nameWithType: EventHandler<TourCompletedEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.TourCompletedEventArgs>
+  nameWithType.vb: EventHandler(Of TourCompletedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.TourCompletedEventArgs)
+  name.vb: EventHandler(Of TourCompletedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.TourCompletedEventArgs
+    name: TourCompletedEventArgs
+    href: Meridian.Ui.Services.TourCompletedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TourCompletedEventArgs
+    name: TourCompletedEventArgs
+    href: Meridian.Ui.Services.TourCompletedEventArgs.html
+  - name: )
+- uid: Meridian.Ui.Services.OnboardingTourService.IsTourActive*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.IsTourActive
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_IsTourActive
+  name: IsTourActive
+  nameWithType: OnboardingTourService.IsTourActive
+  fullName: Meridian.Ui.Services.OnboardingTourService.IsTourActive
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.OnboardingTourService.ActiveSession*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.ActiveSession
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_ActiveSession
+  name: ActiveSession
+  nameWithType: OnboardingTourService.ActiveSession
+  fullName: Meridian.Ui.Services.OnboardingTourService.ActiveSession
+- uid: Meridian.Ui.Services.TourSession
+  commentId: T:Meridian.Ui.Services.TourSession
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TourSession.html
+  name: TourSession
+  nameWithType: TourSession
+  fullName: Meridian.Ui.Services.TourSession
+- uid: Meridian.Ui.Services.OnboardingTourService.GetAvailableTours*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.GetAvailableTours
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_GetAvailableTours
+  name: GetAvailableTours
+  nameWithType: OnboardingTourService.GetAvailableTours
+  fullName: Meridian.Ui.Services.OnboardingTourService.GetAvailableTours
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.TourInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.TourInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TourInfo>
+  nameWithType: IReadOnlyList<TourInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.TourInfo>
+  nameWithType.vb: IReadOnlyList(Of TourInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.TourInfo)
+  name.vb: IReadOnlyList(Of TourInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.TourInfo
+    name: TourInfo
+    href: Meridian.Ui.Services.TourInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TourInfo
+    name: TourInfo
+    href: Meridian.Ui.Services.TourInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.OnboardingTourService.GetTourForPage*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.GetTourForPage
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_GetTourForPage_System_String_
+  name: GetTourForPage
+  nameWithType: OnboardingTourService.GetTourForPage
+  fullName: Meridian.Ui.Services.OnboardingTourService.GetTourForPage
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.TourDefinition
+  commentId: T:Meridian.Ui.Services.TourDefinition
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TourDefinition.html
+  name: TourDefinition
+  nameWithType: TourDefinition
+  fullName: Meridian.Ui.Services.TourDefinition
+- uid: Meridian.Ui.Services.OnboardingTourService.StartTour*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.StartTour
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_StartTour_System_String_
+  name: StartTour
+  nameWithType: OnboardingTourService.StartTour
+  fullName: Meridian.Ui.Services.OnboardingTourService.StartTour
+- uid: Meridian.Ui.Services.OnboardingTourService.NextStep*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.NextStep
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_NextStep
+  name: NextStep
+  nameWithType: OnboardingTourService.NextStep
+  fullName: Meridian.Ui.Services.OnboardingTourService.NextStep
+- uid: Meridian.Ui.Services.OnboardingTourService.PreviousStep*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.PreviousStep
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_PreviousStep
+  name: PreviousStep
+  nameWithType: OnboardingTourService.PreviousStep
+  fullName: Meridian.Ui.Services.OnboardingTourService.PreviousStep
+- uid: Meridian.Ui.Services.OnboardingTourService.DismissTour*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.DismissTour
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_DismissTour
+  name: DismissTour
+  nameWithType: OnboardingTourService.DismissTour
+  fullName: Meridian.Ui.Services.OnboardingTourService.DismissTour
+- uid: Meridian.Ui.Services.OnboardingTourService.ResetTour*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.ResetTour
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_ResetTour_System_String_
+  name: ResetTour
+  nameWithType: OnboardingTourService.ResetTour
+  fullName: Meridian.Ui.Services.OnboardingTourService.ResetTour
+- uid: Meridian.Ui.Services.OnboardingTourService.ResetAllTours*
+  commentId: Overload:Meridian.Ui.Services.OnboardingTourService.ResetAllTours
+  href: Meridian.Ui.Services.OnboardingTourService.html#Meridian_Ui_Services_OnboardingTourService_ResetAllTours
+  name: ResetAllTours
+  nameWithType: OnboardingTourService.ResetAllTours
+  fullName: Meridian.Ui.Services.OnboardingTourService.ResetAllTours

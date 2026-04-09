@@ -1,0 +1,689 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ConnectivityTestService
+  commentId: T:Meridian.Application.Services.ConnectivityTestService
+  id: ConnectivityTestService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ConnectivityTestService.#ctor
+  - Meridian.Application.Services.ConnectivityTestService.DisplaySummary(Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  - Meridian.Application.Services.ConnectivityTestService.DisposeAsync
+  - Meridian.Application.Services.ConnectivityTestService.TestAllAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityTestService
+  nameWithType: ConnectivityTestService
+  fullName: Meridian.Application.Services.ConnectivityTestService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityTestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectivityTestService
+    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for testing connectivity to data providers and reporting results.
+
+    Helps users diagnose network and configuration issues.
+  example: []
+  syntax:
+    content: 'public sealed class ConnectivityTestService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class ConnectivityTestService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ConnectivityTestService.#ctor
+  commentId: M:Meridian.Application.Services.ConnectivityTestService.#ctor
+  id: '#ctor'
+  parent: Meridian.Application.Services.ConnectivityTestService
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityTestService()
+  nameWithType: ConnectivityTestService.ConnectivityTestService()
+  fullName: Meridian.Application.Services.ConnectivityTestService.ConnectivityTestService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityTestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public ConnectivityTestService()
+    content.vb: Public Sub New()
+  overload: Meridian.Application.Services.ConnectivityTestService.#ctor*
+  nameWithType.vb: ConnectivityTestService.New()
+  fullName.vb: Meridian.Application.Services.ConnectivityTestService.New()
+  name.vb: New()
+- uid: Meridian.Application.Services.ConnectivityTestService.TestAllAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConnectivityTestService.TestAllAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  id: TestAllAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConnectivityTestService
+  langs:
+  - csharp
+  - vb
+  name: TestAllAsync(AppConfig, CancellationToken)
+  nameWithType: ConnectivityTestService.TestAllAsync(AppConfig, CancellationToken)
+  fullName: Meridian.Application.Services.ConnectivityTestService.TestAllAsync(Meridian.Application.Config.AppConfig, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityTestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestAllAsync
+    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Tests connectivity to all configured providers.
+  example: []
+  syntax:
+    content: public Task<ConnectivityTestService.ConnectivitySummary> TestAllAsync(AppConfig config, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary}
+    content.vb: Public Function TestAllAsync(config As AppConfig, ct As CancellationToken = Nothing) As Task(Of ConnectivityTestService.ConnectivitySummary)
+  overload: Meridian.Application.Services.ConnectivityTestService.TestAllAsync*
+- uid: Meridian.Application.Services.ConnectivityTestService.DisplaySummary(Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  commentId: M:Meridian.Application.Services.ConnectivityTestService.DisplaySummary(Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  id: DisplaySummary(Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  parent: Meridian.Application.Services.ConnectivityTestService
+  langs:
+  - csharp
+  - vb
+  name: DisplaySummary(ConnectivitySummary)
+  nameWithType: ConnectivityTestService.DisplaySummary(ConnectivityTestService.ConnectivitySummary)
+  fullName: Meridian.Application.Services.ConnectivityTestService.DisplaySummary(Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityTestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplaySummary
+    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays the connectivity test summary.
+  example: []
+  syntax:
+    content: public void DisplaySummary(ConnectivityTestService.ConnectivitySummary summary)
+    parameters:
+    - id: summary
+      type: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    content.vb: Public Sub DisplaySummary(summary As ConnectivityTestService.ConnectivitySummary)
+  overload: Meridian.Application.Services.ConnectivityTestService.DisplaySummary*
+- uid: Meridian.Application.Services.ConnectivityTestService.DisposeAsync
+  commentId: M:Meridian.Application.Services.ConnectivityTestService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Services.ConnectivityTestService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ConnectivityTestService.DisposeAsync()
+  fullName: Meridian.Application.Services.ConnectivityTestService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityTestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Services.ConnectivityTestService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ConnectivityTestService.#ctor*
+  commentId: Overload:Meridian.Application.Services.ConnectivityTestService.#ctor
+  href: Meridian.Application.Services.ConnectivityTestService.html#Meridian_Application_Services_ConnectivityTestService__ctor
+  name: ConnectivityTestService
+  nameWithType: ConnectivityTestService.ConnectivityTestService
+  fullName: Meridian.Application.Services.ConnectivityTestService.ConnectivityTestService
+  nameWithType.vb: ConnectivityTestService.New
+  fullName.vb: Meridian.Application.Services.ConnectivityTestService.New
+  name.vb: New
+- uid: Meridian.Application.Services.ConnectivityTestService.TestAllAsync*
+  commentId: Overload:Meridian.Application.Services.ConnectivityTestService.TestAllAsync
+  href: Meridian.Application.Services.ConnectivityTestService.html#Meridian_Application_Services_ConnectivityTestService_TestAllAsync_Meridian_Application_Config_AppConfig_System_Threading_CancellationToken_
+  name: TestAllAsync
+  nameWithType: ConnectivityTestService.TestAllAsync
+  fullName: Meridian.Application.Services.ConnectivityTestService.TestAllAsync
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ConnectivityTestService.ConnectivitySummary>
+  nameWithType: Task<ConnectivityTestService.ConnectivitySummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary>
+  nameWithType.vb: Task(Of ConnectivityTestService.ConnectivitySummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  name.vb: Task(Of ConnectivityTestService.ConnectivitySummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.ConnectivityTestService
+    name: ConnectivityTestService
+    href: Meridian.Application.Services.ConnectivityTestService.html
+  - name: .
+  - uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    name: ConnectivitySummary
+    href: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ConnectivityTestService
+    name: ConnectivityTestService
+    href: Meridian.Application.Services.ConnectivityTestService.html
+  - name: .
+  - uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    name: ConnectivitySummary
+    href: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary.html
+  - name: )
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.ConnectivityTestService.DisplaySummary*
+  commentId: Overload:Meridian.Application.Services.ConnectivityTestService.DisplaySummary
+  href: Meridian.Application.Services.ConnectivityTestService.html#Meridian_Application_Services_ConnectivityTestService_DisplaySummary_Meridian_Application_Services_ConnectivityTestService_ConnectivitySummary_
+  name: DisplaySummary
+  nameWithType: ConnectivityTestService.DisplaySummary
+  fullName: Meridian.Application.Services.ConnectivityTestService.DisplaySummary
+- uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+  commentId: T:Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConnectivityTestService.html
+  name: ConnectivityTestService.ConnectivitySummary
+  nameWithType: ConnectivityTestService.ConnectivitySummary
+  fullName: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+  spec.csharp:
+  - uid: Meridian.Application.Services.ConnectivityTestService
+    name: ConnectivityTestService
+    href: Meridian.Application.Services.ConnectivityTestService.html
+  - name: .
+  - uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    name: ConnectivitySummary
+    href: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary.html
+  spec.vb:
+  - uid: Meridian.Application.Services.ConnectivityTestService
+    name: ConnectivityTestService
+    href: Meridian.Application.Services.ConnectivityTestService.html
+  - name: .
+  - uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    name: ConnectivitySummary
+    href: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary.html
+- uid: Meridian.Application.Services.ConnectivityTestService.DisposeAsync*
+  commentId: Overload:Meridian.Application.Services.ConnectivityTestService.DisposeAsync
+  href: Meridian.Application.Services.ConnectivityTestService.html#Meridian_Application_Services_ConnectivityTestService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ConnectivityTestService.DisposeAsync
+  fullName: Meridian.Application.Services.ConnectivityTestService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

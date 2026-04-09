@@ -1,0 +1,902 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService
+  commentId: T:Meridian.Storage.Interfaces.ISymbolRegistryService
+  id: ISymbolRegistryService
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync(System.String,Meridian.Contracts.Catalog.SymbolAlias,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol(System.String,System.String)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass(System.String)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry},System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol(System.String)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync(Meridian.Contracts.Catalog.SymbolRegistryEntry,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias(System.String)
+  - Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISymbolRegistryService
+  nameWithType: ISymbolRegistryService
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISymbolRegistryService
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Service for managing the symbol registry.
+  example: []
+  syntax:
+    content: public interface ISymbolRegistryService
+    content.vb: Public Interface ISymbolRegistryService
+  derivedClasses:
+  - Meridian.Storage.Services.SymbolRegistryService
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry
+  id: GetRegistry
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: GetRegistry()
+  nameWithType: ISymbolRegistryService.GetRegistry()
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRegistry
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets the symbol registry.
+  example: []
+  syntax:
+    content: SymbolRegistry GetRegistry()
+    return:
+      type: Meridian.Contracts.Catalog.SymbolRegistry
+    content.vb: Function GetRegistry() As SymbolRegistry
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry*
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: ISymbolRegistryService.InitializeAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Initializes the registry from storage.
+  example: []
+  syntax:
+    content: Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync*
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync(Meridian.Contracts.Catalog.SymbolRegistryEntry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync(Meridian.Contracts.Catalog.SymbolRegistryEntry,System.Threading.CancellationToken)
+  id: RegisterSymbolAsync(Meridian.Contracts.Catalog.SymbolRegistryEntry,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolAsync(SymbolRegistryEntry, CancellationToken)
+  nameWithType: ISymbolRegistryService.RegisterSymbolAsync(SymbolRegistryEntry, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync(Meridian.Contracts.Catalog.SymbolRegistryEntry, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolAsync
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Registers or updates a symbol entry.
+  example: []
+  syntax:
+    content: Task RegisterSymbolAsync(SymbolRegistryEntry entry, CancellationToken ct = default)
+    parameters:
+    - id: entry
+      type: Meridian.Contracts.Catalog.SymbolRegistryEntry
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function RegisterSymbolAsync(entry As SymbolRegistryEntry, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync*
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol(System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol(System.String)
+  id: LookupSymbol(System.String)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: LookupSymbol(string)
+  nameWithType: ISymbolRegistryService.LookupSymbol(string)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookupSymbol
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Looks up a symbol by any identifier (canonical, alias, ISIN, FIGI, etc.).
+  example: []
+  syntax:
+    content: SymbolLookupResult LookupSymbol(string query)
+    parameters:
+    - id: query
+      type: System.String
+    return:
+      type: Meridian.Contracts.Catalog.SymbolLookupResult
+    content.vb: Function LookupSymbol(query As String) As SymbolLookupResult
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol*
+  nameWithType.vb: ISymbolRegistryService.LookupSymbol(String)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol(String)
+  name.vb: LookupSymbol(String)
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias(System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias(System.String)
+  id: ResolveAlias(System.String)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: ResolveAlias(string)
+  nameWithType: ISymbolRegistryService.ResolveAlias(string)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveAlias
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Resolves an alias to a canonical symbol.
+  example: []
+  syntax:
+    content: string ResolveAlias(string alias)
+    parameters:
+    - id: alias
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Function ResolveAlias([alias] As String) As String
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias*
+  nameWithType.vb: ISymbolRegistryService.ResolveAlias(String)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias(String)
+  name.vb: ResolveAlias(String)
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol(System.String,System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol(System.String,System.String)
+  id: GetProviderSymbol(System.String,System.String)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: GetProviderSymbol(string, string)
+  nameWithType: ISymbolRegistryService.GetProviderSymbol(string, string)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderSymbol
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets the provider-specific symbol for a canonical symbol.
+  example: []
+  syntax:
+    content: string? GetProviderSymbol(string canonical, string provider)
+    parameters:
+    - id: canonical
+      type: System.String
+    - id: provider
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Function GetProviderSymbol(canonical As String, provider As String) As String
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol*
+  nameWithType.vb: ISymbolRegistryService.GetProviderSymbol(String, String)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol(String, String)
+  name.vb: GetProviderSymbol(String, String)
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync(System.String,Meridian.Contracts.Catalog.SymbolAlias,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync(System.String,Meridian.Contracts.Catalog.SymbolAlias,System.Threading.CancellationToken)
+  id: AddAliasAsync(System.String,Meridian.Contracts.Catalog.SymbolAlias,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: AddAliasAsync(string, SymbolAlias, CancellationToken)
+  nameWithType: ISymbolRegistryService.AddAliasAsync(string, SymbolAlias, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync(string, Meridian.Contracts.Catalog.SymbolAlias, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddAliasAsync
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Adds an alias for a symbol.
+  example: []
+  syntax:
+    content: Task AddAliasAsync(string canonical, SymbolAlias alias, CancellationToken ct = default)
+    parameters:
+    - id: canonical
+      type: System.String
+    - id: alias
+      type: Meridian.Contracts.Catalog.SymbolAlias
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AddAliasAsync(canonical As String, [alias] As SymbolAlias, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync*
+  nameWithType.vb: ISymbolRegistryService.AddAliasAsync(String, SymbolAlias, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync(String, Meridian.Contracts.Catalog.SymbolAlias, System.Threading.CancellationToken)
+  name.vb: AddAliasAsync(String, SymbolAlias, CancellationToken)
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: AddProviderMappingAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: AddProviderMappingAsync(string, string, string, CancellationToken)
+  nameWithType: ISymbolRegistryService.AddProviderMappingAsync(string, string, string, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync(string, string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddProviderMappingAsync
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Adds a provider mapping.
+  example: []
+  syntax:
+    content: Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default)
+    parameters:
+    - id: canonical
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: providerSymbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AddProviderMappingAsync(canonical As String, provider As String, providerSymbol As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync*
+  nameWithType.vb: ISymbolRegistryService.AddProviderMappingAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: AddProviderMappingAsync(String, String, String, CancellationToken)
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols
+  id: GetAllSymbols
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: GetAllSymbols()
+  nameWithType: ISymbolRegistryService.GetAllSymbols()
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSymbols
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets all symbols.
+  example: []
+  syntax:
+    content: IEnumerable<SymbolRegistryEntry> GetAllSymbols()
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry}
+    content.vb: Function GetAllSymbols() As IEnumerable(Of SymbolRegistryEntry)
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols*
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass(System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass(System.String)
+  id: GetSymbolsByAssetClass(System.String)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolsByAssetClass(string)
+  nameWithType: ISymbolRegistryService.GetSymbolsByAssetClass(string)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolsByAssetClass
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets symbols by asset class.
+  example: []
+  syntax:
+    content: IEnumerable<SymbolRegistryEntry> GetSymbolsByAssetClass(string assetClass)
+    parameters:
+    - id: assetClass
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry}
+    content.vb: Function GetSymbolsByAssetClass(assetClass As String) As IEnumerable(Of SymbolRegistryEntry)
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass*
+  nameWithType.vb: ISymbolRegistryService.GetSymbolsByAssetClass(String)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass(String)
+  name.vb: GetSymbolsByAssetClass(String)
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync(System.Threading.CancellationToken)
+  id: SaveRegistryAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: SaveRegistryAsync(CancellationToken)
+  nameWithType: ISymbolRegistryService.SaveRegistryAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveRegistryAsync
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Saves the registry to disk.
+  example: []
+  syntax:
+    content: Task SaveRegistryAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveRegistryAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync*
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry},System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry},System.Boolean,System.Threading.CancellationToken)
+  id: ImportSymbolsAsync(System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry},System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.ISymbolRegistryService
+  langs:
+  - csharp
+  - vb
+  name: ImportSymbolsAsync(IEnumerable<SymbolRegistryEntry>, bool, CancellationToken)
+  nameWithType: ISymbolRegistryService.ImportSymbolsAsync(IEnumerable<SymbolRegistryEntry>, bool, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable<Meridian.Contracts.Catalog.SymbolRegistryEntry>, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportSymbolsAsync
+    path: ../../src/Meridian.Storage/Interfaces/ISymbolRegistryService.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Imports symbols from an external source.
+  example: []
+  syntax:
+    content: Task<int> ImportSymbolsAsync(IEnumerable<SymbolRegistryEntry> symbols, bool merge = true, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry}
+    - id: merge
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+    content.vb: Function ImportSymbolsAsync(symbols As IEnumerable(Of SymbolRegistryEntry), merge As Boolean = True, ct As CancellationToken = Nothing) As Task(Of Integer)
+  overload: Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync*
+  nameWithType.vb: ISymbolRegistryService.ImportSymbolsAsync(IEnumerable(Of SymbolRegistryEntry), Boolean, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Catalog.SymbolRegistryEntry), Boolean, System.Threading.CancellationToken)
+  name.vb: ImportSymbolsAsync(IEnumerable(Of SymbolRegistryEntry), Boolean, CancellationToken)
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_GetRegistry
+  name: GetRegistry
+  nameWithType: ISymbolRegistryService.GetRegistry
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetRegistry
+- uid: Meridian.Contracts.Catalog.SymbolRegistry
+  commentId: T:Meridian.Contracts.Catalog.SymbolRegistry
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.SymbolRegistry.html
+  name: SymbolRegistry
+  nameWithType: SymbolRegistry
+  fullName: Meridian.Contracts.Catalog.SymbolRegistry
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: ISymbolRegistryService.InitializeAsync
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_RegisterSymbolAsync_Meridian_Contracts_Catalog_SymbolRegistryEntry_System_Threading_CancellationToken_
+  name: RegisterSymbolAsync
+  nameWithType: ISymbolRegistryService.RegisterSymbolAsync
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.RegisterSymbolAsync
+- uid: Meridian.Contracts.Catalog.SymbolRegistryEntry
+  commentId: T:Meridian.Contracts.Catalog.SymbolRegistryEntry
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.SymbolRegistryEntry.html
+  name: SymbolRegistryEntry
+  nameWithType: SymbolRegistryEntry
+  fullName: Meridian.Contracts.Catalog.SymbolRegistryEntry
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_LookupSymbol_System_String_
+  name: LookupSymbol
+  nameWithType: ISymbolRegistryService.LookupSymbol
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.LookupSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.SymbolLookupResult
+  commentId: T:Meridian.Contracts.Catalog.SymbolLookupResult
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.SymbolLookupResult.html
+  name: SymbolLookupResult
+  nameWithType: SymbolLookupResult
+  fullName: Meridian.Contracts.Catalog.SymbolLookupResult
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_ResolveAlias_System_String_
+  name: ResolveAlias
+  nameWithType: ISymbolRegistryService.ResolveAlias
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.ResolveAlias
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_GetProviderSymbol_System_String_System_String_
+  name: GetProviderSymbol
+  nameWithType: ISymbolRegistryService.GetProviderSymbol
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetProviderSymbol
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_AddAliasAsync_System_String_Meridian_Contracts_Catalog_SymbolAlias_System_Threading_CancellationToken_
+  name: AddAliasAsync
+  nameWithType: ISymbolRegistryService.AddAliasAsync
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.AddAliasAsync
+- uid: Meridian.Contracts.Catalog.SymbolAlias
+  commentId: T:Meridian.Contracts.Catalog.SymbolAlias
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.SymbolAlias.html
+  name: SymbolAlias
+  nameWithType: SymbolAlias
+  fullName: Meridian.Contracts.Catalog.SymbolAlias
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_AddProviderMappingAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: AddProviderMappingAsync
+  nameWithType: ISymbolRegistryService.AddProviderMappingAsync
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.AddProviderMappingAsync
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_GetAllSymbols
+  name: GetAllSymbols
+  nameWithType: ISymbolRegistryService.GetAllSymbols
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetAllSymbols
+- uid: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.SymbolRegistryEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SymbolRegistryEntry>
+  nameWithType: IEnumerable<SymbolRegistryEntry>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Contracts.Catalog.SymbolRegistryEntry>
+  nameWithType.vb: IEnumerable(Of SymbolRegistryEntry)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Catalog.SymbolRegistryEntry)
+  name.vb: IEnumerable(Of SymbolRegistryEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.SymbolRegistryEntry
+    name: SymbolRegistryEntry
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.SymbolRegistryEntry
+    name: SymbolRegistryEntry
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_GetSymbolsByAssetClass_System_String_
+  name: GetSymbolsByAssetClass
+  nameWithType: ISymbolRegistryService.GetSymbolsByAssetClass
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.GetSymbolsByAssetClass
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_SaveRegistryAsync_System_Threading_CancellationToken_
+  name: SaveRegistryAsync
+  nameWithType: ISymbolRegistryService.SaveRegistryAsync
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.SaveRegistryAsync
+- uid: Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync
+  href: Meridian.Storage.Interfaces.ISymbolRegistryService.html#Meridian_Storage_Interfaces_ISymbolRegistryService_ImportSymbolsAsync_System_Collections_Generic_IEnumerable_Meridian_Contracts_Catalog_SymbolRegistryEntry__System_Boolean_System_Threading_CancellationToken_
+  name: ImportSymbolsAsync
+  nameWithType: ISymbolRegistryService.ImportSymbolsAsync
+  fullName: Meridian.Storage.Interfaces.ISymbolRegistryService.ImportSymbolsAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )

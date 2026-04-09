@@ -8,6 +8,17 @@ The `build/scripts/ai-repo-updater.py` script is a purpose-built toolkit that gi
 
 **Location:** `build/scripts/ai-repo-updater.py`
 
+## PowerShell Encoding Note
+
+On Windows PowerShell, set `PYTHONIOENCODING=utf-8` before invoking the updater. Some
+help and JSON output paths include Unicode punctuation that can fail under the default
+console encoding.
+
+```powershell
+$env:PYTHONIOENCODING='utf-8'
+python build/scripts/ai-repo-updater.py audit-code --summary
+```
+
 ## Workflow
 
 Follow this loop when asked to "update", "improve", or "audit" the repository:
@@ -197,4 +208,4 @@ make ai-report           # Generate improvement report
 
 ---
 
-*Last Updated: 2026-03-16*
+*Last Updated: 2026-04-05*

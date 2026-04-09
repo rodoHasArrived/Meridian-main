@@ -1,0 +1,284 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.OrderStatus
+  commentId: T:Meridian.Execution.Sdk.OrderStatus
+  id: OrderStatus
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.OrderStatus.Accepted
+  - Meridian.Execution.Sdk.OrderStatus.Cancelled
+  - Meridian.Execution.Sdk.OrderStatus.Expired
+  - Meridian.Execution.Sdk.OrderStatus.Filled
+  - Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
+  - Meridian.Execution.Sdk.OrderStatus.PendingCancel
+  - Meridian.Execution.Sdk.OrderStatus.PendingNew
+  - Meridian.Execution.Sdk.OrderStatus.Rejected
+  langs:
+  - csharp
+  - vb
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Sdk.OrderStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderStatus
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Current state of an order in the OMS.
+  example: []
+  syntax:
+    content: public enum OrderStatus
+    content.vb: Public Enum OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.PendingNew
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.PendingNew
+  id: PendingNew
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: PendingNew
+  nameWithType: OrderStatus.PendingNew
+  fullName: Meridian.Execution.Sdk.OrderStatus.PendingNew
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingNew
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: PendingNew = 0
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.Accepted
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.Accepted
+  id: Accepted
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Accepted
+  nameWithType: OrderStatus.Accepted
+  fullName: Meridian.Execution.Sdk.OrderStatus.Accepted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accepted
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Accepted = 1
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
+  id: PartiallyFilled
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: PartiallyFilled
+  nameWithType: OrderStatus.PartiallyFilled
+  fullName: Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartiallyFilled
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: PartiallyFilled = 2
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.Filled
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.Filled
+  id: Filled
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Filled
+  nameWithType: OrderStatus.Filled
+  fullName: Meridian.Execution.Sdk.OrderStatus.Filled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Filled
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Filled = 3
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.PendingCancel
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.PendingCancel
+  id: PendingCancel
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: PendingCancel
+  nameWithType: OrderStatus.PendingCancel
+  fullName: Meridian.Execution.Sdk.OrderStatus.PendingCancel
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingCancel
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: PendingCancel = 4
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.Cancelled
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: OrderStatus.Cancelled
+  fullName: Meridian.Execution.Sdk.OrderStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Cancelled = 5
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.Rejected
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.Rejected
+  id: Rejected
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: OrderStatus.Rejected
+  fullName: Meridian.Execution.Sdk.OrderStatus.Rejected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Rejected = 6
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+- uid: Meridian.Execution.Sdk.OrderStatus.Expired
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.Expired
+  id: Expired
+  parent: Meridian.Execution.Sdk.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Expired
+  nameWithType: OrderStatus.Expired
+  fullName: Meridian.Execution.Sdk.OrderStatus.Expired
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expired
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Expired = 7
+    return:
+      type: Meridian.Execution.Sdk.OrderStatus
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.OrderStatus
+  commentId: T:Meridian.Execution.Sdk.OrderStatus
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Sdk.OrderStatus

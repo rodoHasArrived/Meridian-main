@@ -1,14 +1,23 @@
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Models;
 
-// ── Script Browser ────────────────────────────────────────────────────────────
+public enum QuantScriptCellStatus
+{
+    NotRun,
+    Running,
+    Success,
+    Error,
+    Stale
+}
 
-/// <summary>A .csx file entry shown in the script browser.</summary>
-public sealed record ScriptFileEntry(string Name, string FullPath);
-
-// ── Console ───────────────────────────────────────────────────────────────────
+/// <summary>A notebook or legacy script entry shown in the QuantScript browser.</summary>
+public sealed record QuantScriptDocumentEntry(
+    string Name,
+    string FullPath,
+    QuantScriptDocumentKind Kind);
 
 /// <summary>A single line in the console output panel.</summary>
 public sealed record ConsoleEntry(
@@ -25,12 +34,8 @@ public enum ConsoleEntryKind
     Separator
 }
 
-// ── Metrics tab ───────────────────────────────────────────────────────────────
-
 /// <summary>A single metric key/value pair shown in the Metrics tab.</summary>
 public sealed record MetricEntry(string Label, string Value, string? Category = null);
-
-// ── Trades tab ────────────────────────────────────────────────────────────────
 
 /// <summary>A single fill entry shown in the Trades tab.</summary>
 public sealed record TradeEntry(
@@ -41,17 +46,14 @@ public sealed record TradeEntry(
     decimal Commission,
     string Side);
 
-// ── Diagnostics tab ──────────────────────────────────────────────────────────
-
 /// <summary>A single diagnostic key/value shown in the Diagnostics tab.</summary>
 public sealed record DiagnosticEntry(string Key, string Value);
-
-// ── Charts tab ────────────────────────────────────────────────────────────────
 
 /// <summary>A chart title + data pair shown in the Charts tab.</summary>
 public sealed record PlotViewModel(string Title, PlotRequest Request);
 
-// ── Chart legend ──────────────────────────────────────────────────────────────
+/// <summary>Per-cell chart output shown inline in the notebook.</summary>
+public sealed record CellPlotViewModel(string Title, PlotRequest Request);
 
 /// <summary>
 /// A single colored legend entry displayed below the primary chart.
@@ -66,10 +68,9 @@ public sealed class ChartLegendEntry
     }
 
     public string Label { get; }
+
     public System.Windows.Media.Brush SeriesColorBrush { get; }
 }
-
-// ── Parameters sidebar ────────────────────────────────────────────────────────
 
 /// <summary>
 /// A script parameter rendered in the Parameters sidebar.
@@ -81,6 +82,7 @@ public sealed class ParameterViewModel : BindableBase
     private bool _isValid = true;
     private string? _validationMessage;
     private object? _parsedValue;
+    private readonly string _defaultValueText;
 
     public ParameterViewModel(string name, object? defaultValue, Type? parameterType = null)
     {
@@ -88,10 +90,16 @@ public sealed class ParameterViewModel : BindableBase
         ParameterType = parameterType ?? typeof(string);
         _parsedValue = defaultValue;
         _rawValue = defaultValue?.ToString() ?? string.Empty;
+        _defaultValueText = defaultValue?.ToString() ?? "empty";
     }
 
     public string Name { get; }
+
     public Type ParameterType { get; }
+
+    public string TypeHintText => GetTypeHint(ParameterType);
+
+    public string DefaultValueText => _defaultValueText;
 
     public string RawValue
     {
@@ -103,9 +111,31 @@ public sealed class ParameterViewModel : BindableBase
         }
     }
 
-    public bool IsValid { get => _isValid; private set => SetProperty(ref _isValid, value); }
-    public string? ValidationMessage { get => _validationMessage; private set => SetProperty(ref _validationMessage, value); }
-    public object? ParsedValue { get => _parsedValue; private set => SetProperty(ref _parsedValue, value); }
+    public bool IsValid
+    {
+        get => _isValid;
+        private set => SetProperty(ref _isValid, value);
+    }
+
+    public bool BoolValue
+    {
+        get => bool.TryParse(_rawValue, out var parsed) && parsed;
+        set => RawValue = value.ToString();
+    }
+
+    public string? ValidationMessage
+    {
+        get => _validationMessage;
+        private set => SetProperty(ref _validationMessage, value);
+    }
+
+    public object? ParsedValue
+    {
+        get => _parsedValue;
+        private set => SetProperty(ref _parsedValue, value);
+    }
+
+    public bool HasValidationError => !IsValid && !string.IsNullOrWhiteSpace(ValidationMessage);
 
     private void Validate()
     {
@@ -121,5 +151,114 @@ public sealed class ParameterViewModel : BindableBase
             ValidationMessage = $"Invalid {ParameterType.Name} value";
             ParsedValue = null;
         }
+
+        RaisePropertyChanged(nameof(BoolValue));
+        RaisePropertyChanged(nameof(HasValidationError));
     }
+
+    private static string GetTypeHint(Type parameterType)
+    {
+        var normalized = Nullable.GetUnderlyingType(parameterType) ?? parameterType;
+        return normalized == typeof(int) ? "int"
+            : normalized == typeof(long) ? "long"
+            : normalized == typeof(double) ? "double"
+            : normalized == typeof(float) ? "float"
+            : normalized == typeof(decimal) ? "decimal"
+            : normalized == typeof(bool) ? "bool"
+            : normalized.Name;
+    }
+}
+
+/// <summary>
+/// Notebook cell view model used by QuantScript's notebook editor surface.
+/// </summary>
+public sealed class QuantScriptCellViewModel : BindableBase
+{
+    private readonly Action<QuantScriptCellViewModel>? _contentChanged;
+    private string _sourceCode;
+    private QuantScriptCellStatus _status;
+    private int _revision;
+    private string _outputText = string.Empty;
+    private string? _runtimeError;
+    private TimeSpan _elapsedTime;
+    private bool _isSelected;
+
+    public QuantScriptCellViewModel(
+        string cellId,
+        string sourceCode,
+        Action<QuantScriptCellViewModel>? contentChanged = null)
+    {
+        CellId = cellId;
+        _sourceCode = sourceCode ?? string.Empty;
+        _contentChanged = contentChanged;
+        _revision = 1;
+    }
+
+    public string CellId { get; }
+
+    public string SourceCode
+    {
+        get => _sourceCode;
+        set
+        {
+            if (SetProperty(ref _sourceCode, value ?? string.Empty))
+            {
+                Revision++;
+                _contentChanged?.Invoke(this);
+            }
+        }
+    }
+
+    public QuantScriptCellStatus Status
+    {
+        get => _status;
+        set
+        {
+            if (SetProperty(ref _status, value))
+                RaisePropertyChanged(nameof(StatusText));
+        }
+    }
+
+    public int Revision
+    {
+        get => _revision;
+        private set => SetProperty(ref _revision, value);
+    }
+
+    public string OutputText
+    {
+        get => _outputText;
+        set => SetProperty(ref _outputText, value ?? string.Empty);
+    }
+
+    public ObservableCollection<CellPlotViewModel> OutputPlots { get; } = [];
+
+    public ObservableCollection<MetricEntry> OutputMetrics { get; } = [];
+
+    public string? RuntimeError
+    {
+        get => _runtimeError;
+        set => SetProperty(ref _runtimeError, value);
+    }
+
+    public TimeSpan ElapsedTime
+    {
+        get => _elapsedTime;
+        set => SetProperty(ref _elapsedTime, value);
+    }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+
+    public string StatusText => Status switch
+    {
+        QuantScriptCellStatus.Running => "Running",
+        QuantScriptCellStatus.Success => "Ready",
+        QuantScriptCellStatus.Error => "Error",
+        QuantScriptCellStatus.Stale => "Stale",
+        _ => "Not Run"
+    };
 }

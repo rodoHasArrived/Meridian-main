@@ -1,0 +1,770 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  commentId: T:Meridian.Contracts.SecurityMaster.TradingParametersDto
+  id: TradingParametersDto
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.#ctor(System.Guid,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.DateTimeOffset)
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize
+  - Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc
+  langs:
+  - csharp
+  - vb
+  name: TradingParametersDto
+  nameWithType: TradingParametersDto
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingParametersDto
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Trading parameters for an instrument, used for order validation and fill-price rounding.
+  example: []
+  syntax:
+    content: 'public sealed record TradingParametersDto : IEquatable<TradingParametersDto>'
+    content.vb: Public NotInheritable Class TradingParametersDto Implements IEquatable(Of TradingParametersDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.TradingParametersDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.#ctor(System.Guid,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.SecurityMaster.TradingParametersDto.#ctor(System.Guid,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.DateTimeOffset)
+  id: '#ctor(System.Guid,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.Nullable{System.Decimal},System.DateTimeOffset)'
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: TradingParametersDto(Guid, decimal?, decimal?, decimal?, decimal?, string?, decimal?, DateTimeOffset)
+  nameWithType: TradingParametersDto.TradingParametersDto(Guid, decimal?, decimal?, decimal?, decimal?, string?, decimal?, DateTimeOffset)
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingParametersDto(System.Guid, decimal?, decimal?, decimal?, decimal?, string?, decimal?, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Trading parameters for an instrument, used for order validation and fill-price rounding.
+  example: []
+  syntax:
+    content: public TradingParametersDto(Guid SecurityId, decimal? LotSize, decimal? TickSize, decimal? ContractMultiplier, decimal? MarginRequirementPct, string? TradingHoursUtc, decimal? CircuitBreakerThresholdPct, DateTimeOffset AsOf)
+    parameters:
+    - id: SecurityId
+      type: System.Guid
+    - id: LotSize
+      type: System.Nullable{System.Decimal}
+    - id: TickSize
+      type: System.Nullable{System.Decimal}
+    - id: ContractMultiplier
+      type: System.Nullable{System.Decimal}
+    - id: MarginRequirementPct
+      type: System.Nullable{System.Decimal}
+    - id: TradingHoursUtc
+      type: System.String
+    - id: CircuitBreakerThresholdPct
+      type: System.Nullable{System.Decimal}
+    - id: AsOf
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(SecurityId As Guid, LotSize As Decimal?, TickSize As Decimal?, ContractMultiplier As Decimal?, MarginRequirementPct As Decimal?, TradingHoursUtc As String, CircuitBreakerThresholdPct As Decimal?, AsOf As DateTimeOffset)
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.#ctor*
+  nameWithType.vb: TradingParametersDto.New(Guid, Decimal?, Decimal?, Decimal?, Decimal?, String, Decimal?, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.SecurityMaster.TradingParametersDto.New(System.Guid, Decimal?, Decimal?, Decimal?, Decimal?, String, Decimal?, System.DateTimeOffset)
+  name.vb: New(Guid, Decimal?, Decimal?, Decimal?, Decimal?, String, Decimal?, DateTimeOffset)
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: TradingParametersDto.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize
+  id: LotSize
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: LotSize
+  nameWithType: TradingParametersDto.LotSize
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotSize
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? LotSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property LotSize As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize
+  id: TickSize
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: TickSize
+  nameWithType: TradingParametersDto.TickSize
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TickSize
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? TickSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TickSize As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier
+  id: ContractMultiplier
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: ContractMultiplier
+  nameWithType: TradingParametersDto.ContractMultiplier
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContractMultiplier
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? ContractMultiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ContractMultiplier As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct
+  id: MarginRequirementPct
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: MarginRequirementPct
+  nameWithType: TradingParametersDto.MarginRequirementPct
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginRequirementPct
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? MarginRequirementPct { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MarginRequirementPct As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc
+  id: TradingHoursUtc
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: TradingHoursUtc
+  nameWithType: TradingParametersDto.TradingHoursUtc
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingHoursUtc
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? TradingHoursUtc { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TradingHoursUtc As String
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct
+  id: CircuitBreakerThresholdPct
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerThresholdPct
+  nameWithType: TradingParametersDto.CircuitBreakerThresholdPct
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerThresholdPct
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? CircuitBreakerThresholdPct { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property CircuitBreakerThresholdPct As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct*
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf
+  commentId: P:Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.SecurityMaster.TradingParametersDto
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: TradingParametersDto.AsOf
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.TradingParametersDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.TradingParametersDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradingParametersDto>
+  nameWithType: IEquatable<TradingParametersDto>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.TradingParametersDto>
+  nameWithType.vb: IEquatable(Of TradingParametersDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.TradingParametersDto)
+  name.vb: IEquatable(Of TradingParametersDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.TradingParametersDto
+    name: TradingParametersDto
+    href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.TradingParametersDto
+    name: TradingParametersDto
+    href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.#ctor
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto__ctor_System_Guid_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_String_System_Nullable_System_Decimal__System_DateTimeOffset_
+  name: TradingParametersDto
+  nameWithType: TradingParametersDto.TradingParametersDto
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingParametersDto
+  nameWithType.vb: TradingParametersDto.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.TradingParametersDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_SecurityId
+  name: SecurityId
+  nameWithType: TradingParametersDto.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.SecurityId
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_LotSize
+  name: LotSize
+  nameWithType: TradingParametersDto.LotSize
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.LotSize
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_TickSize
+  name: TickSize
+  nameWithType: TradingParametersDto.TickSize
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.TickSize
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_ContractMultiplier
+  name: ContractMultiplier
+  nameWithType: TradingParametersDto.ContractMultiplier
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.ContractMultiplier
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_MarginRequirementPct
+  name: MarginRequirementPct
+  nameWithType: TradingParametersDto.MarginRequirementPct
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.MarginRequirementPct
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_TradingHoursUtc
+  name: TradingHoursUtc
+  nameWithType: TradingParametersDto.TradingHoursUtc
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.TradingHoursUtc
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_CircuitBreakerThresholdPct
+  name: CircuitBreakerThresholdPct
+  nameWithType: TradingParametersDto.CircuitBreakerThresholdPct
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.CircuitBreakerThresholdPct
+- uid: Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf
+  href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html#Meridian_Contracts_SecurityMaster_TradingParametersDto_AsOf
+  name: AsOf
+  nameWithType: TradingParametersDto.AsOf
+  fullName: Meridian.Contracts.SecurityMaster.TradingParametersDto.AsOf

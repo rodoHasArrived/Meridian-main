@@ -254,17 +254,22 @@ public sealed class TradeDataCollector
         if (string.IsNullOrWhiteSpace(symbol))
             return null;
         var symbolId = new SymbolId(symbol);
-        var states = _stateBySymbol
-            .Where(kvp => kvp.Key.Symbol == symbolId)
-            .Select(kvp => kvp.Value)
-            .ToArray();
-        if (states.Length == 0)
+        SymbolTradeState? state = null;
+        foreach (var kvp in _stateBySymbol)
+        {
+            if (kvp.Key.Symbol == symbolId)
+            {
+                state = kvp.Value;
+                break;
+            }
+        }
+        if (state is null)
             return null;
 
-        return states[0].BuildOrderFlowStats(
+        return state.BuildOrderFlowStats(
             timestamp: DateTimeOffset.UtcNow,
             symbol: symbol,
-            seq: states[0].GetLastSequenceNumber(),
+            seq: state.GetLastSequenceNumber(),
             streamId: null,
             venue: null);
     }
@@ -273,10 +278,16 @@ public sealed class TradeDataCollector
     /// Returns all symbols that currently have trade data.
     /// </summary>
     public IReadOnlyList<string> GetTrackedSymbols()
-        => _stateBySymbol.Keys
-            .Select(k => k.Symbol.Value)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var result = new List<string>(_stateBySymbol.Count);
+        foreach (var key in _stateBySymbol.Keys)
+        {
+            if (seen.Add(key.Symbol.Value))
+                result.Add(key.Symbol.Value);
+        }
+        return result;
+    }
 
     private static StreamKey BuildStreamKey(SymbolId symbol, string? streamId, string? venue)
         => new(symbol, streamId, venue);

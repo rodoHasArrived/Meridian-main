@@ -10,8 +10,8 @@ Both sets should stay aligned around a common routing model: use the generated r
 
 ### Repo Navigation Agent
 
-**Copilot file:** [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/repo-navigation-agent.md)  
-**Claude file:** [`.claude/agents/meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md)
+**Copilot file:** [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md)  
+**Claude file:** [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md)
 
 Routes large-repo work to the right subsystem, docs, entrypoints, and downstream specialist agents before implementation starts. It owns four roles:
 

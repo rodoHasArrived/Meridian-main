@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthOperation
+  id: DepthOperation
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.DepthOperation.Delete
+  - Meridian.Contracts.Domain.Enums.DepthOperation.Insert
+  - Meridian.Contracts.Domain.Enums.DepthOperation.Update
+  langs:
+  - csharp
+  - vb
+  name: DepthOperation
+  nameWithType: DepthOperation
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthOperation
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Type of operation for a depth update.
+  example: []
+  syntax:
+    content: 'public enum DepthOperation : byte'
+    content.vb: Public Enum DepthOperation As Byte
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation.Insert
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthOperation.Insert
+  id: Insert
+  parent: Meridian.Contracts.Domain.Enums.DepthOperation
+  langs:
+  - csharp
+  - vb
+  name: Insert
+  nameWithType: DepthOperation.Insert
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation.Insert
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Insert
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Insert a new level.
+  example: []
+  syntax:
+    content: Insert = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthOperation
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation.Update
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthOperation.Update
+  id: Update
+  parent: Meridian.Contracts.Domain.Enums.DepthOperation
+  langs:
+  - csharp
+  - vb
+  name: Update
+  nameWithType: DepthOperation.Update
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation.Update
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Update
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Update an existing level.
+  example: []
+  syntax:
+    content: Update = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthOperation
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation.Delete
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthOperation.Delete
+  id: Delete
+  parent: Meridian.Contracts.Domain.Enums.DepthOperation
+  langs:
+  - csharp
+  - vb
+  name: Delete
+  nameWithType: DepthOperation.Delete
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation.Delete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Delete
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Delete an existing level.
+  example: []
+  syntax:
+    content: Delete = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthOperation
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.DepthOperation
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthOperation
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.DepthOperation.html
+  name: DepthOperation
+  nameWithType: DepthOperation
+  fullName: Meridian.Contracts.Domain.Enums.DepthOperation

@@ -49,9 +49,14 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
 
 jobs:
+  build-artifact:
+    name: Build Artifact
+    uses: ./.github/workflows/generate-build-artifact.yml
+
   # Ubuntu tests always run (free tier for public repos, essential for PRs)
   test-ubuntu:
     name: Test (Linux)
+    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -59,18 +64,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET with Cache
-        uses: ./.github/actions/setup-dotnet-cache
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
-
-      - name: Build
-        shell: bash
-        run: |
-          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
 
       - name: Run C# unit tests
         shell: bash
@@ -121,6 +123,7 @@ jobs:
   test-db:
     name: Test (PostgreSQL)
     if: github.event_name != 'pull_request'
+    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -147,16 +150,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET with Cache
-        uses: ./.github/actions/setup-dotnet-cache
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
-
-      - name: Build
-        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
 
       - name: Run Security Master PostgreSQL tests
         shell: bash
@@ -286,11 +288,6 @@ jobs:
     steps:
       - name: Generate test summary
         run: |
-          echo "# Test Matrix Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-
           # Linux always runs and has a single definitive result
           LINUX_STATUS="${{ needs.test-ubuntu.result }}"
           case "$LINUX_STATUS" in
@@ -298,7 +295,6 @@ jobs:
             skipped) LINUX_LABEL="⏭️ Skipped" ;;
             *) LINUX_LABEL="❌ Failed" ;;
           esac
-          echo "| Linux | $LINUX_LABEL |" >> $GITHUB_STEP_SUMMARY
 
           # Windows and macOS share a matrix result; on PRs they are skipped
           OTHER_STATUS="${{ needs.test-other-platforms.result }}"
@@ -307,8 +303,6 @@ jobs:
             skipped) WIN_LABEL="⏭️ Skipped (PR)"; MAC_LABEL="⏭️ Skipped (PR)" ;;
             *) WIN_LABEL="❌ Failed"; MAC_LABEL="❌ Failed" ;;
           esac
-          echo "| Windows | $WIN_LABEL |" >> $GITHUB_STEP_SUMMARY
-          echo "| macOS | $MAC_LABEL |" >> $GITHUB_STEP_SUMMARY
 
           # PostgreSQL DB tests only run on push to main; skipped on PRs
           DB_STATUS="${{ needs.test-db.result }}"
@@ -317,4 +311,14 @@ jobs:
             skipped) DB_LABEL="⏭️ Skipped (PR)" ;;
             *) DB_LABEL="❌ Failed" ;;
           esac
-          echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY
+
+          {
+            echo "# Test Matrix Summary"
+            echo ""
+            echo "| Platform | Status |"
+            echo "|----------|--------|"
+            echo "| Linux | $LINUX_LABEL |"
+            echo "| Windows | $WIN_LABEL |"
+            echo "| macOS | $MAC_LABEL |"
+            echo "| PostgreSQL | $DB_LABEL |"
+          } >> "$GITHUB_STEP_SUMMARY"

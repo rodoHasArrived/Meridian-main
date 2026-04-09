@@ -1,0 +1,875 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  id: CanonicalizationSnapshot
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int32,System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64},System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot})
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal
+  - Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizationSnapshot
+  nameWithType: CanonicalizationSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalizationSnapshot
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Immutable snapshot of canonicalization metrics at a point in time.
+  example: []
+  syntax:
+    content: 'public sealed record CanonicalizationSnapshot : IEquatable<CanonicalizationSnapshot>'
+    content.vb: Public NotInheritable Class CanonicalizationSnapshot Implements IEquatable(Of CanonicalizationSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Canonicalization.CanonicalizationSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int32,System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64},System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot})
+  commentId: M:Meridian.Application.Canonicalization.CanonicalizationSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int32,System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64},System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot})
+  id: '#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int32,System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64},System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot})'
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizationSnapshot(long, long, long, long, int, Dictionary<(string Provider, string Field), long>, Dictionary<string, ProviderParitySnapshot>)
+  nameWithType: CanonicalizationSnapshot.CanonicalizationSnapshot(long, long, long, long, int, Dictionary<(string Provider, string Field), long>, Dictionary<string, ProviderParitySnapshot>)
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.CanonicalizationSnapshot(long, long, long, long, int, System.Collections.Generic.Dictionary<(string Provider, string Field), long>, System.Collections.Generic.Dictionary<string, Meridian.Application.Canonicalization.ProviderParitySnapshot>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Immutable snapshot of canonicalization metrics at a point in time.
+  example: []
+  syntax:
+    content: public CanonicalizationSnapshot(long SuccessTotal, long SoftFailTotal, long HardFailTotal, long DualWriteTotal, int ActiveVersion, Dictionary<(string Provider, string Field), long> UnresolvedCounts, Dictionary<string, ProviderParitySnapshot> ProviderParity)
+    parameters:
+    - id: SuccessTotal
+      type: System.Int64
+    - id: SoftFailTotal
+      type: System.Int64
+    - id: HardFailTotal
+      type: System.Int64
+    - id: DualWriteTotal
+      type: System.Int64
+    - id: ActiveVersion
+      type: System.Int32
+    - id: UnresolvedCounts
+      type: System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64}
+    - id: ProviderParity
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot}
+    content.vb: Public Sub New(SuccessTotal As Long, SoftFailTotal As Long, HardFailTotal As Long, DualWriteTotal As Long, ActiveVersion As Integer, UnresolvedCounts As Dictionary(Of (Provider As String, Field As String), Long), ProviderParity As Dictionary(Of String, ProviderParitySnapshot))
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.#ctor*
+  nameWithType.vb: CanonicalizationSnapshot.New(Long, Long, Long, Long, Integer, Dictionary(Of (Provider As String, Field As String), Long), Dictionary(Of String, ProviderParitySnapshot))
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizationSnapshot.New(Long, Long, Long, Long, Integer, System.Collections.Generic.Dictionary(Of (Provider As String, Field As String), Long), System.Collections.Generic.Dictionary(Of String, Meridian.Application.Canonicalization.ProviderParitySnapshot))
+  name.vb: New(Long, Long, Long, Long, Integer, Dictionary(Of (Provider As String, Field As String), Long), Dictionary(Of String, ProviderParitySnapshot))
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal
+  id: SuccessTotal
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SuccessTotal
+  nameWithType: CanonicalizationSnapshot.SuccessTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessTotal
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long SuccessTotal { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SuccessTotal As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal*
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal
+  id: SoftFailTotal
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SoftFailTotal
+  nameWithType: CanonicalizationSnapshot.SoftFailTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SoftFailTotal
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long SoftFailTotal { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SoftFailTotal As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal*
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal
+  id: HardFailTotal
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: HardFailTotal
+  nameWithType: CanonicalizationSnapshot.HardFailTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HardFailTotal
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long HardFailTotal { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property HardFailTotal As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal*
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal
+  id: DualWriteTotal
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DualWriteTotal
+  nameWithType: CanonicalizationSnapshot.DualWriteTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DualWriteTotal
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long DualWriteTotal { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DualWriteTotal As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal*
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion
+  id: ActiveVersion
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ActiveVersion
+  nameWithType: CanonicalizationSnapshot.ActiveVersion
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveVersion
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public int ActiveVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ActiveVersion As Integer
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion*
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts
+  id: UnresolvedCounts
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnresolvedCounts
+  nameWithType: CanonicalizationSnapshot.UnresolvedCounts
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnresolvedCounts
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public Dictionary<(string Provider, string Field), long> UnresolvedCounts { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64}
+    content.vb: Public Property UnresolvedCounts As Dictionary(Of (Provider As String, Field As String), Long)
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts*
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity
+  id: ProviderParity
+  parent: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ProviderParity
+  nameWithType: CanonicalizationSnapshot.ProviderParity
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderParity
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public Dictionary<string, ProviderParitySnapshot> ProviderParity { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot}
+    content.vb: Public Property ProviderParity As Dictionary(Of String, ProviderParitySnapshot)
+  overload: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity*
+references:
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Canonicalization.CanonicalizationSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Canonicalization.CanonicalizationSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CanonicalizationSnapshot>
+  nameWithType: IEquatable<CanonicalizationSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Canonicalization.CanonicalizationSnapshot>
+  nameWithType.vb: IEquatable(Of CanonicalizationSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Canonicalization.CanonicalizationSnapshot)
+  name.vb: IEquatable(Of CanonicalizationSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+    name: CanonicalizationSnapshot
+    href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+    name: CanonicalizationSnapshot
+    href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.#ctor
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot__ctor_System_Int64_System_Int64_System_Int64_System_Int64_System_Int32_System_Collections_Generic_Dictionary_System_ValueTuple_System_String_System_String__System_Int64__System_Collections_Generic_Dictionary_System_String_Meridian_Application_Canonicalization_ProviderParitySnapshot__
+  name: CanonicalizationSnapshot
+  nameWithType: CanonicalizationSnapshot.CanonicalizationSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.CanonicalizationSnapshot
+  nameWithType.vb: CanonicalizationSnapshot.New
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizationSnapshot.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64}
+  commentId: T:System.Collections.Generic.Dictionary{System.ValueTuple{System.String,System.String},System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<(string Provider, string Field), long>
+  nameWithType: Dictionary<(string Provider, string Field), long>
+  fullName: System.Collections.Generic.Dictionary<(string Provider, string Field), long>
+  nameWithType.vb: Dictionary(Of (Provider As String, Field As String), Long)
+  fullName.vb: System.Collections.Generic.Dictionary(Of (Provider As String, Field As String), Long)
+  name.vb: Dictionary(Of (Provider As String, Field As String), Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Provider
+    name: Provider
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.provider
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Field
+    name: Field
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.field
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.Provider
+    name: Provider
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.provider
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Field
+    name: Field
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.field
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Application.Canonicalization.ProviderParitySnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, ProviderParitySnapshot>
+  nameWithType: Dictionary<string, ProviderParitySnapshot>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Application.Canonicalization.ProviderParitySnapshot>
+  nameWithType.vb: Dictionary(Of String, ProviderParitySnapshot)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Application.Canonicalization.ProviderParitySnapshot)
+  name.vb: Dictionary(Of String, ProviderParitySnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Canonicalization.ProviderParitySnapshot
+    name: ProviderParitySnapshot
+    href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Canonicalization.ProviderParitySnapshot
+    name: ProviderParitySnapshot
+    href: Meridian.Application.Canonicalization.ProviderParitySnapshot.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_SuccessTotal
+  name: SuccessTotal
+  nameWithType: CanonicalizationSnapshot.SuccessTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SuccessTotal
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_SoftFailTotal
+  name: SoftFailTotal
+  nameWithType: CanonicalizationSnapshot.SoftFailTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.SoftFailTotal
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_HardFailTotal
+  name: HardFailTotal
+  nameWithType: CanonicalizationSnapshot.HardFailTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.HardFailTotal
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_DualWriteTotal
+  name: DualWriteTotal
+  nameWithType: CanonicalizationSnapshot.DualWriteTotal
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.DualWriteTotal
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_ActiveVersion
+  name: ActiveVersion
+  nameWithType: CanonicalizationSnapshot.ActiveVersion
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ActiveVersion
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_UnresolvedCounts
+  name: UnresolvedCounts
+  nameWithType: CanonicalizationSnapshot.UnresolvedCounts
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.UnresolvedCounts
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationSnapshot_ProviderParity
+  name: ProviderParity
+  nameWithType: CanonicalizationSnapshot.ProviderParity
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot.ProviderParity

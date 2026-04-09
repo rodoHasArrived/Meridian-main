@@ -37,9 +37,13 @@ public static class HttpClientNames
 
     // Symbol search providers
     public const string AlpacaSymbolSearch = "alpaca-symbol-search";
+    public const string AlpacaOptions = "alpaca-options";
     public const string PolygonSymbolSearch = "polygon-symbol-search";
+    public const string PolygonOptions = "polygon-options";
     public const string FinnhubSymbolSearch = "finnhub-symbol-search";
     public const string OpenFigi = "openfigi";
+    public const string EdgarSymbolSearch = "edgar-symbol-search";
+    public const string EdgarSecurityMaster = "edgar-security-master";
 
     // Application services
     public const string CredentialValidation = "credential-validation";
@@ -122,6 +126,16 @@ public static class HttpClientConfiguration
             .ConfigureHttpClient(client =>
             {
                 client.BaseAddress = new Uri("https://api.alpaca.markets/v2/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // Alpaca Options chain client
+        services.AddHttpClient(HttpClientNames.AlpacaOptions)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://data.alpaca.markets/");
                 client.Timeout = SharedResiliencePolicies.DefaultTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
@@ -274,6 +288,16 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
+        // Robinhood symbol search client
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
         // OpenFIGI client
         services.AddHttpClient(HttpClientNames.OpenFigi)
             .ConfigureHttpClient(client =>
@@ -281,6 +305,28 @@ public static class HttpClientConfiguration
                 client.BaseAddress = new Uri("https://api.openfigi.com/v3/");
                 client.Timeout = SharedResiliencePolicies.DefaultTimeout;
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
+            })
+            .AddSharedResiliencePolicy();
+
+        // EDGAR symbol search client (SEC public API — no auth required, 10 req/s courtesy limit)
+        services.AddHttpClient(HttpClientNames.EdgarSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://www.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
+            })
+            .AddSharedResiliencePolicy();
+
+        // EDGAR security master ingest client (data.sec.gov endpoint for submissions)
+        services.AddHttpClient(HttpClientNames.EdgarSecurityMaster)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://data.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
             })
             .AddSharedResiliencePolicy();
 
@@ -463,6 +509,16 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.PolygonSymbolSearch, onStateChanged);
 
+        // Polygon Options chain client
+        services.AddHttpClient(HttpClientNames.PolygonOptions)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.polygon.io/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.PolygonOptions, onStateChanged);
+
         // Tiingo Historical client
         services.AddHttpClient(HttpClientNames.TiingoHistorical)
             .ConfigureHttpClient(client =>
@@ -582,6 +638,15 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodBrokerage, onStateChanged);
 
+        services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodSymbolSearch, onStateChanged);
+
         // OpenFIGI client
         services.AddHttpClient(HttpClientNames.OpenFigi)
             .ConfigureHttpClient(client =>
@@ -592,7 +657,27 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.OpenFigi, onStateChanged);
 
-        // NYSE client
+        // EDGAR symbol search client (SEC public API — no auth required, 10 req/s courtesy limit)
+        services.AddHttpClient(HttpClientNames.EdgarSymbolSearch)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://www.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.EdgarSymbolSearch, onStateChanged);
+
+        // EDGAR security master ingest client (data.sec.gov endpoint for submissions)
+        services.AddHttpClient(HttpClientNames.EdgarSecurityMaster)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://data.sec.gov/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0 contact@meridian.io");
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.EdgarSecurityMaster, onStateChanged);
         services.AddHttpClient(HttpClientNames.NYSE)
             .ConfigureHttpClient(client =>
             {

@@ -1,0 +1,160 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.AppTheme
+  commentId: T:Meridian.Ui.Services.Contracts.AppTheme
+  id: AppTheme
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.AppTheme.Dark
+  - Meridian.Ui.Services.Contracts.AppTheme.Light
+  - Meridian.Ui.Services.Contracts.AppTheme.System
+  langs:
+  - csharp
+  - vb
+  name: AppTheme
+  nameWithType: AppTheme
+  fullName: Meridian.Ui.Services.Contracts.AppTheme
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppTheme
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Application theme options.
+
+    Shared between WPF desktop applications.
+  example: []
+  syntax:
+    content: 'public enum AppTheme : byte'
+    content.vb: Public Enum AppTheme As Byte
+- uid: Meridian.Ui.Services.Contracts.AppTheme.Light
+  commentId: F:Meridian.Ui.Services.Contracts.AppTheme.Light
+  id: Light
+  parent: Meridian.Ui.Services.Contracts.AppTheme
+  langs:
+  - csharp
+  - vb
+  name: Light
+  nameWithType: AppTheme.Light
+  fullName: Meridian.Ui.Services.Contracts.AppTheme.Light
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Light
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Light = 0
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+- uid: Meridian.Ui.Services.Contracts.AppTheme.Dark
+  commentId: F:Meridian.Ui.Services.Contracts.AppTheme.Dark
+  id: Dark
+  parent: Meridian.Ui.Services.Contracts.AppTheme
+  langs:
+  - csharp
+  - vb
+  name: Dark
+  nameWithType: AppTheme.Dark
+  fullName: Meridian.Ui.Services.Contracts.AppTheme.Dark
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dark
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Dark = 1
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+- uid: Meridian.Ui.Services.Contracts.AppTheme.System
+  commentId: F:Meridian.Ui.Services.Contracts.AppTheme.System
+  id: System
+  parent: Meridian.Ui.Services.Contracts.AppTheme
+  langs:
+  - csharp
+  - vb
+  name: System
+  nameWithType: AppTheme.System
+  fullName: Meridian.Ui.Services.Contracts.AppTheme.System
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IThemeService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: System
+    path: ../../src/Meridian.Ui.Services/Contracts/IThemeService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: System = 2
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.AppTheme
+  commentId: T:Meridian.Ui.Services.Contracts.AppTheme
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.AppTheme.html
+  name: AppTheme
+  nameWithType: AppTheme
+  fullName: Meridian.Ui.Services.Contracts.AppTheme

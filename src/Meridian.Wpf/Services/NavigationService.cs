@@ -48,11 +48,47 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     }
 
     /// <summary>
+    /// Resets singleton-held UI references so tests can start from a clean navigation state
+    /// even after earlier runs used a different STA dispatcher.
+    /// </summary>
+    internal void ResetForTests()
+    {
+        ResetNavigationHistory();
+        _frame = null;
+        _serviceProvider = null;
+    }
+
+    /// <summary>
     /// Initializes the navigation service with the main frame.
     /// </summary>
     public void Initialize(Frame frame)
     {
         _frame = frame ?? throw new ArgumentNullException(nameof(frame));
+    }
+
+    /// <summary>
+    /// Creates page content for a registered page tag without navigating the main frame.
+    /// Used by workstation shells that embed legacy pages inside docked panels.
+    /// </summary>
+    public FrameworkElement CreatePageContent(string pageTag, object? parameter = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pageTag);
+
+        var pageType = GetPageType(pageTag)
+            ?? throw new InvalidOperationException($"Page tag '{pageTag}' is not registered.");
+        var page = CreatePage(pageType);
+
+        if (parameter != null && page is Page wpfPage && wpfPage.DataContext != null)
+        {
+            var parameterProperty = wpfPage.DataContext.GetType().GetProperty("Parameter");
+            parameterProperty?.SetValue(wpfPage.DataContext, parameter);
+        }
+
+        return page as FrameworkElement
+            ?? new ContentControl
+            {
+                Content = page
+            };
     }
 
     /// <inheritdoc />
@@ -88,6 +124,14 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("RunDetail", typeof(RunDetailPage));
         RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
         RegisterPage("RunLedger", typeof(RunLedgerPage));
+        RegisterPage("FundLedger", typeof(FundLedgerPage));
+        RegisterPage("FundAccounts", typeof(FundAccountsPage));
+        RegisterPage("FundBanking", typeof(FundLedgerPage));
+        RegisterPage("FundPortfolio", typeof(FundLedgerPage));
+        RegisterPage("FundCashFinancing", typeof(FundLedgerPage));
+        RegisterPage("FundTrialBalance", typeof(FundLedgerPage));
+        RegisterPage("FundReconciliation", typeof(FundLedgerPage));
+        RegisterPage("FundAuditTrail", typeof(FundLedgerPage));
         RegisterPage("RunCashFlow", typeof(RunCashFlowPage));
         RegisterPage("PositionBlotter", typeof(PositionBlotterPage));
         RegisterPage("RunRisk", typeof(RunRiskPage));
@@ -112,9 +156,10 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("EventReplay", typeof(EventReplayPage));
         RegisterPage("PackageManager", typeof(PackageManagerPage));
 
-        // Analytics & Visualization (4 pages)
+        // Analytics & Visualization (5 pages)
         RegisterPage("AdvancedAnalytics", typeof(AdvancedAnalyticsPage));
         RegisterPage("Charts", typeof(ChartingPage));
+        RegisterPage("ScatterAnalysis", typeof(ScatterAnalysisPage));
         RegisterPage("OrderBook", typeof(OrderBookPage));
         RegisterPage("DataCalendar", typeof(DataCalendarPage));
         RegisterPage("QuantScript", typeof(QuantScriptPage));
@@ -131,6 +176,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         // Workspace shell landing pages
         RegisterPage("ResearchShell", typeof(ResearchWorkspaceShellPage));
         RegisterPage("TradingShell", typeof(TradingWorkspaceShellPage));
+        RegisterPage("DataOperationsShell", typeof(DataOperationsWorkspaceShellPage));
+        RegisterPage("GovernanceShell", typeof(GovernanceWorkspaceShellPage));
 
         // Workspaces & Notifications (2 pages)
         RegisterPage("Workspaces", typeof(WorkspacePage));
@@ -193,19 +240,6 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             LoggingService.Instance.LogError($"Navigation to {pageName} failed: {ex}");
 
             _frame.Navigate(CreateNavigationErrorPage(pageName, ex));
-
-            try
-            {
-                MessageBox.Show(
-                    $"Navigation to '{pageName}' failed.\n\n{ex.Message}",
-                    "Navigation Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-            catch
-            {
-                // Last-resort path: keep the error page visible even if the dialog fails.
-            }
 
             return false;
         }
@@ -277,6 +311,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private static Page CreateNavigationErrorPage(string pageName, Exception ex)
     {
+        var detail = BuildExceptionDetail(ex);
         var panel = new StackPanel
         {
             Margin = new Thickness(24)
@@ -292,7 +327,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         panel.Children.Add(new TextBlock
         {
-            Text = ex.Message,
+            Text = detail,
             TextWrapping = TextWrapping.Wrap
         });
 
@@ -300,5 +335,16 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         {
             Content = panel
         };
+    }
+
+    private static string BuildExceptionDetail(Exception ex)
+    {
+        var messages = new List<string>();
+        for (var current = ex; current is not null; current = current.InnerException)
+        {
+            messages.Add(current.Message);
+        }
+
+        return string.Join(Environment.NewLine + Environment.NewLine + "Inner: ", messages);
     }
 }

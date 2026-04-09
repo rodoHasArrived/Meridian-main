@@ -21,22 +21,24 @@ public partial class NotificationCenterPage : Page
     private readonly WpfServices.NotificationService _notificationService;
     private readonly AlertService _alertService;
     private readonly NotificationCenterViewModel _viewModel;
+    private bool _suppressFilterEvents;
 
     public NotificationCenterPage(WpfServices.NotificationService notificationService)
     {
-        InitializeComponent();
-
-        _notificationService = notificationService;
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         _alertService = AlertService.Instance;
-
         _viewModel = new NotificationCenterViewModel(notificationService, _alertService);
         DataContext = _viewModel;
+
+        _suppressFilterEvents = true;
+        InitializeComponent();
 
         // Sync preference checkboxes with current settings
         var settings = _notificationService.GetSettings();
         EnableDesktopNotificationsCheck.IsChecked = settings.Enabled;
         PlayNotificationSoundCheck.IsChecked = settings.SoundType != "None";
         ShowNotificationBadgeCheck.IsChecked = true;
+        _suppressFilterEvents = false;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -404,10 +406,17 @@ public partial class NotificationCenterPage : Page
         _viewModel.ClearAll();
     }
 
-    private bool _suppressFilterEvents;
     private void FilterChanged(object sender, RoutedEventArgs e)
     {
-        if (_suppressFilterEvents) return;
+        if (_suppressFilterEvents ||
+            FilterAllCheck is null ||
+            FilterErrorsCheck is null ||
+            FilterWarningsCheck is null ||
+            FilterInfoCheck is null ||
+            FilterSuccessCheck is null)
+        {
+            return;
+        }
 
         if (sender == FilterAllCheck)
         {

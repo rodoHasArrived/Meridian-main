@@ -1,0 +1,579 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ShutdownContext
+  commentId: T:Meridian.Application.Services.ShutdownContext
+  id: ShutdownContext
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ShutdownContext.#ctor(Meridian.Application.Services.ShutdownReason,System.String,System.DateTimeOffset,System.Int32)
+  - Meridian.Application.Services.ShutdownContext.Message
+  - Meridian.Application.Services.ShutdownContext.Reason
+  - Meridian.Application.Services.ShutdownContext.RequestedAt
+  - Meridian.Application.Services.ShutdownContext.TimeoutSeconds
+  langs:
+  - csharp
+  - vb
+  name: ShutdownContext
+  nameWithType: ShutdownContext
+  fullName: Meridian.Application.Services.ShutdownContext
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShutdownContext
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Context information passed to shutdown handlers.
+  example: []
+  syntax:
+    content: 'public readonly record struct ShutdownContext : IEquatable<ShutdownContext>'
+    content.vb: Public Structure ShutdownContext Implements IEquatable(Of ShutdownContext)
+  implements:
+  - System.IEquatable{Meridian.Application.Services.ShutdownContext}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Services.ShutdownContext.#ctor(Meridian.Application.Services.ShutdownReason,System.String,System.DateTimeOffset,System.Int32)
+  commentId: M:Meridian.Application.Services.ShutdownContext.#ctor(Meridian.Application.Services.ShutdownReason,System.String,System.DateTimeOffset,System.Int32)
+  id: '#ctor(Meridian.Application.Services.ShutdownReason,System.String,System.DateTimeOffset,System.Int32)'
+  parent: Meridian.Application.Services.ShutdownContext
+  langs:
+  - csharp
+  - vb
+  name: ShutdownContext(ShutdownReason, string?, DateTimeOffset, int)
+  nameWithType: ShutdownContext.ShutdownContext(ShutdownReason, string?, DateTimeOffset, int)
+  fullName: Meridian.Application.Services.ShutdownContext.ShutdownContext(Meridian.Application.Services.ShutdownReason, string?, System.DateTimeOffset, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Context information passed to shutdown handlers.
+  example: []
+  syntax:
+    content: public ShutdownContext(ShutdownReason Reason, string? Message, DateTimeOffset RequestedAt, int TimeoutSeconds)
+    parameters:
+    - id: Reason
+      type: Meridian.Application.Services.ShutdownReason
+    - id: Message
+      type: System.String
+    - id: RequestedAt
+      type: System.DateTimeOffset
+    - id: TimeoutSeconds
+      type: System.Int32
+    content.vb: Public Sub New(Reason As ShutdownReason, Message As String, RequestedAt As DateTimeOffset, TimeoutSeconds As Integer)
+  overload: Meridian.Application.Services.ShutdownContext.#ctor*
+  nameWithType.vb: ShutdownContext.New(ShutdownReason, String, DateTimeOffset, Integer)
+  fullName.vb: Meridian.Application.Services.ShutdownContext.New(Meridian.Application.Services.ShutdownReason, String, System.DateTimeOffset, Integer)
+  name.vb: New(ShutdownReason, String, DateTimeOffset, Integer)
+- uid: Meridian.Application.Services.ShutdownContext.Reason
+  commentId: P:Meridian.Application.Services.ShutdownContext.Reason
+  id: Reason
+  parent: Meridian.Application.Services.ShutdownContext
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: ShutdownContext.Reason
+  fullName: Meridian.Application.Services.ShutdownContext.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 478
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public ShutdownReason Reason { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+    content.vb: Public Property Reason As ShutdownReason
+  overload: Meridian.Application.Services.ShutdownContext.Reason*
+- uid: Meridian.Application.Services.ShutdownContext.Message
+  commentId: P:Meridian.Application.Services.ShutdownContext.Message
+  id: Message
+  parent: Meridian.Application.Services.ShutdownContext
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: ShutdownContext.Message
+  fullName: Meridian.Application.Services.ShutdownContext.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 479
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Services.ShutdownContext.Message*
+- uid: Meridian.Application.Services.ShutdownContext.RequestedAt
+  commentId: P:Meridian.Application.Services.ShutdownContext.RequestedAt
+  id: RequestedAt
+  parent: Meridian.Application.Services.ShutdownContext
+  langs:
+  - csharp
+  - vb
+  name: RequestedAt
+  nameWithType: ShutdownContext.RequestedAt
+  fullName: Meridian.Application.Services.ShutdownContext.RequestedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestedAt
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset RequestedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RequestedAt As DateTimeOffset
+  overload: Meridian.Application.Services.ShutdownContext.RequestedAt*
+- uid: Meridian.Application.Services.ShutdownContext.TimeoutSeconds
+  commentId: P:Meridian.Application.Services.ShutdownContext.TimeoutSeconds
+  id: TimeoutSeconds
+  parent: Meridian.Application.Services.ShutdownContext
+  langs:
+  - csharp
+  - vb
+  name: TimeoutSeconds
+  nameWithType: ShutdownContext.TimeoutSeconds
+  fullName: Meridian.Application.Services.ShutdownContext.TimeoutSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeoutSeconds
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int TimeoutSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TimeoutSeconds As Integer
+  overload: Meridian.Application.Services.ShutdownContext.TimeoutSeconds*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IEquatable{Meridian.Application.Services.ShutdownContext}
+  commentId: T:System.IEquatable{Meridian.Application.Services.ShutdownContext}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ShutdownContext>
+  nameWithType: IEquatable<ShutdownContext>
+  fullName: System.IEquatable<Meridian.Application.Services.ShutdownContext>
+  nameWithType.vb: IEquatable(Of ShutdownContext)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.ShutdownContext)
+  name.vb: IEquatable(Of ShutdownContext)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownContext
+    name: ShutdownContext
+    href: Meridian.Application.Services.ShutdownContext.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownContext
+    name: ShutdownContext
+    href: Meridian.Application.Services.ShutdownContext.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Services.ShutdownContext.#ctor*
+  commentId: Overload:Meridian.Application.Services.ShutdownContext.#ctor
+  href: Meridian.Application.Services.ShutdownContext.html#Meridian_Application_Services_ShutdownContext__ctor_Meridian_Application_Services_ShutdownReason_System_String_System_DateTimeOffset_System_Int32_
+  name: ShutdownContext
+  nameWithType: ShutdownContext.ShutdownContext
+  fullName: Meridian.Application.Services.ShutdownContext.ShutdownContext
+  nameWithType.vb: ShutdownContext.New
+  fullName.vb: Meridian.Application.Services.ShutdownContext.New
+  name.vb: New
+- uid: Meridian.Application.Services.ShutdownReason
+  commentId: T:Meridian.Application.Services.ShutdownReason
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ShutdownReason.html
+  name: ShutdownReason
+  nameWithType: ShutdownReason
+  fullName: Meridian.Application.Services.ShutdownReason
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.ShutdownContext.Reason*
+  commentId: Overload:Meridian.Application.Services.ShutdownContext.Reason
+  href: Meridian.Application.Services.ShutdownContext.html#Meridian_Application_Services_ShutdownContext_Reason
+  name: Reason
+  nameWithType: ShutdownContext.Reason
+  fullName: Meridian.Application.Services.ShutdownContext.Reason
+- uid: Meridian.Application.Services.ShutdownContext.Message*
+  commentId: Overload:Meridian.Application.Services.ShutdownContext.Message
+  href: Meridian.Application.Services.ShutdownContext.html#Meridian_Application_Services_ShutdownContext_Message
+  name: Message
+  nameWithType: ShutdownContext.Message
+  fullName: Meridian.Application.Services.ShutdownContext.Message
+- uid: Meridian.Application.Services.ShutdownContext.RequestedAt*
+  commentId: Overload:Meridian.Application.Services.ShutdownContext.RequestedAt
+  href: Meridian.Application.Services.ShutdownContext.html#Meridian_Application_Services_ShutdownContext_RequestedAt
+  name: RequestedAt
+  nameWithType: ShutdownContext.RequestedAt
+  fullName: Meridian.Application.Services.ShutdownContext.RequestedAt
+- uid: Meridian.Application.Services.ShutdownContext.TimeoutSeconds*
+  commentId: Overload:Meridian.Application.Services.ShutdownContext.TimeoutSeconds
+  href: Meridian.Application.Services.ShutdownContext.html#Meridian_Application_Services_ShutdownContext_TimeoutSeconds
+  name: TimeoutSeconds
+  nameWithType: ShutdownContext.TimeoutSeconds
+  fullName: Meridian.Application.Services.ShutdownContext.TimeoutSeconds

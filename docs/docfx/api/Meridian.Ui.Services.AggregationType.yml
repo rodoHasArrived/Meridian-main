@@ -1,0 +1,282 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.AggregationType
+  commentId: T:Meridian.Ui.Services.AggregationType
+  id: AggregationType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.AggregationType.Count
+  - Meridian.Ui.Services.AggregationType.First
+  - Meridian.Ui.Services.AggregationType.Last
+  - Meridian.Ui.Services.AggregationType.Mean
+  - Meridian.Ui.Services.AggregationType.OHLCV
+  - Meridian.Ui.Services.AggregationType.Sum
+  - Meridian.Ui.Services.AggregationType.TWAP
+  - Meridian.Ui.Services.AggregationType.VWAP
+  langs:
+  - csharp
+  - vb
+  name: AggregationType
+  nameWithType: AggregationType
+  fullName: Meridian.Ui.Services.AggregationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregationType
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum AggregationType : byte'
+    content.vb: Public Enum AggregationType As Byte
+- uid: Meridian.Ui.Services.AggregationType.OHLCV
+  commentId: F:Meridian.Ui.Services.AggregationType.OHLCV
+  id: OHLCV
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: OHLCV
+  nameWithType: AggregationType.OHLCV
+  fullName: Meridian.Ui.Services.AggregationType.OHLCV
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OHLCV
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 444
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: OHLCV = 0
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.Last
+  commentId: F:Meridian.Ui.Services.AggregationType.Last
+  id: Last
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: Last
+  nameWithType: AggregationType.Last
+  fullName: Meridian.Ui.Services.AggregationType.Last
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Last
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Last = 1
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.First
+  commentId: F:Meridian.Ui.Services.AggregationType.First
+  id: First
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: First
+  nameWithType: AggregationType.First
+  fullName: Meridian.Ui.Services.AggregationType.First
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: First
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 446
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: First = 2
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.Mean
+  commentId: F:Meridian.Ui.Services.AggregationType.Mean
+  id: Mean
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: Mean
+  nameWithType: AggregationType.Mean
+  fullName: Meridian.Ui.Services.AggregationType.Mean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mean
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Mean = 3
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.VWAP
+  commentId: F:Meridian.Ui.Services.AggregationType.VWAP
+  id: VWAP
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: VWAP
+  nameWithType: AggregationType.VWAP
+  fullName: Meridian.Ui.Services.AggregationType.VWAP
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VWAP
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: VWAP = 4
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.TWAP
+  commentId: F:Meridian.Ui.Services.AggregationType.TWAP
+  id: TWAP
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: TWAP
+  nameWithType: AggregationType.TWAP
+  fullName: Meridian.Ui.Services.AggregationType.TWAP
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TWAP
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 449
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: TWAP = 5
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.Sum
+  commentId: F:Meridian.Ui.Services.AggregationType.Sum
+  id: Sum
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: Sum
+  nameWithType: AggregationType.Sum
+  fullName: Meridian.Ui.Services.AggregationType.Sum
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sum
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 450
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Sum = 6
+    return:
+      type: Meridian.Ui.Services.AggregationType
+- uid: Meridian.Ui.Services.AggregationType.Count
+  commentId: F:Meridian.Ui.Services.AggregationType.Count
+  id: Count
+  parent: Meridian.Ui.Services.AggregationType
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: AggregationType.Count
+  fullName: Meridian.Ui.Services.AggregationType.Count
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 451
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Count = 7
+    return:
+      type: Meridian.Ui.Services.AggregationType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.AggregationType
+  commentId: T:Meridian.Ui.Services.AggregationType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AggregationType.html
+  name: AggregationType
+  nameWithType: AggregationType
+  fullName: Meridian.Ui.Services.AggregationType

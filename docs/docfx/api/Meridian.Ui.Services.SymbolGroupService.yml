@@ -1,0 +1,1682 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolGroupService
+  commentId: T:Meridian.Ui.Services.SymbolGroupService
+  id: SymbolGroupService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync(System.String,System.String,System.String,System.String,System.String[],System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.GetTemplates
+  - Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.GroupCreated
+  - Meridian.Ui.Services.SymbolGroupService.GroupDeleted
+  - Meridian.Ui.Services.SymbolGroupService.GroupUpdated
+  - Meridian.Ui.Services.SymbolGroupService.GroupsReordered
+  - Meridian.Ui.Services.SymbolGroupService.Instance
+  - Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync(System.Int32,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync(Meridian.Contracts.Configuration.SymbolGroupDto,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SymbolGroupService
+  nameWithType: SymbolGroupService
+  fullName: Meridian.Ui.Services.SymbolGroupService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolGroupService
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Service for managing symbol groups and portfolios.
+  example: []
+  syntax:
+    content: public sealed class SymbolGroupService
+    content.vb: Public NotInheritable Class SymbolGroupService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolGroupService.Instance
+  commentId: P:Meridian.Ui.Services.SymbolGroupService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: SymbolGroupService.Instance
+  fullName: Meridian.Ui.Services.SymbolGroupService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static SymbolGroupService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.SymbolGroupService
+    content.vb: Public Shared ReadOnly Property Instance As SymbolGroupService
+  overload: Meridian.Ui.Services.SymbolGroupService.Instance*
+- uid: Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync(System.Threading.CancellationToken)
+  id: LoadGroupsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: LoadGroupsAsync(CancellationToken)
+  nameWithType: SymbolGroupService.LoadGroupsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadGroupsAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Loads symbol groups configuration.
+  example: []
+  syntax:
+    content: public Task<SymbolGroupsConfigDto> LoadGroupsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupsConfigDto}
+    content.vb: Public Function LoadGroupsAsync(ct As CancellationToken = Nothing) As Task(Of SymbolGroupsConfigDto)
+  overload: Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync*
+- uid: Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync(System.Threading.CancellationToken)
+  id: GetGroupsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GetGroupsAsync(CancellationToken)
+  nameWithType: SymbolGroupService.GetGroupsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGroupsAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all symbol groups.
+  example: []
+  syntax:
+    content: public Task<SymbolGroupDto[]> GetGroupsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto[]}
+    content.vb: Public Function GetGroupsAsync(ct As CancellationToken = Nothing) As Task(Of SymbolGroupDto())
+  overload: Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync*
+- uid: Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync(System.String,System.Threading.CancellationToken)
+  id: GetGroupByIdAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GetGroupByIdAsync(string, CancellationToken)
+  nameWithType: SymbolGroupService.GetGroupByIdAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGroupByIdAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets a symbol group by ID.
+  example: []
+  syntax:
+    content: public Task<SymbolGroupDto?> GetGroupByIdAsync(string id, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto}
+    content.vb: Public Function GetGroupByIdAsync(id As String, ct As CancellationToken = Nothing) As Task(Of SymbolGroupDto)
+  overload: Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync*
+  nameWithType.vb: SymbolGroupService.GetGroupByIdAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync(String, System.Threading.CancellationToken)
+  name.vb: GetGroupByIdAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync(System.String,System.String,System.String,System.String,System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync(System.String,System.String,System.String,System.String,System.String[],System.Threading.CancellationToken)
+  id: CreateGroupAsync(System.String,System.String,System.String,System.String,System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: CreateGroupAsync(string, string?, string?, string?, string[]?, CancellationToken)
+  nameWithType: SymbolGroupService.CreateGroupAsync(string, string?, string?, string?, string[]?, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync(string, string?, string?, string?, string[]?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateGroupAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a new symbol group.
+  example: []
+  syntax:
+    content: public Task<SymbolGroupDto> CreateGroupAsync(string name, string? description = null, string? color = null, string? icon = null, string[]? symbols = null, CancellationToken ct = default)
+    parameters:
+    - id: name
+      type: System.String
+    - id: description
+      type: System.String
+    - id: color
+      type: System.String
+    - id: icon
+      type: System.String
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto}
+    content.vb: Public Function CreateGroupAsync(name As String, description As String = Nothing, color As String = Nothing, icon As String = Nothing, symbols As String() = Nothing, ct As CancellationToken = Nothing) As Task(Of SymbolGroupDto)
+  overload: Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync*
+  nameWithType.vb: SymbolGroupService.CreateGroupAsync(String, String, String, String, String(), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync(String, String, String, String, String(), System.Threading.CancellationToken)
+  name.vb: CreateGroupAsync(String, String, String, String, String(), CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync(System.String,System.Threading.CancellationToken)
+  id: CreateGroupFromTemplateAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: CreateGroupFromTemplateAsync(string, CancellationToken)
+  nameWithType: SymbolGroupService.CreateGroupFromTemplateAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateGroupFromTemplateAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a group from a predefined template.
+  example: []
+  syntax:
+    content: public Task<SymbolGroupDto?> CreateGroupFromTemplateAsync(string templateId, CancellationToken ct = default)
+    parameters:
+    - id: templateId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto}
+    content.vb: Public Function CreateGroupFromTemplateAsync(templateId As String, ct As CancellationToken = Nothing) As Task(Of SymbolGroupDto)
+  overload: Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync*
+  nameWithType.vb: SymbolGroupService.CreateGroupFromTemplateAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync(String, System.Threading.CancellationToken)
+  name.vb: CreateGroupFromTemplateAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync(Meridian.Contracts.Configuration.SymbolGroupDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync(Meridian.Contracts.Configuration.SymbolGroupDto,System.Threading.CancellationToken)
+  id: UpdateGroupAsync(Meridian.Contracts.Configuration.SymbolGroupDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: UpdateGroupAsync(SymbolGroupDto, CancellationToken)
+  nameWithType: SymbolGroupService.UpdateGroupAsync(SymbolGroupDto, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync(Meridian.Contracts.Configuration.SymbolGroupDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateGroupAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates an existing symbol group.
+  example: []
+  syntax:
+    content: public Task<bool> UpdateGroupAsync(SymbolGroupDto group, CancellationToken ct = default)
+    parameters:
+    - id: group
+      type: Meridian.Contracts.Configuration.SymbolGroupDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function UpdateGroupAsync(group As SymbolGroupDto, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync*
+- uid: Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteGroupAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: DeleteGroupAsync(string, CancellationToken)
+  nameWithType: SymbolGroupService.DeleteGroupAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteGroupAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Deletes a symbol group.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteGroupAsync(string id, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteGroupAsync(id As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync*
+  nameWithType.vb: SymbolGroupService.DeleteGroupAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteGroupAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: AddSymbolToGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: AddSymbolToGroupAsync(string, string, CancellationToken)
+  nameWithType: SymbolGroupService.AddSymbolToGroupAsync(string, string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSymbolToGroupAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Adds a symbol to a group.
+  example: []
+  syntax:
+    content: public Task<bool> AddSymbolToGroupAsync(string groupId, string symbol, CancellationToken ct = default)
+    parameters:
+    - id: groupId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function AddSymbolToGroupAsync(groupId As String, symbol As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync*
+  nameWithType.vb: SymbolGroupService.AddSymbolToGroupAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync(String, String, System.Threading.CancellationToken)
+  name.vb: AddSymbolToGroupAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: RemoveSymbolFromGroupAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: RemoveSymbolFromGroupAsync(string, string, CancellationToken)
+  nameWithType: SymbolGroupService.RemoveSymbolFromGroupAsync(string, string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveSymbolFromGroupAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Removes a symbol from a group.
+  example: []
+  syntax:
+    content: public Task<bool> RemoveSymbolFromGroupAsync(string groupId, string symbol, CancellationToken ct = default)
+    parameters:
+    - id: groupId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function RemoveSymbolFromGroupAsync(groupId As String, symbol As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync*
+  nameWithType.vb: SymbolGroupService.RemoveSymbolFromGroupAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync(String, String, System.Threading.CancellationToken)
+  name.vb: RemoveSymbolFromGroupAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: MoveSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: MoveSymbolAsync(string, string?, string, CancellationToken)
+  nameWithType: SymbolGroupService.MoveSymbolAsync(string, string?, string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync(string, string?, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MoveSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Moves a symbol between groups.
+  example: []
+  syntax:
+    content: public Task<bool> MoveSymbolAsync(string symbol, string? fromGroupId, string toGroupId, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: fromGroupId
+      type: System.String
+    - id: toGroupId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function MoveSymbolAsync(symbol As String, fromGroupId As String, toGroupId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync*
+  nameWithType.vb: SymbolGroupService.MoveSymbolAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: MoveSymbolAsync(String, String, String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  id: GetGroupsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GetGroupsForSymbolAsync(string, CancellationToken)
+  nameWithType: SymbolGroupService.GetGroupsForSymbolAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGroupsForSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all groups that contain a symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolGroupDto[]> GetGroupsForSymbolAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto[]}
+    content.vb: Public Function GetGroupsForSymbolAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SymbolGroupDto())
+  overload: Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync*
+  nameWithType.vb: SymbolGroupService.GetGroupsForSymbolAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: GetGroupsForSymbolAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync(System.Threading.CancellationToken)
+  id: GetUngroupedSymbolsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GetUngroupedSymbolsAsync(CancellationToken)
+  nameWithType: SymbolGroupService.GetUngroupedSymbolsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUngroupedSymbolsAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets symbols that are not in any group.
+  example: []
+  syntax:
+    content: public Task<string[]> GetUngroupedSymbolsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String[]}
+    content.vb: Public Function GetUngroupedSymbolsAsync(ct As CancellationToken = Nothing) As Task(Of String())
+  overload: Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync*
+- uid: Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync(System.Int32,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync(System.Int32,System.Int32,System.Threading.CancellationToken)
+  id: ReorderGroupsAsync(System.Int32,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: ReorderGroupsAsync(int, int, CancellationToken)
+  nameWithType: SymbolGroupService.ReorderGroupsAsync(int, int, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync(int, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReorderGroupsAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Reorders groups.
+  example: []
+  syntax:
+    content: public Task ReorderGroupsAsync(int oldIndex, int newIndex, CancellationToken ct = default)
+    parameters:
+    - id: oldIndex
+      type: System.Int32
+    - id: newIndex
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ReorderGroupsAsync(oldIndex As Integer, newIndex As Integer, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync*
+  nameWithType.vb: SymbolGroupService.ReorderGroupsAsync(Integer, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync(Integer, Integer, System.Threading.CancellationToken)
+  name.vb: ReorderGroupsAsync(Integer, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolGroupService.GetTemplates
+  commentId: M:Meridian.Ui.Services.SymbolGroupService.GetTemplates
+  id: GetTemplates
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GetTemplates()
+  nameWithType: SymbolGroupService.GetTemplates()
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetTemplates()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTemplates
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available templates.
+  example: []
+  syntax:
+    content: public IEnumerable<(string Id, string Name, string[] Symbols, string Color)> GetTemplates()
+    return:
+      type: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String,System.String[],System.String}}
+    content.vb: Public Function GetTemplates() As IEnumerable(Of (Id As String, Name As String, Symbols As String(), Color As String))
+  overload: Meridian.Ui.Services.SymbolGroupService.GetTemplates*
+- uid: Meridian.Ui.Services.SymbolGroupService.GroupCreated
+  commentId: E:Meridian.Ui.Services.SymbolGroupService.GroupCreated
+  id: GroupCreated
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GroupCreated
+  nameWithType: SymbolGroupService.GroupCreated
+  fullName: Meridian.Ui.Services.SymbolGroupService.GroupCreated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GroupCreated
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a group is created.
+  example: []
+  syntax:
+    content: public event EventHandler<SymbolGroupEventArgs>? GroupCreated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.SymbolGroupEventArgs}
+    content.vb: Public Event GroupCreated As EventHandler(Of SymbolGroupEventArgs)
+- uid: Meridian.Ui.Services.SymbolGroupService.GroupUpdated
+  commentId: E:Meridian.Ui.Services.SymbolGroupService.GroupUpdated
+  id: GroupUpdated
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GroupUpdated
+  nameWithType: SymbolGroupService.GroupUpdated
+  fullName: Meridian.Ui.Services.SymbolGroupService.GroupUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GroupUpdated
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a group is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<SymbolGroupEventArgs>? GroupUpdated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.SymbolGroupEventArgs}
+    content.vb: Public Event GroupUpdated As EventHandler(Of SymbolGroupEventArgs)
+- uid: Meridian.Ui.Services.SymbolGroupService.GroupDeleted
+  commentId: E:Meridian.Ui.Services.SymbolGroupService.GroupDeleted
+  id: GroupDeleted
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GroupDeleted
+  nameWithType: SymbolGroupService.GroupDeleted
+  fullName: Meridian.Ui.Services.SymbolGroupService.GroupDeleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GroupDeleted
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a group is deleted.
+  example: []
+  syntax:
+    content: public event EventHandler<SymbolGroupEventArgs>? GroupDeleted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.SymbolGroupEventArgs}
+    content.vb: Public Event GroupDeleted As EventHandler(Of SymbolGroupEventArgs)
+- uid: Meridian.Ui.Services.SymbolGroupService.GroupsReordered
+  commentId: E:Meridian.Ui.Services.SymbolGroupService.GroupsReordered
+  id: GroupsReordered
+  parent: Meridian.Ui.Services.SymbolGroupService
+  langs:
+  - csharp
+  - vb
+  name: GroupsReordered
+  nameWithType: SymbolGroupService.GroupsReordered
+  fullName: Meridian.Ui.Services.SymbolGroupService.GroupsReordered
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GroupsReordered
+    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when groups are reordered.
+  example: []
+  syntax:
+    content: public event EventHandler? GroupsReordered
+    return:
+      type: System.EventHandler
+    content.vb: Public Event GroupsReordered As EventHandler
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolGroupService.Instance*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.Instance
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_Instance
+  name: Instance
+  nameWithType: SymbolGroupService.Instance
+  fullName: Meridian.Ui.Services.SymbolGroupService.Instance
+- uid: Meridian.Ui.Services.SymbolGroupService
+  commentId: T:Meridian.Ui.Services.SymbolGroupService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SymbolGroupService.html
+  name: SymbolGroupService
+  nameWithType: SymbolGroupService
+  fullName: Meridian.Ui.Services.SymbolGroupService
+- uid: Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_LoadGroupsAsync_System_Threading_CancellationToken_
+  name: LoadGroupsAsync
+  nameWithType: SymbolGroupService.LoadGroupsAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.LoadGroupsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupsConfigDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupsConfigDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolGroupsConfigDto>
+  nameWithType: Task<SymbolGroupsConfigDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.SymbolGroupsConfigDto>
+  nameWithType.vb: Task(Of SymbolGroupsConfigDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.SymbolGroupsConfigDto)
+  name.vb: Task(Of SymbolGroupsConfigDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.SymbolGroupsConfigDto
+    name: SymbolGroupsConfigDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.SymbolGroupsConfigDto
+    name: SymbolGroupsConfigDto
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_GetGroupsAsync_System_Threading_CancellationToken_
+  name: GetGroupsAsync
+  nameWithType: SymbolGroupService.GetGroupsAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetGroupsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolGroupDto[]>
+  nameWithType: Task<SymbolGroupDto[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.SymbolGroupDto[]>
+  nameWithType.vb: Task(Of SymbolGroupDto())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.SymbolGroupDto())
+  name.vb: Task(Of SymbolGroupDto())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.SymbolGroupDto
+    name: SymbolGroupDto
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.SymbolGroupDto
+    name: SymbolGroupDto
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_GetGroupByIdAsync_System_String_System_Threading_CancellationToken_
+  name: GetGroupByIdAsync
+  nameWithType: SymbolGroupService.GetGroupByIdAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetGroupByIdAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolGroupDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolGroupDto>
+  nameWithType: Task<SymbolGroupDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.SymbolGroupDto>
+  nameWithType.vb: Task(Of SymbolGroupDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.SymbolGroupDto)
+  name.vb: Task(Of SymbolGroupDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.SymbolGroupDto
+    name: SymbolGroupDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.SymbolGroupDto
+    name: SymbolGroupDto
+  - name: )
+- uid: Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_CreateGroupAsync_System_String_System_String_System_String_System_String_System_String___System_Threading_CancellationToken_
+  name: CreateGroupAsync
+  nameWithType: SymbolGroupService.CreateGroupAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.CreateGroupAsync
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_CreateGroupFromTemplateAsync_System_String_System_Threading_CancellationToken_
+  name: CreateGroupFromTemplateAsync
+  nameWithType: SymbolGroupService.CreateGroupFromTemplateAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.CreateGroupFromTemplateAsync
+- uid: Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_UpdateGroupAsync_Meridian_Contracts_Configuration_SymbolGroupDto_System_Threading_CancellationToken_
+  name: UpdateGroupAsync
+  nameWithType: SymbolGroupService.UpdateGroupAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.UpdateGroupAsync
+- uid: Meridian.Contracts.Configuration.SymbolGroupDto
+  commentId: T:Meridian.Contracts.Configuration.SymbolGroupDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolGroupDto.html
+  name: SymbolGroupDto
+  nameWithType: SymbolGroupDto
+  fullName: Meridian.Contracts.Configuration.SymbolGroupDto
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_DeleteGroupAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteGroupAsync
+  nameWithType: SymbolGroupService.DeleteGroupAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.DeleteGroupAsync
+- uid: Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_AddSymbolToGroupAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: AddSymbolToGroupAsync
+  nameWithType: SymbolGroupService.AddSymbolToGroupAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.AddSymbolToGroupAsync
+- uid: Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_RemoveSymbolFromGroupAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: RemoveSymbolFromGroupAsync
+  nameWithType: SymbolGroupService.RemoveSymbolFromGroupAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.RemoveSymbolFromGroupAsync
+- uid: Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_MoveSymbolAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: MoveSymbolAsync
+  nameWithType: SymbolGroupService.MoveSymbolAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.MoveSymbolAsync
+- uid: Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_GetGroupsForSymbolAsync_System_String_System_Threading_CancellationToken_
+  name: GetGroupsForSymbolAsync
+  nameWithType: SymbolGroupService.GetGroupsForSymbolAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetGroupsForSymbolAsync
+- uid: Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_GetUngroupedSymbolsAsync_System_Threading_CancellationToken_
+  name: GetUngroupedSymbolsAsync
+  nameWithType: SymbolGroupService.GetUngroupedSymbolsAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetUngroupedSymbolsAsync
+- uid: System.Threading.Tasks.Task{System.String[]}
+  commentId: T:System.Threading.Tasks.Task{System.String[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string[]>
+  nameWithType: Task<string[]>
+  fullName: System.Threading.Tasks.Task<string[]>
+  nameWithType.vb: Task(Of String())
+  fullName.vb: System.Threading.Tasks.Task(Of String())
+  name.vb: Task(Of String())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_ReorderGroupsAsync_System_Int32_System_Int32_System_Threading_CancellationToken_
+  name: ReorderGroupsAsync
+  nameWithType: SymbolGroupService.ReorderGroupsAsync
+  fullName: Meridian.Ui.Services.SymbolGroupService.ReorderGroupsAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Services.SymbolGroupService.GetTemplates*
+  commentId: Overload:Meridian.Ui.Services.SymbolGroupService.GetTemplates
+  href: Meridian.Ui.Services.SymbolGroupService.html#Meridian_Ui_Services_SymbolGroupService_GetTemplates
+  name: GetTemplates
+  nameWithType: SymbolGroupService.GetTemplates
+  fullName: Meridian.Ui.Services.SymbolGroupService.GetTemplates
+- uid: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String,System.String[],System.String}}
+  commentId: T:System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String,System.String[],System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<(string Id, string Name, string[] Symbols, string Color)>
+  nameWithType: IEnumerable<(string Id, string Name, string[] Symbols, string Color)>
+  fullName: System.Collections.Generic.IEnumerable<(string Id, string Name, string[] Symbols, string Color)>
+  nameWithType.vb: IEnumerable(Of (Id As String, Name As String, Symbols As String(), Color As String))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of (Id As String, Name As String, Symbols As String(), Color As String))
+  name.vb: IEnumerable(Of (Id As String, Name As String, Symbols As String(), Color As String))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Id
+    name: Id
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.id
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Name
+    name: Name
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.name
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Symbols
+    name: Symbols
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.symbols
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Color
+    name: Color
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.color
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Id
+    name: Id
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.id
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Name
+    name: Name
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.name
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Symbols
+    name: Symbols
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.symbols
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String[],System.String}.Color
+    name: Color
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string[],system.string-.color
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.EventHandler{Meridian.Ui.Services.SymbolGroupEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.SymbolGroupEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<SymbolGroupEventArgs>
+  nameWithType: EventHandler<SymbolGroupEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.SymbolGroupEventArgs>
+  nameWithType.vb: EventHandler(Of SymbolGroupEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.SymbolGroupEventArgs)
+  name.vb: EventHandler(Of SymbolGroupEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.SymbolGroupEventArgs
+    name: SymbolGroupEventArgs
+    href: Meridian.Ui.Services.SymbolGroupEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SymbolGroupEventArgs
+    name: SymbolGroupEventArgs
+    href: Meridian.Ui.Services.SymbolGroupEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.McpServer.Tools;
 

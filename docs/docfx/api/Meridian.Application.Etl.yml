@@ -1,0 +1,136 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Etl
+  commentId: N:Meridian.Application.Etl
+  id: Meridian.Application.Etl
+  children:
+  - Meridian.Application.Etl.EtlExportResult
+  - Meridian.Application.Etl.EtlExportService
+  - Meridian.Application.Etl.EtlJobDefinitionStore
+  - Meridian.Application.Etl.EtlJobOrchestrator
+  - Meridian.Application.Etl.EtlJobService
+  - Meridian.Application.Etl.EtlNormalizationService
+  - Meridian.Application.Etl.EtlRunResult
+  - Meridian.Application.Etl.IEtlExportService
+  - Meridian.Application.Etl.IEtlJobDefinitionStore
+  - Meridian.Application.Etl.IEtlJobService
+  - Meridian.Application.Etl.NormalizationOutcome
+  - Meridian.Application.Etl.PartnerSchemaRegistry
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Etl
+  nameWithType: Meridian.Application.Etl
+  fullName: Meridian.Application.Etl
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Etl.IEtlJobDefinitionStore
+  commentId: T:Meridian.Application.Etl.IEtlJobDefinitionStore
+  parent: Meridian.Application.Etl
+  href: Meridian.Application.Etl.IEtlJobDefinitionStore.html
+  name: IEtlJobDefinitionStore
+  nameWithType: IEtlJobDefinitionStore
+  fullName: Meridian.Application.Etl.IEtlJobDefinitionStore
+- uid: Meridian.Application.Etl.IEtlJobService
+  commentId: T:Meridian.Application.Etl.IEtlJobService
+  parent: Meridian.Application.Etl
+  href: Meridian.Application.Etl.IEtlJobService.html
+  name: IEtlJobService
+  nameWithType: IEtlJobService
+  fullName: Meridian.Application.Etl.IEtlJobService
+- uid: Meridian.Application.Etl.IEtlExportService
+  commentId: T:Meridian.Application.Etl.IEtlExportService
+  parent: Meridian.Application.Etl
+  href: Meridian.Application.Etl.IEtlExportService.html
+  name: IEtlExportService
+  nameWithType: IEtlExportService
+  fullName: Meridian.Application.Etl.IEtlExportService
+- uid: Meridian.Application.Etl.NormalizationOutcome
+  commentId: T:Meridian.Application.Etl.NormalizationOutcome
+  href: Meridian.Application.Etl.NormalizationOutcome.html
+  name: NormalizationOutcome
+  nameWithType: NormalizationOutcome
+  fullName: Meridian.Application.Etl.NormalizationOutcome
+- uid: Meridian.Application.Etl.EtlRunResult
+  commentId: T:Meridian.Application.Etl.EtlRunResult
+  href: Meridian.Application.Etl.EtlRunResult.html
+  name: EtlRunResult
+  nameWithType: EtlRunResult
+  fullName: Meridian.Application.Etl.EtlRunResult
+- uid: Meridian.Application.Etl.EtlExportResult
+  commentId: T:Meridian.Application.Etl.EtlExportResult
+  parent: Meridian.Application.Etl
+  href: Meridian.Application.Etl.EtlExportResult.html
+  name: EtlExportResult
+  nameWithType: EtlExportResult
+  fullName: Meridian.Application.Etl.EtlExportResult
+- uid: Meridian.Application.Etl.EtlJobDefinitionStore
+  commentId: T:Meridian.Application.Etl.EtlJobDefinitionStore
+  href: Meridian.Application.Etl.EtlJobDefinitionStore.html
+  name: EtlJobDefinitionStore
+  nameWithType: EtlJobDefinitionStore
+  fullName: Meridian.Application.Etl.EtlJobDefinitionStore
+- uid: Meridian.Application.Etl.PartnerSchemaRegistry
+  commentId: T:Meridian.Application.Etl.PartnerSchemaRegistry
+  href: Meridian.Application.Etl.PartnerSchemaRegistry.html
+  name: PartnerSchemaRegistry
+  nameWithType: PartnerSchemaRegistry
+  fullName: Meridian.Application.Etl.PartnerSchemaRegistry
+- uid: Meridian.Application.Etl.EtlNormalizationService
+  commentId: T:Meridian.Application.Etl.EtlNormalizationService
+  parent: Meridian.Application.Etl
+  href: Meridian.Application.Etl.EtlNormalizationService.html
+  name: EtlNormalizationService
+  nameWithType: EtlNormalizationService
+  fullName: Meridian.Application.Etl.EtlNormalizationService
+- uid: Meridian.Application.Etl.EtlExportService
+  commentId: T:Meridian.Application.Etl.EtlExportService
+  href: Meridian.Application.Etl.EtlExportService.html
+  name: EtlExportService
+  nameWithType: EtlExportService
+  fullName: Meridian.Application.Etl.EtlExportService
+- uid: Meridian.Application.Etl.EtlJobService
+  commentId: T:Meridian.Application.Etl.EtlJobService
+  href: Meridian.Application.Etl.EtlJobService.html
+  name: EtlJobService
+  nameWithType: EtlJobService
+  fullName: Meridian.Application.Etl.EtlJobService
+- uid: Meridian.Application.Etl.EtlJobOrchestrator
+  commentId: T:Meridian.Application.Etl.EtlJobOrchestrator
+  parent: Meridian.Application.Etl
+  href: Meridian.Application.Etl.EtlJobOrchestrator.html
+  name: EtlJobOrchestrator
+  nameWithType: EtlJobOrchestrator
+  fullName: Meridian.Application.Etl.EtlJobOrchestrator
+- uid: Meridian.Application.Etl
+  commentId: N:Meridian.Application.Etl
+  href: Meridian.html
+  name: Meridian.Application.Etl
+  nameWithType: Meridian.Application.Etl
+  fullName: Meridian.Application.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html

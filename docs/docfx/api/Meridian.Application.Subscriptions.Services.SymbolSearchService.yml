@@ -1,0 +1,1363 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolSearchService
+  id: SymbolSearchService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor(Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider},Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient,Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync(Meridian.Application.Subscriptions.Models.SymbolSearchRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchService
+  nameWithType: SymbolSearchService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearchService
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Service for searching and autocompleting symbols across multiple providers.
+
+    Aggregates results from Finnhub, Polygon, Alpaca, and OpenFIGI.
+  example: []
+  syntax:
+    content: 'public sealed class SymbolSearchService : IDisposable'
+    content.vb: Public NotInheritable Class SymbolSearchService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor(Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor(Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)
+  id: '#ctor(Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)'
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchService(MetadataEnrichmentService?, TimeSpan?, TimeSpan?, ILogger?)
+  nameWithType: SymbolSearchService.SymbolSearchService(MetadataEnrichmentService?, TimeSpan?, TimeSpan?, ILogger?)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SymbolSearchService(Meridian.Application.Subscriptions.Services.MetadataEnrichmentService?, System.TimeSpan?, System.TimeSpan?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Creates a new symbol search service with default provider configuration.
+  example: []
+  syntax:
+    content: public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null)
+    parameters:
+    - id: metadataService
+      type: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+    - id: searchCacheDuration
+      type: System.Nullable{System.TimeSpan}
+    - id: detailsCacheDuration
+      type: System.Nullable{System.TimeSpan}
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(metadataService As MetadataEnrichmentService = Nothing, searchCacheDuration As TimeSpan? = Nothing, detailsCacheDuration As TimeSpan? = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor*
+  nameWithType.vb: SymbolSearchService.New(MetadataEnrichmentService, TimeSpan?, TimeSpan?, ILogger)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolSearchService.New(Meridian.Application.Subscriptions.Services.MetadataEnrichmentService, System.TimeSpan?, System.TimeSpan?, Serilog.ILogger)
+  name.vb: New(MetadataEnrichmentService, TimeSpan?, TimeSpan?, ILogger)
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider},Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient,Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider},Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient,Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)
+  id: '#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider},Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient,Meridian.Application.Subscriptions.Services.MetadataEnrichmentService,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Serilog.ILogger)'
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchService(IEnumerable<ISymbolSearchProvider>, OpenFigiClient?, MetadataEnrichmentService, TimeSpan?, TimeSpan?, ILogger?)
+  nameWithType: SymbolSearchService.SymbolSearchService(IEnumerable<ISymbolSearchProvider>, OpenFigiClient?, MetadataEnrichmentService, TimeSpan?, TimeSpan?, ILogger?)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SymbolSearchService(System.Collections.Generic.IEnumerable<Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider>, Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient?, Meridian.Application.Subscriptions.Services.MetadataEnrichmentService, System.TimeSpan?, System.TimeSpan?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Creates a symbol search service with custom providers.
+  example: []
+  syntax:
+    content: public SymbolSearchService(IEnumerable<ISymbolSearchProvider> providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null)
+    parameters:
+    - id: providers
+      type: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+    - id: figiClient
+      type: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+    - id: metadataService
+      type: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+    - id: searchCacheDuration
+      type: System.Nullable{System.TimeSpan}
+    - id: detailsCacheDuration
+      type: System.Nullable{System.TimeSpan}
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(providers As IEnumerable(Of ISymbolSearchProvider), figiClient As OpenFigiClient, metadataService As MetadataEnrichmentService, searchCacheDuration As TimeSpan? = Nothing, detailsCacheDuration As TimeSpan? = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor*
+  nameWithType.vb: SymbolSearchService.New(IEnumerable(Of ISymbolSearchProvider), OpenFigiClient, MetadataEnrichmentService, TimeSpan?, TimeSpan?, ILogger)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolSearchService.New(System.Collections.Generic.IEnumerable(Of Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider), Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient, Meridian.Application.Subscriptions.Services.MetadataEnrichmentService, System.TimeSpan?, System.TimeSpan?, Serilog.ILogger)
+  name.vb: New(IEnumerable(Of ISymbolSearchProvider), OpenFigiClient, MetadataEnrichmentService, TimeSpan?, TimeSpan?, ILogger)
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync(System.Threading.CancellationToken)
+  id: GetProvidersAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: GetProvidersAsync(CancellationToken)
+  nameWithType: SymbolSearchService.GetProvidersAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvidersAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get available providers and their status.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<ProviderStatus>> GetProvidersAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Services.ProviderStatus}}
+    content.vb: Public Function GetProvidersAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ProviderStatus))
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync*
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync(Meridian.Application.Subscriptions.Models.SymbolSearchRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync(Meridian.Application.Subscriptions.Models.SymbolSearchRequest,System.Threading.CancellationToken)
+  id: SearchAsync(Meridian.Application.Subscriptions.Models.SymbolSearchRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(SymbolSearchRequest, CancellationToken)
+  nameWithType: SymbolSearchService.SearchAsync(SymbolSearchRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync(Meridian.Application.Subscriptions.Models.SymbolSearchRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Search for symbols with autocomplete support.
+  example: []
+  syntax:
+    content: public Task<SymbolSearchResponse> SearchAsync(SymbolSearchRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.SymbolSearchRequest
+      description: Search request parameters.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolSearchResponse}
+      description: Aggregated search results from all available providers.
+    content.vb: Public Function SearchAsync(request As SymbolSearchRequest, ct As CancellationToken = Nothing) As Task(Of SymbolSearchResponse)
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync*
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: GetDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: GetDetailsAsync(string, string?, CancellationToken)
+  nameWithType: SymbolSearchService.GetDetailsAsync(string, string?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDetailsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get detailed information about a specific symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolDetails?> GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Symbol ticker.
+    - id: provider
+      type: System.String
+      description: Optional specific provider to query.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+      description: Symbol details or null if not found.
+    content.vb: Public Function GetDetailsAsync(symbol As String, provider As String = Nothing, ct As CancellationToken = Nothing) As Task(Of SymbolDetails)
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync*
+  nameWithType.vb: SymbolSearchService.GetDetailsAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync(String, String, System.Threading.CancellationToken)
+  name.vb: GetDetailsAsync(String, String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: LookupFigiAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: LookupFigiAsync(IEnumerable<string>, CancellationToken)
+  nameWithType: SymbolSearchService.LookupFigiAsync(IEnumerable<string>, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync(System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookupFigiAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Lookup FIGI identifiers for symbols.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyDictionary<string, IReadOnlyList<FigiMapping>>> LookupFigiAsync(IEnumerable<string> symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+      description: List of symbols to lookup.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}}
+      description: Dictionary of symbol to FIGI mappings.
+    content.vb: Public Function LookupFigiAsync(symbols As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of IReadOnlyDictionary(Of String, IReadOnlyList(Of FigiMapping)))
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync*
+  nameWithType.vb: SymbolSearchService.LookupFigiAsync(IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync(System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: LookupFigiAsync(IEnumerable(Of String), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: SearchFigiAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: SearchFigiAsync(string, int, CancellationToken)
+  nameWithType: SymbolSearchService.SearchFigiAsync(string, int, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchFigiAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Search OpenFIGI directly.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FigiMapping>> SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+      description: Search query.
+    - id: limit
+      type: System.Int32
+      description: Maximum results.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+    content.vb: Public Function SearchFigiAsync(query As String, limit As Integer = 20, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FigiMapping))
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync*
+  nameWithType.vb: SymbolSearchService.SearchFigiAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchFigiAsync(String, Integer, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache
+  id: ClearCache
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: ClearCache()
+  nameWithType: SymbolSearchService.ClearCache()
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearCache
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 446
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Clear the search and details cache.
+  example: []
+  syntax:
+    content: public void ClearCache()
+    content.vb: Public Sub ClearCache()
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache*
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose
+  id: Dispose
+  parent: Meridian.Application.Subscriptions.Services.SymbolSearchService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: SymbolSearchService.Dispose()
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
+    startLine: 453
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.#ctor
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService__ctor_Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_System_Nullable_System_TimeSpan__System_Nullable_System_TimeSpan__Serilog_ILogger_
+  name: SymbolSearchService
+  nameWithType: SymbolSearchService.SymbolSearchService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SymbolSearchService
+  nameWithType.vb: SymbolSearchService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolSearchService.New
+  name.vb: New
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  commentId: T:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html
+  name: MetadataEnrichmentService
+  nameWithType: MetadataEnrichmentService
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<ISymbolSearchProvider>
+  nameWithType: IEnumerable<ISymbolSearchProvider>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider>
+  nameWithType.vb: IEnumerable(Of ISymbolSearchProvider)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider)
+  name.vb: IEnumerable(Of ISymbolSearchProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    name: ISymbolSearchProvider
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    name: ISymbolSearchProvider
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  commentId: T:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  parent: Meridian.Infrastructure.Adapters.OpenFigi
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html
+  name: OpenFigiClient
+  nameWithType: OpenFigiClient
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.OpenFigi
+  commentId: N:Meridian.Infrastructure.Adapters.OpenFigi
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.OpenFigi
+  nameWithType: Meridian.Infrastructure.Adapters.OpenFigi
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.OpenFigi
+    name: OpenFigi
+    href: Meridian.Infrastructure.Adapters.OpenFigi.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.OpenFigi
+    name: OpenFigi
+    href: Meridian.Infrastructure.Adapters.OpenFigi.html
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_GetProvidersAsync_System_Threading_CancellationToken_
+  name: GetProvidersAsync
+  nameWithType: SymbolSearchService.GetProvidersAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetProvidersAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Services.ProviderStatus}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Services.ProviderStatus}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ProviderStatus>>
+  nameWithType: Task<IReadOnlyList<ProviderStatus>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Services.ProviderStatus>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ProviderStatus))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Services.ProviderStatus))
+  name.vb: Task(Of IReadOnlyList(Of ProviderStatus))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.ProviderStatus
+    name: ProviderStatus
+    href: Meridian.Application.Subscriptions.Services.ProviderStatus.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.ProviderStatus
+    name: ProviderStatus
+    href: Meridian.Application.Subscriptions.Services.ProviderStatus.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_SearchAsync_Meridian_Application_Subscriptions_Models_SymbolSearchRequest_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: SymbolSearchService.SearchAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchAsync
+- uid: Meridian.Application.Subscriptions.Models.SymbolSearchRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.SymbolSearchRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.SymbolSearchRequest.html
+  name: SymbolSearchRequest
+  nameWithType: SymbolSearchRequest
+  fullName: Meridian.Application.Subscriptions.Models.SymbolSearchRequest
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolSearchResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolSearchResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolSearchResponse>
+  nameWithType: Task<SymbolSearchResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolSearchResponse>
+  nameWithType.vb: Task(Of SymbolSearchResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolSearchResponse)
+  name.vb: Task(Of SymbolSearchResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResponse
+    name: SymbolSearchResponse
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResponse
+    name: SymbolSearchResponse
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_GetDetailsAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: GetDetailsAsync
+  nameWithType: SymbolSearchService.GetDetailsAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.GetDetailsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolDetails>
+  nameWithType: Task<SymbolDetails>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolDetails>
+  nameWithType.vb: Task(Of SymbolDetails)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolDetails)
+  name.vb: Task(Of SymbolDetails)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_LookupFigiAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: LookupFigiAsync
+  nameWithType: SymbolSearchService.LookupFigiAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.LookupFigiAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyDictionary<string, IReadOnlyList<FigiMapping>>>
+  nameWithType: Task<IReadOnlyDictionary<string, IReadOnlyList<FigiMapping>>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.FigiMapping>>>
+  nameWithType.vb: Task(Of IReadOnlyDictionary(Of String, IReadOnlyList(Of FigiMapping)))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyDictionary(Of String, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.FigiMapping)))
+  name.vb: Task(Of IReadOnlyDictionary(Of String, IReadOnlyList(Of FigiMapping)))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: '>'
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: )
+  - name: )
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_SearchFigiAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchFigiAsync
+  nameWithType: SymbolSearchService.SearchFigiAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.SearchFigiAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.FigiMapping}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<FigiMapping>>
+  nameWithType: Task<IReadOnlyList<FigiMapping>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.FigiMapping>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of FigiMapping))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.FigiMapping))
+  name.vb: Task(Of IReadOnlyList(Of FigiMapping))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+  - name: )
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_ClearCache
+  name: ClearCache
+  nameWithType: SymbolSearchService.ClearCache
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.ClearCache
+- uid: Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose
+  href: Meridian.Application.Subscriptions.Services.SymbolSearchService.html#Meridian_Application_Subscriptions_Services_SymbolSearchService_Dispose
+  name: Dispose
+  nameWithType: SymbolSearchService.Dispose
+  fullName: Meridian.Application.Subscriptions.Services.SymbolSearchService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

@@ -1,0 +1,136 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  id: IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  children:
+  - Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  langs:
+  - csharp
+  - vb
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/IMarketEventPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMarketEventPublisher
+    path: ../../src/Meridian.Domain/Events/IMarketEventPublisher.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    Minimal publish contract so collectors can emit MarketEvents without knowing transport.
+
+    Publish must be non-blocking (hot path).
+  example: []
+  syntax:
+    content: public interface IMarketEventPublisher
+    content.vb: Public Interface IMarketEventPublisher
+  derivedClasses:
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher
+  - Meridian.Application.Composition.PipelinePublisher
+  - Meridian.Application.Pipeline.DualPathEventPipeline
+  - Meridian.Application.Pipeline.EventPipeline
+  - Meridian.Domain.Events.Publishers.CompositePublisher
+- uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  id: TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Domain.Events.IMarketEventPublisher
+  langs:
+  - csharp
+  - vb
+  name: TryPublish(in MarketEvent)
+  nameWithType: IMarketEventPublisher.TryPublish(in MarketEvent)
+  fullName: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/IMarketEventPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublish
+    path: ../../src/Meridian.Domain/Events/IMarketEventPublisher.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  syntax:
+    content: bool TryPublish(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.Boolean
+    content.vb: Function TryPublish(evt As MarketEvent) As Boolean
+  overload: Meridian.Domain.Events.IMarketEventPublisher.TryPublish*
+  nameWithType.vb: IMarketEventPublisher.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+references:
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish*
+  commentId: Overload:Meridian.Domain.Events.IMarketEventPublisher.TryPublish
+  href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish
+  nameWithType: IMarketEventPublisher.TryPublish
+  fullName: Meridian.Domain.Events.IMarketEventPublisher.TryPublish
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

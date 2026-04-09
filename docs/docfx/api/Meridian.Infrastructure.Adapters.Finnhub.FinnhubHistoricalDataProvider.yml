@@ -1,0 +1,2239 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  id: FinnhubHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Finnhub
+  children:
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol(System.String)
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions
+  langs:
+  - csharp
+  - vb
+  name: FinnhubHistoricalDataProvider
+  nameWithType: FinnhubHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinnhubHistoricalDataProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Historical data provider using Finnhub API (free tier with API key).
+
+    Generous free tier: 60 API calls/minute.
+
+    Coverage: 60,000+ global securities with company fundamentals.
+
+    Best for: Earnings data, fundamentals, news, and high-frequency backfill operations.
+
+    Extends BaseHistoricalDataProvider for common functionality including:
+
+    - HTTP resilience (retry, circuit breaker)
+
+    - Rate limit tracking with IRateLimitAwareProvider
+
+    - Centralized error handling
+  example: []
+  syntax:
+    content: >-
+      [DataSource("finnhub", "Finnhub (free tier)", DataSourceType.Historical, DataSourceCategory.Free, Priority = 18, Description = "Historical OHLCV data via Finnhub free tier API")]
+
+      [ImplementsAdr("ADR-001", "Finnhub historical data provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+
+      [RequiresCredential("FINNHUB_API_KEY", EnvironmentVariables = new string[] { "FINNHUB_API_KEY", "FINNHUB__APIKEY" }, DisplayName = "API Key", Description = "Finnhub API key from https://finnhub.io/dashboard")]
+
+      public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider, IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable
+    content.vb: >-
+      <DataSource("finnhub", "Finnhub (free tier)", DataSourceType.Historical, DataSourceCategory.Free, Priority:=18, Description:="Historical OHLCV data via Finnhub free tier API")>
+
+      <ImplementsAdr("ADR-001", "Finnhub historical data provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
+
+      <RequiresCredential("FINNHUB_API_KEY", EnvironmentVariables:=New String() { "FINNHUB_API_KEY", "FINNHUB__APIKEY" }, DisplayName:="API Key", Description:="Finnhub API key from https://finnhub.io/dashboard")>
+
+      Public NotInheritable Class FinnhubHistoricalDataProvider Inherits BaseHistoricalDataProvider Implements IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+  - System.IDisposable
+  inheritedMembers:
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: finnhub
+    - type: System.String
+      value: Finnhub (free tier)
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 1
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 3
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 18
+    - name: Description
+      type: System.String
+      value: Historical OHLCV data via Finnhub free tier API
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Finnhub historical data provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based provider discovery
+  - type: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+    ctor: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: FINNHUB_API_KEY
+    namedArguments:
+    - name: DisplayName
+      type: System.String
+      value: API Key
+    - name: Description
+      type: System.String
+      value: Finnhub API key from https://finnhub.io/dashboard
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: FinnhubHistoricalDataProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Unique identifier for the provider (e.g., "alpaca", "tiingo").
+  example: []
+  syntax:
+    content: public override string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Name As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: FinnhubHistoricalDataProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public override string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property DisplayName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description
+  id: Description
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: FinnhubHistoricalDataProvider.Description
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Description of the provider's capabilities.
+  example: []
+  syntax:
+    content: public override string Description { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Description As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName
+  id: HttpClientName
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: HttpClientName
+  nameWithType: FinnhubHistoricalDataProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientName
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Named HTTP client identifier from HttpClientNames.
+  example: []
+  syntax:
+    content: protected override string HttpClientName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected Overrides ReadOnly Property HttpClientName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: FinnhubHistoricalDataProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Priority for fallback ordering (lower = higher priority, tried first).
+
+    Default: 100 for basic providers.
+  example: []
+  syntax:
+    content: public override int Priority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property Priority As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay
+  id: RateLimitDelay
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: RateLimitDelay
+  nameWithType: FinnhubHistoricalDataProvider.RateLimitDelay
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitDelay
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Minimum delay between API calls to respect rate limits.
+
+    Default: no delay.
+  example: []
+  syntax:
+    content: public override TimeSpan RateLimitDelay { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Overrides ReadOnly Property RateLimitDelay As TimeSpan
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Maximum number of requests allowed per time window.
+
+    Default: unlimited.
+  example: []
+  syntax:
+    content: public override int MaxRequestsPerWindow { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property MaxRequestsPerWindow As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow
+  id: RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: RateLimitWindow
+  nameWithType: FinnhubHistoricalDataProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Time window for rate limiting (e.g., 1 minute, 1 hour).
+
+    Default: 1 hour.
+  example: []
+  syntax:
+    content: public override TimeSpan RateLimitWindow { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Overrides ReadOnly Property RateLimitWindow As TimeSpan
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: FinnhubHistoricalDataProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Finnhub supports intraday bars and corporate actions (raw prices, not adjusted).
+
+    Wide market coverage: US, UK, DE, CA, AU, HK, JP, CN.
+  example: []
+  syntax:
+    content: public override HistoricalDataCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+    content.vb: Public Overrides ReadOnly Property Capabilities As HistoricalDataCapabilities
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions
+  id: SupportedResolutions
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedResolutions
+  nameWithType: FinnhubHistoricalDataProvider.SupportedResolutions
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedResolutions
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Supported candle resolutions.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<string> SupportedResolutions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Shared ReadOnly Property SupportedResolutions As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  id: '#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: FinnhubHistoricalDataProvider(string?, HttpClient?, ILogger?)
+  nameWithType: FinnhubHistoricalDataProvider.FinnhubHistoricalDataProvider(string?, HttpClient?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.FinnhubHistoricalDataProvider(string?, System.Net.Http.HttpClient?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: public FinnhubHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    parameters:
+    - id: apiKey
+      type: System.String
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(apiKey As String = Nothing, httpClient As HttpClient = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.#ctor*
+  nameWithType.vb: FinnhubHistoricalDataProvider.New(String, HttpClient, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.New(String, System.Net.Http.HttpClient, Serilog.ILogger)
+  name.vb: New(String, HttpClient, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  id: IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: FinnhubHistoricalDataProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailableAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Check if the provider is currently available and healthy.
+
+    Default implementation validates credentials.
+  example: []
+  syntax:
+    content: public override Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Overrides Function IsAvailableAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync*
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: FinnhubHistoricalDataProvider.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDailyBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Fetch daily OHLCV bars for a symbol within the specified date range.
+
+    Must be implemented by derived classes.
+  example: []
+  syntax:
+    content: public override Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+    content.vb: Public Overrides Function GetDailyBarsAsync(symbol As String, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of HistoricalBar))
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync*
+  nameWithType.vb: FinnhubHistoricalDataProvider.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdjustedDailyBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Get extended bar data with adjustment information when supported.
+
+    Default implementation converts standard bars to adjusted bars.
+  example: []
+  syntax:
+    content: public override Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+    content.vb: Public Overrides Function GetAdjustedDailyBarsAsync(symbol As String, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync*
+  nameWithType.vb: FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  id: GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  nameWithType: FinnhubHistoricalDataProvider.GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync(string, string, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetIntradayBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Get intraday bars for a symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<IntradayBar>> GetIntradayBarsAsync(string symbol, string resolution, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: resolution
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+    content.vb: Public Function GetIntradayBarsAsync(symbol As String, resolution As String, from As DateTimeOffset?, [to] As DateTimeOffset?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of IntradayBar))
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync*
+  nameWithType.vb: FinnhubHistoricalDataProvider.GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync(String, String, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync(System.String,System.Threading.CancellationToken)
+  id: GetEarningsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetEarningsAsync(string, CancellationToken)
+  nameWithType: FinnhubHistoricalDataProvider.GetEarningsAsync(string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEarningsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Get basic earnings data for a symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<FinnhubEarning>> GetEarningsAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning}}
+    content.vb: Public Function GetEarningsAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FinnhubEarning))
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync*
+  nameWithType.vb: FinnhubHistoricalDataProvider.GetEarningsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetEarningsAsync(String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync(System.String,System.Threading.CancellationToken)
+  id: GetCompanyProfileAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetCompanyProfileAsync(string, CancellationToken)
+  nameWithType: FinnhubHistoricalDataProvider.GetCompanyProfileAsync(string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCompanyProfileAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Get company profile data.
+  example: []
+  syntax:
+    content: public Task<FinnhubCompanyProfile?> GetCompanyProfileAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile}
+    content.vb: Public Function GetCompanyProfileAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of FinnhubCompanyProfile)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync*
+  nameWithType.vb: FinnhubHistoricalDataProvider.GetCompanyProfileAsync(String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync(String, System.Threading.CancellationToken)
+  name.vb: GetCompanyProfileAsync(String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol(System.String)
+  id: NormalizeSymbol(System.String)
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: NormalizeSymbol(string)
+  nameWithType: FinnhubHistoricalDataProvider.NormalizeSymbol(string)
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeSymbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 371
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: >-
+    Normalize a symbol using the standard approach.
+
+    Override in derived class for provider-specific normalization.
+  example: []
+  syntax:
+    content: protected override string NormalizeSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Protected Overrides Function NormalizeSymbol(symbol As String) As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(System.String)
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol*
+  nameWithType.vb: FinnhubHistoricalDataProvider.NormalizeSymbol(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol(String)
+  name.vb: NormalizeSymbol(String)
+references:
+- uid: Meridian.Infrastructure.Adapters.Finnhub
+  commentId: N:Meridian.Infrastructure.Adapters.Finnhub
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Finnhub
+  nameWithType: Meridian.Infrastructure.Adapters.Finnhub
+  fullName: Meridian.Infrastructure.Adapters.Finnhub
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Finnhub
+    name: Finnhub
+    href: Meridian.Infrastructure.Adapters.Finnhub.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Finnhub
+    name: Finnhub
+    href: Meridian.Infrastructure.Adapters.Finnhub.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html
+  name: BaseHistoricalDataProvider
+  nameWithType: BaseHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  name: IHistoricalDataProvider
+  nameWithType: IHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider.html
+  name: IRateLimitAwareProvider
+  nameWithType: IRateLimitAwareProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsAdjustedPrices
+  name: SupportsAdjustedPrices
+  nameWithType: BaseHistoricalDataProvider.SupportsAdjustedPrices
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsIntraday
+  name: SupportsIntraday
+  nameWithType: BaseHistoricalDataProvider.SupportsIntraday
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsDividends
+  name: SupportsDividends
+  nameWithType: BaseHistoricalDataProvider.SupportsDividends
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsSplits
+  name: SupportsSplits
+  nameWithType: BaseHistoricalDataProvider.SupportsSplits
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsQuotes
+  name: SupportsQuotes
+  nameWithType: BaseHistoricalDataProvider.SupportsQuotes
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsTrades
+  name: SupportsTrades
+  nameWithType: BaseHistoricalDataProvider.SupportsTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsAuctions
+  name: SupportsAuctions
+  nameWithType: BaseHistoricalDataProvider.SupportsAuctions
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: BaseHistoricalDataProvider.SupportedMarkets
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+  commentId: E:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_OnRateLimitHit
+  name: OnRateLimitHit
+  nameWithType: BaseHistoricalDataProvider.OnRateLimitHit
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetRateLimitInfo
+  name: GetRateLimitInfo()
+  nameWithType: BaseHistoricalDataProvider.GetRateLimitInfo()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+    name: GetRateLimitInfo
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetRateLimitInfo
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+    name: GetRateLimitInfo
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetRateLimitInfo
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Dispose
+  name: Dispose()
+  nameWithType: BaseHistoricalDataProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+    name: Dispose
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+    name: Dispose
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Dispose
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Name
+  name: Name
+  nameWithType: BaseHistoricalDataProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_Name
+  name: Name
+  nameWithType: FinnhubHistoricalDataProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_DisplayName
+  name: DisplayName
+  nameWithType: BaseHistoricalDataProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_DisplayName
+  name: DisplayName
+  nameWithType: FinnhubHistoricalDataProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Description
+  name: Description
+  nameWithType: BaseHistoricalDataProvider.Description
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_Description
+  name: Description
+  nameWithType: FinnhubHistoricalDataProvider.Description
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Description
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_HttpClientName
+  name: HttpClientName
+  nameWithType: BaseHistoricalDataProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_HttpClientName
+  name: HttpClientName
+  nameWithType: FinnhubHistoricalDataProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Priority
+  name: Priority
+  nameWithType: BaseHistoricalDataProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_Priority
+  name: Priority
+  nameWithType: FinnhubHistoricalDataProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_RateLimitDelay
+  name: RateLimitDelay
+  nameWithType: BaseHistoricalDataProvider.RateLimitDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_RateLimitDelay
+  name: RateLimitDelay
+  nameWithType: FinnhubHistoricalDataProvider.RateLimitDelay
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitDelay
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: BaseHistoricalDataProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: BaseHistoricalDataProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: FinnhubHistoricalDataProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Capabilities
+  name: Capabilities
+  nameWithType: BaseHistoricalDataProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_Capabilities
+  name: Capabilities
+  nameWithType: FinnhubHistoricalDataProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.Capabilities
+- uid: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.html
+  name: HistoricalDataCapabilities
+  nameWithType: HistoricalDataCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_SupportedResolutions
+  name: SupportedResolutions
+  nameWithType: FinnhubHistoricalDataProvider.SupportedResolutions
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.SupportedResolutions
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider__ctor_System_String_System_Net_Http_HttpClient_Serilog_ILogger_
+  name: FinnhubHistoricalDataProvider
+  nameWithType: FinnhubHistoricalDataProvider.FinnhubHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.FinnhubHistoricalDataProvider
+  nameWithType.vb: FinnhubHistoricalDataProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.New
+  name.vb: New
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: BaseHistoricalDataProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync
+  nameWithType: FinnhubHistoricalDataProvider.IsAvailableAsync
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.IsAvailableAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: BaseHistoricalDataProvider.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: BaseHistoricalDataProvider.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDailyBarsAsync
+  nameWithType: FinnhubHistoricalDataProvider.GetDailyBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetDailyBarsAsync
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<HistoricalBar>>
+  nameWithType: Task<IReadOnlyList<HistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAdjustedDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAdjustedDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAdjustedDailyBarsAsync
+  nameWithType: FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetAdjustedDailyBarsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  nameWithType: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AdjustedHistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AdjustedHistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_GetIntradayBarsAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  name: GetIntradayBarsAsync
+  nameWithType: FinnhubHistoricalDataProvider.GetIntradayBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetIntradayBarsAsync
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<IntradayBar>>
+  nameWithType: Task<IReadOnlyList<IntradayBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.IntradayBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.IntradayBar))
+  name.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_GetEarningsAsync_System_String_System_Threading_CancellationToken_
+  name: GetEarningsAsync
+  nameWithType: FinnhubHistoricalDataProvider.GetEarningsAsync
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetEarningsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<FinnhubEarning>>
+  nameWithType: Task<IReadOnlyList<FinnhubEarning>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of FinnhubEarning))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning))
+  name.vb: Task(Of IReadOnlyList(Of FinnhubEarning))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+    name: FinnhubEarning
+    href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+    name: FinnhubEarning
+    href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_GetCompanyProfileAsync_System_String_System_Threading_CancellationToken_
+  name: GetCompanyProfileAsync
+  nameWithType: FinnhubHistoricalDataProvider.GetCompanyProfileAsync
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.GetCompanyProfileAsync
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FinnhubCompanyProfile>
+  nameWithType: Task<FinnhubCompanyProfile>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile>
+  nameWithType.vb: Task(Of FinnhubCompanyProfile)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile)
+  name.vb: Task(Of FinnhubCompanyProfile)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile
+    name: FinnhubCompanyProfile
+    href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile
+    name: FinnhubCompanyProfile
+    href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_NormalizeSymbol_System_String_
+  name: NormalizeSymbol(string)
+  nameWithType: BaseHistoricalDataProvider.NormalizeSymbol(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(string)
+  nameWithType.vb: BaseHistoricalDataProvider.NormalizeSymbol(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(String)
+  name.vb: NormalizeSymbol(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(System.String)
+    name: NormalizeSymbol
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_NormalizeSymbol_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.NormalizeSymbol(System.String)
+    name: NormalizeSymbol
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_NormalizeSymbol_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubHistoricalDataProvider_NormalizeSymbol_System_String_
+  name: NormalizeSymbol
+  nameWithType: FinnhubHistoricalDataProvider.NormalizeSymbol
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.NormalizeSymbol

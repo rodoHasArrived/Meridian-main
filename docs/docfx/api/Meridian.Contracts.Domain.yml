@@ -1,0 +1,195 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  id: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.AccountSnapshotRecord
+  - Meridian.Contracts.Domain.AggressorSideValues
+  - Meridian.Contracts.Domain.BarIntervalValues
+  - Meridian.Contracts.Domain.CanonicalSymbol
+  - Meridian.Contracts.Domain.HistoricalBarDto
+  - Meridian.Contracts.Domain.IPositionSnapshotStore
+  - Meridian.Contracts.Domain.IntegrityEventDto
+  - Meridian.Contracts.Domain.MarketStateValues
+  - Meridian.Contracts.Domain.OrderBookLevelDto
+  - Meridian.Contracts.Domain.OrderBookSideValues
+  - Meridian.Contracts.Domain.OrderBookSnapshotDto
+  - Meridian.Contracts.Domain.PositionRecord
+  - Meridian.Contracts.Domain.ProviderId
+  - Meridian.Contracts.Domain.ProviderSymbol
+  - Meridian.Contracts.Domain.QuoteDto
+  - Meridian.Contracts.Domain.StreamId
+  - Meridian.Contracts.Domain.SubscriptionId
+  - Meridian.Contracts.Domain.SymbolId
+  - Meridian.Contracts.Domain.TradeDto
+  - Meridian.Contracts.Domain.VenueCode
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Domain.CanonicalSymbol
+  commentId: T:Meridian.Contracts.Domain.CanonicalSymbol
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.CanonicalSymbol.html
+  name: CanonicalSymbol
+  nameWithType: CanonicalSymbol
+  fullName: Meridian.Contracts.Domain.CanonicalSymbol
+- uid: Meridian.Contracts.Domain.PositionRecord
+  commentId: T:Meridian.Contracts.Domain.PositionRecord
+  href: Meridian.Contracts.Domain.PositionRecord.html
+  name: PositionRecord
+  nameWithType: PositionRecord
+  fullName: Meridian.Contracts.Domain.PositionRecord
+- uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+  commentId: T:Meridian.Contracts.Domain.AccountSnapshotRecord
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  name: AccountSnapshotRecord
+  nameWithType: AccountSnapshotRecord
+  fullName: Meridian.Contracts.Domain.AccountSnapshotRecord
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore
+  commentId: T:Meridian.Contracts.Domain.IPositionSnapshotStore
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.IPositionSnapshotStore.html
+  name: IPositionSnapshotStore
+  nameWithType: IPositionSnapshotStore
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore
+- uid: Meridian.Contracts.Domain.TradeDto
+  commentId: T:Meridian.Contracts.Domain.TradeDto
+  href: Meridian.Contracts.Domain.TradeDto.html
+  name: TradeDto
+  nameWithType: TradeDto
+  fullName: Meridian.Contracts.Domain.TradeDto
+- uid: Meridian.Contracts.Domain.QuoteDto
+  commentId: T:Meridian.Contracts.Domain.QuoteDto
+  href: Meridian.Contracts.Domain.QuoteDto.html
+  name: QuoteDto
+  nameWithType: QuoteDto
+  fullName: Meridian.Contracts.Domain.QuoteDto
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto
+  commentId: T:Meridian.Contracts.Domain.OrderBookLevelDto
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html
+  name: OrderBookLevelDto
+  nameWithType: OrderBookLevelDto
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto
+- uid: Meridian.Contracts.Domain.OrderBookSnapshotDto
+  commentId: T:Meridian.Contracts.Domain.OrderBookSnapshotDto
+  href: Meridian.Contracts.Domain.OrderBookSnapshotDto.html
+  name: OrderBookSnapshotDto
+  nameWithType: OrderBookSnapshotDto
+  fullName: Meridian.Contracts.Domain.OrderBookSnapshotDto
+- uid: Meridian.Contracts.Domain.HistoricalBarDto
+  commentId: T:Meridian.Contracts.Domain.HistoricalBarDto
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html
+  name: HistoricalBarDto
+  nameWithType: HistoricalBarDto
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto
+- uid: Meridian.Contracts.Domain.AggressorSideValues
+  commentId: T:Meridian.Contracts.Domain.AggressorSideValues
+  href: Meridian.Contracts.Domain.AggressorSideValues.html
+  name: AggressorSideValues
+  nameWithType: AggressorSideValues
+  fullName: Meridian.Contracts.Domain.AggressorSideValues
+- uid: Meridian.Contracts.Domain.OrderBookSideValues
+  commentId: T:Meridian.Contracts.Domain.OrderBookSideValues
+  href: Meridian.Contracts.Domain.OrderBookSideValues.html
+  name: OrderBookSideValues
+  nameWithType: OrderBookSideValues
+  fullName: Meridian.Contracts.Domain.OrderBookSideValues
+- uid: Meridian.Contracts.Domain.MarketStateValues
+  commentId: T:Meridian.Contracts.Domain.MarketStateValues
+  href: Meridian.Contracts.Domain.MarketStateValues.html
+  name: MarketStateValues
+  nameWithType: MarketStateValues
+  fullName: Meridian.Contracts.Domain.MarketStateValues
+- uid: Meridian.Contracts.Domain.BarIntervalValues
+  commentId: T:Meridian.Contracts.Domain.BarIntervalValues
+  href: Meridian.Contracts.Domain.BarIntervalValues.html
+  name: BarIntervalValues
+  nameWithType: BarIntervalValues
+  fullName: Meridian.Contracts.Domain.BarIntervalValues
+- uid: Meridian.Contracts.Domain.IntegrityEventDto
+  commentId: T:Meridian.Contracts.Domain.IntegrityEventDto
+  href: Meridian.Contracts.Domain.IntegrityEventDto.html
+  name: IntegrityEventDto
+  nameWithType: IntegrityEventDto
+  fullName: Meridian.Contracts.Domain.IntegrityEventDto
+- uid: Meridian.Contracts.Domain.ProviderId
+  commentId: T:Meridian.Contracts.Domain.ProviderId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.ProviderId.html
+  name: ProviderId
+  nameWithType: ProviderId
+  fullName: Meridian.Contracts.Domain.ProviderId
+- uid: Meridian.Contracts.Domain.ProviderSymbol
+  commentId: T:Meridian.Contracts.Domain.ProviderSymbol
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.ProviderSymbol.html
+  name: ProviderSymbol
+  nameWithType: ProviderSymbol
+  fullName: Meridian.Contracts.Domain.ProviderSymbol
+- uid: Meridian.Contracts.Domain.StreamId
+  commentId: T:Meridian.Contracts.Domain.StreamId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.StreamId.html
+  name: StreamId
+  nameWithType: StreamId
+  fullName: Meridian.Contracts.Domain.StreamId
+- uid: Meridian.Contracts.Domain.SubscriptionId
+  commentId: T:Meridian.Contracts.Domain.SubscriptionId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SubscriptionId.html
+  name: SubscriptionId
+  nameWithType: SubscriptionId
+  fullName: Meridian.Contracts.Domain.SubscriptionId
+- uid: Meridian.Contracts.Domain.SymbolId
+  commentId: T:Meridian.Contracts.Domain.SymbolId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SymbolId.html
+  name: SymbolId
+  nameWithType: SymbolId
+  fullName: Meridian.Contracts.Domain.SymbolId
+- uid: Meridian.Contracts.Domain.VenueCode
+  commentId: T:Meridian.Contracts.Domain.VenueCode
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.VenueCode.html
+  name: VenueCode
+  nameWithType: VenueCode
+  fullName: Meridian.Contracts.Domain.VenueCode
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html

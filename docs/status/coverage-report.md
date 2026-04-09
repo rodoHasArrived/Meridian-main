@@ -137,7 +137,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 1581 undocumented types. Consider generating API docs with DocFX (`docfx docs/docfx/docfx.json`) to cover the long tail of public types automatically.
+1. **Public Classes / Interfaces**: 1581 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 80 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 
 ---

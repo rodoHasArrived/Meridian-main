@@ -1,0 +1,1275 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Http.HttpClientNames
+  commentId: T:Meridian.Infrastructure.Http.HttpClientNames
+  id: HttpClientNames
+  parent: Meridian.Infrastructure.Http
+  children:
+  - Meridian.Infrastructure.Http.HttpClientNames.Alpaca
+  - Meridian.Infrastructure.Http.HttpClientNames.AlpacaData
+  - Meridian.Infrastructure.Http.HttpClientNames.AlpacaHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.AlpacaSymbolSearch
+  - Meridian.Infrastructure.Http.HttpClientNames.AlphaVantageHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.ConnectivityTest
+  - Meridian.Infrastructure.Http.HttpClientNames.CredentialTesting
+  - Meridian.Infrastructure.Http.HttpClientNames.CredentialValidation
+  - Meridian.Infrastructure.Http.HttpClientNames.DailySummaryWebhook
+  - Meridian.Infrastructure.Http.HttpClientNames.Default
+  - Meridian.Infrastructure.Http.HttpClientNames.DryRun
+  - Meridian.Infrastructure.Http.HttpClientNames.EdgarSecurityMaster
+  - Meridian.Infrastructure.Http.HttpClientNames.EdgarSymbolSearch
+  - Meridian.Infrastructure.Http.HttpClientNames.FinnhubHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.FinnhubSymbolSearch
+  - Meridian.Infrastructure.Http.HttpClientNames.FredHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.IBClientPortal
+  - Meridian.Infrastructure.Http.HttpClientNames.NYSE
+  - Meridian.Infrastructure.Http.HttpClientNames.NasdaqDataLinkHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.OAuthTokenRefresh
+  - Meridian.Infrastructure.Http.HttpClientNames.OpenFigi
+  - Meridian.Infrastructure.Http.HttpClientNames.Polygon
+  - Meridian.Infrastructure.Http.HttpClientNames.PolygonHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.PolygonSymbolSearch
+  - Meridian.Infrastructure.Http.HttpClientNames.PortfolioImport
+  - Meridian.Infrastructure.Http.HttpClientNames.PreflightChecker
+  - Meridian.Infrastructure.Http.HttpClientNames.RobinhoodBrokerage
+  - Meridian.Infrastructure.Http.HttpClientNames.RobinhoodHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.RobinhoodMarketData
+  - Meridian.Infrastructure.Http.HttpClientNames.RobinhoodSymbolSearch
+  - Meridian.Infrastructure.Http.HttpClientNames.StooqHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.TiingoHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.TwelveDataHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.YahooFinanceHistorical
+  langs:
+  - csharp
+  - vb
+  name: HttpClientNames
+  nameWithType: HttpClientNames
+  fullName: Meridian.Infrastructure.Http.HttpClientNames
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientNames
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  summary: >-
+    Named HttpClient identifiers for IHttpClientFactory.
+
+    Using constants ensures consistency across the codebase.
+  remarks: 'Implements TD-10: Replace instance HttpClient with IHttpClientFactory.'
+  example: []
+  syntax:
+    content: public static class HttpClientNames
+    content.vb: Public Module HttpClientNames
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Http.HttpClientNames.Alpaca
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.Alpaca
+  id: Alpaca
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: HttpClientNames.Alpaca
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.Alpaca
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string Alpaca = "alpaca"
+    return:
+      type: System.String
+    content.vb: Public Const Alpaca As String = "alpaca"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.AlpacaData
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.AlpacaData
+  id: AlpacaData
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: AlpacaData
+  nameWithType: HttpClientNames.AlpacaData
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.AlpacaData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaData
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string AlpacaData = "alpaca-data"
+    return:
+      type: System.String
+    content.vb: Public Const AlpacaData As String = "alpaca-data"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.Polygon
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.Polygon
+  id: Polygon
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: HttpClientNames.Polygon
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.Polygon
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string Polygon = "polygon"
+    return:
+      type: System.String
+    content.vb: Public Const Polygon As String = "polygon"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.NYSE
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.NYSE
+  id: NYSE
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: NYSE
+  nameWithType: HttpClientNames.NYSE
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.NYSE
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NYSE
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string NYSE = "nyse"
+    return:
+      type: System.String
+    content.vb: Public Const NYSE As String = "nyse"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.AlpacaHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.AlpacaHistorical
+  id: AlpacaHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: AlpacaHistorical
+  nameWithType: HttpClientNames.AlpacaHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.AlpacaHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string AlpacaHistorical = "alpaca-historical"
+    return:
+      type: System.String
+    content.vb: Public Const AlpacaHistorical As String = "alpaca-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.PolygonHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.PolygonHistorical
+  id: PolygonHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: PolygonHistorical
+  nameWithType: HttpClientNames.PolygonHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.PolygonHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string PolygonHistorical = "polygon-historical"
+    return:
+      type: System.String
+    content.vb: Public Const PolygonHistorical As String = "polygon-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.TiingoHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.TiingoHistorical
+  id: TiingoHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: TiingoHistorical
+  nameWithType: HttpClientNames.TiingoHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.TiingoHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TiingoHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string TiingoHistorical = "tiingo-historical"
+    return:
+      type: System.String
+    content.vb: Public Const TiingoHistorical As String = "tiingo-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.YahooFinanceHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.YahooFinanceHistorical
+  id: YahooFinanceHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: YahooFinanceHistorical
+  nameWithType: HttpClientNames.YahooFinanceHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.YahooFinanceHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: YahooFinanceHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string YahooFinanceHistorical = "yahoo-finance-historical"
+    return:
+      type: System.String
+    content.vb: Public Const YahooFinanceHistorical As String = "yahoo-finance-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.StooqHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.StooqHistorical
+  id: StooqHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: StooqHistorical
+  nameWithType: HttpClientNames.StooqHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.StooqHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StooqHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string StooqHistorical = "stooq-historical"
+    return:
+      type: System.String
+    content.vb: Public Const StooqHistorical As String = "stooq-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.FinnhubHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.FinnhubHistorical
+  id: FinnhubHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: FinnhubHistorical
+  nameWithType: HttpClientNames.FinnhubHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.FinnhubHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinnhubHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string FinnhubHistorical = "finnhub-historical"
+    return:
+      type: System.String
+    content.vb: Public Const FinnhubHistorical As String = "finnhub-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.AlphaVantageHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.AlphaVantageHistorical
+  id: AlphaVantageHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: AlphaVantageHistorical
+  nameWithType: HttpClientNames.AlphaVantageHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.AlphaVantageHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlphaVantageHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string AlphaVantageHistorical = "alpha-vantage-historical"
+    return:
+      type: System.String
+    content.vb: Public Const AlphaVantageHistorical As String = "alpha-vantage-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.NasdaqDataLinkHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.NasdaqDataLinkHistorical
+  id: NasdaqDataLinkHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: NasdaqDataLinkHistorical
+  nameWithType: HttpClientNames.NasdaqDataLinkHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.NasdaqDataLinkHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NasdaqDataLinkHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string NasdaqDataLinkHistorical = "nasdaq-data-link-historical"
+    return:
+      type: System.String
+    content.vb: Public Const NasdaqDataLinkHistorical As String = "nasdaq-data-link-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.FredHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.FredHistorical
+  id: FredHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: FredHistorical
+  nameWithType: HttpClientNames.FredHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.FredHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FredHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string FredHistorical = "fred-historical"
+    return:
+      type: System.String
+    content.vb: Public Const FredHistorical As String = "fred-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.TwelveDataHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.TwelveDataHistorical
+  id: TwelveDataHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: TwelveDataHistorical
+  nameWithType: HttpClientNames.TwelveDataHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.TwelveDataHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TwelveDataHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string TwelveDataHistorical = "twelvedata-historical"
+    return:
+      type: System.String
+    content.vb: Public Const TwelveDataHistorical As String = "twelvedata-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodHistorical
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.RobinhoodHistorical
+  id: RobinhoodHistorical
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: RobinhoodHistorical
+  nameWithType: HttpClientNames.RobinhoodHistorical
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodHistorical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RobinhoodHistorical
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string RobinhoodHistorical = "robinhood-historical"
+    return:
+      type: System.String
+    content.vb: Public Const RobinhoodHistorical As String = "robinhood-historical"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodMarketData
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.RobinhoodMarketData
+  id: RobinhoodMarketData
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: RobinhoodMarketData
+  nameWithType: HttpClientNames.RobinhoodMarketData
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodMarketData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RobinhoodMarketData
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string RobinhoodMarketData = "robinhood-market-data"
+    return:
+      type: System.String
+    content.vb: Public Const RobinhoodMarketData As String = "robinhood-market-data"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodBrokerage
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.RobinhoodBrokerage
+  id: RobinhoodBrokerage
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: RobinhoodBrokerage
+  nameWithType: HttpClientNames.RobinhoodBrokerage
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodBrokerage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RobinhoodBrokerage
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string RobinhoodBrokerage = "robinhood-brokerage"
+    return:
+      type: System.String
+    content.vb: Public Const RobinhoodBrokerage As String = "robinhood-brokerage"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodSymbolSearch
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.RobinhoodSymbolSearch
+  id: RobinhoodSymbolSearch
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: RobinhoodSymbolSearch
+  nameWithType: HttpClientNames.RobinhoodSymbolSearch
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.RobinhoodSymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RobinhoodSymbolSearch
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string RobinhoodSymbolSearch = "robinhood-symbol-search"
+    return:
+      type: System.String
+    content.vb: Public Const RobinhoodSymbolSearch As String = "robinhood-symbol-search"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.AlpacaSymbolSearch
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.AlpacaSymbolSearch
+  id: AlpacaSymbolSearch
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: AlpacaSymbolSearch
+  nameWithType: HttpClientNames.AlpacaSymbolSearch
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.AlpacaSymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaSymbolSearch
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string AlpacaSymbolSearch = "alpaca-symbol-search"
+    return:
+      type: System.String
+    content.vb: Public Const AlpacaSymbolSearch As String = "alpaca-symbol-search"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.PolygonSymbolSearch
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.PolygonSymbolSearch
+  id: PolygonSymbolSearch
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: PolygonSymbolSearch
+  nameWithType: HttpClientNames.PolygonSymbolSearch
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.PolygonSymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonSymbolSearch
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string PolygonSymbolSearch = "polygon-symbol-search"
+    return:
+      type: System.String
+    content.vb: Public Const PolygonSymbolSearch As String = "polygon-symbol-search"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.FinnhubSymbolSearch
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.FinnhubSymbolSearch
+  id: FinnhubSymbolSearch
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: FinnhubSymbolSearch
+  nameWithType: HttpClientNames.FinnhubSymbolSearch
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.FinnhubSymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinnhubSymbolSearch
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string FinnhubSymbolSearch = "finnhub-symbol-search"
+    return:
+      type: System.String
+    content.vb: Public Const FinnhubSymbolSearch As String = "finnhub-symbol-search"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.OpenFigi
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.OpenFigi
+  id: OpenFigi
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: OpenFigi
+  nameWithType: HttpClientNames.OpenFigi
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.OpenFigi
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenFigi
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string OpenFigi = "openfigi"
+    return:
+      type: System.String
+    content.vb: Public Const OpenFigi As String = "openfigi"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.EdgarSymbolSearch
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.EdgarSymbolSearch
+  id: EdgarSymbolSearch
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: EdgarSymbolSearch
+  nameWithType: HttpClientNames.EdgarSymbolSearch
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.EdgarSymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EdgarSymbolSearch
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string EdgarSymbolSearch = "edgar-symbol-search"
+    return:
+      type: System.String
+    content.vb: Public Const EdgarSymbolSearch As String = "edgar-symbol-search"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.EdgarSecurityMaster
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.EdgarSecurityMaster
+  id: EdgarSecurityMaster
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: EdgarSecurityMaster
+  nameWithType: HttpClientNames.EdgarSecurityMaster
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.EdgarSecurityMaster
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EdgarSecurityMaster
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string EdgarSecurityMaster = "edgar-security-master"
+    return:
+      type: System.String
+    content.vb: Public Const EdgarSecurityMaster As String = "edgar-security-master"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.CredentialValidation
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.CredentialValidation
+  id: CredentialValidation
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: CredentialValidation
+  nameWithType: HttpClientNames.CredentialValidation
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.CredentialValidation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialValidation
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string CredentialValidation = "credential-validation"
+    return:
+      type: System.String
+    content.vb: Public Const CredentialValidation As String = "credential-validation"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.ConnectivityTest
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.ConnectivityTest
+  id: ConnectivityTest
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityTest
+  nameWithType: HttpClientNames.ConnectivityTest
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.ConnectivityTest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectivityTest
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string ConnectivityTest = "connectivity-test"
+    return:
+      type: System.String
+    content.vb: Public Const ConnectivityTest As String = "connectivity-test"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.DailySummaryWebhook
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.DailySummaryWebhook
+  id: DailySummaryWebhook
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: DailySummaryWebhook
+  nameWithType: HttpClientNames.DailySummaryWebhook
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.DailySummaryWebhook
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailySummaryWebhook
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string DailySummaryWebhook = "daily-summary-webhook"
+    return:
+      type: System.String
+    content.vb: Public Const DailySummaryWebhook As String = "daily-summary-webhook"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.OAuthTokenRefresh
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.OAuthTokenRefresh
+  id: OAuthTokenRefresh
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: OAuthTokenRefresh
+  nameWithType: HttpClientNames.OAuthTokenRefresh
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.OAuthTokenRefresh
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OAuthTokenRefresh
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string OAuthTokenRefresh = "oauth-token-refresh"
+    return:
+      type: System.String
+    content.vb: Public Const OAuthTokenRefresh As String = "oauth-token-refresh"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.CredentialTesting
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.CredentialTesting
+  id: CredentialTesting
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: CredentialTesting
+  nameWithType: HttpClientNames.CredentialTesting
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.CredentialTesting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialTesting
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string CredentialTesting = "credential-testing"
+    return:
+      type: System.String
+    content.vb: Public Const CredentialTesting As String = "credential-testing"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.PortfolioImport
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.PortfolioImport
+  id: PortfolioImport
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: PortfolioImport
+  nameWithType: HttpClientNames.PortfolioImport
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.PortfolioImport
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioImport
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string PortfolioImport = "portfolio-import"
+    return:
+      type: System.String
+    content.vb: Public Const PortfolioImport As String = "portfolio-import"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.IBClientPortal
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.IBClientPortal
+  id: IBClientPortal
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: IBClientPortal
+  nameWithType: HttpClientNames.IBClientPortal
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.IBClientPortal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBClientPortal
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string IBClientPortal = "ib-client-portal"
+    return:
+      type: System.String
+    content.vb: Public Const IBClientPortal As String = "ib-client-portal"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.DryRun
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.DryRun
+  id: DryRun
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: DryRun
+  nameWithType: HttpClientNames.DryRun
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.DryRun
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DryRun
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string DryRun = "dry-run"
+    return:
+      type: System.String
+    content.vb: Public Const DryRun As String = "dry-run"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.PreflightChecker
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.PreflightChecker
+  id: PreflightChecker
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: PreflightChecker
+  nameWithType: HttpClientNames.PreflightChecker
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.PreflightChecker
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreflightChecker
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string PreflightChecker = "preflight-checker"
+    return:
+      type: System.String
+    content.vb: Public Const PreflightChecker As String = "preflight-checker"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.Default
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.Default
+  id: Default
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: HttpClientNames.Default
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.Default
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string Default = "default"
+    return:
+      type: System.String
+    content.vb: Public Const Default As String = "default"
+references:
+- uid: Meridian.Infrastructure.Http
+  commentId: N:Meridian.Infrastructure.Http
+  href: Meridian.html
+  name: Meridian.Infrastructure.Http
+  nameWithType: Meridian.Infrastructure.Http
+  fullName: Meridian.Infrastructure.Http
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Http
+    name: Http
+    href: Meridian.Infrastructure.Http.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Http
+    name: Http
+    href: Meridian.Infrastructure.Http.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

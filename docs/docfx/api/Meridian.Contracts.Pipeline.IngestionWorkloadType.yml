@@ -1,0 +1,196 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  commentId: T:Meridian.Contracts.Pipeline.IngestionWorkloadType
+  id: IngestionWorkloadType
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.IngestionWorkloadType.GapFill
+  - Meridian.Contracts.Pipeline.IngestionWorkloadType.Historical
+  - Meridian.Contracts.Pipeline.IngestionWorkloadType.Realtime
+  - Meridian.Contracts.Pipeline.IngestionWorkloadType.ScheduledBackfill
+  langs:
+  - csharp
+  - vb
+  name: IngestionWorkloadType
+  nameWithType: IngestionWorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionWorkloadType
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Type of ingestion workload.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum IngestionWorkloadType : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum IngestionWorkloadType As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType.Realtime
+  commentId: F:Meridian.Contracts.Pipeline.IngestionWorkloadType.Realtime
+  id: Realtime
+  parent: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  langs:
+  - csharp
+  - vb
+  name: Realtime
+  nameWithType: IngestionWorkloadType.Realtime
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType.Realtime
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Realtime
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Real-time streaming data collection.
+  example: []
+  syntax:
+    content: Realtime = 0
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionWorkloadType
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType.Historical
+  commentId: F:Meridian.Contracts.Pipeline.IngestionWorkloadType.Historical
+  id: Historical
+  parent: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: IngestionWorkloadType.Historical
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType.Historical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Historical backfill from a provider.
+  example: []
+  syntax:
+    content: Historical = 1
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionWorkloadType
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType.GapFill
+  commentId: F:Meridian.Contracts.Pipeline.IngestionWorkloadType.GapFill
+  id: GapFill
+  parent: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  langs:
+  - csharp
+  - vb
+  name: GapFill
+  nameWithType: IngestionWorkloadType.GapFill
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType.GapFill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapFill
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Gap-fill for missing data periods.
+  example: []
+  syntax:
+    content: GapFill = 2
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionWorkloadType
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType.ScheduledBackfill
+  commentId: F:Meridian.Contracts.Pipeline.IngestionWorkloadType.ScheduledBackfill
+  id: ScheduledBackfill
+  parent: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  langs:
+  - csharp
+  - vb
+  name: ScheduledBackfill
+  nameWithType: IngestionWorkloadType.ScheduledBackfill
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType.ScheduledBackfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledBackfill
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Scheduled recurring backfill.
+  example: []
+  syntax:
+    content: ScheduledBackfill = 3
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionWorkloadType
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: Meridian.Contracts.Pipeline.IngestionWorkloadType
+  commentId: T:Meridian.Contracts.Pipeline.IngestionWorkloadType
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionWorkloadType.html
+  name: IngestionWorkloadType
+  nameWithType: IngestionWorkloadType
+  fullName: Meridian.Contracts.Pipeline.IngestionWorkloadType

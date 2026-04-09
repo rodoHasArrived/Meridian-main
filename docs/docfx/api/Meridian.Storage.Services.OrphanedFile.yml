@@ -1,0 +1,569 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.OrphanedFile
+  commentId: T:Meridian.Storage.Services.OrphanedFile
+  id: OrphanedFile
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.OrphanedFile.#ctor(System.String,System.String,System.Int64,System.DateTime)
+  - Meridian.Storage.Services.OrphanedFile.LastModified
+  - Meridian.Storage.Services.OrphanedFile.Path
+  - Meridian.Storage.Services.OrphanedFile.Reason
+  - Meridian.Storage.Services.OrphanedFile.SizeBytes
+  langs:
+  - csharp
+  - vb
+  name: OrphanedFile
+  nameWithType: OrphanedFile
+  fullName: Meridian.Storage.Services.OrphanedFile
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrphanedFile
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 682
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record OrphanedFile : IEquatable<OrphanedFile>'
+    content.vb: Public NotInheritable Class OrphanedFile Implements IEquatable(Of OrphanedFile)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.OrphanedFile}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.OrphanedFile.#ctor(System.String,System.String,System.Int64,System.DateTime)
+  commentId: M:Meridian.Storage.Services.OrphanedFile.#ctor(System.String,System.String,System.Int64,System.DateTime)
+  id: '#ctor(System.String,System.String,System.Int64,System.DateTime)'
+  parent: Meridian.Storage.Services.OrphanedFile
+  langs:
+  - csharp
+  - vb
+  name: OrphanedFile(string, string, long, DateTime)
+  nameWithType: OrphanedFile.OrphanedFile(string, string, long, DateTime)
+  fullName: Meridian.Storage.Services.OrphanedFile.OrphanedFile(string, string, long, System.DateTime)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 682
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified)
+    parameters:
+    - id: Path
+      type: System.String
+    - id: Reason
+      type: System.String
+    - id: SizeBytes
+      type: System.Int64
+    - id: LastModified
+      type: System.DateTime
+    content.vb: Public Sub New(Path As String, Reason As String, SizeBytes As Long, LastModified As Date)
+  overload: Meridian.Storage.Services.OrphanedFile.#ctor*
+  nameWithType.vb: OrphanedFile.New(String, String, Long, Date)
+  fullName.vb: Meridian.Storage.Services.OrphanedFile.New(String, String, Long, Date)
+  name.vb: New(String, String, Long, Date)
+- uid: Meridian.Storage.Services.OrphanedFile.Path
+  commentId: P:Meridian.Storage.Services.OrphanedFile.Path
+  id: Path
+  parent: Meridian.Storage.Services.OrphanedFile
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: OrphanedFile.Path
+  fullName: Meridian.Storage.Services.OrphanedFile.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 683
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Path { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Storage.Services.OrphanedFile.Path*
+- uid: Meridian.Storage.Services.OrphanedFile.Reason
+  commentId: P:Meridian.Storage.Services.OrphanedFile.Reason
+  id: Reason
+  parent: Meridian.Storage.Services.OrphanedFile
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: OrphanedFile.Reason
+  fullName: Meridian.Storage.Services.OrphanedFile.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 684
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Storage.Services.OrphanedFile.Reason*
+- uid: Meridian.Storage.Services.OrphanedFile.SizeBytes
+  commentId: P:Meridian.Storage.Services.OrphanedFile.SizeBytes
+  id: SizeBytes
+  parent: Meridian.Storage.Services.OrphanedFile
+  langs:
+  - csharp
+  - vb
+  name: SizeBytes
+  nameWithType: OrphanedFile.SizeBytes
+  fullName: Meridian.Storage.Services.OrphanedFile.SizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SizeBytes
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 685
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long SizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SizeBytes As Long
+  overload: Meridian.Storage.Services.OrphanedFile.SizeBytes*
+- uid: Meridian.Storage.Services.OrphanedFile.LastModified
+  commentId: P:Meridian.Storage.Services.OrphanedFile.LastModified
+  id: LastModified
+  parent: Meridian.Storage.Services.OrphanedFile
+  langs:
+  - csharp
+  - vb
+  name: LastModified
+  nameWithType: OrphanedFile.LastModified
+  fullName: Meridian.Storage.Services.OrphanedFile.LastModified
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastModified
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 686
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime LastModified { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property LastModified As Date
+  overload: Meridian.Storage.Services.OrphanedFile.LastModified*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.OrphanedFile}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.OrphanedFile}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrphanedFile>
+  nameWithType: IEquatable<OrphanedFile>
+  fullName: System.IEquatable<Meridian.Storage.Services.OrphanedFile>
+  nameWithType.vb: IEquatable(Of OrphanedFile)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.OrphanedFile)
+  name.vb: IEquatable(Of OrphanedFile)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.OrphanedFile
+    name: OrphanedFile
+    href: Meridian.Storage.Services.OrphanedFile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.OrphanedFile
+    name: OrphanedFile
+    href: Meridian.Storage.Services.OrphanedFile.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.OrphanedFile.#ctor*
+  commentId: Overload:Meridian.Storage.Services.OrphanedFile.#ctor
+  href: Meridian.Storage.Services.OrphanedFile.html#Meridian_Storage_Services_OrphanedFile__ctor_System_String_System_String_System_Int64_System_DateTime_
+  name: OrphanedFile
+  nameWithType: OrphanedFile.OrphanedFile
+  fullName: Meridian.Storage.Services.OrphanedFile.OrphanedFile
+  nameWithType.vb: OrphanedFile.New
+  fullName.vb: Meridian.Storage.Services.OrphanedFile.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Storage.Services.OrphanedFile.Path*
+  commentId: Overload:Meridian.Storage.Services.OrphanedFile.Path
+  href: Meridian.Storage.Services.OrphanedFile.html#Meridian_Storage_Services_OrphanedFile_Path
+  name: Path
+  nameWithType: OrphanedFile.Path
+  fullName: Meridian.Storage.Services.OrphanedFile.Path
+- uid: Meridian.Storage.Services.OrphanedFile.Reason*
+  commentId: Overload:Meridian.Storage.Services.OrphanedFile.Reason
+  href: Meridian.Storage.Services.OrphanedFile.html#Meridian_Storage_Services_OrphanedFile_Reason
+  name: Reason
+  nameWithType: OrphanedFile.Reason
+  fullName: Meridian.Storage.Services.OrphanedFile.Reason
+- uid: Meridian.Storage.Services.OrphanedFile.SizeBytes*
+  commentId: Overload:Meridian.Storage.Services.OrphanedFile.SizeBytes
+  href: Meridian.Storage.Services.OrphanedFile.html#Meridian_Storage_Services_OrphanedFile_SizeBytes
+  name: SizeBytes
+  nameWithType: OrphanedFile.SizeBytes
+  fullName: Meridian.Storage.Services.OrphanedFile.SizeBytes
+- uid: Meridian.Storage.Services.OrphanedFile.LastModified*
+  commentId: Overload:Meridian.Storage.Services.OrphanedFile.LastModified
+  href: Meridian.Storage.Services.OrphanedFile.html#Meridian_Storage_Services_OrphanedFile_LastModified
+  name: LastModified
+  nameWithType: OrphanedFile.LastModified
+  fullName: Meridian.Storage.Services.OrphanedFile.LastModified

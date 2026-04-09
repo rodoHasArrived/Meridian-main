@@ -1,0 +1,552 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ReportGenerationService
+  commentId: T:Meridian.Application.Services.ReportGenerationService
+  id: ReportGenerationService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ReportGenerationService.#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService)
+  - Meridian.Application.Services.ReportGenerationService.GenerateAsync(Meridian.Application.Services.ReportRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ReportGenerationService
+  nameWithType: ReportGenerationService
+  fullName: Meridian.Application.Services.ReportGenerationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportGenerationService
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Generates report-packs that combine Security Master instrument definitions,
+
+    ledger snapshots, and portfolio data into structured governance reports.
+  example: []
+  syntax:
+    content: public sealed class ReportGenerationService
+    content.vb: Public NotInheritable Class ReportGenerationService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ReportGenerationService.#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService)
+  commentId: M:Meridian.Application.Services.ReportGenerationService.#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService)
+  id: '#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService)'
+  parent: Meridian.Application.Services.ReportGenerationService
+  langs:
+  - csharp
+  - vb
+  name: ReportGenerationService(ISecurityMasterQueryService)
+  nameWithType: ReportGenerationService.ReportGenerationService(ISecurityMasterQueryService)
+  fullName: Meridian.Application.Services.ReportGenerationService.ReportGenerationService(Meridian.Application.SecurityMaster.ISecurityMasterQueryService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public ReportGenerationService(ISecurityMasterQueryService securityMaster)
+    parameters:
+    - id: securityMaster
+      type: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+    content.vb: Public Sub New(securityMaster As ISecurityMasterQueryService)
+  overload: Meridian.Application.Services.ReportGenerationService.#ctor*
+  nameWithType.vb: ReportGenerationService.New(ISecurityMasterQueryService)
+  fullName.vb: Meridian.Application.Services.ReportGenerationService.New(Meridian.Application.SecurityMaster.ISecurityMasterQueryService)
+  name.vb: New(ISecurityMasterQueryService)
+- uid: Meridian.Application.Services.ReportGenerationService.GenerateAsync(Meridian.Application.Services.ReportRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ReportGenerationService.GenerateAsync(Meridian.Application.Services.ReportRequest,System.Threading.CancellationToken)
+  id: GenerateAsync(Meridian.Application.Services.ReportRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ReportGenerationService
+  langs:
+  - csharp
+  - vb
+  name: GenerateAsync(ReportRequest, CancellationToken)
+  nameWithType: ReportGenerationService.GenerateAsync(ReportRequest, CancellationToken)
+  fullName: Meridian.Application.Services.ReportGenerationService.GenerateAsync(Meridian.Application.Services.ReportRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateAsync
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Generates a full report pack for the given fund ledger snapshot.
+
+    The pack includes a trial-balance section, per-asset-class breakdown,
+
+    and security-enrichment rows for every symbol that can be resolved.
+  example: []
+  syntax:
+    content: public Task<ReportPack> GenerateAsync(ReportRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Services.ReportRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.ReportPack}
+    content.vb: Public Function GenerateAsync(request As ReportRequest, ct As CancellationToken = Nothing) As Task(Of ReportPack)
+  overload: Meridian.Application.Services.ReportGenerationService.GenerateAsync*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ReportGenerationService.#ctor*
+  commentId: Overload:Meridian.Application.Services.ReportGenerationService.#ctor
+  href: Meridian.Application.Services.ReportGenerationService.html#Meridian_Application_Services_ReportGenerationService__ctor_Meridian_Application_SecurityMaster_ISecurityMasterQueryService_
+  name: ReportGenerationService
+  nameWithType: ReportGenerationService.ReportGenerationService
+  fullName: Meridian.Application.Services.ReportGenerationService.ReportGenerationService
+  nameWithType.vb: ReportGenerationService.New
+  fullName.vb: Meridian.Application.Services.ReportGenerationService.New
+  name.vb: New
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: Meridian.Application.Services.ReportGenerationService.GenerateAsync*
+  commentId: Overload:Meridian.Application.Services.ReportGenerationService.GenerateAsync
+  href: Meridian.Application.Services.ReportGenerationService.html#Meridian_Application_Services_ReportGenerationService_GenerateAsync_Meridian_Application_Services_ReportRequest_System_Threading_CancellationToken_
+  name: GenerateAsync
+  nameWithType: ReportGenerationService.GenerateAsync
+  fullName: Meridian.Application.Services.ReportGenerationService.GenerateAsync
+- uid: Meridian.Application.Services.ReportRequest
+  commentId: T:Meridian.Application.Services.ReportRequest
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ReportRequest.html
+  name: ReportRequest
+  nameWithType: ReportRequest
+  fullName: Meridian.Application.Services.ReportRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.ReportPack}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.ReportPack}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ReportPack>
+  nameWithType: Task<ReportPack>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.ReportPack>
+  nameWithType.vb: Task(Of ReportPack)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.ReportPack)
+  name.vb: Task(Of ReportPack)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.ReportPack
+    name: ReportPack
+    href: Meridian.Application.Services.ReportPack.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ReportPack
+    name: ReportPack
+    href: Meridian.Application.Services.ReportPack.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

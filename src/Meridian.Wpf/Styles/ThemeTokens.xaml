@@ -68,6 +68,20 @@
     <Color x:Key="TopBarBorder">#182535</Color>
     <Color x:Key="TopBarIconAccent">#60A5FA</Color>
 
+    <!-- ── Marquee dark sidebar palette ── -->
+    <!-- Deep navy sidebar: premium trading terminal feel -->
+    <Color x:Key="SidebarBackground">#0F1B28</Color>
+    <Color x:Key="SidebarBorderColor">#1A2F42</Color>
+    <Color x:Key="SidebarHoverColor">#1A2D3F</Color>
+    <Color x:Key="SidebarActiveColor">#1C3250</Color>
+    <Color x:Key="SidebarActiveIndicatorColor">#2D9CDB</Color>
+    <Color x:Key="SidebarTileColor">#172233</Color>
+    <Color x:Key="SidebarTileHoverColor">#1E3048</Color>
+    <Color x:Key="NavItemText">#7FA0BD</Color>
+    <Color x:Key="NavItemTextHover">#DCE8F4</Color>
+    <Color x:Key="NavItemTextActive">#FFFFFF</Color>
+    <Color x:Key="NavSectionLabel">#3E5470</Color>
+
     <!-- ── Solid brushes ── -->
     <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush"    Color="{StaticResource ConsoleBackgroundDark}" />
     <SolidColorBrush x:Key="ConsoleBackgroundMediumBrush"  Color="{StaticResource ConsoleBackgroundMedium}" />
@@ -90,6 +104,7 @@
     <SolidColorBrush x:Key="InfoColorBrush"                Color="{StaticResource ConsoleAccentBlue}" />
     <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
     <SolidColorBrush x:Key="AccentPurpleBrush"             Color="{StaticResource ConsoleAccentPurple}" />
+    <SolidColorBrush x:Key="ConsoleAccentGreenBrush"       Color="{StaticResource ConsoleAccentGreen}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush"    Color="{StaticResource ConsoleAccentGreenDim}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenLightBrush"  Color="{StaticResource ConsoleAccentGreenLight}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenAlpha10Brush"  Color="{StaticResource ConsoleAccentGreenAlpha10}" />
@@ -165,20 +180,6 @@
     <SolidColorBrush x:Key="NavActiveBackgroundBrush"   Color="#1A2E45" />
     <SolidColorBrush x:Key="NavActiveBorderBrush"       Color="#1B92D4" />
 
-    <!-- ── Marquee dark sidebar palette ── -->
-    <!-- Deep navy sidebar: premium trading terminal feel -->
-    <Color x:Key="SidebarBackground">#0F1B28</Color>
-    <Color x:Key="SidebarBorderColor">#1A2F42</Color>
-    <Color x:Key="SidebarHoverColor">#1A2D3F</Color>
-    <Color x:Key="SidebarActiveColor">#1C3250</Color>
-    <Color x:Key="SidebarActiveIndicatorColor">#2D9CDB</Color>
-    <Color x:Key="SidebarTileColor">#172233</Color>
-    <Color x:Key="SidebarTileHoverColor">#1E3048</Color>
-    <Color x:Key="NavItemText">#7FA0BD</Color>
-    <Color x:Key="NavItemTextHover">#DCE8F4</Color>
-    <Color x:Key="NavItemTextActive">#FFFFFF</Color>
-    <Color x:Key="NavSectionLabel">#3E5470</Color>
-
     <SolidColorBrush x:Key="SidebarBackgroundBrush"          Color="{StaticResource SidebarBackground}" />
     <SolidColorBrush x:Key="SidebarBorderBrush"              Color="{StaticResource SidebarBorderColor}" />
     <SolidColorBrush x:Key="SidebarHoverBrush"               Color="{StaticResource SidebarHoverColor}" />
@@ -203,4 +204,22 @@
     <!-- ── Command bar (split-pane toolbar) ── -->
     <SolidColorBrush x:Key="CommandBarBackground"    Color="#F8F9FA" />
     <SolidColorBrush x:Key="CommandBarBorderBrush"   Color="{StaticResource ConsoleBorderColor}" />
+
+    <!-- ── Alias brushes used by individual views ── -->
+    <!-- ConsoleAccentBlueBrush: solid blue accent (same hue as InfoColorBrush) -->
+    <SolidColorBrush x:Key="ConsoleAccentBlueBrush"         Color="{StaticResource ConsoleAccentBlue}" />
+    <!-- ConsoleAccentBlueAlpha80Brush: 80 % opacity blue accent -->
+    <Color x:Key="ConsoleAccentBlueAlpha80">#CC1A6BB5</Color>
+    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha80Brush"  Color="{StaticResource ConsoleAccentBlueAlpha80}" />
+    <!-- ConsoleBackgroundBrush / ConsoleTextBrush: short-name aliases -->
+    <SolidColorBrush x:Key="ConsoleBackgroundBrush"         Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ConsoleTextBrush"               Color="{StaticResource ConsoleTextPrimary}" />
+    <!-- ErrorBrush: alias for ErrorColorBrush -->
+    <SolidColorBrush x:Key="ErrorBrush"                     Color="{StaticResource ConsoleAccentRed}" />
+    <!-- SuccessColorAlpha20Brush: alias for ConsoleAccentGreenAlpha20Brush -->
+    <SolidColorBrush x:Key="SuccessColorAlpha20Brush"       Color="{StaticResource ConsoleAccentGreenAlpha20}" />
+    <!-- ConsoleWindowBackgroundBrush / ConsoleWindowBorderBrush: shell-level aliases -->
+    <SolidColorBrush x:Key="ConsoleWindowBackgroundBrush"   Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ConsoleWindowBorderBrush"       Color="{StaticResource ConsoleBorderColor}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush"              Color="{StaticResource ConsoleBorderColor}" />
 </ResourceDictionary>

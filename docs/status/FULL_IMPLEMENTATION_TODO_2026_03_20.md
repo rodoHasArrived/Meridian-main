@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-06
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -33,6 +33,10 @@ Closed platform work:
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
 - Brokerage gateway framework complete: `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`, plus Alpaca/IB/StockSharp adapter implementations
+- WPF shell modernization: native Fluent theme (`ThemeMode="System"`, PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on Charting page (PR #522)
+- Zero-API-key startup: Synthetic provider default when no credentials are present (PR #513)
+- Route/health endpoint reliability: duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
+- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515)
 
 Implemented foundations now available to build on:
 
@@ -41,6 +45,8 @@ Implemented foundations now available to build on:
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
+- live execution governance now wired into the stable execution seam: durable audit trail, circuit breaker / position-limit / manual-override controls, and human-approved `Paper → Live` promotion
+- Alpaca execution path validated end to end through the existing `/api/execution/*` seam with executable test evidence
 
 The remaining backlog is therefore about turning those foundations into a complete operator-facing product.
 
@@ -73,9 +79,9 @@ Goal: make the existing execution primitives, brokerage adapters, and wired REST
 Open work:
 
 - build live positions, open orders, fills, P&L, and risk state panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result and approval controls in the dashboard
+- expose promotion evaluation result, approval controls, and execution-control state in the dashboard
 - add paper-trading session persistence and replay from persisted order history
-- validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
+- extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 
 Primary anchors:
 
@@ -133,14 +139,13 @@ Backtesting feels like one product regardless of whether the native engine or Le
 
 ### Track E: Live integration readiness
 
-Goal: validate the brokerage gateway framework against real vendor surfaces and add the execution audit trail needed for live operations.
+Goal: validate the brokerage gateway framework against real vendor surfaces and keep the live-operation governance path complete and operable.
 
 Open work:
 
-- validate brokerage gateway adapters against live vendor APIs (Alpaca, IB, StockSharp)
-- add execution audit trail sufficient for live operations
-- define operator controls (circuit breakers, position limits, manual overrides)
-- wire `Paper → Live` promotion gate with human-approval controls
+- extend live validation beyond the checked-in Alpaca execution path to IB and StockSharp
+- add richer live-broker cancellation / amend evidence for Alpaca and other gateways
+- surface the new audit / control / promotion-governance endpoints in the dashboard UI
 
 Primary anchors:
 
@@ -152,6 +157,7 @@ Primary anchors:
 Exit signal:
 
 At least one brokerage adapter is validated against a live vendor surface with audit trail.
+Current status: Alpaca execution path is now validated through the stable REST seam with audit and control coverage; additional broker/runtime proof remains open.
 
 ### Track F: Governance and fund-operations productization
 
@@ -223,6 +229,39 @@ Primary anchors:
 - `src/Meridian.Core/Config/CoordinationConfig.cs`
 - `tests/Meridian.Tests/Application/Coordination/`
 
+### Track K: Phase 1.5 — Preferred & Convertible Equity domain extension *(implemented domain + event + preferred-term read/write foundation)*
+
+Goal: extend the F# Security Master domain model to support preferred and convertible equity classifications as a foundation for Phase 1.5 UFL Equity V2.
+
+Implemented foundation:
+
+- `EquityClassification` now exists in `src/Meridian.FSharp/Domain/SecurityMaster.fs` with preferred, convertible, and combined preferred/convertible cases
+- `PreferredTerms`, `ConvertibleTerms`, `ParticipationTerms`, `DividendType`, and `LiquidationPreference` are implemented in the F# Security Master domain
+- `EquityTerms` now carries optional `Classification: EquityClassification option`
+- `SecurityMasterCommands.fs` validates preferred/conversion term constraints while keeping common-equity flows backward-compatible
+- `SecurityMasterEvents.fs` now includes `PreferredTermsAmended` and `ConversionTermsAmended`, and `SecurityMasterCommands.fs` emits them only for narrow preferred-only or conversion-only amendments
+- `Interop.SecurityMaster.fs` and `SecurityMasterService.cs` now preserve the generated amendment event type when persisting Security Master history
+- `ISecurityMasterQueryService` and `SecurityMasterQueryService` now expose dedicated preferred-equity and convertible-equity term lookups backed by the existing Security Master projection payload
+- `SecurityMasterEndpoints.cs` and `UiApiRoutes.cs` now expose `/api/security-master/equities/{securityId}/preferred-terms` and `/api/security-master/equities/{securityId}/conversion-terms` for typed read access to current term definitions
+- `ISecurityMasterService`, `SecurityMasterService.cs`, and `SecurityMasterEndpoints.cs` now expose `PATCH /api/security-master/equities/{securityId}/preferred-terms` as a specialized preferred-term amend flow that preserves share-class and convertible metadata
+- F# domain tests cover happy-path common-equity creation, valid preferred/convertible creation, and invalid preferred/convertible constraint failures
+- C# query-service, preferred-term amend, and endpoint tests cover preferred/conversion term extraction, specialized preferred amendments, not-found handling, and cancellation propagation
+- `docs/ai/claude/CLAUDE.domain-naming.md` now includes the preferred/convertible naming conventions for `PrefShrDef`, `ConvPrefDef`, `DivTr`, `RedTr`, `CallTr`, and `ConvTr`
+
+Follow-on work still lives in `docs/plans/ufl-equity-target-state-v2.md` for dividend schedules, yield/parity projections, execution workflows, and workstation surfaces beyond this preferred-term read/write foundation slice.
+
+Primary anchors:
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.FSharp/Domain/SecurityClassification.fs` (partial foundation already present: `PreferredEquity`, `PreferredShare`)
+- `issues/phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md`
+- `PROJECTS/Phase_1.5_Preferred_and_Convertible_Equity_Support.md`
+- `docs/plans/ufl-equity-target-state-v2.md`
+
+Exit signal:
+
+Completed on 2026-04-06 for the domain-event-query foundation slice: discriminated union, term records, specialized amendment events, facade/service event-type propagation, dedicated preferred/conversion term queries, unit tests, and naming/status doc updates are now in the repo.
+
 ### Track J: Structural closure and documentation convergence
 
 Goal: keep the repo coherent as the remaining product work lands.
@@ -270,6 +309,7 @@ References:
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
 - Track J: Remaining structural/documentation closure
+- Track K: Phase 1.5 preferred/convertible equity domain extension *(implemented domain + event + read-query foundation — broader projections and workflows remain in `docs/plans/ufl-equity-target-state-v2.md`)*
 
 ---
 

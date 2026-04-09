@@ -1,112 +1,120 @@
 # Getting Started
 
-Quick start guide for the Meridian. For comprehensive documentation, see [HELP.md](../HELP.md).
+**Last Reviewed:** 2026-04-05
+
+This guide covers the fastest verified ways to get Meridian running locally. For the broader operator reference, see [../HELP.md](../HELP.md).
 
 ## Prerequisites
 
-- .NET 9.0 SDK ([download](https://dotnet.microsoft.com/download/dotnet/9.0))
-- At least one data provider account (see [Provider Setup](#provider-setup) below)
+- .NET 9 SDK
+- Git
+- One configured data provider if you want live or credentialed historical data
+- Node.js and npm only if you plan to build the dashboard frontend bundle directly
 
-## Fastest Setup
+## Fastest Local Setup
+
+If you have `make` available:
 
 ```bash
-# Clone and build
-git clone https://github.com/rodoHasArrived/Meridian.git
-cd Meridian
-dotnet build
-
-# Run the interactive wizard
-dotnet run --project src/Meridian/Meridian.csproj -- --wizard
+git clone https://github.com/rodoHasArrived/Meridian-main.git
+cd Meridian-main
+make setup-dev
+dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
-The wizard guides you through provider selection, symbol configuration, and storage setup.
-
-## Provider Setup
-
-You need at least one data provider. Choose based on your needs:
-
-| Provider | Free Tier | Setup Guide | Best For |
-| ---------- | ----------- | ------------- | ---------- |
-| **Alpaca** | Yes (with account) | [Alpaca Setup](../providers/alpaca-setup.md) | Easiest to start, real-time US equities |
-| **Interactive Brokers** | Yes (with account) | [IB Setup](../providers/interactive-brokers-setup.md) | Full L2 depth, options, broad coverage |
-| **Polygon** | Limited | [Provider Comparison](../providers/provider-comparison.md) | High-quality aggregated data |
-| **StockSharp** | Yes (with account) | [Data Sources](../providers/data-sources.md) | 90+ exchange connectors |
-
-Set credentials via environment variables (never in config files):
+If you prefer the plain .NET path:
 
 ```bash
-# Example: Alpaca credentials
-export ALPACA__KEYID=your-key-id
-export ALPACA__SECRETKEY=your-secret-key
+git clone https://github.com/rodoHasArrived/Meridian-main.git
+cd Meridian-main
+dotnet restore
+dotnet build Meridian.sln
+dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
-See [Environment Variables](../reference/environment-variables.md) for the full list.
+`--quickstart` is the fastest verified first-run path. It delegates to the configuration pipeline and prepares the app for a `--mode web` launch.
 
-## Alternative Setup Methods
+## Other Setup Paths
 
-| Method | Command | Best For |
-| -------- | --------- | ---------- |
-| **Configuration Wizard** | `--wizard` | New users, interactive setup |
-| **Auto-Configuration** | `--auto-config` | Users with env vars already set |
-| **Web Dashboard** | `--mode web` | Visual configuration via browser |
-| **Manual Config** | Edit `config/appsettings.json` | Power users |
-| **Docker** | `docker compose up` | Containerized deployment |
-| **Dry Run** | `--dry-run` | Validate config without starting |
+| Goal | Command | Notes |
+|------|---------|-------|
+| Interactive setup | `dotnet run --project src/Meridian/Meridian.csproj -- --wizard` | Step-by-step configuration flow |
+| Auto-config from env vars | `dotnet run --project src/Meridian/Meridian.csproj -- --auto-config` | Best when provider credentials are already set |
+| Validate config only | `dotnet run --project src/Meridian/Meridian.csproj -- --validate-config` | No long-running host |
+| Fast health check | `dotnet run --project src/Meridian/Meridian.csproj -- --quick-check` | Quick configuration/status validation |
+| Connectivity test | `dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity` | Verifies configured provider connections |
+| Full dry run | `dotnet run --project src/Meridian/Meridian.csproj -- --dry-run` | Validation without starting collection |
 
-## Validate Your Setup
+## Choose A Launch Surface
 
-Before starting data collection, validate that everything is configured correctly:
+### Web dashboard
 
 ```bash
-# Quick configuration health check
-dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
-
-# Test connectivity to all configured providers
-dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
-
-# Full validation without starting collection
-dotnet run --project src/Meridian/Meridian.csproj -- --dry-run
+dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080
 ```
 
-## Start Collecting Data
+You can also use:
 
 ```bash
-# Web dashboard mode (recommended — opens at http://localhost:8080)
-dotnet run --project src/Meridian/Meridian.csproj -- --mode web
+make run-ui
+```
 
-# Headless mode (no UI, for servers)
+### Headless collector
+
+```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --mode headless
 ```
 
-## Where Data Is Stored
+### Windows WPF desktop shell
 
-By default, collected data goes to the `data/` directory:
-
-```text
-data/
-├── live/           # Real-time streaming data (hot tier)
-├── historical/     # Backfill data from historical providers
-├── _wal/           # Write-ahead log for crash safety
-└── _archive/       # Compressed archives (cold tier)
+```powershell
+pwsh ./scripts/dev/run-desktop.ps1
 ```
 
-See [Storage Design](../architecture/storage-design.md) for details on tiered storage and file organization.
+This launcher is the recommended Windows desktop path. It starts the local Meridian host on `http://localhost:8080` when needed, waits for it to pass `/healthz`, then opens the WPF shell.
 
-## Next Steps
+Manual fallback:
 
-1. **Pilot operations path**: [Pilot Operator Quickstart](pilot-operator-quickstart.md)
-2. **Configuration keys**: [Generated Configuration Schema](../generated/configuration-schema.md)
-3. **Backfill historical data**: [Backfill Guide](../providers/backfill-guide.md)
-4. **Monitor data quality**: Check the Data Quality page in the web dashboard
-5. **Export data**: [Portable Data Packager](../operations/portable-data-packager.md)
-6. **Run backtests**: [Lean Integration](../integrations/lean-integration.md)
-7. **Deploy to production**: [Deployment Guide](../operations/deployment.md)
+```powershell
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
+```
+
+The WPF shell is the Windows-only desktop workstation path. The web dashboard remains the cross-platform UI surface.
+
+## Provider Setup
+
+Choose a provider path based on what you need:
+
+| Provider | Best For | Setup Guide |
+|----------|----------|-------------|
+| Alpaca | Easiest credentialed starting point for US streaming and recent history | [../providers/alpaca-setup.md](../providers/alpaca-setup.md) |
+| Interactive Brokers | Broker-aligned workflows, options, and deeper market coverage | [../providers/interactive-brokers-setup.md](../providers/interactive-brokers-setup.md) |
+| Polygon | Strong market-data quality and research/trading workflows | [../providers/provider-comparison.md](../providers/provider-comparison.md) |
+| StockSharp | Connector-driven multi-exchange setups | [../providers/stocksharp-connectors.md](../providers/stocksharp-connectors.md) |
+
+For the broader provider inventory and tradeoffs, see [../providers/README.md](../providers/README.md) and [../providers/data-sources.md](../providers/data-sources.md).
+
+## Validate Your Setup
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
+dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
+dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
+dotnet run --project src/Meridian/Meridian.csproj -- --dry-run
+```
+
+## Common Next Steps
+
+1. [Pilot Operator Quickstart](pilot-operator-quickstart.md)
+2. [Backfill Guide](../providers/backfill-guide.md)
+3. [Operator Runbook](../operations/operator-runbook.md)
+4. [Environment Variables](../reference/environment-variables.md)
+5. [Generated Configuration Schema](../generated/configuration-schema.md)
+6. [Deployment Guide](../operations/deployment.md)
 
 ## Quick Reference
 
-- **[User Guide](../HELP.md)** — Complete reference for all features
-- **[Configuration](../HELP.md#configuration)** — All configuration options
-- **[Provider Comparison](../providers/provider-comparison.md)** — Feature comparison across providers
-- **[Troubleshooting](../HELP.md#troubleshooting)** — Common issues and solutions
-- **[FAQ](../HELP.md#faq)** — Frequently asked questions
-- **[Architecture Overview](../architecture/overview.md)** — System design and data flow
+- [../HELP.md](../HELP.md)
+- [../providers/provider-comparison.md](../providers/provider-comparison.md)
+- [../operations/preflight-checklist.md](../operations/preflight-checklist.md)
+- [../architecture/overview.md](../architecture/overview.md)

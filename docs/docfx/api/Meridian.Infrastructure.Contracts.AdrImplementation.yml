@@ -1,0 +1,615 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation
+  commentId: T:Meridian.Infrastructure.Contracts.AdrImplementation
+  id: AdrImplementation
+  parent: Meridian.Infrastructure.Contracts
+  children:
+  - Meridian.Infrastructure.Contracts.AdrImplementation.#ctor(System.String,System.String,System.Type,System.String)
+  - Meridian.Infrastructure.Contracts.AdrImplementation.AdrId
+  - Meridian.Infrastructure.Contracts.AdrImplementation.Description
+  - Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute(Meridian.Infrastructure.Contracts.ImplementsAdrAttribute,System.Type)
+  - Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType
+  - Meridian.Infrastructure.Contracts.AdrImplementation.TypeName
+  langs:
+  - csharp
+  - vb
+  name: AdrImplementation
+  nameWithType: AdrImplementation
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdrImplementation
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 74
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Metadata extracted from ImplementsAdrAttribute for verification.
+  example: []
+  syntax:
+    content: 'public sealed record AdrImplementation : IEquatable<AdrImplementation>'
+    content.vb: Public NotInheritable Class AdrImplementation Implements IEquatable(Of AdrImplementation)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Contracts.AdrImplementation}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.#ctor(System.String,System.String,System.Type,System.String)
+  commentId: M:Meridian.Infrastructure.Contracts.AdrImplementation.#ctor(System.String,System.String,System.Type,System.String)
+  id: '#ctor(System.String,System.String,System.Type,System.String)'
+  parent: Meridian.Infrastructure.Contracts.AdrImplementation
+  langs:
+  - csharp
+  - vb
+  name: AdrImplementation(string, string?, Type, string)
+  nameWithType: AdrImplementation.AdrImplementation(string, string?, Type, string)
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.AdrImplementation(string, string?, System.Type, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 74
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Metadata extracted from ImplementsAdrAttribute for verification.
+  example: []
+  syntax:
+    content: public AdrImplementation(string AdrId, string? Description, Type ImplementationType, string TypeName)
+    parameters:
+    - id: AdrId
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: ImplementationType
+      type: System.Type
+    - id: TypeName
+      type: System.String
+    content.vb: Public Sub New(AdrId As String, Description As String, ImplementationType As Type, TypeName As String)
+  overload: Meridian.Infrastructure.Contracts.AdrImplementation.#ctor*
+  nameWithType.vb: AdrImplementation.New(String, String, Type, String)
+  fullName.vb: Meridian.Infrastructure.Contracts.AdrImplementation.New(String, String, System.Type, String)
+  name.vb: New(String, String, Type, String)
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.AdrId
+  commentId: P:Meridian.Infrastructure.Contracts.AdrImplementation.AdrId
+  id: AdrId
+  parent: Meridian.Infrastructure.Contracts.AdrImplementation
+  langs:
+  - csharp
+  - vb
+  name: AdrId
+  nameWithType: AdrImplementation.AdrId
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.AdrId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdrId
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 75
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public string AdrId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AdrId As String
+  overload: Meridian.Infrastructure.Contracts.AdrImplementation.AdrId*
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.Description
+  commentId: P:Meridian.Infrastructure.Contracts.AdrImplementation.Description
+  id: Description
+  parent: Meridian.Infrastructure.Contracts.AdrImplementation
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: AdrImplementation.Description
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 76
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Infrastructure.Contracts.AdrImplementation.Description*
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType
+  commentId: P:Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType
+  id: ImplementationType
+  parent: Meridian.Infrastructure.Contracts.AdrImplementation
+  langs:
+  - csharp
+  - vb
+  name: ImplementationType
+  nameWithType: AdrImplementation.ImplementationType
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImplementationType
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 77
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public Type ImplementationType { get; init; }
+    parameters: []
+    return:
+      type: System.Type
+    content.vb: Public Property ImplementationType As Type
+  overload: Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType*
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.TypeName
+  commentId: P:Meridian.Infrastructure.Contracts.AdrImplementation.TypeName
+  id: TypeName
+  parent: Meridian.Infrastructure.Contracts.AdrImplementation
+  langs:
+  - csharp
+  - vb
+  name: TypeName
+  nameWithType: AdrImplementation.TypeName
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.TypeName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TypeName
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 78
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public string TypeName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TypeName As String
+  overload: Meridian.Infrastructure.Contracts.AdrImplementation.TypeName*
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute(Meridian.Infrastructure.Contracts.ImplementsAdrAttribute,System.Type)
+  commentId: M:Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute(Meridian.Infrastructure.Contracts.ImplementsAdrAttribute,System.Type)
+  id: FromAttribute(Meridian.Infrastructure.Contracts.ImplementsAdrAttribute,System.Type)
+  parent: Meridian.Infrastructure.Contracts.AdrImplementation
+  langs:
+  - csharp
+  - vb
+  name: FromAttribute(ImplementsAdrAttribute, Type)
+  nameWithType: AdrImplementation.FromAttribute(ImplementsAdrAttribute, Type)
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute(Meridian.Infrastructure.Contracts.ImplementsAdrAttribute, System.Type)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromAttribute
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 83
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Creates metadata from an ImplementsAdrAttribute and its type.
+  example: []
+  syntax:
+    content: public static AdrImplementation FromAttribute(ImplementsAdrAttribute attr, Type type)
+    parameters:
+    - id: attr
+      type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    - id: type
+      type: System.Type
+    return:
+      type: Meridian.Infrastructure.Contracts.AdrImplementation
+    content.vb: Public Shared Function FromAttribute(attr As ImplementsAdrAttribute, type As Type) As AdrImplementation
+  overload: Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute*
+references:
+- uid: Meridian.Infrastructure.Contracts
+  commentId: N:Meridian.Infrastructure.Contracts
+  href: Meridian.html
+  name: Meridian.Infrastructure.Contracts
+  nameWithType: Meridian.Infrastructure.Contracts
+  fullName: Meridian.Infrastructure.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Contracts.AdrImplementation}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Contracts.AdrImplementation}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AdrImplementation>
+  nameWithType: IEquatable<AdrImplementation>
+  fullName: System.IEquatable<Meridian.Infrastructure.Contracts.AdrImplementation>
+  nameWithType.vb: IEquatable(Of AdrImplementation)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Contracts.AdrImplementation)
+  name.vb: IEquatable(Of AdrImplementation)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Contracts.AdrImplementation
+    name: AdrImplementation
+    href: Meridian.Infrastructure.Contracts.AdrImplementation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Contracts.AdrImplementation
+    name: AdrImplementation
+    href: Meridian.Infrastructure.Contracts.AdrImplementation.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrImplementation.#ctor
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html#Meridian_Infrastructure_Contracts_AdrImplementation__ctor_System_String_System_String_System_Type_System_String_
+  name: AdrImplementation
+  nameWithType: AdrImplementation.AdrImplementation
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.AdrImplementation
+  nameWithType.vb: AdrImplementation.New
+  fullName.vb: Meridian.Infrastructure.Contracts.AdrImplementation.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.AdrId*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrImplementation.AdrId
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html#Meridian_Infrastructure_Contracts_AdrImplementation_AdrId
+  name: AdrId
+  nameWithType: AdrImplementation.AdrId
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.AdrId
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.Description*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrImplementation.Description
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html#Meridian_Infrastructure_Contracts_AdrImplementation_Description
+  name: Description
+  nameWithType: AdrImplementation.Description
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.Description
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html#Meridian_Infrastructure_Contracts_AdrImplementation_ImplementationType
+  name: ImplementationType
+  nameWithType: AdrImplementation.ImplementationType
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.ImplementationType
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.TypeName*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrImplementation.TypeName
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html#Meridian_Infrastructure_Contracts_AdrImplementation_TypeName
+  name: TypeName
+  nameWithType: AdrImplementation.TypeName
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.TypeName
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html#Meridian_Infrastructure_Contracts_AdrImplementation_FromAttribute_Meridian_Infrastructure_Contracts_ImplementsAdrAttribute_System_Type_
+  name: FromAttribute
+  nameWithType: AdrImplementation.FromAttribute
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation.FromAttribute
+- uid: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+  commentId: T:Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.html
+  name: ImplementsAdrAttribute
+  nameWithType: ImplementsAdrAttribute
+  fullName: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation
+  commentId: T:Meridian.Infrastructure.Contracts.AdrImplementation
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html
+  name: AdrImplementation
+  nameWithType: AdrImplementation
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation

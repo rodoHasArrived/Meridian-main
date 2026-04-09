@@ -1,0 +1,2447 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  commentId: T:Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  id: IDirectLendingOperationsStore
+  parent: Meridian.Storage.DirectLending
+  children:
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(System.Int64,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync(System.Guid,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(System.Guid,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync(Meridian.Contracts.DirectLending.JournalEntryDto,System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync(Meridian.Contracts.DirectLending.ProjectionRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto},System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync(Meridian.Contracts.DirectLending.ReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto},System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync(Meridian.Contracts.DirectLending.ServicerReportBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto},System.Threading.CancellationToken)
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync(Meridian.Contracts.DirectLending.RebuildCheckpointDto,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDirectLendingOperationsStore
+  nameWithType: IDirectLendingOperationsStore
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDirectLendingOperationsStore
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public interface IDirectLendingOperationsStore
+    content.vb: Public Interface IDirectLendingOperationsStore
+  derivedClasses:
+  - Meridian.Storage.DirectLending.PostgresDirectLendingStateStore
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetCashTransactionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetCashTransactionsAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetCashTransactionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCashTransactionsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<CashTransactionDto>> GetCashTransactionsAsync(Guid loanId, CancellationToken ct = default)
+    parameters:
+    - id: loanId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CashTransactionDto}}
+    content.vb: Function GetCashTransactionsAsync(loanId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CashTransactionDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetPaymentAllocationsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetPaymentAllocationsAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetPaymentAllocationsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPaymentAllocationsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<PaymentAllocationDto>> GetPaymentAllocationsAsync(Guid loanId, CancellationToken ct = default)
+    parameters:
+    - id: loanId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.PaymentAllocationDto}}
+    content.vb: Function GetPaymentAllocationsAsync(loanId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of PaymentAllocationDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetFeeBalancesAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetFeeBalancesAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetFeeBalancesAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFeeBalancesAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<FeeBalanceDto>> GetFeeBalancesAsync(Guid loanId, CancellationToken ct = default)
+    parameters:
+    - id: loanId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.FeeBalanceDto}}
+    content.vb: Function GetFeeBalancesAsync(loanId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of FeeBalanceDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync(Meridian.Contracts.DirectLending.ProjectionRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync(Meridian.Contracts.DirectLending.ProjectionRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto},System.Threading.CancellationToken)
+  id: SaveProjectionRunAsync(Meridian.Contracts.DirectLending.ProjectionRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto},System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: SaveProjectionRunAsync(ProjectionRunDto, IReadOnlyList<ProjectedCashFlowDto>, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.SaveProjectionRunAsync(ProjectionRunDto, IReadOnlyList<ProjectedCashFlowDto>, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync(Meridian.Contracts.DirectLending.ProjectionRunDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ProjectedCashFlowDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveProjectionRunAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<ProjectionRunDto> SaveProjectionRunAsync(ProjectionRunDto run, IReadOnlyList<ProjectedCashFlowDto> flows, CancellationToken ct = default)
+    parameters:
+    - id: run
+      type: Meridian.Contracts.DirectLending.ProjectionRunDto
+    - id: flows
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ProjectionRunDto}
+    content.vb: Function SaveProjectionRunAsync(run As ProjectionRunDto, flows As IReadOnlyList(Of ProjectedCashFlowDto), ct As CancellationToken = Nothing) As Task(Of ProjectionRunDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.SaveProjectionRunAsync(ProjectionRunDto, IReadOnlyList(Of ProjectedCashFlowDto), CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync(Meridian.Contracts.DirectLending.ProjectionRunDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ProjectedCashFlowDto), System.Threading.CancellationToken)
+  name.vb: SaveProjectionRunAsync(ProjectionRunDto, IReadOnlyList(Of ProjectedCashFlowDto), CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetProjectionRunsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetProjectionRunsAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetProjectionRunsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProjectionRunsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ProjectionRunDto>> GetProjectionRunsAsync(Guid loanId, CancellationToken ct = default)
+    parameters:
+    - id: loanId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectionRunDto}}
+    content.vb: Function GetProjectionRunsAsync(loanId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ProjectionRunDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetProjectedCashFlowsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetProjectedCashFlowsAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetProjectedCashFlowsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProjectedCashFlowsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ProjectedCashFlowDto>> GetProjectedCashFlowsAsync(Guid projectionRunId, CancellationToken ct = default)
+    parameters:
+    - id: projectionRunId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto}}
+    content.vb: Function GetProjectedCashFlowsAsync(projectionRunId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ProjectedCashFlowDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync(Meridian.Contracts.DirectLending.JournalEntryDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync(Meridian.Contracts.DirectLending.JournalEntryDto,System.Threading.CancellationToken)
+  id: SaveJournalEntryAsync(Meridian.Contracts.DirectLending.JournalEntryDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: SaveJournalEntryAsync(JournalEntryDto, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.SaveJournalEntryAsync(JournalEntryDto, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync(Meridian.Contracts.DirectLending.JournalEntryDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveJournalEntryAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<JournalEntryDto> SaveJournalEntryAsync(JournalEntryDto entry, CancellationToken ct = default)
+    parameters:
+    - id: entry
+      type: Meridian.Contracts.DirectLending.JournalEntryDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.JournalEntryDto}
+    content.vb: Function SaveJournalEntryAsync(entry As JournalEntryDto, ct As CancellationToken = Nothing) As Task(Of JournalEntryDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetJournalEntriesAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetJournalEntriesAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetJournalEntriesAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJournalEntriesAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<JournalEntryDto>> GetJournalEntriesAsync(Guid loanId, CancellationToken ct = default)
+    parameters:
+    - id: loanId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.JournalEntryDto}}
+    content.vb: Function GetJournalEntriesAsync(loanId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of JournalEntryDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetJournalEntryAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetJournalEntryAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetJournalEntryAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJournalEntryAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<JournalEntryDto?> GetJournalEntryAsync(Guid journalEntryId, CancellationToken ct = default)
+    parameters:
+    - id: journalEntryId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.JournalEntryDto}
+    content.vb: Function GetJournalEntryAsync(journalEntryId As Guid, ct As CancellationToken = Nothing) As Task(Of JournalEntryDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: MarkJournalPostedAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: MarkJournalPostedAsync(Guid, DateTimeOffset, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.MarkJournalPostedAsync(Guid, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync(System.Guid, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkJournalPostedAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<JournalEntryDto?> MarkJournalPostedAsync(Guid journalEntryId, DateTimeOffset postedAt, CancellationToken ct = default)
+    parameters:
+    - id: journalEntryId
+      type: System.Guid
+    - id: postedAt
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.JournalEntryDto}
+    content.vb: Function MarkJournalPostedAsync(journalEntryId As Guid, postedAt As DateTimeOffset, ct As CancellationToken = Nothing) As Task(Of JournalEntryDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync(Meridian.Contracts.DirectLending.ReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync(Meridian.Contracts.DirectLending.ReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto},System.Threading.CancellationToken)
+  id: SaveReconciliationRunAsync(Meridian.Contracts.DirectLending.ReconciliationRunDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto},System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: SaveReconciliationRunAsync(ReconciliationRunDto, IReadOnlyList<ReconciliationResultDto>, IReadOnlyList<ReconciliationExceptionDto>, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.SaveReconciliationRunAsync(ReconciliationRunDto, IReadOnlyList<ReconciliationResultDto>, IReadOnlyList<ReconciliationExceptionDto>, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync(Meridian.Contracts.DirectLending.ReconciliationRunDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationResultDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationExceptionDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveReconciliationRunAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<ReconciliationRunDto> SaveReconciliationRunAsync(ReconciliationRunDto run, IReadOnlyList<ReconciliationResultDto> results, IReadOnlyList<ReconciliationExceptionDto> exceptions, CancellationToken ct = default)
+    parameters:
+    - id: run
+      type: Meridian.Contracts.DirectLending.ReconciliationRunDto
+    - id: results
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto}
+    - id: exceptions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ReconciliationRunDto}
+    content.vb: Function SaveReconciliationRunAsync(run As ReconciliationRunDto, results As IReadOnlyList(Of ReconciliationResultDto), exceptions As IReadOnlyList(Of ReconciliationExceptionDto), ct As CancellationToken = Nothing) As Task(Of ReconciliationRunDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.SaveReconciliationRunAsync(ReconciliationRunDto, IReadOnlyList(Of ReconciliationResultDto), IReadOnlyList(Of ReconciliationExceptionDto), CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync(Meridian.Contracts.DirectLending.ReconciliationRunDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationResultDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationExceptionDto), System.Threading.CancellationToken)
+  name.vb: SaveReconciliationRunAsync(ReconciliationRunDto, IReadOnlyList(Of ReconciliationResultDto), IReadOnlyList(Of ReconciliationExceptionDto), CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetReconciliationRunsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetReconciliationRunsAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetReconciliationRunsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconciliationRunsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ReconciliationRunDto>> GetReconciliationRunsAsync(Guid loanId, CancellationToken ct = default)
+    parameters:
+    - id: loanId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationRunDto}}
+    content.vb: Function GetReconciliationRunsAsync(loanId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ReconciliationRunDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetReconciliationResultsAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetReconciliationResultsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconciliationResultsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ReconciliationResultDto>> GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default)
+    parameters:
+    - id: reconciliationRunId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto}}
+    content.vb: Function GetReconciliationResultsAsync(reconciliationRunId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ReconciliationResultDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync(System.Threading.CancellationToken)
+  id: GetReconciliationExceptionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetReconciliationExceptionsAsync(CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetReconciliationExceptionsAsync(CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconciliationExceptionsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ReconciliationExceptionDto>> GetReconciliationExceptionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}}
+    content.vb: Function GetReconciliationExceptionsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ReconciliationExceptionDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(System.Guid,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(System.Guid,System.String,System.String,System.Threading.CancellationToken)
+  id: ResolveReconciliationExceptionAsync(System.Guid,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: ResolveReconciliationExceptionAsync(Guid, string, string?, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(Guid, string, string?, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(System.Guid, string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveReconciliationExceptionAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<ReconciliationExceptionDto?> ResolveReconciliationExceptionAsync(Guid exceptionId, string resolutionNote, string? assignedTo, CancellationToken ct = default)
+    parameters:
+    - id: exceptionId
+      type: System.Guid
+    - id: resolutionNote
+      type: System.String
+    - id: assignedTo
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+    content.vb: Function ResolveReconciliationExceptionAsync(exceptionId As Guid, resolutionNote As String, assignedTo As String, ct As CancellationToken = Nothing) As Task(Of ReconciliationExceptionDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(Guid, String, String, CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync(System.Guid, String, String, System.Threading.CancellationToken)
+  name.vb: ResolveReconciliationExceptionAsync(Guid, String, String, CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync(Meridian.Contracts.DirectLending.ServicerReportBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync(Meridian.Contracts.DirectLending.ServicerReportBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto},System.Threading.CancellationToken)
+  id: SaveServicerBatchAsync(Meridian.Contracts.DirectLending.ServicerReportBatchDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto},System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: SaveServicerBatchAsync(ServicerReportBatchDto, IReadOnlyList<ServicerPositionReportLineDto>, IReadOnlyList<ServicerTransactionReportLineDto>, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.SaveServicerBatchAsync(ServicerReportBatchDto, IReadOnlyList<ServicerPositionReportLineDto>, IReadOnlyList<ServicerTransactionReportLineDto>, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync(Meridian.Contracts.DirectLending.ServicerReportBatchDto, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicerPositionReportLineDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveServicerBatchAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<ServicerReportBatchDto> SaveServicerBatchAsync(ServicerReportBatchDto batch, IReadOnlyList<ServicerPositionReportLineDto> positionLines, IReadOnlyList<ServicerTransactionReportLineDto> transactionLines, CancellationToken ct = default)
+    parameters:
+    - id: batch
+      type: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+    - id: positionLines
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto}
+    - id: transactionLines
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+    content.vb: Function SaveServicerBatchAsync(batch As ServicerReportBatchDto, positionLines As IReadOnlyList(Of ServicerPositionReportLineDto), transactionLines As IReadOnlyList(Of ServicerTransactionReportLineDto), ct As CancellationToken = Nothing) As Task(Of ServicerReportBatchDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.SaveServicerBatchAsync(ServicerReportBatchDto, IReadOnlyList(Of ServicerPositionReportLineDto), IReadOnlyList(Of ServicerTransactionReportLineDto), CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync(Meridian.Contracts.DirectLending.ServicerReportBatchDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicerPositionReportLineDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto), System.Threading.CancellationToken)
+  name.vb: SaveServicerBatchAsync(ServicerReportBatchDto, IReadOnlyList(Of ServicerPositionReportLineDto), IReadOnlyList(Of ServicerTransactionReportLineDto), CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetServicerBatchAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetServicerBatchAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetServicerBatchAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetServicerBatchAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<ServicerReportBatchDto?> GetServicerBatchAsync(Guid batchId, CancellationToken ct = default)
+    parameters:
+    - id: batchId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+    content.vb: Function GetServicerBatchAsync(batchId As Guid, ct As CancellationToken = Nothing) As Task(Of ServicerReportBatchDto)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetServicerPositionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetServicerPositionLinesAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetServicerPositionLinesAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetServicerPositionLinesAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ServicerPositionReportLineDto>> GetServicerPositionLinesAsync(Guid batchId, CancellationToken ct = default)
+    parameters:
+    - id: batchId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto}}
+    content.vb: Function GetServicerPositionLinesAsync(batchId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ServicerPositionReportLineDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetServicerTransactionLinesAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetServicerTransactionLinesAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetServicerTransactionLinesAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetServicerTransactionLinesAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<ServicerTransactionReportLineDto>> GetServicerTransactionLinesAsync(Guid batchId, CancellationToken ct = default)
+    parameters:
+    - id: batchId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}}
+    content.vb: Function GetServicerTransactionLinesAsync(batchId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ServicerTransactionReportLineDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetPendingOutboxMessagesAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetPendingOutboxMessagesAsync(int, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(int, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPendingOutboxMessagesAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<DirectLendingOutboxMessage>> GetPendingOutboxMessagesAsync(int take, CancellationToken ct = default)
+    parameters:
+    - id: take
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Storage.DirectLending.DirectLendingOutboxMessage}}
+    content.vb: Function GetPendingOutboxMessagesAsync(take As Integer, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of DirectLendingOutboxMessage))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetPendingOutboxMessagesAsync(Integer, CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync(System.Guid,System.Threading.CancellationToken)
+  id: MarkOutboxProcessedAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: MarkOutboxProcessedAsync(Guid, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.MarkOutboxProcessedAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkOutboxProcessedAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task MarkOutboxProcessedAsync(Guid outboxMessageId, CancellationToken ct = default)
+    parameters:
+    - id: outboxMessageId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function MarkOutboxProcessedAsync(outboxMessageId As Guid, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync(System.Guid,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync(System.Guid,System.String,System.Threading.CancellationToken)
+  id: MarkOutboxFailedAsync(System.Guid,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: MarkOutboxFailedAsync(Guid, string, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.MarkOutboxFailedAsync(Guid, string, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync(System.Guid, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkOutboxFailedAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task MarkOutboxFailedAsync(Guid outboxMessageId, string error, CancellationToken ct = default)
+    parameters:
+    - id: outboxMessageId
+      type: System.Guid
+    - id: error
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function MarkOutboxFailedAsync(outboxMessageId As Guid, [error] As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.MarkOutboxFailedAsync(Guid, String, CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync(System.Guid, String, System.Threading.CancellationToken)
+  name.vb: MarkOutboxFailedAsync(Guid, String, CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync(System.Threading.CancellationToken)
+  id: GetLoanIdsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetLoanIdsAsync(CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetLoanIdsAsync(CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLoanIdsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<Guid>> GetLoanIdsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Guid}}
+    content.vb: Function GetLoanIdsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of Guid))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync(System.Threading.CancellationToken)
+  id: GetLatestEventPositionAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestEventPositionAsync(CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetLatestEventPositionAsync(CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestEventPositionAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<long> GetLatestEventPositionAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int64}
+    content.vb: Function GetLatestEventPositionAsync(ct As CancellationToken = Nothing) As Task(Of Long)
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(System.Int64,System.Threading.CancellationToken)
+  id: GetLoanIdsSinceEventPositionAsync(System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetLoanIdsSinceEventPositionAsync(long, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(long, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLoanIdsSinceEventPositionAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<Guid>> GetLoanIdsSinceEventPositionAsync(long lastProcessedPosition, CancellationToken ct = default)
+    parameters:
+    - id: lastProcessedPosition
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Guid}}
+    content.vb: Function GetLoanIdsSinceEventPositionAsync(lastProcessedPosition As Long, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of Guid))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync*
+  nameWithType.vb: IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(Long, CancellationToken)
+  fullName.vb: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync(Long, System.Threading.CancellationToken)
+  name.vb: GetLoanIdsSinceEventPositionAsync(Long, CancellationToken)
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync(System.Threading.CancellationToken)
+  id: GetCheckpointsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: GetCheckpointsAsync(CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.GetCheckpointsAsync(CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCheckpointsAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task<IReadOnlyList<RebuildCheckpointDto>> GetCheckpointsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.RebuildCheckpointDto}}
+    content.vb: Function GetCheckpointsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of RebuildCheckpointDto))
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync*
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync(Meridian.Contracts.DirectLending.RebuildCheckpointDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync(Meridian.Contracts.DirectLending.RebuildCheckpointDto,System.Threading.CancellationToken)
+  id: UpsertCheckpointAsync(Meridian.Contracts.DirectLending.RebuildCheckpointDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  langs:
+  - csharp
+  - vb
+  name: UpsertCheckpointAsync(RebuildCheckpointDto, CancellationToken)
+  nameWithType: IDirectLendingOperationsStore.UpsertCheckpointAsync(RebuildCheckpointDto, CancellationToken)
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync(Meridian.Contracts.DirectLending.RebuildCheckpointDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpsertCheckpointAsync
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: Task UpsertCheckpointAsync(RebuildCheckpointDto checkpoint, CancellationToken ct = default)
+    parameters:
+    - id: checkpoint
+      type: Meridian.Contracts.DirectLending.RebuildCheckpointDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpsertCheckpointAsync(checkpoint As RebuildCheckpointDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync*
+references:
+- uid: Meridian.Storage.DirectLending
+  commentId: N:Meridian.Storage.DirectLending
+  href: Meridian.html
+  name: Meridian.Storage.DirectLending
+  nameWithType: Meridian.Storage.DirectLending
+  fullName: Meridian.Storage.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetCashTransactionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetCashTransactionsAsync
+  nameWithType: IDirectLendingOperationsStore.GetCashTransactionsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCashTransactionsAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CashTransactionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.CashTransactionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CashTransactionDto>>
+  nameWithType: Task<IReadOnlyList<CashTransactionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.CashTransactionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CashTransactionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.CashTransactionDto))
+  name.vb: Task(Of IReadOnlyList(Of CashTransactionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.CashTransactionDto
+    name: CashTransactionDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.CashTransactionDto
+    name: CashTransactionDto
+  - name: )
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetPaymentAllocationsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetPaymentAllocationsAsync
+  nameWithType: IDirectLendingOperationsStore.GetPaymentAllocationsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPaymentAllocationsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.PaymentAllocationDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.PaymentAllocationDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<PaymentAllocationDto>>
+  nameWithType: Task<IReadOnlyList<PaymentAllocationDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.PaymentAllocationDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of PaymentAllocationDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.PaymentAllocationDto))
+  name.vb: Task(Of IReadOnlyList(Of PaymentAllocationDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.PaymentAllocationDto
+    name: PaymentAllocationDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.PaymentAllocationDto
+    name: PaymentAllocationDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetFeeBalancesAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetFeeBalancesAsync
+  nameWithType: IDirectLendingOperationsStore.GetFeeBalancesAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetFeeBalancesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.FeeBalanceDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.FeeBalanceDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<FeeBalanceDto>>
+  nameWithType: Task<IReadOnlyList<FeeBalanceDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.FeeBalanceDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of FeeBalanceDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.FeeBalanceDto))
+  name.vb: Task(Of IReadOnlyList(Of FeeBalanceDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.FeeBalanceDto
+    name: FeeBalanceDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.FeeBalanceDto
+    name: FeeBalanceDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_SaveProjectionRunAsync_Meridian_Contracts_DirectLending_ProjectionRunDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_ProjectedCashFlowDto__System_Threading_CancellationToken_
+  name: SaveProjectionRunAsync
+  nameWithType: IDirectLendingOperationsStore.SaveProjectionRunAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveProjectionRunAsync
+- uid: Meridian.Contracts.DirectLending.ProjectionRunDto
+  commentId: T:Meridian.Contracts.DirectLending.ProjectionRunDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.ProjectionRunDto.html
+  name: ProjectionRunDto
+  nameWithType: ProjectionRunDto
+  fullName: Meridian.Contracts.DirectLending.ProjectionRunDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProjectedCashFlowDto>
+  nameWithType: IReadOnlyList<ProjectedCashFlowDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ProjectedCashFlowDto>
+  nameWithType.vb: IReadOnlyList(Of ProjectedCashFlowDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ProjectedCashFlowDto)
+  name.vb: IReadOnlyList(Of ProjectedCashFlowDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ProjectedCashFlowDto
+    name: ProjectedCashFlowDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ProjectedCashFlowDto
+    name: ProjectedCashFlowDto
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ProjectionRunDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ProjectionRunDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProjectionRunDto>
+  nameWithType: Task<ProjectionRunDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.DirectLending.ProjectionRunDto>
+  nameWithType.vb: Task(Of ProjectionRunDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.DirectLending.ProjectionRunDto)
+  name.vb: Task(Of ProjectionRunDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ProjectionRunDto
+    name: ProjectionRunDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ProjectionRunDto
+    name: ProjectionRunDto
+  - name: )
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetProjectionRunsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetProjectionRunsAsync
+  nameWithType: IDirectLendingOperationsStore.GetProjectionRunsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectionRunsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectionRunDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectionRunDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ProjectionRunDto>>
+  nameWithType: Task<IReadOnlyList<ProjectionRunDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ProjectionRunDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ProjectionRunDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ProjectionRunDto))
+  name.vb: Task(Of IReadOnlyList(Of ProjectionRunDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ProjectionRunDto
+    name: ProjectionRunDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ProjectionRunDto
+    name: ProjectionRunDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetProjectedCashFlowsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetProjectedCashFlowsAsync
+  nameWithType: IDirectLendingOperationsStore.GetProjectedCashFlowsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetProjectedCashFlowsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ProjectedCashFlowDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ProjectedCashFlowDto>>
+  nameWithType: Task<IReadOnlyList<ProjectedCashFlowDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ProjectedCashFlowDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ProjectedCashFlowDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ProjectedCashFlowDto))
+  name.vb: Task(Of IReadOnlyList(Of ProjectedCashFlowDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ProjectedCashFlowDto
+    name: ProjectedCashFlowDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ProjectedCashFlowDto
+    name: ProjectedCashFlowDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_SaveJournalEntryAsync_Meridian_Contracts_DirectLending_JournalEntryDto_System_Threading_CancellationToken_
+  name: SaveJournalEntryAsync
+  nameWithType: IDirectLendingOperationsStore.SaveJournalEntryAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveJournalEntryAsync
+- uid: Meridian.Contracts.DirectLending.JournalEntryDto
+  commentId: T:Meridian.Contracts.DirectLending.JournalEntryDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.JournalEntryDto.html
+  name: JournalEntryDto
+  nameWithType: JournalEntryDto
+  fullName: Meridian.Contracts.DirectLending.JournalEntryDto
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.JournalEntryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.JournalEntryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<JournalEntryDto>
+  nameWithType: Task<JournalEntryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.DirectLending.JournalEntryDto>
+  nameWithType.vb: Task(Of JournalEntryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.DirectLending.JournalEntryDto)
+  name.vb: Task(Of JournalEntryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.JournalEntryDto
+    name: JournalEntryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.JournalEntryDto
+    name: JournalEntryDto
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetJournalEntriesAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetJournalEntriesAsync
+  nameWithType: IDirectLendingOperationsStore.GetJournalEntriesAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntriesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.JournalEntryDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.JournalEntryDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<JournalEntryDto>>
+  nameWithType: Task<IReadOnlyList<JournalEntryDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.JournalEntryDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of JournalEntryDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.JournalEntryDto))
+  name.vb: Task(Of IReadOnlyList(Of JournalEntryDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.JournalEntryDto
+    name: JournalEntryDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.JournalEntryDto
+    name: JournalEntryDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetJournalEntryAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetJournalEntryAsync
+  nameWithType: IDirectLendingOperationsStore.GetJournalEntryAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetJournalEntryAsync
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_MarkJournalPostedAsync_System_Guid_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: MarkJournalPostedAsync
+  nameWithType: IDirectLendingOperationsStore.MarkJournalPostedAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkJournalPostedAsync
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_SaveReconciliationRunAsync_Meridian_Contracts_DirectLending_ReconciliationRunDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_ReconciliationResultDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_ReconciliationExceptionDto__System_Threading_CancellationToken_
+  name: SaveReconciliationRunAsync
+  nameWithType: IDirectLendingOperationsStore.SaveReconciliationRunAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveReconciliationRunAsync
+- uid: Meridian.Contracts.DirectLending.ReconciliationRunDto
+  commentId: T:Meridian.Contracts.DirectLending.ReconciliationRunDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.ReconciliationRunDto.html
+  name: ReconciliationRunDto
+  nameWithType: ReconciliationRunDto
+  fullName: Meridian.Contracts.DirectLending.ReconciliationRunDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ReconciliationResultDto>
+  nameWithType: IReadOnlyList<ReconciliationResultDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationResultDto>
+  nameWithType.vb: IReadOnlyList(Of ReconciliationResultDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationResultDto)
+  name.vb: IReadOnlyList(Of ReconciliationResultDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationResultDto
+    name: ReconciliationResultDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationResultDto
+    name: ReconciliationResultDto
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ReconciliationExceptionDto>
+  nameWithType: IReadOnlyList<ReconciliationExceptionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationExceptionDto>
+  nameWithType.vb: IReadOnlyList(Of ReconciliationExceptionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationExceptionDto)
+  name.vb: IReadOnlyList(Of ReconciliationExceptionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ReconciliationRunDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ReconciliationRunDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ReconciliationRunDto>
+  nameWithType: Task<ReconciliationRunDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.DirectLending.ReconciliationRunDto>
+  nameWithType.vb: Task(Of ReconciliationRunDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.DirectLending.ReconciliationRunDto)
+  name.vb: Task(Of ReconciliationRunDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationRunDto
+    name: ReconciliationRunDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationRunDto
+    name: ReconciliationRunDto
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetReconciliationRunsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetReconciliationRunsAsync
+  nameWithType: IDirectLendingOperationsStore.GetReconciliationRunsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationRunsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationRunDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationRunDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ReconciliationRunDto>>
+  nameWithType: Task<IReadOnlyList<ReconciliationRunDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationRunDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ReconciliationRunDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationRunDto))
+  name.vb: Task(Of IReadOnlyList(Of ReconciliationRunDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationRunDto
+    name: ReconciliationRunDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationRunDto
+    name: ReconciliationRunDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetReconciliationResultsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetReconciliationResultsAsync
+  nameWithType: IDirectLendingOperationsStore.GetReconciliationResultsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationResultsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationResultDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ReconciliationResultDto>>
+  nameWithType: Task<IReadOnlyList<ReconciliationResultDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationResultDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ReconciliationResultDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationResultDto))
+  name.vb: Task(Of IReadOnlyList(Of ReconciliationResultDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationResultDto
+    name: ReconciliationResultDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationResultDto
+    name: ReconciliationResultDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetReconciliationExceptionsAsync_System_Threading_CancellationToken_
+  name: GetReconciliationExceptionsAsync
+  nameWithType: IDirectLendingOperationsStore.GetReconciliationExceptionsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetReconciliationExceptionsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ReconciliationExceptionDto>>
+  nameWithType: Task<IReadOnlyList<ReconciliationExceptionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ReconciliationExceptionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ReconciliationExceptionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ReconciliationExceptionDto))
+  name.vb: Task(Of IReadOnlyList(Of ReconciliationExceptionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_ResolveReconciliationExceptionAsync_System_Guid_System_String_System_String_System_Threading_CancellationToken_
+  name: ResolveReconciliationExceptionAsync
+  nameWithType: IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.ResolveReconciliationExceptionAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ReconciliationExceptionDto>
+  nameWithType: Task<ReconciliationExceptionDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.DirectLending.ReconciliationExceptionDto>
+  nameWithType.vb: Task(Of ReconciliationExceptionDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.DirectLending.ReconciliationExceptionDto)
+  name.vb: Task(Of ReconciliationExceptionDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_SaveServicerBatchAsync_Meridian_Contracts_DirectLending_ServicerReportBatchDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_ServicerPositionReportLineDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto__System_Threading_CancellationToken_
+  name: SaveServicerBatchAsync
+  nameWithType: IDirectLendingOperationsStore.SaveServicerBatchAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.SaveServicerBatchAsync
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  commentId: T:Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html
+  name: ServicerReportBatchDto
+  nameWithType: ServicerReportBatchDto
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ServicerPositionReportLineDto>
+  nameWithType: IReadOnlyList<ServicerPositionReportLineDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicerPositionReportLineDto>
+  nameWithType.vb: IReadOnlyList(Of ServicerPositionReportLineDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicerPositionReportLineDto)
+  name.vb: IReadOnlyList(Of ServicerPositionReportLineDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerPositionReportLineDto
+    name: ServicerPositionReportLineDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerPositionReportLineDto
+    name: ServicerPositionReportLineDto
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ServicerTransactionReportLineDto>
+  nameWithType: IReadOnlyList<ServicerTransactionReportLineDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto>
+  nameWithType.vb: IReadOnlyList(Of ServicerTransactionReportLineDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto)
+  name.vb: IReadOnlyList(Of ServicerTransactionReportLineDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+    name: ServicerTransactionReportLineDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+    name: ServicerTransactionReportLineDto
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ServicerReportBatchDto>
+  nameWithType: Task<ServicerReportBatchDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.DirectLending.ServicerReportBatchDto>
+  nameWithType.vb: Task(Of ServicerReportBatchDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.DirectLending.ServicerReportBatchDto)
+  name.vb: Task(Of ServicerReportBatchDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+    name: ServicerReportBatchDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+    name: ServicerReportBatchDto
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetServicerBatchAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetServicerBatchAsync
+  nameWithType: IDirectLendingOperationsStore.GetServicerBatchAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerBatchAsync
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetServicerPositionLinesAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetServicerPositionLinesAsync
+  nameWithType: IDirectLendingOperationsStore.GetServicerPositionLinesAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerPositionLinesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerPositionReportLineDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ServicerPositionReportLineDto>>
+  nameWithType: Task<IReadOnlyList<ServicerPositionReportLineDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicerPositionReportLineDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ServicerPositionReportLineDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicerPositionReportLineDto))
+  name.vb: Task(Of IReadOnlyList(Of ServicerPositionReportLineDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerPositionReportLineDto
+    name: ServicerPositionReportLineDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerPositionReportLineDto
+    name: ServicerPositionReportLineDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetServicerTransactionLinesAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetServicerTransactionLinesAsync
+  nameWithType: IDirectLendingOperationsStore.GetServicerTransactionLinesAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetServicerTransactionLinesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ServicerTransactionReportLineDto>>
+  nameWithType: Task<IReadOnlyList<ServicerTransactionReportLineDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ServicerTransactionReportLineDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto))
+  name.vb: Task(Of IReadOnlyList(Of ServicerTransactionReportLineDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+    name: ServicerTransactionReportLineDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+    name: ServicerTransactionReportLineDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetPendingOutboxMessagesAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetPendingOutboxMessagesAsync
+  nameWithType: IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetPendingOutboxMessagesAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Storage.DirectLending.DirectLendingOutboxMessage}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Storage.DirectLending.DirectLendingOutboxMessage}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<DirectLendingOutboxMessage>>
+  nameWithType: Task<IReadOnlyList<DirectLendingOutboxMessage>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Storage.DirectLending.DirectLendingOutboxMessage>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of DirectLendingOutboxMessage))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.DirectLending.DirectLendingOutboxMessage))
+  name.vb: Task(Of IReadOnlyList(Of DirectLendingOutboxMessage))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+    name: DirectLendingOutboxMessage
+    href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+    name: DirectLendingOutboxMessage
+    href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_MarkOutboxProcessedAsync_System_Guid_System_Threading_CancellationToken_
+  name: MarkOutboxProcessedAsync
+  nameWithType: IDirectLendingOperationsStore.MarkOutboxProcessedAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxProcessedAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_MarkOutboxFailedAsync_System_Guid_System_String_System_Threading_CancellationToken_
+  name: MarkOutboxFailedAsync
+  nameWithType: IDirectLendingOperationsStore.MarkOutboxFailedAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.MarkOutboxFailedAsync
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetLoanIdsAsync_System_Threading_CancellationToken_
+  name: GetLoanIdsAsync
+  nameWithType: IDirectLendingOperationsStore.GetLoanIdsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Guid}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.Guid}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<Guid>>
+  nameWithType: Task<IReadOnlyList<Guid>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<System.Guid>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of Guid))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of System.Guid))
+  name.vb: Task(Of IReadOnlyList(Of Guid))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetLatestEventPositionAsync_System_Threading_CancellationToken_
+  name: GetLatestEventPositionAsync
+  nameWithType: IDirectLendingOperationsStore.GetLatestEventPositionAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLatestEventPositionAsync
+- uid: System.Threading.Tasks.Task{System.Int64}
+  commentId: T:System.Threading.Tasks.Task{System.Int64}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<long>
+  nameWithType: Task<long>
+  fullName: System.Threading.Tasks.Task<long>
+  nameWithType.vb: Task(Of Long)
+  fullName.vb: System.Threading.Tasks.Task(Of Long)
+  name.vb: Task(Of Long)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetLoanIdsSinceEventPositionAsync_System_Int64_System_Threading_CancellationToken_
+  name: GetLoanIdsSinceEventPositionAsync
+  nameWithType: IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetLoanIdsSinceEventPositionAsync
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_GetCheckpointsAsync_System_Threading_CancellationToken_
+  name: GetCheckpointsAsync
+  nameWithType: IDirectLendingOperationsStore.GetCheckpointsAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.GetCheckpointsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.RebuildCheckpointDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.DirectLending.RebuildCheckpointDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<RebuildCheckpointDto>>
+  nameWithType: Task<IReadOnlyList<RebuildCheckpointDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.DirectLending.RebuildCheckpointDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of RebuildCheckpointDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.DirectLending.RebuildCheckpointDto))
+  name.vb: Task(Of IReadOnlyList(Of RebuildCheckpointDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.RebuildCheckpointDto
+    name: RebuildCheckpointDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.RebuildCheckpointDto
+    name: RebuildCheckpointDto
+  - name: )
+  - name: )
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync*
+  commentId: Overload:Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html#Meridian_Storage_DirectLending_IDirectLendingOperationsStore_UpsertCheckpointAsync_Meridian_Contracts_DirectLending_RebuildCheckpointDto_System_Threading_CancellationToken_
+  name: UpsertCheckpointAsync
+  nameWithType: IDirectLendingOperationsStore.UpsertCheckpointAsync
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.UpsertCheckpointAsync
+- uid: Meridian.Contracts.DirectLending.RebuildCheckpointDto
+  commentId: T:Meridian.Contracts.DirectLending.RebuildCheckpointDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.RebuildCheckpointDto.html
+  name: RebuildCheckpointDto
+  nameWithType: RebuildCheckpointDto
+  fullName: Meridian.Contracts.DirectLending.RebuildCheckpointDto

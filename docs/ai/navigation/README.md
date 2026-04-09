@@ -20,7 +20,7 @@ Meridian is large enough that broad recursive searching creates avoidable cost, 
 |----------|-----|
 | [`../generated/repo-navigation.json`](../generated/repo-navigation.json) | Canonical machine-readable repo map |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Human-readable routing digest |
-| [`../../build/scripts/docs/generate-ai-navigation.py`](../../build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes both artifacts |
+| [`build/scripts/docs/generate-ai-navigation.py`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/generate-ai-navigation.py) | Generator that refreshes both artifacts |
 
 The generator is the source of truth. Do not manually edit the generated files.
 
@@ -58,9 +58,9 @@ If MCP is available, prefer these navigation resources/tools:
 
 | Surface | Navigation layer |
 |---------|------------------|
-| Codex | [`.codex/skills/meridian-repo-navigation/SKILL.md`](../../../.codex/skills/meridian-repo-navigation/SKILL.md) |
-| Copilot | [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/repo-navigation-agent.md) |
-| Claude | [`.claude/agents/meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md) |
+| Codex | [`.codex/skills/meridian-repo-navigation/SKILL.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/meridian-repo-navigation/SKILL.md) |
+| Copilot | [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md) |
+| Claude | [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md) |
 | MCP clients | `RepoNavigationResources` and `RepoNavigationTools` in `src/Meridian.McpServer/` |
 
 ---

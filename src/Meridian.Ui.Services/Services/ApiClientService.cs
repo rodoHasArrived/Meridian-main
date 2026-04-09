@@ -200,7 +200,9 @@ public sealed class ApiClientService : IDisposable
                 };
             }
 
-            var data = JsonSerializer.Deserialize<T>(json, JsonOptions);
+            var data = string.IsNullOrWhiteSpace(json)
+                ? null
+                : JsonSerializer.Deserialize<T>(json, JsonOptions);
             return new ApiResponse<T>
             {
                 Success = true,
@@ -295,7 +297,9 @@ public sealed class ApiClientService : IDisposable
                 };
             }
 
-            var data = JsonSerializer.Deserialize<T>(json, JsonOptions);
+            var data = string.IsNullOrWhiteSpace(json)
+                ? null
+                : JsonSerializer.Deserialize<T>(json, JsonOptions);
             return new ApiResponse<T>
             {
                 Success = true,
@@ -352,7 +356,9 @@ public sealed class ApiClientService : IDisposable
                 };
             }
 
-            var data = JsonSerializer.Deserialize<T>(json, JsonOptions);
+            var data = string.IsNullOrWhiteSpace(json)
+                ? null
+                : JsonSerializer.Deserialize<T>(json, JsonOptions);
             return new ApiResponse<T>
             {
                 Success = true,

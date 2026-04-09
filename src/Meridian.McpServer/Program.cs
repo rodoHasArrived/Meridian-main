@@ -25,7 +25,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Warning()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
                      standardErrorFromLevel: Serilog.Events.LogEventLevel.Verbose)
-    .CreateBootstrapLogger();
+    .CreateLogger();
 
 try
 {
@@ -38,11 +38,8 @@ try
     // Wire Serilog as the Microsoft.Extensions.Logging provider so that the
     // Application layer's structured logging flows to stderr (not stdout, which
     // is reserved for the MCP stdio transport).
-    builder.Services.AddSerilog((_, lc) => lc
-        .MinimumLevel.Warning()
-        .WriteTo.Console(
-            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
-            standardErrorFromLevel: Serilog.Events.LogEventLevel.Verbose));
+    builder.Logging.ClearProviders();
+    builder.Logging.AddSerilog(Log.Logger, dispose: false);
 
     // Register all Meridian services using the McpServer preset,
     // which enables providers + backfill but skips the streaming pipeline and

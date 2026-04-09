@@ -1,0 +1,566 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.LifecycleTierInfo
+  commentId: T:Meridian.Storage.Services.LifecycleTierInfo
+  id: LifecycleTierInfo
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.LifecycleTierInfo.#ctor(System.Int32,System.Int64,System.TimeSpan,System.TimeSpan)
+  - Meridian.Storage.Services.LifecycleTierInfo.FileCount
+  - Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge
+  - Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge
+  - Meridian.Storage.Services.LifecycleTierInfo.TotalBytes
+  langs:
+  - csharp
+  - vb
+  name: LifecycleTierInfo
+  nameWithType: LifecycleTierInfo
+  fullName: Meridian.Storage.Services.LifecycleTierInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LifecycleTierInfo
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record LifecycleTierInfo : IEquatable<LifecycleTierInfo>'
+    content.vb: Public NotInheritable Class LifecycleTierInfo Implements IEquatable(Of LifecycleTierInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.LifecycleTierInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.LifecycleTierInfo.#ctor(System.Int32,System.Int64,System.TimeSpan,System.TimeSpan)
+  commentId: M:Meridian.Storage.Services.LifecycleTierInfo.#ctor(System.Int32,System.Int64,System.TimeSpan,System.TimeSpan)
+  id: '#ctor(System.Int32,System.Int64,System.TimeSpan,System.TimeSpan)'
+  parent: Meridian.Storage.Services.LifecycleTierInfo
+  langs:
+  - csharp
+  - vb
+  name: LifecycleTierInfo(int, long, TimeSpan, TimeSpan)
+  nameWithType: LifecycleTierInfo.LifecycleTierInfo(int, long, TimeSpan, TimeSpan)
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.LifecycleTierInfo(int, long, System.TimeSpan, System.TimeSpan)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public LifecycleTierInfo(int FileCount, long TotalBytes, TimeSpan OldestFileAge, TimeSpan NewestFileAge)
+    parameters:
+    - id: FileCount
+      type: System.Int32
+    - id: TotalBytes
+      type: System.Int64
+    - id: OldestFileAge
+      type: System.TimeSpan
+    - id: NewestFileAge
+      type: System.TimeSpan
+    content.vb: Public Sub New(FileCount As Integer, TotalBytes As Long, OldestFileAge As TimeSpan, NewestFileAge As TimeSpan)
+  overload: Meridian.Storage.Services.LifecycleTierInfo.#ctor*
+  nameWithType.vb: LifecycleTierInfo.New(Integer, Long, TimeSpan, TimeSpan)
+  fullName.vb: Meridian.Storage.Services.LifecycleTierInfo.New(Integer, Long, System.TimeSpan, System.TimeSpan)
+  name.vb: New(Integer, Long, TimeSpan, TimeSpan)
+- uid: Meridian.Storage.Services.LifecycleTierInfo.FileCount
+  commentId: P:Meridian.Storage.Services.LifecycleTierInfo.FileCount
+  id: FileCount
+  parent: Meridian.Storage.Services.LifecycleTierInfo
+  langs:
+  - csharp
+  - vb
+  name: FileCount
+  nameWithType: LifecycleTierInfo.FileCount
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.FileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCount
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int FileCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FileCount As Integer
+  overload: Meridian.Storage.Services.LifecycleTierInfo.FileCount*
+- uid: Meridian.Storage.Services.LifecycleTierInfo.TotalBytes
+  commentId: P:Meridian.Storage.Services.LifecycleTierInfo.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Storage.Services.LifecycleTierInfo
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: LifecycleTierInfo.TotalBytes
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBytes As Long
+  overload: Meridian.Storage.Services.LifecycleTierInfo.TotalBytes*
+- uid: Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge
+  commentId: P:Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge
+  id: OldestFileAge
+  parent: Meridian.Storage.Services.LifecycleTierInfo
+  langs:
+  - csharp
+  - vb
+  name: OldestFileAge
+  nameWithType: LifecycleTierInfo.OldestFileAge
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OldestFileAge
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan OldestFileAge { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property OldestFileAge As TimeSpan
+  overload: Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge*
+- uid: Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge
+  commentId: P:Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge
+  id: NewestFileAge
+  parent: Meridian.Storage.Services.LifecycleTierInfo
+  langs:
+  - csharp
+  - vb
+  name: NewestFileAge
+  nameWithType: LifecycleTierInfo.NewestFileAge
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewestFileAge
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan NewestFileAge { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property NewestFileAge As TimeSpan
+  overload: Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.LifecycleTierInfo}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.LifecycleTierInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LifecycleTierInfo>
+  nameWithType: IEquatable<LifecycleTierInfo>
+  fullName: System.IEquatable<Meridian.Storage.Services.LifecycleTierInfo>
+  nameWithType.vb: IEquatable(Of LifecycleTierInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.LifecycleTierInfo)
+  name.vb: IEquatable(Of LifecycleTierInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.LifecycleTierInfo
+    name: LifecycleTierInfo
+    href: Meridian.Storage.Services.LifecycleTierInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.LifecycleTierInfo
+    name: LifecycleTierInfo
+    href: Meridian.Storage.Services.LifecycleTierInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.LifecycleTierInfo.#ctor*
+  commentId: Overload:Meridian.Storage.Services.LifecycleTierInfo.#ctor
+  href: Meridian.Storage.Services.LifecycleTierInfo.html#Meridian_Storage_Services_LifecycleTierInfo__ctor_System_Int32_System_Int64_System_TimeSpan_System_TimeSpan_
+  name: LifecycleTierInfo
+  nameWithType: LifecycleTierInfo.LifecycleTierInfo
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.LifecycleTierInfo
+  nameWithType.vb: LifecycleTierInfo.New
+  fullName.vb: Meridian.Storage.Services.LifecycleTierInfo.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Services.LifecycleTierInfo.FileCount*
+  commentId: Overload:Meridian.Storage.Services.LifecycleTierInfo.FileCount
+  href: Meridian.Storage.Services.LifecycleTierInfo.html#Meridian_Storage_Services_LifecycleTierInfo_FileCount
+  name: FileCount
+  nameWithType: LifecycleTierInfo.FileCount
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.FileCount
+- uid: Meridian.Storage.Services.LifecycleTierInfo.TotalBytes*
+  commentId: Overload:Meridian.Storage.Services.LifecycleTierInfo.TotalBytes
+  href: Meridian.Storage.Services.LifecycleTierInfo.html#Meridian_Storage_Services_LifecycleTierInfo_TotalBytes
+  name: TotalBytes
+  nameWithType: LifecycleTierInfo.TotalBytes
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.TotalBytes
+- uid: Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge*
+  commentId: Overload:Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge
+  href: Meridian.Storage.Services.LifecycleTierInfo.html#Meridian_Storage_Services_LifecycleTierInfo_OldestFileAge
+  name: OldestFileAge
+  nameWithType: LifecycleTierInfo.OldestFileAge
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.OldestFileAge
+- uid: Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge*
+  commentId: Overload:Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge
+  href: Meridian.Storage.Services.LifecycleTierInfo.html#Meridian_Storage_Services_LifecycleTierInfo_NewestFileAge
+  name: NewestFileAge
+  nameWithType: LifecycleTierInfo.NewestFileAge
+  fullName: Meridian.Storage.Services.LifecycleTierInfo.NewestFileAge

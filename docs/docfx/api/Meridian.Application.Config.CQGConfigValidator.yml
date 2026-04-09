@@ -1,0 +1,2948 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.CQGConfigValidator
+  commentId: T:Meridian.Application.Config.CQGConfigValidator
+  id: CQGConfigValidator
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.CQGConfigValidator.#ctor
+  langs:
+  - csharp
+  - vb
+  name: CQGConfigValidator
+  nameWithType: CQGConfigValidator
+  fullName: Meridian.Application.Config.CQGConfigValidator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigValidationHelper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CQGConfigValidator
+    path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Validates CQGConfig settings.
+  example: []
+  syntax:
+    content: 'public sealed class CQGConfigValidator : AbstractValidator<CQGConfig>, IValidator<CQGConfig>, IValidator, IEnumerable<IValidationRule>, IEnumerable'
+    content.vb: Public NotInheritable Class CQGConfigValidator Inherits AbstractValidator(Of CQGConfig) Implements IValidator(Of CQGConfig), IValidator, IEnumerable(Of IValidationRule), IEnumerable
+  inheritance:
+  - System.Object
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  implements:
+  - FluentValidation.IValidator{Meridian.Application.Config.CQGConfig}
+  - FluentValidation.IValidator
+  - System.Collections.Generic.IEnumerable{FluentValidation.IValidationRule}
+  - System.Collections.IEnumerable
+  inheritedMembers:
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(Meridian.Application.Config.CQGConfig)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig})
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.CreateDescriptor
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleFor``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,{TProperty}}})
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,System.Collections.Generic.IEnumerable{{TElement}}}})
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleSet(System.String,System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include(FluentValidation.IValidator{Meridian.Application.Config.CQGConfig})
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include``1(System.Func{Meridian.Application.Config.CQGConfig,{TValidator}})
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.GetEnumerator
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ClassLevelCascadeMode
+  - FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleLevelCascadeMode
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.CQGConfigValidator.#ctor
+  commentId: M:Meridian.Application.Config.CQGConfigValidator.#ctor
+  id: '#ctor'
+  parent: Meridian.Application.Config.CQGConfigValidator
+  langs:
+  - csharp
+  - vb
+  name: CQGConfigValidator()
+  nameWithType: CQGConfigValidator.CQGConfigValidator()
+  fullName: Meridian.Application.Config.CQGConfigValidator.CQGConfigValidator()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigValidationHelper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public CQGConfigValidator()
+    content.vb: Public Sub New()
+  overload: Meridian.Application.Config.CQGConfigValidator.#ctor*
+  nameWithType.vb: CQGConfigValidator.New()
+  fullName.vb: Meridian.Application.Config.CQGConfigValidator.New()
+  name.vb: New()
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  commentId: T:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  parent: FluentValidation
+  definition: FluentValidation.AbstractValidator`1
+  name: AbstractValidator<CQGConfig>
+  nameWithType: AbstractValidator<CQGConfig>
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>
+  nameWithType.vb: AbstractValidator(Of CQGConfig)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig)
+  name.vb: AbstractValidator(Of CQGConfig)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1
+    name: AbstractValidator
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1
+    name: AbstractValidator
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+- uid: FluentValidation.IValidator{Meridian.Application.Config.CQGConfig}
+  commentId: T:FluentValidation.IValidator{Meridian.Application.Config.CQGConfig}
+  parent: FluentValidation
+  definition: FluentValidation.IValidator`1
+  name: IValidator<CQGConfig>
+  nameWithType: IValidator<CQGConfig>
+  fullName: FluentValidation.IValidator<Meridian.Application.Config.CQGConfig>
+  nameWithType.vb: IValidator(Of CQGConfig)
+  fullName.vb: FluentValidation.IValidator(Of Meridian.Application.Config.CQGConfig)
+  name.vb: IValidator(Of CQGConfig)
+  spec.csharp:
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  spec.vb:
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+- uid: FluentValidation.IValidator
+  commentId: T:FluentValidation.IValidator
+  parent: FluentValidation
+  isExternal: true
+  name: IValidator
+  nameWithType: IValidator
+  fullName: FluentValidation.IValidator
+- uid: System.Collections.Generic.IEnumerable{FluentValidation.IValidationRule}
+  commentId: T:System.Collections.Generic.IEnumerable{FluentValidation.IValidationRule}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<IValidationRule>
+  nameWithType: IEnumerable<IValidationRule>
+  fullName: System.Collections.Generic.IEnumerable<FluentValidation.IValidationRule>
+  nameWithType.vb: IEnumerable(Of IValidationRule)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of FluentValidation.IValidationRule)
+  name.vb: IEnumerable(Of IValidationRule)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: FluentValidation.IValidationRule
+    name: IValidationRule
+    isExternal: true
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: FluentValidation.IValidationRule
+    name: IValidationRule
+    isExternal: true
+  - name: )
+- uid: System.Collections.IEnumerable
+  commentId: T:System.Collections.IEnumerable
+  parent: System.Collections
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.ienumerable
+  name: IEnumerable
+  nameWithType: IEnumerable
+  fullName: System.Collections.IEnumerable
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(Meridian.Application.Config.CQGConfig)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(Meridian.Application.Config.CQGConfig)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.Validate(`0)
+  name: Validate(CQGConfig)
+  nameWithType: AbstractValidator<CQGConfig>.Validate(CQGConfig)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.Validate(Meridian.Application.Config.CQGConfig)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).Validate(CQGConfig)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).Validate(Meridian.Application.Config.CQGConfig)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(Meridian.Application.Config.CQGConfig)
+    name: Validate
+    isExternal: true
+  - name: (
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(Meridian.Application.Config.CQGConfig)
+    name: Validate
+    isExternal: true
+  - name: (
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.ValidateAsync(`0,System.Threading.CancellationToken)
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ValidateAsync(CQGConfig, CancellationToken)
+  nameWithType: AbstractValidator<CQGConfig>.ValidateAsync(CQGConfig, CancellationToken)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.ValidateAsync(Meridian.Application.Config.CQGConfig, System.Threading.CancellationToken)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).ValidateAsync(CQGConfig, CancellationToken)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).ValidateAsync(Meridian.Application.Config.CQGConfig, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig})
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig})
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.Validate(FluentValidation.ValidationContext{`0})
+  name: Validate(ValidationContext<CQGConfig>)
+  nameWithType: AbstractValidator<CQGConfig>.Validate(ValidationContext<CQGConfig>)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.Validate(FluentValidation.ValidationContext<Meridian.Application.Config.CQGConfig>)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).Validate(ValidationContext(Of CQGConfig))
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).Validate(FluentValidation.ValidationContext(Of Meridian.Application.Config.CQGConfig))
+  name.vb: Validate(ValidationContext(Of CQGConfig))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig})
+    name: Validate
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Validate(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig})
+    name: Validate
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.ValidateAsync(FluentValidation.ValidationContext{`0},System.Threading.CancellationToken)
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ValidateAsync(ValidationContext<CQGConfig>, CancellationToken)
+  nameWithType: AbstractValidator<CQGConfig>.ValidateAsync(ValidationContext<CQGConfig>, CancellationToken)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.ValidateAsync(FluentValidation.ValidationContext<Meridian.Application.Config.CQGConfig>, System.Threading.CancellationToken)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).ValidateAsync(ValidationContext(Of CQGConfig), CancellationToken)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).ValidateAsync(FluentValidation.ValidationContext(Of Meridian.Application.Config.CQGConfig), System.Threading.CancellationToken)
+  name.vb: ValidateAsync(ValidationContext(Of CQGConfig), CancellationToken)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ValidateAsync(FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.CreateDescriptor
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.CreateDescriptor
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.CreateDescriptor
+  name: CreateDescriptor()
+  nameWithType: AbstractValidator<CQGConfig>.CreateDescriptor()
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.CreateDescriptor()
+  nameWithType.vb: AbstractValidator(Of CQGConfig).CreateDescriptor()
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).CreateDescriptor()
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.CreateDescriptor
+    name: CreateDescriptor
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.CreateDescriptor
+    name: CreateDescriptor
+    isExternal: true
+  - name: (
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleFor``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,{TProperty}}})
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleFor``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,``0}})
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.RuleFor``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})
+  href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  name: RuleFor<TProperty>(Expression<Func<CQGConfig, TProperty>>)
+  nameWithType: AbstractValidator<CQGConfig>.RuleFor<TProperty>(Expression<Func<CQGConfig, TProperty>>)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.RuleFor<TProperty>(System.Linq.Expressions.Expression<System.Func<Meridian.Application.Config.CQGConfig, TProperty>>)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).RuleFor(Of TProperty)(Expression(Of Func(Of CQGConfig, TProperty)))
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).RuleFor(Of TProperty)(System.Linq.Expressions.Expression(Of System.Func(Of Meridian.Application.Config.CQGConfig, TProperty)))
+  name.vb: RuleFor(Of TProperty)(Expression(Of Func(Of CQGConfig, TProperty)))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleFor``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,``0}})
+    name: RuleFor
+    isExternal: true
+  - name: <
+  - name: TProperty
+  - name: '>'
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: <
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - name: TProperty
+  - name: '>'
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleFor``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,``0}})
+    name: RuleFor
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TProperty
+  - name: )
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - name: TProperty
+  - name: )
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,System.Collections.Generic.IEnumerable{{TElement}}}})
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,System.Collections.Generic.IEnumerable{``0}}})
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{`0,System.Collections.Generic.IEnumerable{``0}}})
+  href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  name: RuleForEach<TElement>(Expression<Func<CQGConfig, IEnumerable<TElement>>>)
+  nameWithType: AbstractValidator<CQGConfig>.RuleForEach<TElement>(Expression<Func<CQGConfig, IEnumerable<TElement>>>)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.RuleForEach<TElement>(System.Linq.Expressions.Expression<System.Func<Meridian.Application.Config.CQGConfig, System.Collections.Generic.IEnumerable<TElement>>>)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).RuleForEach(Of TElement)(Expression(Of Func(Of CQGConfig, IEnumerable(Of TElement))))
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).RuleForEach(Of TElement)(System.Linq.Expressions.Expression(Of System.Func(Of Meridian.Application.Config.CQGConfig, System.Collections.Generic.IEnumerable(Of TElement))))
+  name.vb: RuleForEach(Of TElement)(Expression(Of Func(Of CQGConfig, IEnumerable(Of TElement))))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,System.Collections.Generic.IEnumerable{``0}}})
+    name: RuleForEach
+    isExternal: true
+  - name: <
+  - name: TElement
+  - name: '>'
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: <
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: TElement
+  - name: '>'
+  - name: '>'
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{Meridian.Application.Config.CQGConfig,System.Collections.Generic.IEnumerable{``0}}})
+    name: RuleForEach
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TElement
+  - name: )
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TElement
+  - name: )
+  - name: )
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleSet(System.String,System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleSet(System.String,System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.RuleSet(System.String,System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: RuleSet(string, Action)
+  nameWithType: AbstractValidator<CQGConfig>.RuleSet(string, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.RuleSet(string, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).RuleSet(String, Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).RuleSet(String, System.Action)
+  name.vb: RuleSet(String, Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleSet(System.String,System.Action)
+    name: RuleSet
+    isExternal: true
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleSet(System.String,System.Action)
+    name: RuleSet
+    isExternal: true
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.When(System.Func{`0,System.Boolean},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: When(Func<CQGConfig, bool>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.When(Func<CQGConfig, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.When(System.Func<Meridian.Application.Config.CQGConfig, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).When(Func(Of CQGConfig, Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).When(System.Func(Of Meridian.Application.Config.CQGConfig, Boolean), System.Action)
+  name.vb: When(Func(Of CQGConfig, Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.When(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: When(Func<CQGConfig, ValidationContext<CQGConfig>, bool>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.When(Func<CQGConfig, ValidationContext<CQGConfig>, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.When(System.Func<Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext<Meridian.Application.Config.CQGConfig>, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).When(Func(Of CQGConfig, ValidationContext(Of CQGConfig), Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).When(System.Func(Of Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext(Of Meridian.Application.Config.CQGConfig), Boolean), System.Action)
+  name.vb: When(Func(Of CQGConfig, ValidationContext(Of CQGConfig), Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.When(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,System.Boolean},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Unless(Func<CQGConfig, bool>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.Unless(Func<CQGConfig, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.Unless(System.Func<Meridian.Application.Config.CQGConfig, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).Unless(Func(Of CQGConfig, Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).Unless(System.Func(Of Meridian.Application.Config.CQGConfig, Boolean), System.Action)
+  name.vb: Unless(Func(Of CQGConfig, Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Unless(Func<CQGConfig, ValidationContext<CQGConfig>, bool>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.Unless(Func<CQGConfig, ValidationContext<CQGConfig>, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.Unless(System.Func<Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext<Meridian.Application.Config.CQGConfig>, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).Unless(Func(Of CQGConfig, ValidationContext(Of CQGConfig), Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).Unless(System.Func(Of Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext(Of Meridian.Application.Config.CQGConfig), Boolean), System.Action)
+  name.vb: Unless(Func(Of CQGConfig, ValidationContext(Of CQGConfig), Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Unless(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: WhenAsync(Func<CQGConfig, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.WhenAsync(Func<CQGConfig, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.WhenAsync(System.Func<Meridian.Application.Config.CQGConfig, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).WhenAsync(Func(Of CQGConfig, CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).WhenAsync(System.Func(Of Meridian.Application.Config.CQGConfig, System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: WhenAsync(Func(Of CQGConfig, CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-4
+  name: WhenAsync(Func<CQGConfig, ValidationContext<CQGConfig>, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.WhenAsync(Func<CQGConfig, ValidationContext<CQGConfig>, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.WhenAsync(System.Func<Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext<Meridian.Application.Config.CQGConfig>, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).WhenAsync(Func(Of CQGConfig, ValidationContext(Of CQGConfig), CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).WhenAsync(System.Func(Of Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext(Of Meridian.Application.Config.CQGConfig), System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: WhenAsync(Func(Of CQGConfig, ValidationContext(Of CQGConfig), CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.WhenAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: UnlessAsync(Func<CQGConfig, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.UnlessAsync(Func<CQGConfig, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.UnlessAsync(System.Func<Meridian.Application.Config.CQGConfig, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).UnlessAsync(Func(Of CQGConfig, CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).UnlessAsync(System.Func(Of Meridian.Application.Config.CQGConfig, System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: UnlessAsync(Func(Of CQGConfig, CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  href: https://learn.microsoft.com/dotnet/api/system.func-4
+  name: UnlessAsync(Func<CQGConfig, ValidationContext<CQGConfig>, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<CQGConfig>.UnlessAsync(Func<CQGConfig, ValidationContext<CQGConfig>, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.UnlessAsync(System.Func<Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext<Meridian.Application.Config.CQGConfig>, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).UnlessAsync(Func(Of CQGConfig, ValidationContext(Of CQGConfig), CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).UnlessAsync(System.Func(Of Meridian.Application.Config.CQGConfig, FluentValidation.ValidationContext(Of Meridian.Application.Config.CQGConfig), System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: UnlessAsync(Func(Of CQGConfig, ValidationContext(Of CQGConfig), CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.UnlessAsync(System.Func{Meridian.Application.Config.CQGConfig,FluentValidation.ValidationContext{Meridian.Application.Config.CQGConfig},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include(FluentValidation.IValidator{Meridian.Application.Config.CQGConfig})
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include(FluentValidation.IValidator{Meridian.Application.Config.CQGConfig})
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.Include(FluentValidation.IValidator{`0})
+  name: Include(IValidator<CQGConfig>)
+  nameWithType: AbstractValidator<CQGConfig>.Include(IValidator<CQGConfig>)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.Include(FluentValidation.IValidator<Meridian.Application.Config.CQGConfig>)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).Include(IValidator(Of CQGConfig))
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).Include(FluentValidation.IValidator(Of Meridian.Application.Config.CQGConfig))
+  name.vb: Include(IValidator(Of CQGConfig))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include(FluentValidation.IValidator{Meridian.Application.Config.CQGConfig})
+    name: Include
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include(FluentValidation.IValidator{Meridian.Application.Config.CQGConfig})
+    name: Include
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include``1(System.Func{Meridian.Application.Config.CQGConfig,{TValidator}})
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include``1(System.Func{Meridian.Application.Config.CQGConfig,``0})
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.Include``1(System.Func{`0,``0})
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Include<TValidator>(Func<CQGConfig, TValidator>)
+  nameWithType: AbstractValidator<CQGConfig>.Include<TValidator>(Func<CQGConfig, TValidator>)
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.Include<TValidator>(System.Func<Meridian.Application.Config.CQGConfig, TValidator>)
+  nameWithType.vb: AbstractValidator(Of CQGConfig).Include(Of TValidator)(Func(Of CQGConfig, TValidator))
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).Include(Of TValidator)(System.Func(Of Meridian.Application.Config.CQGConfig, TValidator))
+  name.vb: Include(Of TValidator)(Func(Of CQGConfig, TValidator))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include``1(System.Func{Meridian.Application.Config.CQGConfig,``0})
+    name: Include
+    isExternal: true
+  - name: <
+  - name: TValidator
+  - name: '>'
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - name: TValidator
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.Include``1(System.Func{Meridian.Application.Config.CQGConfig,``0})
+    name: Include
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValidator
+  - name: )
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.CQGConfig
+    name: CQGConfig
+  - name: ','
+  - name: " "
+  - name: TValidator
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.GetEnumerator
+  commentId: M:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.GetEnumerator
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.GetEnumerator
+  name: GetEnumerator()
+  nameWithType: AbstractValidator<CQGConfig>.GetEnumerator()
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.GetEnumerator()
+  nameWithType.vb: AbstractValidator(Of CQGConfig).GetEnumerator()
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).GetEnumerator()
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+  - name: (
+  - name: )
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ClassLevelCascadeMode
+  commentId: P:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.ClassLevelCascadeMode
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.ClassLevelCascadeMode
+  name: ClassLevelCascadeMode
+  nameWithType: AbstractValidator<CQGConfig>.ClassLevelCascadeMode
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.ClassLevelCascadeMode
+  nameWithType.vb: AbstractValidator(Of CQGConfig).ClassLevelCascadeMode
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).ClassLevelCascadeMode
+- uid: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleLevelCascadeMode
+  commentId: P:FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}.RuleLevelCascadeMode
+  parent: FluentValidation.AbstractValidator{Meridian.Application.Config.CQGConfig}
+  definition: FluentValidation.AbstractValidator`1.RuleLevelCascadeMode
+  name: RuleLevelCascadeMode
+  nameWithType: AbstractValidator<CQGConfig>.RuleLevelCascadeMode
+  fullName: FluentValidation.AbstractValidator<Meridian.Application.Config.CQGConfig>.RuleLevelCascadeMode
+  nameWithType.vb: AbstractValidator(Of CQGConfig).RuleLevelCascadeMode
+  fullName.vb: FluentValidation.AbstractValidator(Of Meridian.Application.Config.CQGConfig).RuleLevelCascadeMode
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: FluentValidation.AbstractValidator`1
+  commentId: T:FluentValidation.AbstractValidator`1
+  isExternal: true
+  name: AbstractValidator<T>
+  nameWithType: AbstractValidator<T>
+  fullName: FluentValidation.AbstractValidator<T>
+  nameWithType.vb: AbstractValidator(Of T)
+  fullName.vb: FluentValidation.AbstractValidator(Of T)
+  name.vb: AbstractValidator(Of T)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1
+    name: AbstractValidator
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1
+    name: AbstractValidator
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: FluentValidation
+  commentId: N:FluentValidation
+  isExternal: true
+  name: FluentValidation
+  nameWithType: FluentValidation
+  fullName: FluentValidation
+- uid: FluentValidation.IValidator`1
+  commentId: T:FluentValidation.IValidator`1
+  isExternal: true
+  name: IValidator<T>
+  nameWithType: IValidator<T>
+  fullName: FluentValidation.IValidator<T>
+  nameWithType.vb: IValidator(Of T)
+  fullName.vb: FluentValidation.IValidator(Of T)
+  name.vb: IValidator(Of T)
+  spec.csharp:
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections
+  commentId: N:System.Collections
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections
+  nameWithType: System.Collections
+  fullName: System.Collections
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+- uid: FluentValidation.AbstractValidator`1.Validate(`0)
+  commentId: M:FluentValidation.AbstractValidator`1.Validate(`0)
+  isExternal: true
+  name: Validate(T)
+  nameWithType: AbstractValidator<T>.Validate(T)
+  fullName: FluentValidation.AbstractValidator<T>.Validate(T)
+  nameWithType.vb: AbstractValidator(Of T).Validate(T)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).Validate(T)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.Validate(`0)
+    name: Validate
+    isExternal: true
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.Validate(`0)
+    name: Validate
+    isExternal: true
+  - name: (
+  - name: T
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.ValidateAsync(`0,System.Threading.CancellationToken)
+  commentId: M:FluentValidation.AbstractValidator`1.ValidateAsync(`0,System.Threading.CancellationToken)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ValidateAsync(T, CancellationToken)
+  nameWithType: AbstractValidator<T>.ValidateAsync(T, CancellationToken)
+  fullName: FluentValidation.AbstractValidator<T>.ValidateAsync(T, System.Threading.CancellationToken)
+  nameWithType.vb: AbstractValidator(Of T).ValidateAsync(T, CancellationToken)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).ValidateAsync(T, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.ValidateAsync(`0,System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.ValidateAsync(`0,System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.Validate(FluentValidation.ValidationContext{`0})
+  commentId: M:FluentValidation.AbstractValidator`1.Validate(FluentValidation.ValidationContext{`0})
+  isExternal: true
+  name: Validate(ValidationContext<T>)
+  nameWithType: AbstractValidator<T>.Validate(ValidationContext<T>)
+  fullName: FluentValidation.AbstractValidator<T>.Validate(FluentValidation.ValidationContext<T>)
+  nameWithType.vb: AbstractValidator(Of T).Validate(ValidationContext(Of T))
+  fullName.vb: FluentValidation.AbstractValidator(Of T).Validate(FluentValidation.ValidationContext(Of T))
+  name.vb: Validate(ValidationContext(Of T))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.Validate(FluentValidation.ValidationContext{`0})
+    name: Validate
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.Validate(FluentValidation.ValidationContext{`0})
+    name: Validate
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.ValidateAsync(FluentValidation.ValidationContext{`0},System.Threading.CancellationToken)
+  commentId: M:FluentValidation.AbstractValidator`1.ValidateAsync(FluentValidation.ValidationContext{`0},System.Threading.CancellationToken)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ValidateAsync(ValidationContext<T>, CancellationToken)
+  nameWithType: AbstractValidator<T>.ValidateAsync(ValidationContext<T>, CancellationToken)
+  fullName: FluentValidation.AbstractValidator<T>.ValidateAsync(FluentValidation.ValidationContext<T>, System.Threading.CancellationToken)
+  nameWithType.vb: AbstractValidator(Of T).ValidateAsync(ValidationContext(Of T), CancellationToken)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).ValidateAsync(FluentValidation.ValidationContext(Of T), System.Threading.CancellationToken)
+  name.vb: ValidateAsync(ValidationContext(Of T), CancellationToken)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.ValidateAsync(FluentValidation.ValidationContext{`0},System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.ValidateAsync(FluentValidation.ValidationContext{`0},System.Threading.CancellationToken)
+    name: ValidateAsync
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.CreateDescriptor
+  commentId: M:FluentValidation.AbstractValidator`1.CreateDescriptor
+  isExternal: true
+  name: CreateDescriptor()
+  nameWithType: AbstractValidator<T>.CreateDescriptor()
+  fullName: FluentValidation.AbstractValidator<T>.CreateDescriptor()
+  nameWithType.vb: AbstractValidator(Of T).CreateDescriptor()
+  fullName.vb: FluentValidation.AbstractValidator(Of T).CreateDescriptor()
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.CreateDescriptor
+    name: CreateDescriptor
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.CreateDescriptor
+    name: CreateDescriptor
+    isExternal: true
+  - name: (
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.RuleFor``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})
+  commentId: M:FluentValidation.AbstractValidator`1.RuleFor``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  name: RuleFor<TProperty>(Expression<Func<T, TProperty>>)
+  nameWithType: AbstractValidator<T>.RuleFor<TProperty>(Expression<Func<T, TProperty>>)
+  fullName: FluentValidation.AbstractValidator<T>.RuleFor<TProperty>(System.Linq.Expressions.Expression<System.Func<T, TProperty>>)
+  nameWithType.vb: AbstractValidator(Of T).RuleFor(Of TProperty)(Expression(Of Func(Of T, TProperty)))
+  fullName.vb: FluentValidation.AbstractValidator(Of T).RuleFor(Of TProperty)(System.Linq.Expressions.Expression(Of System.Func(Of T, TProperty)))
+  name.vb: RuleFor(Of TProperty)(Expression(Of Func(Of T, TProperty)))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.RuleFor``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})
+    name: RuleFor
+    isExternal: true
+  - name: <
+  - name: TProperty
+  - name: '>'
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: <
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TProperty
+  - name: '>'
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.RuleFor``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})
+    name: RuleFor
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TProperty
+  - name: )
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TProperty
+  - name: )
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{`0,System.Collections.Generic.IEnumerable{``0}}})
+  commentId: M:FluentValidation.AbstractValidator`1.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{`0,System.Collections.Generic.IEnumerable{``0}}})
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  name: RuleForEach<TElement>(Expression<Func<T, IEnumerable<TElement>>>)
+  nameWithType: AbstractValidator<T>.RuleForEach<TElement>(Expression<Func<T, IEnumerable<TElement>>>)
+  fullName: FluentValidation.AbstractValidator<T>.RuleForEach<TElement>(System.Linq.Expressions.Expression<System.Func<T, System.Collections.Generic.IEnumerable<TElement>>>)
+  nameWithType.vb: AbstractValidator(Of T).RuleForEach(Of TElement)(Expression(Of Func(Of T, IEnumerable(Of TElement))))
+  fullName.vb: FluentValidation.AbstractValidator(Of T).RuleForEach(Of TElement)(System.Linq.Expressions.Expression(Of System.Func(Of T, System.Collections.Generic.IEnumerable(Of TElement))))
+  name.vb: RuleForEach(Of TElement)(Expression(Of Func(Of T, IEnumerable(Of TElement))))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{`0,System.Collections.Generic.IEnumerable{``0}}})
+    name: RuleForEach
+    isExternal: true
+  - name: <
+  - name: TElement
+  - name: '>'
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: <
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: TElement
+  - name: '>'
+  - name: '>'
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.RuleForEach``1(System.Linq.Expressions.Expression{System.Func{`0,System.Collections.Generic.IEnumerable{``0}}})
+    name: RuleForEach
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TElement
+  - name: )
+  - name: (
+  - uid: System.Linq.Expressions.Expression`1
+    name: Expression
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.linq.expressions.expression-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TElement
+  - name: )
+  - name: )
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.RuleSet(System.String,System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.RuleSet(System.String,System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: RuleSet(string, Action)
+  nameWithType: AbstractValidator<T>.RuleSet(string, Action)
+  fullName: FluentValidation.AbstractValidator<T>.RuleSet(string, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).RuleSet(String, Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).RuleSet(String, System.Action)
+  name.vb: RuleSet(String, Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.RuleSet(System.String,System.Action)
+    name: RuleSet
+    isExternal: true
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.RuleSet(System.String,System.Action)
+    name: RuleSet
+    isExternal: true
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.When(System.Func{`0,System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.When(System.Func{`0,System.Boolean},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: When(Func<T, bool>, Action)
+  nameWithType: AbstractValidator<T>.When(Func<T, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.When(System.Func<T, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).When(Func(Of T, Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).When(System.Func(Of T, Boolean), System.Action)
+  name.vb: When(Func(Of T, Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.When(System.Func{`0,System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.When(System.Func{`0,System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.When(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.When(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: When(Func<T, ValidationContext<T>, bool>, Action)
+  nameWithType: AbstractValidator<T>.When(Func<T, ValidationContext<T>, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.When(System.Func<T, FluentValidation.ValidationContext<T>, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).When(Func(Of T, ValidationContext(Of T), Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).When(System.Func(Of T, FluentValidation.ValidationContext(Of T), Boolean), System.Action)
+  name.vb: When(Func(Of T, ValidationContext(Of T), Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.When(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.When(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+    name: When
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.Unless(System.Func{`0,System.Boolean},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Unless(Func<T, bool>, Action)
+  nameWithType: AbstractValidator<T>.Unless(Func<T, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.Unless(System.Func<T, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).Unless(Func(Of T, Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).Unless(System.Func(Of T, Boolean), System.Action)
+  name.vb: Unless(Func(Of T, Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.Unless(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Unless(Func<T, ValidationContext<T>, bool>, Action)
+  nameWithType: AbstractValidator<T>.Unless(Func<T, ValidationContext<T>, bool>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.Unless(System.Func<T, FluentValidation.ValidationContext<T>, bool>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).Unless(Func(Of T, ValidationContext(Of T), Boolean), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).Unless(System.Func(Of T, FluentValidation.ValidationContext(Of T), Boolean), System.Action)
+  name.vb: Unless(Func(Of T, ValidationContext(Of T), Boolean), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.Unless(System.Func{`0,FluentValidation.ValidationContext{`0},System.Boolean},System.Action)
+    name: Unless
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: WhenAsync(Func<T, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<T>.WhenAsync(Func<T, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.WhenAsync(System.Func<T, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).WhenAsync(Func(Of T, CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).WhenAsync(System.Func(Of T, System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: WhenAsync(Func(Of T, CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-4
+  name: WhenAsync(Func<T, ValidationContext<T>, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<T>.WhenAsync(Func<T, ValidationContext<T>, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.WhenAsync(System.Func<T, FluentValidation.ValidationContext<T>, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).WhenAsync(Func(Of T, ValidationContext(Of T), CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).WhenAsync(System.Func(Of T, FluentValidation.ValidationContext(Of T), System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: WhenAsync(Func(Of T, ValidationContext(Of T), CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.WhenAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: WhenAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: UnlessAsync(Func<T, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<T>.UnlessAsync(Func<T, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.UnlessAsync(System.Func<T, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).UnlessAsync(Func(Of T, CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).UnlessAsync(System.Func(Of T, System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: UnlessAsync(Func(Of T, CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  commentId: M:FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-4
+  name: UnlessAsync(Func<T, ValidationContext<T>, CancellationToken, Task<bool>>, Action)
+  nameWithType: AbstractValidator<T>.UnlessAsync(Func<T, ValidationContext<T>, CancellationToken, Task<bool>>, Action)
+  fullName: FluentValidation.AbstractValidator<T>.UnlessAsync(System.Func<T, FluentValidation.ValidationContext<T>, System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.Action)
+  nameWithType.vb: AbstractValidator(Of T).UnlessAsync(Func(Of T, ValidationContext(Of T), CancellationToken, Task(Of Boolean)), Action)
+  fullName.vb: FluentValidation.AbstractValidator(Of T).UnlessAsync(System.Func(Of T, FluentValidation.ValidationContext(Of T), System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.Action)
+  name.vb: UnlessAsync(Func(Of T, ValidationContext(Of T), CancellationToken, Task(Of Boolean)), Action)
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.UnlessAsync(System.Func{`0,FluentValidation.ValidationContext{`0},System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Action)
+    name: UnlessAsync
+    isExternal: true
+  - name: (
+  - uid: System.Func`4
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-4
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: FluentValidation.ValidationContext`1
+    name: ValidationContext
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Action
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.Include(FluentValidation.IValidator{`0})
+  commentId: M:FluentValidation.AbstractValidator`1.Include(FluentValidation.IValidator{`0})
+  isExternal: true
+  name: Include(IValidator<T>)
+  nameWithType: AbstractValidator<T>.Include(IValidator<T>)
+  fullName: FluentValidation.AbstractValidator<T>.Include(FluentValidation.IValidator<T>)
+  nameWithType.vb: AbstractValidator(Of T).Include(IValidator(Of T))
+  fullName.vb: FluentValidation.AbstractValidator(Of T).Include(FluentValidation.IValidator(Of T))
+  name.vb: Include(IValidator(Of T))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.Include(FluentValidation.IValidator{`0})
+    name: Include
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: <
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.Include(FluentValidation.IValidator{`0})
+    name: Include
+    isExternal: true
+  - name: (
+  - uid: FluentValidation.IValidator`1
+    name: IValidator
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.Include``1(System.Func{`0,``0})
+  commentId: M:FluentValidation.AbstractValidator`1.Include``1(System.Func{`0,``0})
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Include<TValidator>(Func<T, TValidator>)
+  nameWithType: AbstractValidator<T>.Include<TValidator>(Func<T, TValidator>)
+  fullName: FluentValidation.AbstractValidator<T>.Include<TValidator>(System.Func<T, TValidator>)
+  nameWithType.vb: AbstractValidator(Of T).Include(Of TValidator)(Func(Of T, TValidator))
+  fullName.vb: FluentValidation.AbstractValidator(Of T).Include(Of TValidator)(System.Func(Of T, TValidator))
+  name.vb: Include(Of TValidator)(Func(Of T, TValidator))
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.Include``1(System.Func{`0,``0})
+    name: Include
+    isExternal: true
+  - name: <
+  - name: TValidator
+  - name: '>'
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TValidator
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.Include``1(System.Func{`0,``0})
+    name: Include
+    isExternal: true
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValidator
+  - name: )
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TValidator
+  - name: )
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.GetEnumerator
+  commentId: M:FluentValidation.AbstractValidator`1.GetEnumerator
+  isExternal: true
+  name: GetEnumerator()
+  nameWithType: AbstractValidator<T>.GetEnumerator()
+  fullName: FluentValidation.AbstractValidator<T>.GetEnumerator()
+  nameWithType.vb: AbstractValidator(Of T).GetEnumerator()
+  fullName.vb: FluentValidation.AbstractValidator(Of T).GetEnumerator()
+  spec.csharp:
+  - uid: FluentValidation.AbstractValidator`1.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: FluentValidation.AbstractValidator`1.GetEnumerator
+    name: GetEnumerator
+    isExternal: true
+  - name: (
+  - name: )
+- uid: FluentValidation.AbstractValidator`1.ClassLevelCascadeMode
+  commentId: P:FluentValidation.AbstractValidator`1.ClassLevelCascadeMode
+  isExternal: true
+  name: ClassLevelCascadeMode
+  nameWithType: AbstractValidator<T>.ClassLevelCascadeMode
+  fullName: FluentValidation.AbstractValidator<T>.ClassLevelCascadeMode
+  nameWithType.vb: AbstractValidator(Of T).ClassLevelCascadeMode
+  fullName.vb: FluentValidation.AbstractValidator(Of T).ClassLevelCascadeMode
+- uid: FluentValidation.AbstractValidator`1.RuleLevelCascadeMode
+  commentId: P:FluentValidation.AbstractValidator`1.RuleLevelCascadeMode
+  isExternal: true
+  name: RuleLevelCascadeMode
+  nameWithType: AbstractValidator<T>.RuleLevelCascadeMode
+  fullName: FluentValidation.AbstractValidator<T>.RuleLevelCascadeMode
+  nameWithType.vb: AbstractValidator(Of T).RuleLevelCascadeMode
+  fullName.vb: FluentValidation.AbstractValidator(Of T).RuleLevelCascadeMode
+- uid: Meridian.Application.Config.CQGConfigValidator.#ctor*
+  commentId: Overload:Meridian.Application.Config.CQGConfigValidator.#ctor
+  href: Meridian.Application.Config.CQGConfigValidator.html#Meridian_Application_Config_CQGConfigValidator__ctor
+  name: CQGConfigValidator
+  nameWithType: CQGConfigValidator.CQGConfigValidator
+  fullName: Meridian.Application.Config.CQGConfigValidator.CQGConfigValidator
+  nameWithType.vb: CQGConfigValidator.New
+  fullName.vb: Meridian.Application.Config.CQGConfigValidator.New
+  name.vb: New

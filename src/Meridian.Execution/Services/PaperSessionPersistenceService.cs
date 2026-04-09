@@ -191,7 +191,7 @@ public sealed class PaperSessionPersistenceService
         ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
         if (session.Portfolio is not null)
         {
-            var positions = session.Portfolio.Positions.Values.ToArray();
+            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
             portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
                 Cash: session.Portfolio.Cash,
                 PortfolioValue: session.Portfolio.PortfolioValue,
@@ -301,7 +301,7 @@ public sealed class PaperSessionPersistenceService
         foreach (var fill in fills)
             portfolio.ApplyFill(fill);
 
-        var positions = portfolio.Positions.Values.ToArray();
+        var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
         return new ExecutionPortfolioSnapshotDto(
             Cash: portfolio.Cash,
             PortfolioValue: portfolio.PortfolioValue,

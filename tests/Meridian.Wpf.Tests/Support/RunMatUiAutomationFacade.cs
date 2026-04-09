@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Application.FundAccounts;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
@@ -151,6 +153,10 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/BrandResources.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
@@ -183,14 +189,35 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
     public static IServiceProvider CreateMainPageServiceProvider(RunMatService? runMatService = null)
     {
         var services = new ServiceCollection();
+        var fundContext = new FundContextService(Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}.json"));
         services.AddSingleton<NavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<ConnectionService>(_ => ConnectionService.Instance);
         services.AddSingleton<StatusService>(_ => StatusService.Instance);
+        services.AddSingleton<IStatusService>(_ => StatusService.Instance);
         services.AddSingleton<MessagingService>(_ => MessagingService.Instance);
         services.AddSingleton<Meridian.Wpf.Services.NotificationService>(_ => Meridian.Wpf.Services.NotificationService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.LoggingService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.TaskbarProgressService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
+        services.AddSingleton(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.WorkspaceService.Instance);
+        services.AddSingleton(_ => Meridian.Wpf.Services.StrategyRunWorkspaceService.Instance);
         services.AddSingleton(_ => FixtureModeDetector.Instance);
+        services.AddSingleton(_ => fundContext);
+        services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
+        services.AddSingleton<FundAccountReadService>();
+        services.AddSingleton<CashFinancingReadService>();
+        services.AddSingleton<FundLedgerReadService>();
+        services.AddSingleton<ReconciliationReadService>();
+        services.AddSingleton<WorkspaceShellContextService>();
+        services.AddTransient<DashboardViewModel>();
         services.AddTransient<DashboardPage>();
+        services.AddTransient<ResearchWorkspaceShellPage>();
+        services.AddTransient<TradingWorkspaceShellPage>();
+        services.AddTransient<DataOperationsWorkspaceShellPage>();
+        services.AddTransient<GovernanceWorkspaceShellPage>();
         var resolvedRunMatService = runMatService ?? RunMatService.Instance;
         services.AddSingleton(resolvedRunMatService);
         services.AddTransient(_ => CreateViewModel(resolvedRunMatService));
@@ -237,17 +264,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         }
     }
 
-    private static RunMatViewModel CreateViewModel(RunMatService runMatService)
-    {
-        var ctor = typeof(RunMatViewModel).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            [typeof(RunMatService)],
-            modifiers: null);
-
-        ctor.Should().NotBeNull();
-        return (RunMatViewModel)ctor!.Invoke([runMatService]);
-    }
+    private static RunMatViewModel CreateViewModel(RunMatService runMatService) => new(runMatService);
 
     private static IAsyncRelayCommand GetRequiredAsyncCommand(Button button)
     {

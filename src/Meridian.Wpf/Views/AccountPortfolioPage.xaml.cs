@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using Meridian.Ui.Services.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
@@ -12,19 +11,20 @@ namespace Meridian.Wpf.Views;
 public partial class AccountPortfolioPage : Page
 {
     private readonly AccountPortfolioViewModel _viewModel;
-    private readonly string _accountId;
 
-    public AccountPortfolioPage(string accountId)
+    public AccountPortfolioPage(AccountPortfolioViewModel viewModel)
     {
         InitializeComponent();
-        _accountId = accountId;
-        _viewModel = new AccountPortfolioViewModel(ApiClientService.Instance);
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = _viewModel;
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _ = _viewModel.InitializeAsync(_accountId);
+        // Initialization is triggered by the Parameter property setter when NavigationService
+        // passes the accountId string after page creation. Nothing to do here.
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)

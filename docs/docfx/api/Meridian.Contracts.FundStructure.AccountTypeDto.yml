@@ -1,0 +1,267 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountTypeDto
+  id: AccountTypeDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.AccountTypeDto.Bank
+  - Meridian.Contracts.FundStructure.AccountTypeDto.Brokerage
+  - Meridian.Contracts.FundStructure.AccountTypeDto.Custody
+  - Meridian.Contracts.FundStructure.AccountTypeDto.LedgerControl
+  - Meridian.Contracts.FundStructure.AccountTypeDto.Margin
+  - Meridian.Contracts.FundStructure.AccountTypeDto.Other
+  - Meridian.Contracts.FundStructure.AccountTypeDto.PrimeBroker
+  langs:
+  - csharp
+  - vb
+  name: AccountTypeDto
+  nameWithType: AccountTypeDto
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountTypeDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<AccountTypeDto>))]
+
+      public enum AccountTypeDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of AccountTypeDto)))>
+
+      Public Enum AccountTypeDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.AccountTypeDto}
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.Brokerage
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.Brokerage
+  id: Brokerage
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Brokerage
+  nameWithType: AccountTypeDto.Brokerage
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.Brokerage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brokerage
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Brokerage = 0
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.Custody
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.Custody
+  id: Custody
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Custody
+  nameWithType: AccountTypeDto.Custody
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.Custody
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custody
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Custody = 1
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.Bank
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.Bank
+  id: Bank
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Bank
+  nameWithType: AccountTypeDto.Bank
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.Bank
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bank
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Bank = 2
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.Margin
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.Margin
+  id: Margin
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Margin
+  nameWithType: AccountTypeDto.Margin
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.Margin
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Margin
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Margin = 3
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.PrimeBroker
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.PrimeBroker
+  id: PrimeBroker
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: PrimeBroker
+  nameWithType: AccountTypeDto.PrimeBroker
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.PrimeBroker
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimeBroker
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: PrimeBroker = 4
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.LedgerControl
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.LedgerControl
+  id: LedgerControl
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: LedgerControl
+  nameWithType: AccountTypeDto.LedgerControl
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.LedgerControl
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerControl
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: LedgerControl = 5
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto.Other
+  commentId: F:Meridian.Contracts.FundStructure.AccountTypeDto.Other
+  id: Other
+  parent: Meridian.Contracts.FundStructure.AccountTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: AccountTypeDto.Other
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Other = 6
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountTypeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountTypeDto.html
+  name: AccountTypeDto
+  nameWithType: AccountTypeDto
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto

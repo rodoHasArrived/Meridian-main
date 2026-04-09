@@ -1,0 +1,86 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  id: Meridian.Execution.Interfaces
+  children:
+  - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  - Meridian.Execution.Interfaces.IAccountPortfolio
+  - Meridian.Execution.Interfaces.IExecutionContext
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter
+  - Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio
+  commentId: T:Meridian.Execution.Interfaces.IAccountPortfolio
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html
+  name: IAccountPortfolio
+  nameWithType: IAccountPortfolio
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  commentId: T:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  name: ExecutionAccountDetailSnapshot
+  nameWithType: ExecutionAccountDetailSnapshot
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+- uid: Meridian.Execution.Interfaces.IExecutionContext
+  commentId: T:Meridian.Execution.Interfaces.IExecutionContext
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IExecutionContext.html
+  name: IExecutionContext
+  nameWithType: IExecutionContext
+  fullName: Meridian.Execution.Interfaces.IExecutionContext
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  commentId: T:Meridian.Execution.Interfaces.ILiveFeedAdapter
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html
+  name: ILiveFeedAdapter
+  nameWithType: ILiveFeedAdapter
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IOrderGateway.html
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html

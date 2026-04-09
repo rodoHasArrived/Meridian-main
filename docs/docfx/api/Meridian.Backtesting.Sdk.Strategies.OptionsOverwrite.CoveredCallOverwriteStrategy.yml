@@ -1,0 +1,1642 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  id: CoveredCallOverwriteStrategy
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.#ctor(System.String,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider,Microsoft.Extensions.Logging.ILogger)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  langs:
+  - csharp
+  - vb
+  name: CoveredCallOverwriteStrategy
+  nameWithType: CoveredCallOverwriteStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoveredCallOverwriteStrategy
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Conservative covered-call (options overwrite) backtest strategy.
+  remarks: >-
+    <p>
+
+    The strategy assumes the user already holds a long position in <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol" data-throw-if-not-resolved="false"></xref>
+
+    at the start of the backtest (either entered prior to the backtest window or at the first bar).
+
+    On each trading day, it:
+
+
+    <ol><li>Marks all open short-call positions to market using Black-Scholes.</li><li>Manages open positions (take-profit roll, delta-risk roll, dividend-risk roll, assignment at expiry).</li><li>When no short call is open and conditions are met, scans the option chain and sells the best candidate.</li></ol>
+
+    </p>
+
+    <p>
+
+    <b>Option fills are simulated internally</b> rather than routed through the backtest engine's
+
+    order system, because standard OHLCV bar data does not contain option chain snapshots.
+
+    The underlying stock position <em>is</em> tracked via the engine (placed via
+
+    <xref href="Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String%2cSystem.Int64)" data-throw-if-not-resolved="false"></xref>).
+
+    </p>
+
+    <p>
+
+    Provide an <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider" data-throw-if-not-resolved="false"></xref> implementation that returns
+
+    <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo" data-throw-if-not-resolved="false"></xref> objects for each scan date.  A test double
+
+    (e.g. a lambda-based stub) is sufficient for unit tests.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class CoveredCallOverwriteStrategy : IBacktestStrategy'
+    content.vb: Public NotInheritable Class CoveredCallOverwriteStrategy Implements IBacktestStrategy
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name
+  id: Name
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CoveredCallOverwriteStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Human-readable strategy identifier.
+  example: []
+  syntax:
+    content: public string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Name As String
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: CoveredCallOverwriteStrategy.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: The underlying symbol being overwritten (e.g. "SPY").
+  example: []
+  syntax:
+    content: public string UnderlyingSymbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property UnderlyingSymbol As String
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params
+  id: Params
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: Params
+  nameWithType: CoveredCallOverwriteStrategy.Params
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Params
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Strategy tuning parameters.
+  example: []
+  syntax:
+    content: public OptionsOverwriteParams Params { get; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    content.vb: Public ReadOnly Property Params As OptionsOverwriteParams
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades
+  id: CompletedTrades
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: CompletedTrades
+  nameWithType: CoveredCallOverwriteStrategy.CompletedTrades
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedTrades
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Completed option trade records (populated after each closed position).
+
+    Available after the strategy finishes via <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IReadOnlyList<OptionsOverwriteTradeRecord> CompletedTrades { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord}
+    content.vb: Public ReadOnly Property CompletedTrades As IReadOnlyList(Of OptionsOverwriteTradeRecord)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions
+  id: OpenPositions
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OpenPositions
+  nameWithType: CoveredCallOverwriteStrategy.OpenPositions
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenPositions
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Currently open short-call positions.  Typically zero or one per underlying
+
+    in a conservative full-overwrite scenario.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ShortCallPosition> OpenPositions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition}
+    content.vb: Public ReadOnly Property OpenPositions As IReadOnlyList(Of ShortCallPosition)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics
+  id: Metrics
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: Metrics
+  nameWithType: CoveredCallOverwriteStrategy.Metrics
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metrics
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Computed performance metrics — available after <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)" data-throw-if-not-resolved="false"></xref> is called.
+  example: []
+  syntax:
+    content: public OptionsOverwriteMetrics? Metrics { get; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+    content.vb: Public Property Metrics As OptionsOverwriteMetrics
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.#ctor(System.String,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider,Microsoft.Extensions.Logging.ILogger)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.#ctor(System.String,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider,Microsoft.Extensions.Logging.ILogger)
+  id: '#ctor(System.String,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider,Microsoft.Extensions.Logging.ILogger)'
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: CoveredCallOverwriteStrategy(string, OptionsOverwriteParams, IOptionChainProvider, ILogger?)
+  nameWithType: CoveredCallOverwriteStrategy.CoveredCallOverwriteStrategy(string, OptionsOverwriteParams, IOptionChainProvider, ILogger?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CoveredCallOverwriteStrategy(string, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider, Microsoft.Extensions.Logging.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Creates a new covered-call overwrite strategy.
+  example: []
+  syntax:
+    content: public CoveredCallOverwriteStrategy(string underlyingSymbol, OptionsOverwriteParams parameters, IOptionChainProvider chainProvider, ILogger? logger = null)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+      description: The underlying asset symbol (must be in the backtest universe).
+    - id: parameters
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+      description: Strategy tuning parameters.
+    - id: chainProvider
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+      description: Option chain data source.
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: Optional logger. Defaults to <xref href="Microsoft.Extensions.Logging.Abstractions.NullLogger" data-throw-if-not-resolved="false"></xref>.
+    content.vb: Public Sub New(underlyingSymbol As String, parameters As OptionsOverwriteParams, chainProvider As IOptionChainProvider, logger As ILogger = Nothing)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.#ctor*
+  nameWithType.vb: CoveredCallOverwriteStrategy.New(String, OptionsOverwriteParams, IOptionChainProvider, ILogger)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.New(String, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider, Microsoft.Extensions.Logging.ILogger)
+  name.vb: New(String, OptionsOverwriteParams, IOptionChainProvider, ILogger)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  id: Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: Initialize(IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.Initialize(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Initialize
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called once before replay begins. Use to initialise indicators, state, or log parameters.
+  example: []
+  syntax:
+    content: public void Initialize(IBacktestContext ctx)
+    parameters:
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub Initialize(ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnTrade(Trade, IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnTrade(Trade, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnTrade
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called for every <code>Trade</code> event in the replay stream.
+  example: []
+  syntax:
+    content: public void OnTrade(Trade trade, IBacktestContext ctx)
+    parameters:
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.Trade
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnTrade(trade As Trade, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnQuote(BboQuotePayload, IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnQuote(BboQuotePayload, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnQuote
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called for every <code>BboQuotePayload</code> (best bid/offer) event.
+  example: []
+  syntax:
+    content: public void OnQuote(BboQuotePayload quote, IBacktestContext ctx)
+    parameters:
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnQuote(quote As BboQuotePayload, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnBar(HistoricalBar, IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnBar(HistoricalBar, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnBar
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called for every <code>HistoricalBar</code> (OHLCV) event.
+  example: []
+  syntax:
+    content: public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+    parameters:
+    - id: bar
+      type: Meridian.Contracts.Domain.Models.HistoricalBar
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnBar(bar As HistoricalBar, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnOrderBook(LOBSnapshot, IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnOrderBook(LOBSnapshot, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOrderBook
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called for every <code>LOBSnapshot</code> (Level-2 order book) event.
+  example: []
+  syntax:
+    content: public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnOrderBook(snapshot As LOBSnapshot, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnOrderFill(FillEvent, IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnOrderFill(FillEvent, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOrderFill
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called immediately after each fill so the strategy can react.
+  example: []
+  syntax:
+    content: public void OnOrderFill(FillEvent fill, IBacktestContext ctx)
+    parameters:
+    - id: fill
+      type: Meridian.Backtesting.Sdk.FillEvent
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnOrderFill(fill As FillEvent, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnDayEnd(DateOnly, IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnDayEnd(DateOnly, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd(System.DateOnly, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnDayEnd
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Called once per simulated trading day after all events for that date have been processed
+
+    and interest/rebate accruals have been applied. Use for end-of-day rebalancing logic.
+  example: []
+  syntax:
+    content: public void OnDayEnd(DateOnly date, IBacktestContext ctx)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnDayEnd([date] As DateOnly, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnFinished(IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnFinished(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnFinished
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Called once after the last event has been replayed. Use to finalise state.
+  example: []
+  syntax:
+    content: public void OnFinished(IBacktestContext ctx)
+    parameters:
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnFinished(ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: CoveredCallOverwriteStrategy.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+  isExternal: true
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceMarketOrder_System_String_System_Int64_
+  name: PlaceMarketOrder(string, long)
+  nameWithType: IBacktestContext.PlaceMarketOrder(string, long)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(string, long)
+  nameWithType.vb: IBacktestContext.PlaceMarketOrder(String, Long)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(String, Long)
+  name.vb: PlaceMarketOrder(String, Long)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+    name: PlaceMarketOrder
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceMarketOrder_System_String_System_Int64_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+    name: PlaceMarketOrder
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceMarketOrder_System_String_System_Int64_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider.html
+  name: IOptionChainProvider
+  nameWithType: IOptionChainProvider
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.IOptionChainProvider
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  name: OptionCandidateInfo
+  nameWithType: OptionCandidateInfo
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestStrategy
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html
+  name: IBacktestStrategy
+  nameWithType: IBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_Name
+  name: Name
+  nameWithType: CoveredCallOverwriteStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Name
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Name
+  name: Name
+  nameWithType: IBacktestStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: CoveredCallOverwriteStrategy.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.UnderlyingSymbol
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_Params
+  name: Params
+  nameWithType: CoveredCallOverwriteStrategy.Params
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Params
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  name: OptionsOverwriteParams
+  nameWithType: OptionsOverwriteParams
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnFinished(IBacktestContext)
+  nameWithType: CoveredCallOverwriteStrategy.OnFinished(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_CompletedTrades
+  name: CompletedTrades
+  nameWithType: CoveredCallOverwriteStrategy.CompletedTrades
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CompletedTrades
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptionsOverwriteTradeRecord>
+  nameWithType: IReadOnlyList<OptionsOverwriteTradeRecord>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord>
+  nameWithType.vb: IReadOnlyList(Of OptionsOverwriteTradeRecord)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord)
+  name.vb: IReadOnlyList(Of OptionsOverwriteTradeRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+    name: OptionsOverwriteTradeRecord
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+    name: OptionsOverwriteTradeRecord
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OpenPositions
+  name: OpenPositions
+  nameWithType: CoveredCallOverwriteStrategy.OpenPositions
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OpenPositions
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ShortCallPosition>
+  nameWithType: IReadOnlyList<ShortCallPosition>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition>
+  nameWithType.vb: IReadOnlyList(Of ShortCallPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition)
+  name.vb: IReadOnlyList(Of ShortCallPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+    name: ShortCallPosition
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+    name: ShortCallPosition
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_Metrics
+  name: Metrics
+  nameWithType: CoveredCallOverwriteStrategy.Metrics
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Metrics
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics.html
+  name: OptionsOverwriteMetrics
+  nameWithType: OptionsOverwriteMetrics
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+- uid: Microsoft.Extensions.Logging.Abstractions.NullLogger
+  commentId: T:Microsoft.Extensions.Logging.Abstractions.NullLogger
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.abstractions.nulllogger
+  name: NullLogger
+  nameWithType: NullLogger
+  fullName: Microsoft.Extensions.Logging.Abstractions.NullLogger
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy__ctor_System_String_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_IOptionChainProvider_Microsoft_Extensions_Logging_ILogger_
+  name: CoveredCallOverwriteStrategy
+  nameWithType: CoveredCallOverwriteStrategy.CoveredCallOverwriteStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.CoveredCallOverwriteStrategy
+  nameWithType.vb: CoveredCallOverwriteStrategy.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: Initialize
+  nameWithType: CoveredCallOverwriteStrategy.Initialize
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.Initialize
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: Initialize(IBacktestContext)
+  nameWithType: IBacktestStrategy.Initialize(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: Initialize
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: Initialize
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestContext
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestContext
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  name: IBacktestContext
+  nameWithType: IBacktestContext
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnTrade
+  nameWithType: CoveredCallOverwriteStrategy.OnTrade
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnTrade
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnTrade(Trade, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnTrade(Trade, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnTrade
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.Trade
+    name: Trade
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnTrade
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.Trade
+    name: Trade
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.Trade
+  commentId: T:Meridian.Contracts.Domain.Models.Trade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.Trade.html
+  name: Trade
+  nameWithType: Trade
+  fullName: Meridian.Contracts.Domain.Models.Trade
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnQuote
+  nameWithType: CoveredCallOverwriteStrategy.OnQuote
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnQuote
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnQuote(BboQuotePayload, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnQuote(BboQuotePayload, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnQuote
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnQuote
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+  commentId: T:Meridian.Contracts.Domain.Models.BboQuotePayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.BboQuotePayload.html
+  name: BboQuotePayload
+  nameWithType: BboQuotePayload
+  fullName: Meridian.Contracts.Domain.Models.BboQuotePayload
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnBar
+  nameWithType: CoveredCallOverwriteStrategy.OnBar
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnBar
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnBar(HistoricalBar, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnBar(HistoricalBar, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnBar
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnBar
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.HistoricalBar
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalBar
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalBar.html
+  name: HistoricalBar
+  nameWithType: HistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.HistoricalBar
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderBook
+  nameWithType: CoveredCallOverwriteStrategy.OnOrderBook
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderBook
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderBook(LOBSnapshot, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderBook(LOBSnapshot, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderBook
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+    name: LOBSnapshot
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderBook
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+    name: LOBSnapshot
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderFill
+  nameWithType: CoveredCallOverwriteStrategy.OnOrderFill
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnOrderFill
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderFill(FillEvent, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderFill(FillEvent, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FillEvent
+  commentId: T:Meridian.Backtesting.Sdk.FillEvent
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FillEvent.html
+  name: FillEvent
+  nameWithType: FillEvent
+  fullName: Meridian.Backtesting.Sdk.FillEvent
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnDayEnd
+  nameWithType: CoveredCallOverwriteStrategy.OnDayEnd
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnDayEnd
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  isExternal: true
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnDayEnd(DateOnly, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnDayEnd(DateOnly, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnDayEnd
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnDayEnd
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_CoveredCallOverwriteStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnFinished
+  nameWithType: CoveredCallOverwriteStrategy.OnFinished
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.OnFinished
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnFinished(IBacktestContext)
+  nameWithType: IBacktestStrategy.OnFinished(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )

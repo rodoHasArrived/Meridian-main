@@ -1,0 +1,333 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Commands.ICliCommand
+  commentId: T:Meridian.Application.Commands.ICliCommand
+  id: ICliCommand
+  parent: Meridian.Application.Commands
+  children:
+  - Meridian.Application.Commands.ICliCommand.CanHandle(System.String[])
+  - Meridian.Application.Commands.ICliCommand.ExecuteAsync(System.String[],System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ICliCommand
+  nameWithType: ICliCommand
+  fullName: Meridian.Application.Commands.ICliCommand
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICliCommand
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: >-
+    Interface for CLI command handlers extracted from Program.cs.
+
+    Each implementation handles one or more related CLI flags.
+  example: []
+  syntax:
+    content: public interface ICliCommand
+    content.vb: Public Interface ICliCommand
+- uid: Meridian.Application.Commands.ICliCommand.CanHandle(System.String[])
+  commentId: M:Meridian.Application.Commands.ICliCommand.CanHandle(System.String[])
+  id: CanHandle(System.String[])
+  parent: Meridian.Application.Commands.ICliCommand
+  langs:
+  - csharp
+  - vb
+  name: CanHandle(string[])
+  nameWithType: ICliCommand.CanHandle(string[])
+  fullName: Meridian.Application.Commands.ICliCommand.CanHandle(string[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanHandle
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Returns true if this command should handle the given args.
+  example: []
+  syntax:
+    content: bool CanHandle(string[] args)
+    parameters:
+    - id: args
+      type: System.String[]
+    return:
+      type: System.Boolean
+    content.vb: Function CanHandle(args As String()) As Boolean
+  overload: Meridian.Application.Commands.ICliCommand.CanHandle*
+  nameWithType.vb: ICliCommand.CanHandle(String())
+  fullName.vb: Meridian.Application.Commands.ICliCommand.CanHandle(String())
+  name.vb: CanHandle(String())
+- uid: Meridian.Application.Commands.ICliCommand.ExecuteAsync(System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Commands.ICliCommand.ExecuteAsync(System.String[],System.Threading.CancellationToken)
+  id: ExecuteAsync(System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Application.Commands.ICliCommand
+  langs:
+  - csharp
+  - vb
+  name: ExecuteAsync(string[], CancellationToken)
+  nameWithType: ICliCommand.ExecuteAsync(string[], CancellationToken)
+  fullName: Meridian.Application.Commands.ICliCommand.ExecuteAsync(string[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Commands/ICliCommand.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteAsync
+    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Commands
+  summary: Executes the command. Returns a <xref href="Meridian.Application.Commands.CliResult" data-throw-if-not-resolved="false"></xref> with a semantic exit code.
+  example: []
+  syntax:
+    content: Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
+    parameters:
+    - id: args
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Commands.CliResult}
+    content.vb: Function ExecuteAsync(args As String(), ct As CancellationToken = Nothing) As Task(Of CliResult)
+  overload: Meridian.Application.Commands.ICliCommand.ExecuteAsync*
+  nameWithType.vb: ICliCommand.ExecuteAsync(String(), CancellationToken)
+  fullName.vb: Meridian.Application.Commands.ICliCommand.ExecuteAsync(String(), System.Threading.CancellationToken)
+  name.vb: ExecuteAsync(String(), CancellationToken)
+references:
+- uid: Meridian.Application.Commands
+  commentId: N:Meridian.Application.Commands
+  href: Meridian.html
+  name: Meridian.Application.Commands
+  nameWithType: Meridian.Application.Commands
+  fullName: Meridian.Application.Commands
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+- uid: Meridian.Application.Commands.ICliCommand.CanHandle*
+  commentId: Overload:Meridian.Application.Commands.ICliCommand.CanHandle
+  href: Meridian.Application.Commands.ICliCommand.html#Meridian_Application_Commands_ICliCommand_CanHandle_System_String___
+  name: CanHandle
+  nameWithType: ICliCommand.CanHandle
+  fullName: Meridian.Application.Commands.ICliCommand.CanHandle
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Commands.CliResult
+  commentId: T:Meridian.Application.Commands.CliResult
+  parent: Meridian.Application.Commands
+  href: Meridian.Application.Commands.CliResult.html
+  name: CliResult
+  nameWithType: CliResult
+  fullName: Meridian.Application.Commands.CliResult
+- uid: Meridian.Application.Commands.ICliCommand.ExecuteAsync*
+  commentId: Overload:Meridian.Application.Commands.ICliCommand.ExecuteAsync
+  href: Meridian.Application.Commands.ICliCommand.html#Meridian_Application_Commands_ICliCommand_ExecuteAsync_System_String___System_Threading_CancellationToken_
+  name: ExecuteAsync
+  nameWithType: ICliCommand.ExecuteAsync
+  fullName: Meridian.Application.Commands.ICliCommand.ExecuteAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Commands.CliResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Commands.CliResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CliResult>
+  nameWithType: Task<CliResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Commands.CliResult>
+  nameWithType.vb: Task(Of CliResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Commands.CliResult)
+  name.vb: Task(Of CliResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Commands.CliResult
+    name: CliResult
+    href: Meridian.Application.Commands.CliResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Commands.CliResult
+    name: CliResult
+    href: Meridian.Application.Commands.CliResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

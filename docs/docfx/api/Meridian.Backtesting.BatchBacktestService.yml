@@ -1,0 +1,789 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.BatchBacktestService
+  commentId: T:Meridian.Backtesting.BatchBacktestService
+  id: BatchBacktestService
+  parent: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.BatchBacktestService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService},Meridian.Backtesting.Engine.BacktestEngine)
+  - Meridian.Backtesting.BatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BatchBacktestService
+  nameWithType: BatchBacktestService
+  fullName: Meridian.Backtesting.BatchBacktestService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchBacktestService
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Batch backtest service implementation using SemaphoreSlim for concurrency control.
+
+    Runs multiple backtests in parallel, catching per-run exceptions without aborting the batch.
+  example: []
+  syntax:
+    content: 'public sealed class BatchBacktestService : IBatchBacktestService'
+    content.vb: Public NotInheritable Class BatchBacktestService Implements IBatchBacktestService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Backtesting.IBatchBacktestService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.BatchBacktestService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService},Meridian.Backtesting.Engine.BacktestEngine)
+  commentId: M:Meridian.Backtesting.BatchBacktestService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService},Meridian.Backtesting.Engine.BacktestEngine)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService},Meridian.Backtesting.Engine.BacktestEngine)'
+  parent: Meridian.Backtesting.BatchBacktestService
+  langs:
+  - csharp
+  - vb
+  name: BatchBacktestService(ILogger<BatchBacktestService>, BacktestEngine)
+  nameWithType: BatchBacktestService.BatchBacktestService(ILogger<BatchBacktestService>, BacktestEngine)
+  fullName: Meridian.Backtesting.BatchBacktestService.BatchBacktestService(Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.BatchBacktestService>, Meridian.Backtesting.Engine.BacktestEngine)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Batch backtest service implementation using SemaphoreSlim for concurrency control.
+
+    Runs multiple backtests in parallel, catching per-run exceptions without aborting the batch.
+  example: []
+  syntax:
+    content: public BatchBacktestService(ILogger<BatchBacktestService> logger, BacktestEngine engine)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService}
+    - id: engine
+      type: Meridian.Backtesting.Engine.BacktestEngine
+    content.vb: Public Sub New(logger As ILogger(Of BatchBacktestService), engine As BacktestEngine)
+  overload: Meridian.Backtesting.BatchBacktestService.#ctor*
+  nameWithType.vb: BatchBacktestService.New(ILogger(Of BatchBacktestService), BacktestEngine)
+  fullName.vb: Meridian.Backtesting.BatchBacktestService.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Backtesting.BatchBacktestService), Meridian.Backtesting.Engine.BacktestEngine)
+  name.vb: New(ILogger(Of BatchBacktestService), BacktestEngine)
+- uid: Meridian.Backtesting.BatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.BatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  id: RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.BatchBacktestService
+  langs:
+  - csharp
+  - vb
+  name: RunBatchAsync(BatchBacktestRequest, IProgress<BatchBacktestProgress>, CancellationToken)
+  nameWithType: BatchBacktestService.RunBatchAsync(BatchBacktestRequest, IProgress<BatchBacktestProgress>, CancellationToken)
+  fullName: Meridian.Backtesting.BatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest, System.IProgress<Meridian.Backtesting.BatchBacktestProgress>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunBatchAsync
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Runs a batch of backtests with parameter sweeping.
+
+    Each run exception is caught and recorded; the batch continues to completion.
+  example: []
+  syntax:
+    content: public Task<BatchBacktestSummary> RunBatchAsync(BatchBacktestRequest request, IProgress<BatchBacktestProgress> progress, CancellationToken ct)
+    parameters:
+    - id: request
+      type: Meridian.Backtesting.BatchBacktestRequest
+    - id: progress
+      type: System.IProgress{Meridian.Backtesting.BatchBacktestProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Backtesting.BatchBacktestSummary}
+    content.vb: Public Function RunBatchAsync(request As BatchBacktestRequest, progress As IProgress(Of BatchBacktestProgress), ct As CancellationToken) As Task(Of BatchBacktestSummary)
+  overload: Meridian.Backtesting.BatchBacktestService.RunBatchAsync*
+  implements:
+  - Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  nameWithType.vb: BatchBacktestService.RunBatchAsync(BatchBacktestRequest, IProgress(Of BatchBacktestProgress), CancellationToken)
+  fullName.vb: Meridian.Backtesting.BatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest, System.IProgress(Of Meridian.Backtesting.BatchBacktestProgress), System.Threading.CancellationToken)
+  name.vb: RunBatchAsync(BatchBacktestRequest, IProgress(Of BatchBacktestProgress), CancellationToken)
+references:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.IBatchBacktestService
+  commentId: T:Meridian.Backtesting.IBatchBacktestService
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.IBatchBacktestService.html
+  name: IBatchBacktestService
+  nameWithType: IBatchBacktestService
+  fullName: Meridian.Backtesting.IBatchBacktestService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.BatchBacktestService.#ctor*
+  commentId: Overload:Meridian.Backtesting.BatchBacktestService.#ctor
+  href: Meridian.Backtesting.BatchBacktestService.html#Meridian_Backtesting_BatchBacktestService__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Backtesting_BatchBacktestService__Meridian_Backtesting_Engine_BacktestEngine_
+  name: BatchBacktestService
+  nameWithType: BatchBacktestService.BatchBacktestService
+  fullName: Meridian.Backtesting.BatchBacktestService.BatchBacktestService
+  nameWithType.vb: BatchBacktestService.New
+  fullName.vb: Meridian.Backtesting.BatchBacktestService.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BatchBacktestService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<BatchBacktestService>
+  nameWithType: ILogger<BatchBacktestService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.BatchBacktestService>
+  nameWithType.vb: ILogger(Of BatchBacktestService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Backtesting.BatchBacktestService)
+  name.vb: ILogger(Of BatchBacktestService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Backtesting.BatchBacktestService
+    name: BatchBacktestService
+    href: Meridian.Backtesting.BatchBacktestService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BatchBacktestService
+    name: BatchBacktestService
+    href: Meridian.Backtesting.BatchBacktestService.html
+  - name: )
+- uid: Meridian.Backtesting.Engine.BacktestEngine
+  commentId: T:Meridian.Backtesting.Engine.BacktestEngine
+  parent: Meridian.Backtesting.Engine
+  href: Meridian.Backtesting.Engine.BacktestEngine.html
+  name: BacktestEngine
+  nameWithType: BacktestEngine
+  fullName: Meridian.Backtesting.Engine.BacktestEngine
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Backtesting.Engine
+  commentId: N:Meridian.Backtesting.Engine
+  href: Meridian.html
+  name: Meridian.Backtesting.Engine
+  nameWithType: Meridian.Backtesting.Engine
+  fullName: Meridian.Backtesting.Engine
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Engine
+    name: Engine
+    href: Meridian.Backtesting.Engine.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Engine
+    name: Engine
+    href: Meridian.Backtesting.Engine.html
+- uid: Meridian.Backtesting.BatchBacktestService.RunBatchAsync*
+  commentId: Overload:Meridian.Backtesting.BatchBacktestService.RunBatchAsync
+  href: Meridian.Backtesting.BatchBacktestService.html#Meridian_Backtesting_BatchBacktestService_RunBatchAsync_Meridian_Backtesting_BatchBacktestRequest_System_IProgress_Meridian_Backtesting_BatchBacktestProgress__System_Threading_CancellationToken_
+  name: RunBatchAsync
+  nameWithType: BatchBacktestService.RunBatchAsync
+  fullName: Meridian.Backtesting.BatchBacktestService.RunBatchAsync
+- uid: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.IBatchBacktestService
+  isExternal: true
+  href: Meridian.Backtesting.IBatchBacktestService.html#Meridian_Backtesting_IBatchBacktestService_RunBatchAsync_Meridian_Backtesting_BatchBacktestRequest_System_IProgress_Meridian_Backtesting_BatchBacktestProgress__System_Threading_CancellationToken_
+  name: RunBatchAsync(BatchBacktestRequest, IProgress<BatchBacktestProgress>, CancellationToken)
+  nameWithType: IBatchBacktestService.RunBatchAsync(BatchBacktestRequest, IProgress<BatchBacktestProgress>, CancellationToken)
+  fullName: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest, System.IProgress<Meridian.Backtesting.BatchBacktestProgress>, System.Threading.CancellationToken)
+  nameWithType.vb: IBatchBacktestService.RunBatchAsync(BatchBacktestRequest, IProgress(Of BatchBacktestProgress), CancellationToken)
+  fullName.vb: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest, System.IProgress(Of Meridian.Backtesting.BatchBacktestProgress), System.Threading.CancellationToken)
+  name.vb: RunBatchAsync(BatchBacktestRequest, IProgress(Of BatchBacktestProgress), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+    name: RunBatchAsync
+    href: Meridian.Backtesting.IBatchBacktestService.html#Meridian_Backtesting_IBatchBacktestService_RunBatchAsync_Meridian_Backtesting_BatchBacktestRequest_System_IProgress_Meridian_Backtesting_BatchBacktestProgress__System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Backtesting.BatchBacktestRequest
+    name: BatchBacktestRequest
+    href: Meridian.Backtesting.BatchBacktestRequest.html
+  - name: ','
+  - name: " "
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Backtesting.BatchBacktestProgress
+    name: BatchBacktestProgress
+    href: Meridian.Backtesting.BatchBacktestProgress.html
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+    name: RunBatchAsync
+    href: Meridian.Backtesting.IBatchBacktestService.html#Meridian_Backtesting_IBatchBacktestService_RunBatchAsync_Meridian_Backtesting_BatchBacktestRequest_System_IProgress_Meridian_Backtesting_BatchBacktestProgress__System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Backtesting.BatchBacktestRequest
+    name: BatchBacktestRequest
+    href: Meridian.Backtesting.BatchBacktestRequest.html
+  - name: ','
+  - name: " "
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BatchBacktestProgress
+    name: BatchBacktestProgress
+    href: Meridian.Backtesting.BatchBacktestProgress.html
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Backtesting.BatchBacktestRequest
+  commentId: T:Meridian.Backtesting.BatchBacktestRequest
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.BatchBacktestRequest.html
+  name: BatchBacktestRequest
+  nameWithType: BatchBacktestRequest
+  fullName: Meridian.Backtesting.BatchBacktestRequest
+- uid: System.IProgress{Meridian.Backtesting.BatchBacktestProgress}
+  commentId: T:System.IProgress{Meridian.Backtesting.BatchBacktestProgress}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<BatchBacktestProgress>
+  nameWithType: IProgress<BatchBacktestProgress>
+  fullName: System.IProgress<Meridian.Backtesting.BatchBacktestProgress>
+  nameWithType.vb: IProgress(Of BatchBacktestProgress)
+  fullName.vb: System.IProgress(Of Meridian.Backtesting.BatchBacktestProgress)
+  name.vb: IProgress(Of BatchBacktestProgress)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Backtesting.BatchBacktestProgress
+    name: BatchBacktestProgress
+    href: Meridian.Backtesting.BatchBacktestProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BatchBacktestProgress
+    name: BatchBacktestProgress
+    href: Meridian.Backtesting.BatchBacktestProgress.html
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Backtesting.BatchBacktestSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Backtesting.BatchBacktestSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BatchBacktestSummary>
+  nameWithType: Task<BatchBacktestSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Backtesting.BatchBacktestSummary>
+  nameWithType.vb: Task(Of BatchBacktestSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Backtesting.BatchBacktestSummary)
+  name.vb: Task(Of BatchBacktestSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Backtesting.BatchBacktestSummary
+    name: BatchBacktestSummary
+    href: Meridian.Backtesting.BatchBacktestSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BatchBacktestSummary
+    name: BatchBacktestSummary
+    href: Meridian.Backtesting.BatchBacktestSummary.html
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

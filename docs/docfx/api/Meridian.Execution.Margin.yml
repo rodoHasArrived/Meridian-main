@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  id: Meridian.Execution.Margin
+  children:
+  - Meridian.Execution.Margin.IMarginModel
+  - Meridian.Execution.Margin.MarginRequirement
+  - Meridian.Execution.Margin.PortfolioMarginModel
+  - Meridian.Execution.Margin.RegTMarginModel
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Margin.IMarginModel
+  commentId: T:Meridian.Execution.Margin.IMarginModel
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.IMarginModel.html
+  name: IMarginModel
+  nameWithType: IMarginModel
+  fullName: Meridian.Execution.Margin.IMarginModel
+- uid: Meridian.Execution.Margin.MarginRequirement
+  commentId: T:Meridian.Execution.Margin.MarginRequirement
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginRequirement.html
+  name: MarginRequirement
+  nameWithType: MarginRequirement
+  fullName: Meridian.Execution.Margin.MarginRequirement
+- uid: Meridian.Execution.Margin.PortfolioMarginModel
+  commentId: T:Meridian.Execution.Margin.PortfolioMarginModel
+  href: Meridian.Execution.Margin.PortfolioMarginModel.html
+  name: PortfolioMarginModel
+  nameWithType: PortfolioMarginModel
+  fullName: Meridian.Execution.Margin.PortfolioMarginModel
+- uid: Meridian.Execution.Margin.RegTMarginModel
+  commentId: T:Meridian.Execution.Margin.RegTMarginModel
+  href: Meridian.Execution.Margin.RegTMarginModel.html
+  name: RegTMarginModel
+  nameWithType: RegTMarginModel
+  fullName: Meridian.Execution.Margin.RegTMarginModel
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html

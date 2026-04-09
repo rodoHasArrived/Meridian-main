@@ -1,0 +1,1273 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.ProjectLedgerBook
+  commentId: T:Meridian.Ledger.ProjectLedgerBook
+  id: ProjectLedgerBook
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.ProjectLedgerBook.#ctor(System.String)
+  - Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  - Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries(Meridian.Ledger.LedgerQuery,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  - Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  - Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  - Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  - Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  - Meridian.Ledger.ProjectLedgerBook.GetOrCreate(Meridian.Ledger.LedgerBookKey)
+  - Meridian.Ledger.ProjectLedgerBook.LedgerKeys
+  - Meridian.Ledger.ProjectLedgerBook.ProjectId
+  - Meridian.Ledger.ProjectLedgerBook.Snapshot
+  - Meridian.Ledger.ProjectLedgerBook.TryGetLedger(Meridian.Ledger.LedgerBookKey,Meridian.Ledger.Ledger@)
+  langs:
+  - csharp
+  - vb
+  name: ProjectLedgerBook
+  nameWithType: ProjectLedgerBook
+  fullName: Meridian.Ledger.ProjectLedgerBook
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectLedgerBook
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Holds multiple independent double-entry ledgers for a single project.
+
+    Each logical ledger can represent a different view such as actuals,
+
+    historical replay, parameterized P&amp;L, or contractual security-master flows.
+  example: []
+  syntax:
+    content: public sealed class ProjectLedgerBook
+    content.vb: Public NotInheritable Class ProjectLedgerBook
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ledger.ProjectLedgerBook.#ctor(System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ProjectLedgerBook(string)
+  nameWithType: ProjectLedgerBook.ProjectLedgerBook(string)
+  fullName: Meridian.Ledger.ProjectLedgerBook.ProjectLedgerBook(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public ProjectLedgerBook(string projectId)
+    parameters:
+    - id: projectId
+      type: System.String
+    content.vb: Public Sub New(projectId As String)
+  overload: Meridian.Ledger.ProjectLedgerBook.#ctor*
+  nameWithType.vb: ProjectLedgerBook.New(String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.New(String)
+  name.vb: New(String)
+- uid: Meridian.Ledger.ProjectLedgerBook.ProjectId
+  commentId: P:Meridian.Ledger.ProjectLedgerBook.ProjectId
+  id: ProjectId
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ProjectId
+  nameWithType: ProjectLedgerBook.ProjectId
+  fullName: Meridian.Ledger.ProjectLedgerBook.ProjectId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectId
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public string ProjectId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProjectId As String
+  overload: Meridian.Ledger.ProjectLedgerBook.ProjectId*
+- uid: Meridian.Ledger.ProjectLedgerBook.LedgerKeys
+  commentId: P:Meridian.Ledger.ProjectLedgerBook.LedgerKeys
+  id: LedgerKeys
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: LedgerKeys
+  nameWithType: ProjectLedgerBook.LedgerKeys
+  fullName: Meridian.Ledger.ProjectLedgerBook.LedgerKeys
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerKeys
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public IReadOnlyCollection<LedgerBookKey> LedgerKeys { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyCollection{Meridian.Ledger.LedgerBookKey}
+    content.vb: Public ReadOnly Property LedgerKeys As IReadOnlyCollection(Of LedgerBookKey)
+  overload: Meridian.Ledger.ProjectLedgerBook.LedgerKeys*
+- uid: Meridian.Ledger.ProjectLedgerBook.GetOrCreate(Meridian.Ledger.LedgerBookKey)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.GetOrCreate(Meridian.Ledger.LedgerBookKey)
+  id: GetOrCreate(Meridian.Ledger.LedgerBookKey)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: GetOrCreate(LedgerBookKey)
+  nameWithType: ProjectLedgerBook.GetOrCreate(LedgerBookKey)
+  fullName: Meridian.Ledger.ProjectLedgerBook.GetOrCreate(Meridian.Ledger.LedgerBookKey)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrCreate
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public Ledger GetOrCreate(LedgerBookKey key)
+    parameters:
+    - id: key
+      type: Meridian.Ledger.LedgerBookKey
+    return:
+      type: Meridian.Ledger.Ledger
+    content.vb: Public Function GetOrCreate(key As LedgerBookKey) As Ledger
+  overload: Meridian.Ledger.ProjectLedgerBook.GetOrCreate*
+- uid: Meridian.Ledger.ProjectLedgerBook.TryGetLedger(Meridian.Ledger.LedgerBookKey,Meridian.Ledger.Ledger@)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.TryGetLedger(Meridian.Ledger.LedgerBookKey,Meridian.Ledger.Ledger@)
+  id: TryGetLedger(Meridian.Ledger.LedgerBookKey,Meridian.Ledger.Ledger@)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: TryGetLedger(LedgerBookKey, out Ledger?)
+  nameWithType: ProjectLedgerBook.TryGetLedger(LedgerBookKey, out Ledger?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.TryGetLedger(Meridian.Ledger.LedgerBookKey, out Meridian.Ledger.Ledger?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGetLedger
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public bool TryGetLedger(LedgerBookKey key, out Ledger? ledger)
+    parameters:
+    - id: key
+      type: Meridian.Ledger.LedgerBookKey
+    - id: ledger
+      type: Meridian.Ledger.Ledger
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryGetLedger(key As LedgerBookKey, ledger As Ledger) As Boolean
+  overload: Meridian.Ledger.ProjectLedgerBook.TryGetLedger*
+  nameWithType.vb: ProjectLedgerBook.TryGetLedger(LedgerBookKey, Ledger)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.TryGetLedger(Meridian.Ledger.LedgerBookKey, Meridian.Ledger.Ledger)
+  name.vb: TryGetLedger(LedgerBookKey, Ledger)
+- uid: Meridian.Ledger.ProjectLedgerBook.Snapshot
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.Snapshot
+  id: Snapshot
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: Snapshot()
+  nameWithType: ProjectLedgerBook.Snapshot()
+  fullName: Meridian.Ledger.ProjectLedgerBook.Snapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snapshot
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public IReadOnlyDictionary<LedgerBookKey, IReadOnlyLedger> Snapshot()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerBookKey,Meridian.Ledger.IReadOnlyLedger}
+    content.vb: Public Function Snapshot() As IReadOnlyDictionary(Of LedgerBookKey, IReadOnlyLedger)
+  overload: Meridian.Ledger.ProjectLedgerBook.Snapshot*
+- uid: Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  id: FilteredSnapshot(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: FilteredSnapshot(string?, LedgerViewKind?, string?)
+  nameWithType: ProjectLedgerBook.FilteredSnapshot(string?, LedgerViewKind?, string?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot(string?, Meridian.Ledger.LedgerViewKind?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilteredSnapshot
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns all ledgers that match the supplied optional key filters.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<LedgerBookKey, IReadOnlyLedger> FilteredSnapshot(string? ledgerBook = null, LedgerViewKind? ledgerView = null, string? scenarioId = null)
+    parameters:
+    - id: ledgerBook
+      type: System.String
+    - id: ledgerView
+      type: System.Nullable{Meridian.Ledger.LedgerViewKind}
+    - id: scenarioId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerBookKey,Meridian.Ledger.IReadOnlyLedger}
+    content.vb: Public Function FilteredSnapshot(ledgerBook As String = Nothing, ledgerView As LedgerViewKind? = Nothing, scenarioId As String = Nothing) As IReadOnlyDictionary(Of LedgerBookKey, IReadOnlyLedger)
+  overload: Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot*
+  nameWithType.vb: ProjectLedgerBook.FilteredSnapshot(String, LedgerViewKind?, String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot(String, Meridian.Ledger.LedgerViewKind?, String)
+  name.vb: FilteredSnapshot(String, LedgerViewKind?, String)
+- uid: Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  id: FilteredLedgerKeys(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: FilteredLedgerKeys(string?, LedgerViewKind?, string?)
+  nameWithType: ProjectLedgerBook.FilteredLedgerKeys(string?, LedgerViewKind?, string?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys(string?, Meridian.Ledger.LedgerViewKind?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilteredLedgerKeys
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns ledger keys that match the supplied optional key filters.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LedgerBookKey> FilteredLedgerKeys(string? ledgerBook = null, LedgerViewKind? ledgerView = null, string? scenarioId = null)
+    parameters:
+    - id: ledgerBook
+      type: System.String
+    - id: ledgerView
+      type: System.Nullable{Meridian.Ledger.LedgerViewKind}
+    - id: scenarioId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerBookKey}
+    content.vb: Public Function FilteredLedgerKeys(ledgerBook As String = Nothing, ledgerView As LedgerViewKind? = Nothing, scenarioId As String = Nothing) As IReadOnlyList(Of LedgerBookKey)
+  overload: Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys*
+  nameWithType.vb: ProjectLedgerBook.FilteredLedgerKeys(String, LedgerViewKind?, String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys(String, Meridian.Ledger.LedgerViewKind?, String)
+  name.vb: FilteredLedgerKeys(String, LedgerViewKind?, String)
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  id: ConsolidatedTrialBalance(System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedTrialBalance(string?, LedgerViewKind?, string?, string?)
+  nameWithType: ProjectLedgerBook.ConsolidatedTrialBalance(string?, LedgerViewKind?, string?, string?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance(string?, Meridian.Ledger.LedgerViewKind?, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedTrialBalance
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns a consolidated trial balance across all ledgers matching the supplied key filters.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<LedgerAccount, decimal> ConsolidatedTrialBalance(string? ledgerBook = null, LedgerViewKind? ledgerView = null, string? scenarioId = null, string? financialAccountId = null)
+    parameters:
+    - id: ledgerBook
+      type: System.String
+    - id: ledgerView
+      type: System.Nullable{Meridian.Ledger.LedgerViewKind}
+    - id: scenarioId
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+    content.vb: Public Function ConsolidatedTrialBalance(ledgerBook As String = Nothing, ledgerView As LedgerViewKind? = Nothing, scenarioId As String = Nothing, financialAccountId As String = Nothing) As IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  overload: Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance*
+  nameWithType.vb: ProjectLedgerBook.ConsolidatedTrialBalance(String, LedgerViewKind?, String, String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance(String, Meridian.Ledger.LedgerViewKind?, String, String)
+  name.vb: ConsolidatedTrialBalance(String, LedgerViewKind?, String, String)
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  id: ConsolidatedSnapshotAsOf(System.DateTimeOffset,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String,System.String)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedSnapshotAsOf(DateTimeOffset, string?, LedgerViewKind?, string?, string?)
+  nameWithType: ProjectLedgerBook.ConsolidatedSnapshotAsOf(DateTimeOffset, string?, LedgerViewKind?, string?, string?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset, string?, Meridian.Ledger.LedgerViewKind?, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedSnapshotAsOf
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns a consolidated point-in-time snapshot across all ledgers matching the supplied key filters.
+  example: []
+  syntax:
+    content: public LedgerSnapshot ConsolidatedSnapshotAsOf(DateTimeOffset timestamp, string? ledgerBook = null, LedgerViewKind? ledgerView = null, string? scenarioId = null, string? financialAccountId = null)
+    parameters:
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: ledgerBook
+      type: System.String
+    - id: ledgerView
+      type: System.Nullable{Meridian.Ledger.LedgerViewKind}
+    - id: scenarioId
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerSnapshot
+    content.vb: Public Function ConsolidatedSnapshotAsOf(timestamp As DateTimeOffset, ledgerBook As String = Nothing, ledgerView As LedgerViewKind? = Nothing, scenarioId As String = Nothing, financialAccountId As String = Nothing) As LedgerSnapshot
+  overload: Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf*
+  nameWithType.vb: ProjectLedgerBook.ConsolidatedSnapshotAsOf(DateTimeOffset, String, LedgerViewKind?, String, String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset, String, Meridian.Ledger.LedgerViewKind?, String, String)
+  name.vb: ConsolidatedSnapshotAsOf(DateTimeOffset, String, LedgerViewKind?, String, String)
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries(Meridian.Ledger.LedgerQuery,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries(Meridian.Ledger.LedgerQuery,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  id: ConsolidatedJournalEntries(Meridian.Ledger.LedgerQuery,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedJournalEntries(LedgerQuery?, string?, LedgerViewKind?, string?)
+  nameWithType: ProjectLedgerBook.ConsolidatedJournalEntries(LedgerQuery?, string?, LedgerViewKind?, string?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries(Meridian.Ledger.LedgerQuery?, string?, Meridian.Ledger.LedgerViewKind?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedJournalEntries
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns journal entries across all matching ledgers, ordered by timestamp then journal ID.
+  example: []
+  syntax:
+    content: public IReadOnlyList<JournalEntry> ConsolidatedJournalEntries(LedgerQuery? query = null, string? ledgerBook = null, LedgerViewKind? ledgerView = null, string? scenarioId = null)
+    parameters:
+    - id: query
+      type: Meridian.Ledger.LedgerQuery
+    - id: ledgerBook
+      type: System.String
+    - id: ledgerView
+      type: System.Nullable{Meridian.Ledger.LedgerViewKind}
+    - id: scenarioId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+    content.vb: Public Function ConsolidatedJournalEntries(query As LedgerQuery = Nothing, ledgerBook As String = Nothing, ledgerView As LedgerViewKind? = Nothing, scenarioId As String = Nothing) As IReadOnlyList(Of JournalEntry)
+  overload: Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries*
+  nameWithType.vb: ProjectLedgerBook.ConsolidatedJournalEntries(LedgerQuery, String, LedgerViewKind?, String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries(Meridian.Ledger.LedgerQuery, String, Meridian.Ledger.LedgerViewKind?, String)
+  name.vb: ConsolidatedJournalEntries(LedgerQuery, String, LedgerViewKind?, String)
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  commentId: M:Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  id: ConsolidatedAccountSummaries(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String,System.String,System.Nullable{Meridian.Ledger.LedgerViewKind},System.String)
+  parent: Meridian.Ledger.ProjectLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedAccountSummaries(LedgerAccountType?, string?, string?, LedgerViewKind?, string?)
+  nameWithType: ProjectLedgerBook.ConsolidatedAccountSummaries(LedgerAccountType?, string?, string?, LedgerViewKind?, string?)
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries(Meridian.Ledger.LedgerAccountType?, string?, string?, Meridian.Ledger.LedgerViewKind?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/ProjectLedgerBook.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedAccountSummaries
+    path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns account summaries aggregated across all ledgers matching the supplied key filters.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LedgerAccountSummary> ConsolidatedAccountSummaries(LedgerAccountType? accountType = null, string? financialAccountId = null, string? ledgerBook = null, LedgerViewKind? ledgerView = null, string? scenarioId = null)
+    parameters:
+    - id: accountType
+      type: System.Nullable{Meridian.Ledger.LedgerAccountType}
+    - id: financialAccountId
+      type: System.String
+    - id: ledgerBook
+      type: System.String
+    - id: ledgerView
+      type: System.Nullable{Meridian.Ledger.LedgerViewKind}
+    - id: scenarioId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerAccountSummary}
+    content.vb: Public Function ConsolidatedAccountSummaries(accountType As LedgerAccountType? = Nothing, financialAccountId As String = Nothing, ledgerBook As String = Nothing, ledgerView As LedgerViewKind? = Nothing, scenarioId As String = Nothing) As IReadOnlyList(Of LedgerAccountSummary)
+  overload: Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries*
+  nameWithType.vb: ProjectLedgerBook.ConsolidatedAccountSummaries(LedgerAccountType?, String, String, LedgerViewKind?, String)
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries(Meridian.Ledger.LedgerAccountType?, String, String, Meridian.Ledger.LedgerViewKind?, String)
+  name.vb: ConsolidatedAccountSummaries(LedgerAccountType?, String, String, LedgerViewKind?, String)
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ledger.ProjectLedgerBook.#ctor*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.#ctor
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook__ctor_System_String_
+  name: ProjectLedgerBook
+  nameWithType: ProjectLedgerBook.ProjectLedgerBook
+  fullName: Meridian.Ledger.ProjectLedgerBook.ProjectLedgerBook
+  nameWithType.vb: ProjectLedgerBook.New
+  fullName.vb: Meridian.Ledger.ProjectLedgerBook.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.ProjectLedgerBook.ProjectId*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.ProjectId
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_ProjectId
+  name: ProjectId
+  nameWithType: ProjectLedgerBook.ProjectId
+  fullName: Meridian.Ledger.ProjectLedgerBook.ProjectId
+- uid: Meridian.Ledger.ProjectLedgerBook.LedgerKeys*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.LedgerKeys
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_LedgerKeys
+  name: LedgerKeys
+  nameWithType: ProjectLedgerBook.LedgerKeys
+  fullName: Meridian.Ledger.ProjectLedgerBook.LedgerKeys
+- uid: System.Collections.Generic.IReadOnlyCollection{Meridian.Ledger.LedgerBookKey}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{Meridian.Ledger.LedgerBookKey}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<LedgerBookKey>
+  nameWithType: IReadOnlyCollection<LedgerBookKey>
+  fullName: System.Collections.Generic.IReadOnlyCollection<Meridian.Ledger.LedgerBookKey>
+  nameWithType.vb: IReadOnlyCollection(Of LedgerBookKey)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of Meridian.Ledger.LedgerBookKey)
+  name.vb: IReadOnlyCollection(Of LedgerBookKey)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ledger.ProjectLedgerBook.GetOrCreate*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.GetOrCreate
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_GetOrCreate_Meridian_Ledger_LedgerBookKey_
+  name: GetOrCreate
+  nameWithType: ProjectLedgerBook.GetOrCreate
+  fullName: Meridian.Ledger.ProjectLedgerBook.GetOrCreate
+- uid: Meridian.Ledger.LedgerBookKey
+  commentId: T:Meridian.Ledger.LedgerBookKey
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerBookKey.html
+  name: LedgerBookKey
+  nameWithType: LedgerBookKey
+  fullName: Meridian.Ledger.LedgerBookKey
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.Ledger.html
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+- uid: Meridian.Ledger.ProjectLedgerBook.TryGetLedger*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.TryGetLedger
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_TryGetLedger_Meridian_Ledger_LedgerBookKey_Meridian_Ledger_Ledger__
+  name: TryGetLedger
+  nameWithType: ProjectLedgerBook.TryGetLedger
+  fullName: Meridian.Ledger.ProjectLedgerBook.TryGetLedger
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ledger.ProjectLedgerBook.Snapshot*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.Snapshot
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_Snapshot
+  name: Snapshot
+  nameWithType: ProjectLedgerBook.Snapshot
+  fullName: Meridian.Ledger.ProjectLedgerBook.Snapshot
+- uid: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerBookKey,Meridian.Ledger.IReadOnlyLedger}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerBookKey,Meridian.Ledger.IReadOnlyLedger}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<LedgerBookKey, IReadOnlyLedger>
+  nameWithType: IReadOnlyDictionary<LedgerBookKey, IReadOnlyLedger>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<Meridian.Ledger.LedgerBookKey, Meridian.Ledger.IReadOnlyLedger>
+  nameWithType.vb: IReadOnlyDictionary(Of LedgerBookKey, IReadOnlyLedger)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of Meridian.Ledger.LedgerBookKey, Meridian.Ledger.IReadOnlyLedger)
+  name.vb: IReadOnlyDictionary(Of LedgerBookKey, IReadOnlyLedger)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ledger.IReadOnlyLedger
+    name: IReadOnlyLedger
+    href: Meridian.Ledger.IReadOnlyLedger.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ledger.IReadOnlyLedger
+    name: IReadOnlyLedger
+    href: Meridian.Ledger.IReadOnlyLedger.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_FilteredSnapshot_System_String_System_Nullable_Meridian_Ledger_LedgerViewKind__System_String_
+  name: FilteredSnapshot
+  nameWithType: ProjectLedgerBook.FilteredSnapshot
+  fullName: Meridian.Ledger.ProjectLedgerBook.FilteredSnapshot
+- uid: System.Nullable{Meridian.Ledger.LedgerViewKind}
+  commentId: T:System.Nullable{Meridian.Ledger.LedgerViewKind}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Ledger.LedgerViewKind.html
+  name: LedgerViewKind?
+  nameWithType: LedgerViewKind?
+  fullName: Meridian.Ledger.LedgerViewKind?
+  spec.csharp:
+  - uid: Meridian.Ledger.LedgerViewKind
+    name: LedgerViewKind
+    href: Meridian.Ledger.LedgerViewKind.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Ledger.LedgerViewKind
+    name: LedgerViewKind
+    href: Meridian.Ledger.LedgerViewKind.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_FilteredLedgerKeys_System_String_System_Nullable_Meridian_Ledger_LedgerViewKind__System_String_
+  name: FilteredLedgerKeys
+  nameWithType: ProjectLedgerBook.FilteredLedgerKeys
+  fullName: Meridian.Ledger.ProjectLedgerBook.FilteredLedgerKeys
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerBookKey}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerBookKey}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LedgerBookKey>
+  nameWithType: IReadOnlyList<LedgerBookKey>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.LedgerBookKey>
+  nameWithType.vb: IReadOnlyList(Of LedgerBookKey)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.LedgerBookKey)
+  name.vb: IReadOnlyList(Of LedgerBookKey)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_ConsolidatedTrialBalance_System_String_System_Nullable_Meridian_Ledger_LedgerViewKind__System_String_System_String_
+  name: ConsolidatedTrialBalance
+  nameWithType: ProjectLedgerBook.ConsolidatedTrialBalance
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedTrialBalance
+- uid: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<LedgerAccount, decimal>
+  nameWithType: IReadOnlyDictionary<LedgerAccount, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<Meridian.Ledger.LedgerAccount, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of Meridian.Ledger.LedgerAccount, Decimal)
+  name.vb: IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_ConsolidatedSnapshotAsOf_System_DateTimeOffset_System_String_System_Nullable_Meridian_Ledger_LedgerViewKind__System_String_System_String_
+  name: ConsolidatedSnapshotAsOf
+  nameWithType: ProjectLedgerBook.ConsolidatedSnapshotAsOf
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedSnapshotAsOf
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Ledger.LedgerSnapshot
+  commentId: T:Meridian.Ledger.LedgerSnapshot
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerSnapshot.html
+  name: LedgerSnapshot
+  nameWithType: LedgerSnapshot
+  fullName: Meridian.Ledger.LedgerSnapshot
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_ConsolidatedJournalEntries_Meridian_Ledger_LedgerQuery_System_String_System_Nullable_Meridian_Ledger_LedgerViewKind__System_String_
+  name: ConsolidatedJournalEntries
+  nameWithType: ProjectLedgerBook.ConsolidatedJournalEntries
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedJournalEntries
+- uid: Meridian.Ledger.LedgerQuery
+  commentId: T:Meridian.Ledger.LedgerQuery
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerQuery.html
+  name: LedgerQuery
+  nameWithType: LedgerQuery
+  fullName: Meridian.Ledger.LedgerQuery
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<JournalEntry>
+  nameWithType: IReadOnlyList<JournalEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.JournalEntry>
+  nameWithType.vb: IReadOnlyList(Of JournalEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.JournalEntry)
+  name.vb: IReadOnlyList(Of JournalEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.JournalEntry
+    name: JournalEntry
+    href: Meridian.Ledger.JournalEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.JournalEntry
+    name: JournalEntry
+    href: Meridian.Ledger.JournalEntry.html
+  - name: )
+- uid: Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries*
+  commentId: Overload:Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries
+  href: Meridian.Ledger.ProjectLedgerBook.html#Meridian_Ledger_ProjectLedgerBook_ConsolidatedAccountSummaries_System_Nullable_Meridian_Ledger_LedgerAccountType__System_String_System_String_System_Nullable_Meridian_Ledger_LedgerViewKind__System_String_
+  name: ConsolidatedAccountSummaries
+  nameWithType: ProjectLedgerBook.ConsolidatedAccountSummaries
+  fullName: Meridian.Ledger.ProjectLedgerBook.ConsolidatedAccountSummaries
+- uid: System.Nullable{Meridian.Ledger.LedgerAccountType}
+  commentId: T:System.Nullable{Meridian.Ledger.LedgerAccountType}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Ledger.LedgerAccountType.html
+  name: LedgerAccountType?
+  nameWithType: LedgerAccountType?
+  fullName: Meridian.Ledger.LedgerAccountType?
+  spec.csharp:
+  - uid: Meridian.Ledger.LedgerAccountType
+    name: LedgerAccountType
+    href: Meridian.Ledger.LedgerAccountType.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Ledger.LedgerAccountType
+    name: LedgerAccountType
+    href: Meridian.Ledger.LedgerAccountType.html
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerAccountSummary}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerAccountSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LedgerAccountSummary>
+  nameWithType: IReadOnlyList<LedgerAccountSummary>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.LedgerAccountSummary>
+  nameWithType.vb: IReadOnlyList(Of LedgerAccountSummary)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.LedgerAccountSummary)
+  name.vb: IReadOnlyList(Of LedgerAccountSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccountSummary
+    name: LedgerAccountSummary
+    href: Meridian.Ledger.LedgerAccountSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccountSummary
+    name: LedgerAccountSummary
+    href: Meridian.Ledger.LedgerAccountSummary.html
+  - name: )

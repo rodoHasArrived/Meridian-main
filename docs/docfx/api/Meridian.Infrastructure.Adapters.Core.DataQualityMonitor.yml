@@ -1,0 +1,963 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  id: DataQualityMonitor
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.#ctor(Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,System.String,Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache
+  - Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync(System.Nullable{System.Double},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores
+  - Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore(System.String)
+  langs:
+  - csharp
+  - vb
+  name: DataQualityMonitor
+  nameWithType: DataQualityMonitor
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityMonitor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Monitors and scores data quality across all stored data.
+
+    Provides multi-dimensional quality assessment and alerting.
+  example: []
+  syntax:
+    content: public sealed class DataQualityMonitor
+    content.vb: Public NotInheritable Class DataQualityMonitor
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.#ctor(Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,System.String,Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.#ctor(Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,System.String,Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions,Serilog.ILogger)
+  id: '#ctor(Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,System.String,Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  langs:
+  - csharp
+  - vb
+  name: DataQualityMonitor(DataGapAnalyzer, string, QualityMonitorOptions?, ILogger?)
+  nameWithType: DataQualityMonitor.DataQualityMonitor(DataGapAnalyzer, string, QualityMonitorOptions?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.DataQualityMonitor(Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer, string, Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DataQualityMonitor(DataGapAnalyzer gapAnalyzer, string dataRoot, QualityMonitorOptions? options = null, ILogger? log = null)
+    parameters:
+    - id: gapAnalyzer
+      type: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+    - id: dataRoot
+      type: System.String
+    - id: options
+      type: Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(gapAnalyzer As DataGapAnalyzer, dataRoot As String, options As QualityMonitorOptions = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.#ctor*
+  nameWithType.vb: DataQualityMonitor.New(DataGapAnalyzer, String, QualityMonitorOptions, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.New(Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer, String, Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions, Serilog.ILogger)
+  name.vb: New(DataGapAnalyzer, String, QualityMonitorOptions, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: CalculateScoreAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  langs:
+  - csharp
+  - vb
+  name: CalculateScoreAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: DataQualityMonitor.CalculateScoreAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateScoreAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Calculate quality score for a symbol.
+  example: []
+  syntax:
+    content: public Task<QualityScore> CalculateScoreAsync(string symbol, DateOnly? startDate = null, DateOnly? endDate = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: startDate
+      type: System.Nullable{System.DateOnly}
+    - id: endDate
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.QualityScore}
+    content.vb: Public Function CalculateScoreAsync(symbol As String, startDate As DateOnly? = Nothing, endDate As DateOnly? = Nothing, ct As CancellationToken = Nothing) As Task(Of QualityScore)
+  overload: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync*
+  nameWithType.vb: DataQualityMonitor.CalculateScoreAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: CalculateScoreAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync(System.Nullable{System.Double},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync(System.Nullable{System.Double},System.Threading.CancellationToken)
+  id: GetAlertsAsync(System.Nullable{System.Double},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  langs:
+  - csharp
+  - vb
+  name: GetAlertsAsync(double?, CancellationToken)
+  nameWithType: DataQualityMonitor.GetAlertsAsync(double?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync(double?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAlertsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get quality alerts for symbols below threshold.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<QualityAlert>> GetAlertsAsync(double? minScoreThreshold = null, CancellationToken ct = default)
+    parameters:
+    - id: minScoreThreshold
+      type: System.Nullable{System.Double}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityAlert}}
+    content.vb: Public Function GetAlertsAsync(minScoreThreshold As Double? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of QualityAlert))
+  overload: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync*
+  nameWithType.vb: DataQualityMonitor.GetAlertsAsync(Double?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync(Double?, System.Threading.CancellationToken)
+  name.vb: GetAlertsAsync(Double?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore(System.String)
+  id: GetCachedScore(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  langs:
+  - csharp
+  - vb
+  name: GetCachedScore(string)
+  nameWithType: DataQualityMonitor.GetCachedScore(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCachedScore
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get cached quality score for a symbol.
+  example: []
+  syntax:
+    content: public QualityScore? GetCachedScore(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityScore
+    content.vb: Public Function GetCachedScore(symbol As String) As QualityScore
+  overload: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore*
+  nameWithType.vb: DataQualityMonitor.GetCachedScore(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore(String)
+  name.vb: GetCachedScore(String)
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores
+  id: GetAllScores
+  parent: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  langs:
+  - csharp
+  - vb
+  name: GetAllScores()
+  nameWithType: DataQualityMonitor.GetAllScores()
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllScores
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get all cached quality scores.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, QualityScore> GetAllScores()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.QualityScore}
+    content.vb: Public Function GetAllScores() As IReadOnlyDictionary(Of String, QualityScore)
+  overload: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores*
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache
+  id: ClearCache
+  parent: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor
+  langs:
+  - csharp
+  - vb
+  name: ClearCache()
+  nameWithType: DataQualityMonitor.ClearCache()
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearCache
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Clear all cached scores.
+  example: []
+  syntax:
+    content: public void ClearCache()
+    content.vb: Public Sub ClearCache()
+  overload: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.html#Meridian_Infrastructure_Adapters_Core_DataQualityMonitor__ctor_Meridian_Infrastructure_Adapters_Core_DataGapAnalyzer_System_String_Meridian_Infrastructure_Adapters_Core_QualityMonitorOptions_Serilog_ILogger_
+  name: DataQualityMonitor
+  nameWithType: DataQualityMonitor.DataQualityMonitor
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.DataQualityMonitor
+  nameWithType.vb: DataQualityMonitor.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer.html
+  name: DataGapAnalyzer
+  nameWithType: DataGapAnalyzer
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions.html
+  name: QualityMonitorOptions
+  nameWithType: QualityMonitorOptions
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync
+  href: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.html#Meridian_Infrastructure_Adapters_Core_DataQualityMonitor_CalculateScoreAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: CalculateScoreAsync
+  nameWithType: DataQualityMonitor.CalculateScoreAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.CalculateScoreAsync
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.QualityScore}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.QualityScore}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityScore>
+  nameWithType: Task<QualityScore>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Adapters.Core.QualityScore>
+  nameWithType.vb: Task(Of QualityScore)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Adapters.Core.QualityScore)
+  name.vb: Task(Of QualityScore)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityScore
+    name: QualityScore
+    href: Meridian.Infrastructure.Adapters.Core.QualityScore.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityScore
+    name: QualityScore
+    href: Meridian.Infrastructure.Adapters.Core.QualityScore.html
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync
+  href: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.html#Meridian_Infrastructure_Adapters_Core_DataQualityMonitor_GetAlertsAsync_System_Nullable_System_Double__System_Threading_CancellationToken_
+  name: GetAlertsAsync
+  nameWithType: DataQualityMonitor.GetAlertsAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAlertsAsync
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityAlert}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityAlert}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<QualityAlert>>
+  nameWithType: Task<IReadOnlyList<QualityAlert>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.QualityAlert>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of QualityAlert))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.QualityAlert))
+  name.vb: Task(Of IReadOnlyList(Of QualityAlert))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityAlert
+    name: QualityAlert
+    href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityAlert
+    name: QualityAlert
+    href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore
+  href: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.html#Meridian_Infrastructure_Adapters_Core_DataQualityMonitor_GetCachedScore_System_String_
+  name: GetCachedScore
+  nameWithType: DataQualityMonitor.GetCachedScore
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetCachedScore
+- uid: Meridian.Infrastructure.Adapters.Core.QualityScore
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityScore
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.QualityScore.html
+  name: QualityScore
+  nameWithType: QualityScore
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityScore
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores
+  href: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.html#Meridian_Infrastructure_Adapters_Core_DataQualityMonitor_GetAllScores
+  name: GetAllScores
+  nameWithType: DataQualityMonitor.GetAllScores
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.GetAllScores
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.QualityScore}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.QualityScore}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, QualityScore>
+  nameWithType: IReadOnlyDictionary<string, QualityScore>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Infrastructure.Adapters.Core.QualityScore>
+  nameWithType.vb: IReadOnlyDictionary(Of String, QualityScore)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Infrastructure.Adapters.Core.QualityScore)
+  name.vb: IReadOnlyDictionary(Of String, QualityScore)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityScore
+    name: QualityScore
+    href: Meridian.Infrastructure.Adapters.Core.QualityScore.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityScore
+    name: QualityScore
+    href: Meridian.Infrastructure.Adapters.Core.QualityScore.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache
+  href: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.html#Meridian_Infrastructure_Adapters_Core_DataQualityMonitor_ClearCache
+  name: ClearCache
+  nameWithType: DataQualityMonitor.ClearCache
+  fullName: Meridian.Infrastructure.Adapters.Core.DataQualityMonitor.ClearCache

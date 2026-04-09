@@ -1,0 +1,1072 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService
+  commentId: T:Meridian.Ui.Services.TimeSeriesAlignmentService
+  id: TimeSeriesAlignmentService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.Instance
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.ProgressChanged
+  - Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions(Meridian.Ui.Services.AlignmentOptions)
+  langs:
+  - csharp
+  - vb
+  name: TimeSeriesAlignmentService
+  nameWithType: TimeSeriesAlignmentService
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeSeriesAlignmentService
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for aligning time series data to regular intervals and generating OHLCV bars.
+
+    Supports multiple aggregation methods and gap handling strategies.
+  example: []
+  syntax:
+    content: public sealed class TimeSeriesAlignmentService
+    content.vb: Public NotInheritable Class TimeSeriesAlignmentService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.Instance
+  commentId: P:Meridian.Ui.Services.TimeSeriesAlignmentService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: TimeSeriesAlignmentService.Instance
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static TimeSeriesAlignmentService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.TimeSeriesAlignmentService
+    content.vb: Public Shared ReadOnly Property Instance As TimeSeriesAlignmentService
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.Instance*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.ProgressChanged
+  commentId: E:Meridian.Ui.Services.TimeSeriesAlignmentService.ProgressChanged
+  id: ProgressChanged
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: ProgressChanged
+  nameWithType: TimeSeriesAlignmentService.ProgressChanged
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.ProgressChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProgressChanged
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Raised when alignment progress changes.
+  example: []
+  syntax:
+    content: public event EventHandler<AlignmentProgressEventArgs>? ProgressChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.AlignmentProgressEventArgs}
+    content.vb: Public Event ProgressChanged As EventHandler(Of AlignmentProgressEventArgs)
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  id: AlignDataAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: AlignDataAsync(AlignmentOptions, CancellationToken)
+  nameWithType: TimeSeriesAlignmentService.AlignDataAsync(AlignmentOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync(Meridian.Ui.Services.AlignmentOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlignDataAsync
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Aligns time series data with specified options.
+  example: []
+  syntax:
+    content: public Task<AlignmentResult> AlignDataAsync(AlignmentOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.AlignmentOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.AlignmentResult}
+    content.vb: Public Function AlignDataAsync(options As AlignmentOptions, ct As CancellationToken = Nothing) As Task(Of AlignmentResult)
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync(System.Threading.CancellationToken)
+  id: GetAlignmentIntervalsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: GetAlignmentIntervalsAsync(CancellationToken)
+  nameWithType: TimeSeriesAlignmentService.GetAlignmentIntervalsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAlignmentIntervalsAsync
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available alignment intervals.
+  example: []
+  syntax:
+    content: public Task<List<AlignmentInterval>> GetAlignmentIntervalsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AlignmentInterval}}
+    content.vb: Public Function GetAlignmentIntervalsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of AlignmentInterval))
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync(System.Threading.CancellationToken)
+  id: GetAggregationMethodsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: GetAggregationMethodsAsync(CancellationToken)
+  nameWithType: TimeSeriesAlignmentService.GetAggregationMethodsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregationMethodsAsync
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available aggregation methods.
+  example: []
+  syntax:
+    content: public Task<List<AggregationMethod>> GetAggregationMethodsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AggregationMethod}}
+    content.vb: Public Function GetAggregationMethodsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of AggregationMethod))
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync(System.Threading.CancellationToken)
+  id: GetGapStrategiesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: GetGapStrategiesAsync(CancellationToken)
+  nameWithType: TimeSeriesAlignmentService.GetGapStrategiesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGapStrategiesAsync
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available gap handling strategies.
+  example: []
+  syntax:
+    content: public Task<List<GapHandlingStrategy>> GetGapStrategiesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.GapHandlingStrategy}}
+    content.vb: Public Function GetGapStrategiesAsync(ct As CancellationToken = Nothing) As Task(Of List(Of GapHandlingStrategy))
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync(System.Threading.CancellationToken)
+  id: GetAlignmentPresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: GetAlignmentPresetsAsync(CancellationToken)
+  nameWithType: TimeSeriesAlignmentService.GetAlignmentPresetsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAlignmentPresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets alignment presets for common use cases.
+  example: []
+  syntax:
+    content: public Task<List<AlignmentPreset>> GetAlignmentPresetsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AlignmentPreset}}
+    content.vb: Public Function GetAlignmentPresetsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of AlignmentPreset))
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  id: PreviewAlignmentAsync(Meridian.Ui.Services.AlignmentOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: PreviewAlignmentAsync(AlignmentOptions, CancellationToken)
+  nameWithType: TimeSeriesAlignmentService.PreviewAlignmentAsync(AlignmentOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync(Meridian.Ui.Services.AlignmentOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviewAlignmentAsync
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 298
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Previews alignment results without creating output.
+  example: []
+  syntax:
+    content: public Task<AlignmentPreview> PreviewAlignmentAsync(AlignmentOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.AlignmentOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.AlignmentPreview}
+    content.vb: Public Function PreviewAlignmentAsync(options As AlignmentOptions, ct As CancellationToken = Nothing) As Task(Of AlignmentPreview)
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync*
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions(Meridian.Ui.Services.AlignmentOptions)
+  commentId: M:Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions(Meridian.Ui.Services.AlignmentOptions)
+  id: ValidateOptions(Meridian.Ui.Services.AlignmentOptions)
+  parent: Meridian.Ui.Services.TimeSeriesAlignmentService
+  langs:
+  - csharp
+  - vb
+  name: ValidateOptions(AlignmentOptions)
+  nameWithType: TimeSeriesAlignmentService.ValidateOptions(AlignmentOptions)
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions(Meridian.Ui.Services.AlignmentOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateOptions
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 369
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Validates alignment options.
+  example: []
+  syntax:
+    content: public AlignmentValidationResult ValidateOptions(AlignmentOptions options)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.AlignmentOptions
+    return:
+      type: Meridian.Ui.Services.AlignmentValidationResult
+    content.vb: Public Function ValidateOptions(options As AlignmentOptions) As AlignmentValidationResult
+  overload: Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.Instance*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.Instance
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_Instance
+  name: Instance
+  nameWithType: TimeSeriesAlignmentService.Instance
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.Instance
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService
+  commentId: T:Meridian.Ui.Services.TimeSeriesAlignmentService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html
+  name: TimeSeriesAlignmentService
+  nameWithType: TimeSeriesAlignmentService
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService
+- uid: System.EventHandler{Meridian.Ui.Services.AlignmentProgressEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.AlignmentProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<AlignmentProgressEventArgs>
+  nameWithType: EventHandler<AlignmentProgressEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.AlignmentProgressEventArgs>
+  nameWithType.vb: EventHandler(Of AlignmentProgressEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.AlignmentProgressEventArgs)
+  name.vb: EventHandler(Of AlignmentProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlignmentProgressEventArgs
+    name: AlignmentProgressEventArgs
+    href: Meridian.Ui.Services.AlignmentProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlignmentProgressEventArgs
+    name: AlignmentProgressEventArgs
+    href: Meridian.Ui.Services.AlignmentProgressEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_AlignDataAsync_Meridian_Ui_Services_AlignmentOptions_System_Threading_CancellationToken_
+  name: AlignDataAsync
+  nameWithType: TimeSeriesAlignmentService.AlignDataAsync
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.AlignDataAsync
+- uid: Meridian.Ui.Services.AlignmentOptions
+  commentId: T:Meridian.Ui.Services.AlignmentOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlignmentOptions.html
+  name: AlignmentOptions
+  nameWithType: AlignmentOptions
+  fullName: Meridian.Ui.Services.AlignmentOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.AlignmentResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.AlignmentResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AlignmentResult>
+  nameWithType: Task<AlignmentResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.AlignmentResult>
+  nameWithType.vb: Task(Of AlignmentResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.AlignmentResult)
+  name.vb: Task(Of AlignmentResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlignmentResult
+    name: AlignmentResult
+    href: Meridian.Ui.Services.AlignmentResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlignmentResult
+    name: AlignmentResult
+    href: Meridian.Ui.Services.AlignmentResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_GetAlignmentIntervalsAsync_System_Threading_CancellationToken_
+  name: GetAlignmentIntervalsAsync
+  nameWithType: TimeSeriesAlignmentService.GetAlignmentIntervalsAsync
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentIntervalsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AlignmentInterval}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AlignmentInterval}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<AlignmentInterval>>
+  nameWithType: Task<List<AlignmentInterval>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.AlignmentInterval>>
+  nameWithType.vb: Task(Of List(Of AlignmentInterval))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.AlignmentInterval))
+  name.vb: Task(Of List(Of AlignmentInterval))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlignmentInterval
+    name: AlignmentInterval
+    href: Meridian.Ui.Services.AlignmentInterval.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlignmentInterval
+    name: AlignmentInterval
+    href: Meridian.Ui.Services.AlignmentInterval.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_GetAggregationMethodsAsync_System_Threading_CancellationToken_
+  name: GetAggregationMethodsAsync
+  nameWithType: TimeSeriesAlignmentService.GetAggregationMethodsAsync
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAggregationMethodsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AggregationMethod}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AggregationMethod}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<AggregationMethod>>
+  nameWithType: Task<List<AggregationMethod>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.AggregationMethod>>
+  nameWithType.vb: Task(Of List(Of AggregationMethod))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.AggregationMethod))
+  name.vb: Task(Of List(Of AggregationMethod))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.AggregationMethod
+    name: AggregationMethod
+    href: Meridian.Ui.Services.AggregationMethod.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AggregationMethod
+    name: AggregationMethod
+    href: Meridian.Ui.Services.AggregationMethod.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_GetGapStrategiesAsync_System_Threading_CancellationToken_
+  name: GetGapStrategiesAsync
+  nameWithType: TimeSeriesAlignmentService.GetGapStrategiesAsync
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetGapStrategiesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.GapHandlingStrategy}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.GapHandlingStrategy}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<GapHandlingStrategy>>
+  nameWithType: Task<List<GapHandlingStrategy>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.GapHandlingStrategy>>
+  nameWithType.vb: Task(Of List(Of GapHandlingStrategy))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.GapHandlingStrategy))
+  name.vb: Task(Of List(Of GapHandlingStrategy))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.GapHandlingStrategy
+    name: GapHandlingStrategy
+    href: Meridian.Ui.Services.GapHandlingStrategy.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.GapHandlingStrategy
+    name: GapHandlingStrategy
+    href: Meridian.Ui.Services.GapHandlingStrategy.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_GetAlignmentPresetsAsync_System_Threading_CancellationToken_
+  name: GetAlignmentPresetsAsync
+  nameWithType: TimeSeriesAlignmentService.GetAlignmentPresetsAsync
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.GetAlignmentPresetsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AlignmentPreset}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.AlignmentPreset}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<AlignmentPreset>>
+  nameWithType: Task<List<AlignmentPreset>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.AlignmentPreset>>
+  nameWithType.vb: Task(Of List(Of AlignmentPreset))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.AlignmentPreset))
+  name.vb: Task(Of List(Of AlignmentPreset))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlignmentPreset
+    name: AlignmentPreset
+    href: Meridian.Ui.Services.AlignmentPreset.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlignmentPreset
+    name: AlignmentPreset
+    href: Meridian.Ui.Services.AlignmentPreset.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_PreviewAlignmentAsync_Meridian_Ui_Services_AlignmentOptions_System_Threading_CancellationToken_
+  name: PreviewAlignmentAsync
+  nameWithType: TimeSeriesAlignmentService.PreviewAlignmentAsync
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.PreviewAlignmentAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.AlignmentPreview}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.AlignmentPreview}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AlignmentPreview>
+  nameWithType: Task<AlignmentPreview>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.AlignmentPreview>
+  nameWithType.vb: Task(Of AlignmentPreview)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.AlignmentPreview)
+  name.vb: Task(Of AlignmentPreview)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlignmentPreview
+    name: AlignmentPreview
+    href: Meridian.Ui.Services.AlignmentPreview.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlignmentPreview
+    name: AlignmentPreview
+    href: Meridian.Ui.Services.AlignmentPreview.html
+  - name: )
+- uid: Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions*
+  commentId: Overload:Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions
+  href: Meridian.Ui.Services.TimeSeriesAlignmentService.html#Meridian_Ui_Services_TimeSeriesAlignmentService_ValidateOptions_Meridian_Ui_Services_AlignmentOptions_
+  name: ValidateOptions
+  nameWithType: TimeSeriesAlignmentService.ValidateOptions
+  fullName: Meridian.Ui.Services.TimeSeriesAlignmentService.ValidateOptions
+- uid: Meridian.Ui.Services.AlignmentValidationResult
+  commentId: T:Meridian.Ui.Services.AlignmentValidationResult
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlignmentValidationResult.html
+  name: AlignmentValidationResult
+  nameWithType: AlignmentValidationResult
+  fullName: Meridian.Ui.Services.AlignmentValidationResult

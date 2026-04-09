@@ -1,0 +1,1407 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.IConfigurationProvider
+  commentId: T:Meridian.Application.Config.IConfigurationProvider
+  id: IConfigurationProvider
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.IConfigurationProvider.ConfigurationChanged
+  - Meridian.Application.Config.IConfigurationProvider.GetMetadata
+  - Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata(System.String)
+  - Meridian.Application.Config.IConfigurationProvider.GetSection``1(System.String)
+  - Meridian.Application.Config.IConfigurationProvider.GetSource(System.String,System.String)
+  - Meridian.Application.Config.IConfigurationProvider.Get``1(System.String,System.String,``0)
+  - Meridian.Application.Config.IConfigurationProvider.RegisterMetadata(Meridian.Application.Config.ConfigurationMetadata)
+  - Meridian.Application.Config.IConfigurationProvider.Reload
+  - Meridian.Application.Config.IConfigurationProvider.Set``1(System.String,System.String,``0)
+  - Meridian.Application.Config.IConfigurationProvider.TryGet``1(System.String,System.String,``0@)
+  - Meridian.Application.Config.IConfigurationProvider.Validate
+  - Meridian.Application.Config.IConfigurationProvider.ValidateSection(System.String)
+  langs:
+  - csharp
+  - vb
+  name: IConfigurationProvider
+  nameWithType: IConfigurationProvider
+  fullName: Meridian.Application.Config.IConfigurationProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IConfigurationProvider
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Unified configuration provider interface for consistent access to
+
+    application configuration across all components.
+  remarks: >-
+    Addresses scattered configuration patterns by providing:
+
+    - Single interface for all configuration access
+
+    - Type-safe configuration retrieval
+
+    - Change notification support
+
+    - Validation with metadata
+
+    - Environment variable override support
+
+
+    Consolidates:
+
+    - AppConfig direct access
+
+    - ConfigWatcher file monitoring
+
+    - ConfigEnvironmentOverride environment handling
+
+    - Various Options/Config record types (19+ types)
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Unified configuration provider")]
+
+      public interface IConfigurationProvider
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Unified configuration provider")>
+
+      Public Interface IConfigurationProvider
+  extensionMethods:
+  - Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1
+  - Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(System.String)
+  - Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(System.String)
+  - Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1
+  - Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(System.String)
+  - Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(System.String,System.String,System.Boolean)
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Unified configuration provider
+- uid: Meridian.Application.Config.IConfigurationProvider.Get``1(System.String,System.String,``0)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.Get``1(System.String,System.String,``0)
+  id: Get``1(System.String,System.String,``0)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: Get<T>(string, string, T)
+  nameWithType: IConfigurationProvider.Get<T>(string, string, T)
+  fullName: Meridian.Application.Config.IConfigurationProvider.Get<T>(string, string, T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Get
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Gets a configuration value.
+  example: []
+  syntax:
+    content: T Get<T>(string section, string key, T defaultValue = default)
+    parameters:
+    - id: section
+      type: System.String
+      description: Configuration section.
+    - id: key
+      type: System.String
+      description: Configuration key.
+    - id: defaultValue
+      type: '{T}'
+      description: Default value if not found.
+    typeParameters:
+    - id: T
+      description: Expected type.
+    return:
+      type: '{T}'
+      description: Configuration value.
+    content.vb: Function [Get](Of T)(section As String, key As String, defaultValue As T = Nothing) As T
+  overload: Meridian.Application.Config.IConfigurationProvider.Get*
+  nameWithType.vb: IConfigurationProvider.Get(Of T)(String, String, T)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.Get(Of T)(String, String, T)
+  name.vb: Get(Of T)(String, String, T)
+- uid: Meridian.Application.Config.IConfigurationProvider.GetSection``1(System.String)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.GetSection``1(System.String)
+  id: GetSection``1(System.String)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: GetSection<T>(string)
+  nameWithType: IConfigurationProvider.GetSection<T>(string)
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetSection<T>(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSection
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Gets a configuration section as a typed object.
+  example: []
+  syntax:
+    content: 'T GetSection<T>(string section) where T : class, new()'
+    parameters:
+    - id: section
+      type: System.String
+      description: Section name.
+    typeParameters:
+    - id: T
+      description: Section type.
+    return:
+      type: '{T}'
+      description: Configuration section.
+    content.vb: Function GetSection(Of T As {Class, New})(section As String) As T
+  overload: Meridian.Application.Config.IConfigurationProvider.GetSection*
+  nameWithType.vb: IConfigurationProvider.GetSection(Of T)(String)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.GetSection(Of T)(String)
+  name.vb: GetSection(Of T)(String)
+- uid: Meridian.Application.Config.IConfigurationProvider.TryGet``1(System.String,System.String,``0@)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.TryGet``1(System.String,System.String,``0@)
+  id: TryGet``1(System.String,System.String,``0@)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: TryGet<T>(string, string, out T?)
+  nameWithType: IConfigurationProvider.TryGet<T>(string, string, out T?)
+  fullName: Meridian.Application.Config.IConfigurationProvider.TryGet<T>(string, string, out T?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryGet
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Tries to get a configuration value.
+  example: []
+  syntax:
+    content: bool TryGet<T>(string section, string key, out T? value)
+    parameters:
+    - id: section
+      type: System.String
+      description: Configuration section.
+    - id: key
+      type: System.String
+      description: Configuration key.
+    - id: value
+      type: '{T}'
+      description: Retrieved value.
+    typeParameters:
+    - id: T
+      description: Expected type.
+    return:
+      type: System.Boolean
+      description: True if value exists.
+    content.vb: Function TryGet(Of T)(section As String, key As String, value As T) As Boolean
+  overload: Meridian.Application.Config.IConfigurationProvider.TryGet*
+  nameWithType.vb: IConfigurationProvider.TryGet(Of T)(String, String, T)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.TryGet(Of T)(String, String, T)
+  name.vb: TryGet(Of T)(String, String, T)
+- uid: Meridian.Application.Config.IConfigurationProvider.Set``1(System.String,System.String,``0)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.Set``1(System.String,System.String,``0)
+  id: Set``1(System.String,System.String,``0)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: Set<T>(string, string, T)
+  nameWithType: IConfigurationProvider.Set<T>(string, string, T)
+  fullName: Meridian.Application.Config.IConfigurationProvider.Set<T>(string, string, T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Set
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Sets a configuration value at runtime.
+  example: []
+  syntax:
+    content: void Set<T>(string section, string key, T value)
+    parameters:
+    - id: section
+      type: System.String
+      description: Configuration section.
+    - id: key
+      type: System.String
+      description: Configuration key.
+    - id: value
+      type: '{T}'
+      description: Value to set.
+    typeParameters:
+    - id: T
+      description: Value type.
+    content.vb: Sub [Set](Of T)(section As String, key As String, value As T)
+  overload: Meridian.Application.Config.IConfigurationProvider.Set*
+  nameWithType.vb: IConfigurationProvider.Set(Of T)(String, String, T)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.Set(Of T)(String, String, T)
+  name.vb: Set(Of T)(String, String, T)
+- uid: Meridian.Application.Config.IConfigurationProvider.GetSource(System.String,System.String)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.GetSource(System.String,System.String)
+  id: GetSource(System.String,System.String)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: GetSource(string, string)
+  nameWithType: IConfigurationProvider.GetSource(string, string)
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetSource(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSource
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Gets the source of a configuration value.
+  example: []
+  syntax:
+    content: ConfigurationSource GetSource(string section, string key)
+    parameters:
+    - id: section
+      type: System.String
+      description: Configuration section.
+    - id: key
+      type: System.String
+      description: Configuration key.
+    return:
+      type: Meridian.Application.Config.ConfigurationSource
+      description: Configuration source.
+    content.vb: Function GetSource(section As String, key As String) As ConfigurationSource
+  overload: Meridian.Application.Config.IConfigurationProvider.GetSource*
+  nameWithType.vb: IConfigurationProvider.GetSource(String, String)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.GetSource(String, String)
+  name.vb: GetSource(String, String)
+- uid: Meridian.Application.Config.IConfigurationProvider.Validate
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.Validate
+  id: Validate
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: Validate()
+  nameWithType: IConfigurationProvider.Validate()
+  fullName: Meridian.Application.Config.IConfigurationProvider.Validate()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validate
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Validates all configuration.
+  example: []
+  syntax:
+    content: ConfigurationValidationResult Validate()
+    return:
+      type: Meridian.Application.Config.ConfigurationValidationResult
+      description: Validation result.
+    content.vb: Function Validate() As ConfigurationValidationResult
+  overload: Meridian.Application.Config.IConfigurationProvider.Validate*
+- uid: Meridian.Application.Config.IConfigurationProvider.ValidateSection(System.String)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.ValidateSection(System.String)
+  id: ValidateSection(System.String)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: ValidateSection(string)
+  nameWithType: IConfigurationProvider.ValidateSection(string)
+  fullName: Meridian.Application.Config.IConfigurationProvider.ValidateSection(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateSection
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Validates a specific section.
+  example: []
+  syntax:
+    content: ConfigurationValidationResult ValidateSection(string section)
+    parameters:
+    - id: section
+      type: System.String
+      description: Section to validate.
+    return:
+      type: Meridian.Application.Config.ConfigurationValidationResult
+      description: Validation result.
+    content.vb: Function ValidateSection(section As String) As ConfigurationValidationResult
+  overload: Meridian.Application.Config.IConfigurationProvider.ValidateSection*
+  nameWithType.vb: IConfigurationProvider.ValidateSection(String)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.ValidateSection(String)
+  name.vb: ValidateSection(String)
+- uid: Meridian.Application.Config.IConfigurationProvider.GetMetadata
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.GetMetadata
+  id: GetMetadata
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: GetMetadata()
+  nameWithType: IConfigurationProvider.GetMetadata()
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetMetadata()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMetadata
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Gets metadata for all registered configuration.
+  example: []
+  syntax:
+    content: IReadOnlyList<ConfigurationMetadata> GetMetadata()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Config.ConfigurationMetadata}
+      description: List of configuration metadata.
+    content.vb: Function GetMetadata() As IReadOnlyList(Of ConfigurationMetadata)
+  overload: Meridian.Application.Config.IConfigurationProvider.GetMetadata*
+- uid: Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata(System.String)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata(System.String)
+  id: GetSectionMetadata(System.String)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: GetSectionMetadata(string)
+  nameWithType: IConfigurationProvider.GetSectionMetadata(string)
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSectionMetadata
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Gets metadata for a specific section.
+  example: []
+  syntax:
+    content: IReadOnlyList<ConfigurationMetadata> GetSectionMetadata(string section)
+    parameters:
+    - id: section
+      type: System.String
+      description: Section name.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Config.ConfigurationMetadata}
+      description: List of configuration metadata for the section.
+    content.vb: Function GetSectionMetadata(section As String) As IReadOnlyList(Of ConfigurationMetadata)
+  overload: Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata*
+  nameWithType.vb: IConfigurationProvider.GetSectionMetadata(String)
+  fullName.vb: Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata(String)
+  name.vb: GetSectionMetadata(String)
+- uid: Meridian.Application.Config.IConfigurationProvider.RegisterMetadata(Meridian.Application.Config.ConfigurationMetadata)
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.RegisterMetadata(Meridian.Application.Config.ConfigurationMetadata)
+  id: RegisterMetadata(Meridian.Application.Config.ConfigurationMetadata)
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: RegisterMetadata(ConfigurationMetadata)
+  nameWithType: IConfigurationProvider.RegisterMetadata(ConfigurationMetadata)
+  fullName: Meridian.Application.Config.IConfigurationProvider.RegisterMetadata(Meridian.Application.Config.ConfigurationMetadata)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterMetadata
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Registers configuration metadata.
+  example: []
+  syntax:
+    content: void RegisterMetadata(ConfigurationMetadata metadata)
+    parameters:
+    - id: metadata
+      type: Meridian.Application.Config.ConfigurationMetadata
+      description: Metadata to register.
+    content.vb: Sub RegisterMetadata(metadata As ConfigurationMetadata)
+  overload: Meridian.Application.Config.IConfigurationProvider.RegisterMetadata*
+- uid: Meridian.Application.Config.IConfigurationProvider.Reload
+  commentId: M:Meridian.Application.Config.IConfigurationProvider.Reload
+  id: Reload
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: Reload()
+  nameWithType: IConfigurationProvider.Reload()
+  fullName: Meridian.Application.Config.IConfigurationProvider.Reload()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reload
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Reloads configuration from all sources.
+  example: []
+  syntax:
+    content: void Reload()
+    content.vb: Sub Reload()
+  overload: Meridian.Application.Config.IConfigurationProvider.Reload*
+- uid: Meridian.Application.Config.IConfigurationProvider.ConfigurationChanged
+  commentId: E:Meridian.Application.Config.IConfigurationProvider.ConfigurationChanged
+  id: ConfigurationChanged
+  parent: Meridian.Application.Config.IConfigurationProvider
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationChanged
+  nameWithType: IConfigurationProvider.ConfigurationChanged
+  fullName: Meridian.Application.Config.IConfigurationProvider.ConfigurationChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Core/Config/IConfigurationProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationChanged
+    path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Event raised when configuration changes.
+  example: []
+  syntax:
+    content: event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged
+    return:
+      type: System.EventHandler{Meridian.Application.Config.ConfigurationChangedEventArgs}
+    content.vb: Event ConfigurationChanged As EventHandler(Of ConfigurationChangedEventArgs)
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  parent: Meridian.Application.Config.ConfigurationProviderExtensions
+  definition: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetBackfillConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  name: GetBackfillConfig<T>(IConfigurationProvider)
+  nameWithType: ConfigurationProviderExtensions.GetBackfillConfig<T>(IConfigurationProvider)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig<T>(Meridian.Application.Config.IConfigurationProvider)
+  nameWithType.vb: ConfigurationProviderExtensions.GetBackfillConfig(Of T)(IConfigurationProvider)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig(Of T)(Meridian.Application.Config.IConfigurationProvider)
+  name.vb: GetBackfillConfig(Of T)(IConfigurationProvider)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetBackfillConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetBackfillConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetBackfillConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetBackfillConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+- uid: Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(System.String)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+  parent: Meridian.Application.Config.ConfigurationProviderExtensions
+  definition: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetConnectionString_Meridian_Application_Config_IConfigurationProvider_System_String_
+  name: GetConnectionString(IConfigurationProvider, string)
+  nameWithType: ConfigurationProviderExtensions.GetConnectionString(IConfigurationProvider, string)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider, string)
+  nameWithType.vb: ConfigurationProviderExtensions.GetConnectionString(IConfigurationProvider, String)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider, String)
+  name.vb: GetConnectionString(IConfigurationProvider, String)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetConnectionString
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetConnectionString_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetConnectionString
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetConnectionString_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(System.String)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+  parent: Meridian.Application.Config.ConfigurationProviderExtensions
+  definition: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetProviderOptions__1_Meridian_Application_Config_IConfigurationProvider_System_String_
+  name: GetProviderOptions<T>(IConfigurationProvider, string)
+  nameWithType: ConfigurationProviderExtensions.GetProviderOptions<T>(IConfigurationProvider, string)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions<T>(Meridian.Application.Config.IConfigurationProvider, string)
+  nameWithType.vb: ConfigurationProviderExtensions.GetProviderOptions(Of T)(IConfigurationProvider, String)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions(Of T)(Meridian.Application.Config.IConfigurationProvider, String)
+  name.vb: GetProviderOptions(Of T)(IConfigurationProvider, String)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetProviderOptions
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetProviderOptions__1_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetProviderOptions
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetProviderOptions__1_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  parent: Meridian.Application.Config.ConfigurationProviderExtensions
+  definition: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetStorageConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  name: GetStorageConfig<T>(IConfigurationProvider)
+  nameWithType: ConfigurationProviderExtensions.GetStorageConfig<T>(IConfigurationProvider)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig<T>(Meridian.Application.Config.IConfigurationProvider)
+  nameWithType.vb: ConfigurationProviderExtensions.GetStorageConfig(Of T)(IConfigurationProvider)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig(Of T)(Meridian.Application.Config.IConfigurationProvider)
+  name.vb: GetStorageConfig(Of T)(IConfigurationProvider)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetStorageConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetStorageConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetStorageConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetStorageConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+- uid: Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(System.String)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+  parent: Meridian.Application.Config.ConfigurationProviderExtensions
+  definition: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_IsFeatureEnabled_Meridian_Application_Config_IConfigurationProvider_System_String_
+  name: IsFeatureEnabled(IConfigurationProvider, string)
+  nameWithType: ConfigurationProviderExtensions.IsFeatureEnabled(IConfigurationProvider, string)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider, string)
+  nameWithType.vb: ConfigurationProviderExtensions.IsFeatureEnabled(IConfigurationProvider, String)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider, String)
+  name.vb: IsFeatureEnabled(IConfigurationProvider, String)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: IsFeatureEnabled
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_IsFeatureEnabled_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: IsFeatureEnabled
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_IsFeatureEnabled_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Config.IConfigurationProvider.Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(System.String,System.String,System.Boolean)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+  parent: Meridian.Application.Config.ConfigurationProviderExtensions
+  definition: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_RegisterProviderConfig__1_Meridian_Application_Config_IConfigurationProvider_System_String_System_String_System_Boolean_
+  name: RegisterProviderConfig<T>(IConfigurationProvider, string, string, bool)
+  nameWithType: ConfigurationProviderExtensions.RegisterProviderConfig<T>(IConfigurationProvider, string, string, bool)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig<T>(Meridian.Application.Config.IConfigurationProvider, string, string, bool)
+  nameWithType.vb: ConfigurationProviderExtensions.RegisterProviderConfig(Of T)(IConfigurationProvider, String, String, Boolean)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig(Of T)(Meridian.Application.Config.IConfigurationProvider, String, String, Boolean)
+  name.vb: RegisterProviderConfig(Of T)(IConfigurationProvider, String, String, Boolean)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+    name: RegisterProviderConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_RegisterProviderConfig__1_Meridian_Application_Config_IConfigurationProvider_System_String_System_String_System_Boolean_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+    name: RegisterProviderConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_RegisterProviderConfig__1_Meridian_Application_Config_IConfigurationProvider_System_String_System_String_System_Boolean_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetBackfillConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  name: GetBackfillConfig<T>(IConfigurationProvider)
+  nameWithType: ConfigurationProviderExtensions.GetBackfillConfig<T>(IConfigurationProvider)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig<T>(Meridian.Application.Config.IConfigurationProvider)
+  nameWithType.vb: ConfigurationProviderExtensions.GetBackfillConfig(Of T)(IConfigurationProvider)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig(Of T)(Meridian.Application.Config.IConfigurationProvider)
+  name.vb: GetBackfillConfig(Of T)(IConfigurationProvider)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetBackfillConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetBackfillConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetBackfillConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetBackfillConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetBackfillConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions
+  commentId: T:Meridian.Application.Config.ConfigurationProviderExtensions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html
+  name: ConfigurationProviderExtensions
+  nameWithType: ConfigurationProviderExtensions
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+  isExternal: true
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetConnectionString_Meridian_Application_Config_IConfigurationProvider_System_String_
+  name: GetConnectionString(IConfigurationProvider, string)
+  nameWithType: ConfigurationProviderExtensions.GetConnectionString(IConfigurationProvider, string)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider, string)
+  nameWithType.vb: ConfigurationProviderExtensions.GetConnectionString(IConfigurationProvider, String)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider, String)
+  name.vb: GetConnectionString(IConfigurationProvider, String)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetConnectionString
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetConnectionString_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetConnectionString(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetConnectionString
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetConnectionString_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+  isExternal: true
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetProviderOptions__1_Meridian_Application_Config_IConfigurationProvider_System_String_
+  name: GetProviderOptions<T>(IConfigurationProvider, string)
+  nameWithType: ConfigurationProviderExtensions.GetProviderOptions<T>(IConfigurationProvider, string)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions<T>(Meridian.Application.Config.IConfigurationProvider, string)
+  nameWithType.vb: ConfigurationProviderExtensions.GetProviderOptions(Of T)(IConfigurationProvider, String)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions(Of T)(Meridian.Application.Config.IConfigurationProvider, String)
+  name.vb: GetProviderOptions(Of T)(IConfigurationProvider, String)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetProviderOptions
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetProviderOptions__1_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetProviderOptions``1(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: GetProviderOptions
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetProviderOptions__1_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetStorageConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  name: GetStorageConfig<T>(IConfigurationProvider)
+  nameWithType: ConfigurationProviderExtensions.GetStorageConfig<T>(IConfigurationProvider)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig<T>(Meridian.Application.Config.IConfigurationProvider)
+  nameWithType.vb: ConfigurationProviderExtensions.GetStorageConfig(Of T)(IConfigurationProvider)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig(Of T)(Meridian.Application.Config.IConfigurationProvider)
+  name.vb: GetStorageConfig(Of T)(IConfigurationProvider)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetStorageConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetStorageConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.GetStorageConfig``1(Meridian.Application.Config.IConfigurationProvider)
+    name: GetStorageConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_GetStorageConfig__1_Meridian_Application_Config_IConfigurationProvider_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+  isExternal: true
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_IsFeatureEnabled_Meridian_Application_Config_IConfigurationProvider_System_String_
+  name: IsFeatureEnabled(IConfigurationProvider, string)
+  nameWithType: ConfigurationProviderExtensions.IsFeatureEnabled(IConfigurationProvider, string)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider, string)
+  nameWithType.vb: ConfigurationProviderExtensions.IsFeatureEnabled(IConfigurationProvider, String)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider, String)
+  name.vb: IsFeatureEnabled(IConfigurationProvider, String)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: IsFeatureEnabled
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_IsFeatureEnabled_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.IsFeatureEnabled(Meridian.Application.Config.IConfigurationProvider,System.String)
+    name: IsFeatureEnabled
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_IsFeatureEnabled_Meridian_Application_Config_IConfigurationProvider_System_String_
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+  commentId: M:Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+  isExternal: true
+  href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_RegisterProviderConfig__1_Meridian_Application_Config_IConfigurationProvider_System_String_System_String_System_Boolean_
+  name: RegisterProviderConfig<T>(IConfigurationProvider, string, string, bool)
+  nameWithType: ConfigurationProviderExtensions.RegisterProviderConfig<T>(IConfigurationProvider, string, string, bool)
+  fullName: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig<T>(Meridian.Application.Config.IConfigurationProvider, string, string, bool)
+  nameWithType.vb: ConfigurationProviderExtensions.RegisterProviderConfig(Of T)(IConfigurationProvider, String, String, Boolean)
+  fullName.vb: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig(Of T)(Meridian.Application.Config.IConfigurationProvider, String, String, Boolean)
+  name.vb: RegisterProviderConfig(Of T)(IConfigurationProvider, String, String, Boolean)
+  spec.csharp:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+    name: RegisterProviderConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_RegisterProviderConfig__1_Meridian_Application_Config_IConfigurationProvider_System_String_System_String_System_Boolean_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Config.ConfigurationProviderExtensions.RegisterProviderConfig``1(Meridian.Application.Config.IConfigurationProvider,System.String,System.String,System.Boolean)
+    name: RegisterProviderConfig
+    href: Meridian.Application.Config.ConfigurationProviderExtensions.html#Meridian_Application_Config_ConfigurationProviderExtensions_RegisterProviderConfig__1_Meridian_Application_Config_IConfigurationProvider_System_String_System_String_System_Boolean_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: Meridian.Application.Config.IConfigurationProvider
+    name: IConfigurationProvider
+    href: Meridian.Application.Config.IConfigurationProvider.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Config.IConfigurationProvider.Get*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.Get
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_Get__1_System_String_System_String___0_
+  name: Get
+  nameWithType: IConfigurationProvider.Get
+  fullName: Meridian.Application.Config.IConfigurationProvider.Get
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Application.Config.IConfigurationProvider.GetSection*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.GetSection
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_GetSection__1_System_String_
+  name: GetSection
+  nameWithType: IConfigurationProvider.GetSection
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetSection
+- uid: Meridian.Application.Config.IConfigurationProvider.TryGet*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.TryGet
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_TryGet__1_System_String_System_String___0__
+  name: TryGet
+  nameWithType: IConfigurationProvider.TryGet
+  fullName: Meridian.Application.Config.IConfigurationProvider.TryGet
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Config.IConfigurationProvider.Set*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.Set
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_Set__1_System_String_System_String___0_
+  name: Set
+  nameWithType: IConfigurationProvider.Set
+  fullName: Meridian.Application.Config.IConfigurationProvider.Set
+- uid: Meridian.Application.Config.IConfigurationProvider.GetSource*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.GetSource
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_GetSource_System_String_System_String_
+  name: GetSource
+  nameWithType: IConfigurationProvider.GetSource
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetSource
+- uid: Meridian.Application.Config.ConfigurationSource
+  commentId: T:Meridian.Application.Config.ConfigurationSource
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationSource.html
+  name: ConfigurationSource
+  nameWithType: ConfigurationSource
+  fullName: Meridian.Application.Config.ConfigurationSource
+- uid: Meridian.Application.Config.IConfigurationProvider.Validate*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.Validate
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_Validate
+  name: Validate
+  nameWithType: IConfigurationProvider.Validate
+  fullName: Meridian.Application.Config.IConfigurationProvider.Validate
+- uid: Meridian.Application.Config.ConfigurationValidationResult
+  commentId: T:Meridian.Application.Config.ConfigurationValidationResult
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationValidationResult.html
+  name: ConfigurationValidationResult
+  nameWithType: ConfigurationValidationResult
+  fullName: Meridian.Application.Config.ConfigurationValidationResult
+- uid: Meridian.Application.Config.IConfigurationProvider.ValidateSection*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.ValidateSection
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_ValidateSection_System_String_
+  name: ValidateSection
+  nameWithType: IConfigurationProvider.ValidateSection
+  fullName: Meridian.Application.Config.IConfigurationProvider.ValidateSection
+- uid: Meridian.Application.Config.IConfigurationProvider.GetMetadata*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.GetMetadata
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_GetMetadata
+  name: GetMetadata
+  nameWithType: IConfigurationProvider.GetMetadata
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetMetadata
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Config.ConfigurationMetadata}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Config.ConfigurationMetadata}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ConfigurationMetadata>
+  nameWithType: IReadOnlyList<ConfigurationMetadata>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Config.ConfigurationMetadata>
+  nameWithType.vb: IReadOnlyList(Of ConfigurationMetadata)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Config.ConfigurationMetadata)
+  name.vb: IReadOnlyList(Of ConfigurationMetadata)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Config.ConfigurationMetadata
+    name: ConfigurationMetadata
+    href: Meridian.Application.Config.ConfigurationMetadata.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ConfigurationMetadata
+    name: ConfigurationMetadata
+    href: Meridian.Application.Config.ConfigurationMetadata.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_GetSectionMetadata_System_String_
+  name: GetSectionMetadata
+  nameWithType: IConfigurationProvider.GetSectionMetadata
+  fullName: Meridian.Application.Config.IConfigurationProvider.GetSectionMetadata
+- uid: Meridian.Application.Config.IConfigurationProvider.RegisterMetadata*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.RegisterMetadata
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_RegisterMetadata_Meridian_Application_Config_ConfigurationMetadata_
+  name: RegisterMetadata
+  nameWithType: IConfigurationProvider.RegisterMetadata
+  fullName: Meridian.Application.Config.IConfigurationProvider.RegisterMetadata
+- uid: Meridian.Application.Config.ConfigurationMetadata
+  commentId: T:Meridian.Application.Config.ConfigurationMetadata
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationMetadata.html
+  name: ConfigurationMetadata
+  nameWithType: ConfigurationMetadata
+  fullName: Meridian.Application.Config.ConfigurationMetadata
+- uid: Meridian.Application.Config.IConfigurationProvider.Reload*
+  commentId: Overload:Meridian.Application.Config.IConfigurationProvider.Reload
+  href: Meridian.Application.Config.IConfigurationProvider.html#Meridian_Application_Config_IConfigurationProvider_Reload
+  name: Reload
+  nameWithType: IConfigurationProvider.Reload
+  fullName: Meridian.Application.Config.IConfigurationProvider.Reload
+- uid: System.EventHandler{Meridian.Application.Config.ConfigurationChangedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Application.Config.ConfigurationChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ConfigurationChangedEventArgs>
+  nameWithType: EventHandler<ConfigurationChangedEventArgs>
+  fullName: System.EventHandler<Meridian.Application.Config.ConfigurationChangedEventArgs>
+  nameWithType.vb: EventHandler(Of ConfigurationChangedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Application.Config.ConfigurationChangedEventArgs)
+  name.vb: EventHandler(Of ConfigurationChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Application.Config.ConfigurationChangedEventArgs
+    name: ConfigurationChangedEventArgs
+    href: Meridian.Application.Config.ConfigurationChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ConfigurationChangedEventArgs
+    name: ConfigurationChangedEventArgs
+    href: Meridian.Application.Config.ConfigurationChangedEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )

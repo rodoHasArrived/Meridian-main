@@ -3,97 +3,58 @@
 **Owner:** Core Team
 **Scope:** Governance — Code Quality
 **Review Cadence:** As hygiene audits are completed
+**Last Reviewed:** 2026-04-05
 
-This directory contains comprehensive audits and assessments of the Meridian codebase.
+This directory contains active audit reports and machine-readable outputs for Meridian code-quality, simplification, and architecture-hygiene review work.
 
-> **Governance Zone:** Audits belong to the governance zone alongside `evaluations/`. The distinction:
-> - **`audits/`** — Targeted code-quality audits, cleanup analyses, and hygiene assessments
-> - **`evaluations/`** — Technology and architecture evaluations, improvement brainstorms, capability proposals
->
-> **Consolidated Reference:** For a single-page summary of all evaluations and audits, see [`docs/status/EVALUATIONS_AND_AUDITS.md`](../status/EVALUATIONS_AND_AUDITS.md).
+## Governance Position
 
-## Contents
+Audits belong to the governance zone alongside `evaluations/`.
 
-### Recent Audit Artifacts (2026-03-20)
+- `audits/` focuses on targeted code-quality audits, cleanup analyses, and hygiene assessments.
+- `evaluations/` focuses on technology tradeoffs, architecture evaluations, and proposal-style reviews.
 
-These generated artifacts were moved out of the repository root to reduce top-level noise while preserving the audit outputs.
+For a consolidated cross-folder summary, see [../status/EVALUATIONS_AND_AUDITS.md](../status/EVALUATIONS_AND_AUDITS.md).
 
-| Artifact | Purpose |
+## Current Audit Surfaces
+
+| Document | Purpose |
 |----------|---------|
-| **[AUDIT_REPORT.md](AUDIT_REPORT.md)** | Consolidated human-readable audit report |
-| **[audit-results-full.json](audit-results-full.json)** | Full machine-readable audit output |
-| **[audit-code-results.json](audit-code-results.json)** | Code-focused machine-readable audit output |
-| **[audit-architecture-results.txt](audit-architecture-results.txt)** | Architecture audit text output |
-| **[prompt-generation-results.json](prompt-generation-results.json)** | Prompt-generation artifact retained for traceability |
+| [AUDIT_REPORT.md](AUDIT_REPORT.md) | Consolidated human-readable audit report |
+| [BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md](BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md) | Backtest-engine-focused review findings |
+| [FURTHER_SIMPLIFICATION_OPPORTUNITIES.md](FURTHER_SIMPLIFICATION_OPPORTUNITIES.md) | Simplification backlog and code-reduction opportunities |
+| [audit-results-full.json](audit-results-full.json) | Full machine-readable audit output |
+| [audit-code-results.json](audit-code-results.json) | Code-focused machine-readable audit output |
+| [audit-architecture-results.txt](audit-architecture-results.txt) | Architecture audit text output |
+| [prompt-generation-results.json](prompt-generation-results.json) | Prompt-generation artifact retained for traceability |
 
-The dated Markdown snapshot from this audit window has been moved to the archive to keep `docs/audits/` focused on the active report surface:
+## Archived Audit Snapshots
 
-- **[AUDIT_REPORT_2026_03_20.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/assessments/AUDIT_REPORT_2026_03_20.md)** - Historical point-in-time snapshot retained for reference
-
-### Simplification Backlog (2026-02-20) — Documented
-
-**FURTHER_SIMPLIFICATION_OPPORTUNITIES.md**
-- 12 categories of simplification opportunities
-- ~2,800-3,400 lines of removable/simplifiable code
-- Priority matrix with recommended execution order
-- Covers: thin wrappers, singleton patterns, endpoint boilerplate, dead code, Task.Run misuse
-
-### Completed Audits (Archived)
-
-The following completed audits have been moved to [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs):
+Historical point-in-time audit documents live in `archive/docs/assessments/`.
 
 | Document | Reason Archived |
-|----------|----------------|
-| **[CLEANUP_SUMMARY.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/CLEANUP_SUMMARY.md)** | All hygiene phases complete (H1–H3 done) |
-| **[H3_DEBUG_CODE_ANALYSIS.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/H3_DEBUG_CODE_ANALYSIS.md)** | Complete — no action required |
-| **[CLEANUP_OPPORTUNITIES.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/CLEANUP_OPPORTUNITIES.md)** | All platform cleanup items fully completed |
-| **[UWP_COMPREHENSIVE_AUDIT.md](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docsassessments/UWP_COMPREHENSIVE_AUDIT.md)** | UWP fully removed from codebase |
+|----------|-----------------|
+| [AUDIT_REPORT_2026_03_20.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/AUDIT_REPORT_2026_03_20.md) | Dated snapshot retained after `AUDIT_REPORT.md` became the active audit surface |
+| [CODE_REVIEW_2026-03-16.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CODE_REVIEW_2026-03-16.md) | Repo-wide March 2026 code review superseded by focused audit follow-ups and newer governance summaries |
+| [CLEANUP_SUMMARY.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CLEANUP_SUMMARY.md) | Hygiene phases complete |
+| [H3_DEBUG_CODE_ANALYSIS.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/H3_DEBUG_CODE_ANALYSIS.md) | Historical debug analysis retained for reference |
+| [CLEANUP_OPPORTUNITIES.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/CLEANUP_OPPORTUNITIES.md) | Superseded by later cleanup and simplification planning |
+| [UWP_COMPREHENSIVE_AUDIT.md](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md) | Historical UWP audit preserved after the platform removal |
 
 ## Audit Standards
 
-When creating new audits, follow these guidelines:
+When creating or updating audits:
 
-1. **Clear Structure**
-   - Executive summary at the top
-   - Detailed findings with evidence
-   - Validation commands and results
-   - Recommendations and next steps
-
-2. **Evidence-Based**
-   - Include specific file paths and line numbers
-   - Show command outputs for verification
-   - Document search patterns used
-   - Provide counts and statistics
-
-3. **Actionable**
-   - Each finding should be actionable
-   - Clear distinction between intentional vs. problematic code
-   - Specific recommendations with reasoning
-
-4. **Verifiable**
-   - Include commands to reproduce findings
-   - Document validation steps
-   - Show before/after states
+1. Put the executive summary first.
+2. Ground each finding in specific files, commands, or test evidence.
+3. Separate intentional code from problematic code.
+4. Include validation steps so another maintainer can reproduce the result.
 
 ## Related Documentation
 
-- [`docs/status/EVALUATIONS_AND_AUDITS.md`](../status/EVALUATIONS_AND_AUDITS.md) - Consolidated evaluations and audits
-- [`docs/evaluations/README.md`](../evaluations/README.md) - Technology and architecture evaluations (see evaluations/ for brainstorms and proposals)
-- [`docs/status/IMPROVEMENTS.md`](../status/IMPROVEMENTS.md) - Improvement tracking (35 items)
-- [`docs/status/ROADMAP.md`](../status/ROADMAP.md) - Project roadmap
-- [`docs/development/`](../development/) - Development guides and best practices
-- [`docs/architecture/`](../architecture/) - Architecture decision records (ADRs)
-- [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs) - Archived completed audit documents
-
-## Audit History
-
-| Date | Audit | Status | Outcome |
-|------|-------|--------|---------|
-| 2026-02-20 | Further Simplification Opportunities | Documented | 12 categories, ~2,800-3,400 LOC removable |
-| 2026-02-20 | Platform Cleanup (UWP Removal) | ✅ Complete (Archived) | UWP fully removed, all residual refs cleaned |
-| 2026-02-10 | Repository Hygiene Cleanup | ✅ Complete (Archived) | 2 artifacts removed, .gitignore improved, code quality verified |
-| Earlier | UWP Platform Assessment | ✅ Complete (Archived) | Comprehensive feature inventory |
-
----
-
-*This directory is maintained as part of the project's continuous improvement and technical debt management.*
+- [../status/EVALUATIONS_AND_AUDITS.md](../status/EVALUATIONS_AND_AUDITS.md)
+- [../evaluations/README.md](../evaluations/README.md)
+- [../status/IMPROVEMENTS.md](../status/IMPROVEMENTS.md)
+- [../status/ROADMAP.md](../status/ROADMAP.md)
+- [../development/README.md](../development/README.md)
+- [../architecture/README.md](../architecture/README.md)

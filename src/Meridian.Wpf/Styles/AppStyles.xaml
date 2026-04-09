@@ -1,7 +1,8 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:conv="clr-namespace:Meridian.Wpf.Converters">
 
     <!-- Color tokens and brushes are defined in ThemeTokens.xaml, which is loaded first in App.xaml. -->
 
@@ -788,5 +789,76 @@
         <Setter Property="BorderThickness" Value="0,0,1,1" />
         <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
     </Style>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- ADDITIONAL NAMED STYLES                                 -->
+    <!-- These alias or extend the core styles above and are    -->
+    <!-- referenced by individual views.                        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+
+    <!-- ConsoleButtonStyle: general-purpose ghost button for console/terminal views -->
+    <Style x:Key="ConsoleButtonStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}" />
+
+    <!-- FormButtonStyle: secondary action button used next to form inputs -->
+    <Style x:Key="FormButtonStyle" TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+    <!-- LinkButtonStyle: minimal button that visually resembles a hyperlink -->
+    <Style x:Key="LinkButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+        <Setter Property="Padding" Value="4,2" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ConsoleTextStyle: standard body text for console/log views -->
+    <Style x:Key="ConsoleTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- ConsoleTextMutedStyle: de-emphasised supporting text for console/log views -->
+    <Style x:Key="ConsoleTextMutedStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- GLOBAL CONVERTER INSTANCES                              -->
+    <!-- Registered here so every view can use StaticResource   -->
+    <!-- without re-declaring them in per-view resources.       -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+
+    <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+    <conv:IntToVisibilityConverter    x:Key="IntToVisibilityConverter"    />
 
 </ResourceDictionary>

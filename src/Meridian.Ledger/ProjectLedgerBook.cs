@@ -7,7 +7,8 @@ namespace Meridian.Ledger;
 /// </summary>
 public sealed class ProjectLedgerBook
 {
-    private readonly Dictionary<LedgerBookKey, Ledger> _ledgers = [];
+    private static readonly StringComparer KeyTextComparer = StringComparer.OrdinalIgnoreCase;
+    private readonly Dictionary<LedgerBookKey, Ledger> _ledgers = new(LedgerBookKeyComparer.Instance);
 
     public ProjectLedgerBook(string projectId)
     {
@@ -42,7 +43,9 @@ public sealed class ProjectLedgerBook
         => _ledgers.TryGetValue(NormalizeKey(key), out ledger);
 
     public IReadOnlyDictionary<LedgerBookKey, IReadOnlyLedger> Snapshot()
-        => FilterLedgers().ToDictionary(pair => pair.Key, pair => (IReadOnlyLedger)pair.Value);
+        => ReadOnlyCollectionHelpers.FreezeDictionary(
+            FilterLedgers().ToDictionary(pair => pair.Key, pair => (IReadOnlyLedger)pair.Value),
+            LedgerBookKeyComparer.Instance);
 
     /// <summary>
     /// Returns all ledgers that match the supplied optional key filters.
@@ -51,8 +54,10 @@ public sealed class ProjectLedgerBook
         string? ledgerBook = null,
         LedgerViewKind? ledgerView = null,
         string? scenarioId = null)
-        => FilterLedgers(ledgerBook, ledgerView, scenarioId)
-            .ToDictionary(pair => pair.Key, pair => (IReadOnlyLedger)pair.Value);
+        => ReadOnlyCollectionHelpers.FreezeDictionary(
+            FilterLedgers(ledgerBook, ledgerView, scenarioId)
+                .ToDictionary(pair => pair.Key, pair => (IReadOnlyLedger)pair.Value),
+            LedgerBookKeyComparer.Instance);
 
     /// <summary>
     /// Returns ledger keys that match the supplied optional key filters.
@@ -88,7 +93,7 @@ public sealed class ProjectLedgerBook
             }
         }
 
-        return balances;
+        return ReadOnlyCollectionHelpers.FreezeDictionary(balances);
     }
 
     /// <summary>
@@ -227,5 +232,36 @@ public sealed class ProjectLedgerBook
             .Where(pair => ledgerView is null || pair.Key.LedgerView == ledgerView)
             .Where(pair => normalizedScenarioId is null
                            || string.Equals(pair.Key.ScenarioId, normalizedScenarioId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private sealed class LedgerBookKeyComparer : IEqualityComparer<LedgerBookKey>
+    {
+        public static LedgerBookKeyComparer Instance { get; } = new();
+
+        public bool Equals(LedgerBookKey? x, LedgerBookKey? y)
+        {
+            if (ReferenceEquals(x, y))
+                return true;
+
+            if (x is null || y is null)
+                return false;
+
+            return KeyTextComparer.Equals(x.ProjectId, y.ProjectId)
+                && KeyTextComparer.Equals(x.LedgerBook, y.LedgerBook)
+                && x.LedgerView == y.LedgerView
+                && KeyTextComparer.Equals(x.ScenarioId, y.ScenarioId);
+        }
+
+        public int GetHashCode(LedgerBookKey obj)
+        {
+            ArgumentNullException.ThrowIfNull(obj);
+
+            var hash = new HashCode();
+            hash.Add(obj.ProjectId, KeyTextComparer);
+            hash.Add(obj.LedgerBook, KeyTextComparer);
+            hash.Add(obj.LedgerView);
+            hash.Add(obj.ScenarioId, KeyTextComparer);
+            return hash.ToHashCode();
+        }
     }
 }

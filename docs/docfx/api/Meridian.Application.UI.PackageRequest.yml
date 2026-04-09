@@ -1,0 +1,1184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.UI.PackageRequest
+  commentId: T:Meridian.Application.UI.PackageRequest
+  id: PackageRequest
+  parent: Meridian.Application.UI
+  children:
+  - Meridian.Application.UI.PackageRequest.#ctor(System.String,System.String,System.String,System.String[],System.String[],System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.Collections.Generic.Dictionary{System.String,System.String})
+  - Meridian.Application.UI.PackageRequest.CompressionLevel
+  - Meridian.Application.UI.PackageRequest.CustomMetadata
+  - Meridian.Application.UI.PackageRequest.Description
+  - Meridian.Application.UI.PackageRequest.EndDate
+  - Meridian.Application.UI.PackageRequest.EventTypes
+  - Meridian.Application.UI.PackageRequest.Format
+  - Meridian.Application.UI.PackageRequest.IncludeDataDictionary
+  - Meridian.Application.UI.PackageRequest.IncludeLoaderScripts
+  - Meridian.Application.UI.PackageRequest.IncludeQualityReport
+  - Meridian.Application.UI.PackageRequest.Name
+  - Meridian.Application.UI.PackageRequest.OutputDirectory
+  - Meridian.Application.UI.PackageRequest.StartDate
+  - Meridian.Application.UI.PackageRequest.Symbols
+  - Meridian.Application.UI.PackageRequest.Tags
+  - Meridian.Application.UI.PackageRequest.VerifyChecksums
+  langs:
+  - csharp
+  - vb
+  name: PackageRequest
+  nameWithType: PackageRequest
+  fullName: Meridian.Application.UI.PackageRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageRequest
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  summary: Request model for package creation.
+  example: []
+  syntax:
+    content: 'public sealed record PackageRequest : IEquatable<PackageRequest>'
+    content.vb: Public NotInheritable Class PackageRequest Implements IEquatable(Of PackageRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.UI.PackageRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.UI.PackageRequest.#ctor(System.String,System.String,System.String,System.String[],System.String[],System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.Collections.Generic.Dictionary{System.String,System.String})
+  commentId: M:Meridian.Application.UI.PackageRequest.#ctor(System.String,System.String,System.String,System.String[],System.String[],System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.Collections.Generic.Dictionary{System.String,System.String})
+  id: '#ctor(System.String,System.String,System.String,System.String[],System.String[],System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String[],System.Collections.Generic.Dictionary{System.String,System.String})'
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: PackageRequest(string?, string?, string?, string[]?, string[]?, DateTime?, DateTime?, string?, string?, bool?, bool?, bool?, bool?, string[]?, Dictionary<string, string>?)
+  nameWithType: PackageRequest.PackageRequest(string?, string?, string?, string[]?, string[]?, DateTime?, DateTime?, string?, string?, bool?, bool?, bool?, bool?, string[]?, Dictionary<string, string>?)
+  fullName: Meridian.Application.UI.PackageRequest.PackageRequest(string?, string?, string?, string[]?, string[]?, System.DateTime?, System.DateTime?, string?, string?, bool?, bool?, bool?, bool?, string[]?, System.Collections.Generic.Dictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  summary: Request model for package creation.
+  example: []
+  syntax:
+    content: public PackageRequest(string? Name, string? Description, string? OutputDirectory, string[]? Symbols, string[]? EventTypes, DateTime? StartDate, DateTime? EndDate, string? Format, string? CompressionLevel, bool? IncludeQualityReport, bool? IncludeDataDictionary, bool? IncludeLoaderScripts, bool? VerifyChecksums, string[]? Tags, Dictionary<string, string>? CustomMetadata)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: OutputDirectory
+      type: System.String
+    - id: Symbols
+      type: System.String[]
+    - id: EventTypes
+      type: System.String[]
+    - id: StartDate
+      type: System.Nullable{System.DateTime}
+    - id: EndDate
+      type: System.Nullable{System.DateTime}
+    - id: Format
+      type: System.String
+    - id: CompressionLevel
+      type: System.String
+    - id: IncludeQualityReport
+      type: System.Nullable{System.Boolean}
+    - id: IncludeDataDictionary
+      type: System.Nullable{System.Boolean}
+    - id: IncludeLoaderScripts
+      type: System.Nullable{System.Boolean}
+    - id: VerifyChecksums
+      type: System.Nullable{System.Boolean}
+    - id: Tags
+      type: System.String[]
+    - id: CustomMetadata
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Sub New(Name As String, Description As String, OutputDirectory As String, Symbols As String(), EventTypes As String(), StartDate As Date?, EndDate As Date?, Format As String, CompressionLevel As String, IncludeQualityReport As Boolean?, IncludeDataDictionary As Boolean?, IncludeLoaderScripts As Boolean?, VerifyChecksums As Boolean?, Tags As String(), CustomMetadata As Dictionary(Of String, String))
+  overload: Meridian.Application.UI.PackageRequest.#ctor*
+  nameWithType.vb: PackageRequest.New(String, String, String, String(), String(), Date?, Date?, String, String, Boolean?, Boolean?, Boolean?, Boolean?, String(), Dictionary(Of String, String))
+  fullName.vb: Meridian.Application.UI.PackageRequest.New(String, String, String, String(), String(), Date?, Date?, String, String, Boolean?, Boolean?, Boolean?, Boolean?, String(), System.Collections.Generic.Dictionary(Of String, String))
+  name.vb: New(String, String, String, String(), String(), Date?, Date?, String, String, Boolean?, Boolean?, Boolean?, Boolean?, String(), Dictionary(Of String, String))
+- uid: Meridian.Application.UI.PackageRequest.Name
+  commentId: P:Meridian.Application.UI.PackageRequest.Name
+  id: Name
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: PackageRequest.Name
+  fullName: Meridian.Application.UI.PackageRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.UI.PackageRequest.Name*
+- uid: Meridian.Application.UI.PackageRequest.Description
+  commentId: P:Meridian.Application.UI.PackageRequest.Description
+  id: Description
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: PackageRequest.Description
+  fullName: Meridian.Application.UI.PackageRequest.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.UI.PackageRequest.Description*
+- uid: Meridian.Application.UI.PackageRequest.OutputDirectory
+  commentId: P:Meridian.Application.UI.PackageRequest.OutputDirectory
+  id: OutputDirectory
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: OutputDirectory
+  nameWithType: PackageRequest.OutputDirectory
+  fullName: Meridian.Application.UI.PackageRequest.OutputDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputDirectory
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? OutputDirectory { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OutputDirectory As String
+  overload: Meridian.Application.UI.PackageRequest.OutputDirectory*
+- uid: Meridian.Application.UI.PackageRequest.Symbols
+  commentId: P:Meridian.Application.UI.PackageRequest.Symbols
+  id: Symbols
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: PackageRequest.Symbols
+  fullName: Meridian.Application.UI.PackageRequest.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Application.UI.PackageRequest.Symbols*
+- uid: Meridian.Application.UI.PackageRequest.EventTypes
+  commentId: P:Meridian.Application.UI.PackageRequest.EventTypes
+  id: EventTypes
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: PackageRequest.EventTypes
+  fullName: Meridian.Application.UI.PackageRequest.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string[]? EventTypes { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property EventTypes As String()
+  overload: Meridian.Application.UI.PackageRequest.EventTypes*
+- uid: Meridian.Application.UI.PackageRequest.StartDate
+  commentId: P:Meridian.Application.UI.PackageRequest.StartDate
+  id: StartDate
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: StartDate
+  nameWithType: PackageRequest.StartDate
+  fullName: Meridian.Application.UI.PackageRequest.StartDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartDate
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public DateTime? StartDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property StartDate As Date?
+  overload: Meridian.Application.UI.PackageRequest.StartDate*
+- uid: Meridian.Application.UI.PackageRequest.EndDate
+  commentId: P:Meridian.Application.UI.PackageRequest.EndDate
+  id: EndDate
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: EndDate
+  nameWithType: PackageRequest.EndDate
+  fullName: Meridian.Application.UI.PackageRequest.EndDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndDate
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public DateTime? EndDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property EndDate As Date?
+  overload: Meridian.Application.UI.PackageRequest.EndDate*
+- uid: Meridian.Application.UI.PackageRequest.Format
+  commentId: P:Meridian.Application.UI.PackageRequest.Format
+  id: Format
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: PackageRequest.Format
+  fullName: Meridian.Application.UI.PackageRequest.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? Format { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Format As String
+  overload: Meridian.Application.UI.PackageRequest.Format*
+- uid: Meridian.Application.UI.PackageRequest.CompressionLevel
+  commentId: P:Meridian.Application.UI.PackageRequest.CompressionLevel
+  id: CompressionLevel
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: CompressionLevel
+  nameWithType: PackageRequest.CompressionLevel
+  fullName: Meridian.Application.UI.PackageRequest.CompressionLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionLevel
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? CompressionLevel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompressionLevel As String
+  overload: Meridian.Application.UI.PackageRequest.CompressionLevel*
+- uid: Meridian.Application.UI.PackageRequest.IncludeQualityReport
+  commentId: P:Meridian.Application.UI.PackageRequest.IncludeQualityReport
+  id: IncludeQualityReport
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: IncludeQualityReport
+  nameWithType: PackageRequest.IncludeQualityReport
+  fullName: Meridian.Application.UI.PackageRequest.IncludeQualityReport
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeQualityReport
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public bool? IncludeQualityReport { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property IncludeQualityReport As Boolean?
+  overload: Meridian.Application.UI.PackageRequest.IncludeQualityReport*
+- uid: Meridian.Application.UI.PackageRequest.IncludeDataDictionary
+  commentId: P:Meridian.Application.UI.PackageRequest.IncludeDataDictionary
+  id: IncludeDataDictionary
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: IncludeDataDictionary
+  nameWithType: PackageRequest.IncludeDataDictionary
+  fullName: Meridian.Application.UI.PackageRequest.IncludeDataDictionary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeDataDictionary
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public bool? IncludeDataDictionary { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property IncludeDataDictionary As Boolean?
+  overload: Meridian.Application.UI.PackageRequest.IncludeDataDictionary*
+- uid: Meridian.Application.UI.PackageRequest.IncludeLoaderScripts
+  commentId: P:Meridian.Application.UI.PackageRequest.IncludeLoaderScripts
+  id: IncludeLoaderScripts
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: IncludeLoaderScripts
+  nameWithType: PackageRequest.IncludeLoaderScripts
+  fullName: Meridian.Application.UI.PackageRequest.IncludeLoaderScripts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeLoaderScripts
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public bool? IncludeLoaderScripts { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property IncludeLoaderScripts As Boolean?
+  overload: Meridian.Application.UI.PackageRequest.IncludeLoaderScripts*
+- uid: Meridian.Application.UI.PackageRequest.VerifyChecksums
+  commentId: P:Meridian.Application.UI.PackageRequest.VerifyChecksums
+  id: VerifyChecksums
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: VerifyChecksums
+  nameWithType: PackageRequest.VerifyChecksums
+  fullName: Meridian.Application.UI.PackageRequest.VerifyChecksums
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyChecksums
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public bool? VerifyChecksums { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property VerifyChecksums As Boolean?
+  overload: Meridian.Application.UI.PackageRequest.VerifyChecksums*
+- uid: Meridian.Application.UI.PackageRequest.Tags
+  commentId: P:Meridian.Application.UI.PackageRequest.Tags
+  id: Tags
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: PackageRequest.Tags
+  fullName: Meridian.Application.UI.PackageRequest.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string[]? Tags { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Tags As String()
+  overload: Meridian.Application.UI.PackageRequest.Tags*
+- uid: Meridian.Application.UI.PackageRequest.CustomMetadata
+  commentId: P:Meridian.Application.UI.PackageRequest.CustomMetadata
+  id: CustomMetadata
+  parent: Meridian.Application.UI.PackageRequest
+  langs:
+  - csharp
+  - vb
+  name: CustomMetadata
+  nameWithType: PackageRequest.CustomMetadata
+  fullName: Meridian.Application.UI.PackageRequest.CustomMetadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustomMetadata
+    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public Dictionary<string, string>? CustomMetadata { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Property CustomMetadata As Dictionary(Of String, String)
+  overload: Meridian.Application.UI.PackageRequest.CustomMetadata*
+references:
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.UI.PackageRequest}
+  commentId: T:System.IEquatable{Meridian.Application.UI.PackageRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PackageRequest>
+  nameWithType: IEquatable<PackageRequest>
+  fullName: System.IEquatable<Meridian.Application.UI.PackageRequest>
+  nameWithType.vb: IEquatable(Of PackageRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Application.UI.PackageRequest)
+  name.vb: IEquatable(Of PackageRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.UI.PackageRequest
+    name: PackageRequest
+    href: Meridian.Application.UI.PackageRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.UI.PackageRequest
+    name: PackageRequest
+    href: Meridian.Application.UI.PackageRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.UI.PackageRequest.#ctor*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.#ctor
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest__ctor_System_String_System_String_System_String_System_String___System_String___System_Nullable_System_DateTime__System_Nullable_System_DateTime__System_String_System_String_System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_String___System_Collections_Generic_Dictionary_System_String_System_String__
+  name: PackageRequest
+  nameWithType: PackageRequest.PackageRequest
+  fullName: Meridian.Application.UI.PackageRequest.PackageRequest
+  nameWithType.vb: PackageRequest.New
+  fullName.vb: Meridian.Application.UI.PackageRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.UI.PackageRequest.Name*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.Name
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_Name
+  name: Name
+  nameWithType: PackageRequest.Name
+  fullName: Meridian.Application.UI.PackageRequest.Name
+- uid: Meridian.Application.UI.PackageRequest.Description*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.Description
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_Description
+  name: Description
+  nameWithType: PackageRequest.Description
+  fullName: Meridian.Application.UI.PackageRequest.Description
+- uid: Meridian.Application.UI.PackageRequest.OutputDirectory*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.OutputDirectory
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_OutputDirectory
+  name: OutputDirectory
+  nameWithType: PackageRequest.OutputDirectory
+  fullName: Meridian.Application.UI.PackageRequest.OutputDirectory
+- uid: Meridian.Application.UI.PackageRequest.Symbols*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.Symbols
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_Symbols
+  name: Symbols
+  nameWithType: PackageRequest.Symbols
+  fullName: Meridian.Application.UI.PackageRequest.Symbols
+- uid: Meridian.Application.UI.PackageRequest.EventTypes*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.EventTypes
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_EventTypes
+  name: EventTypes
+  nameWithType: PackageRequest.EventTypes
+  fullName: Meridian.Application.UI.PackageRequest.EventTypes
+- uid: Meridian.Application.UI.PackageRequest.StartDate*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.StartDate
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_StartDate
+  name: StartDate
+  nameWithType: PackageRequest.StartDate
+  fullName: Meridian.Application.UI.PackageRequest.StartDate
+- uid: Meridian.Application.UI.PackageRequest.EndDate*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.EndDate
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_EndDate
+  name: EndDate
+  nameWithType: PackageRequest.EndDate
+  fullName: Meridian.Application.UI.PackageRequest.EndDate
+- uid: Meridian.Application.UI.PackageRequest.Format*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.Format
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_Format
+  name: Format
+  nameWithType: PackageRequest.Format
+  fullName: Meridian.Application.UI.PackageRequest.Format
+- uid: Meridian.Application.UI.PackageRequest.CompressionLevel*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.CompressionLevel
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_CompressionLevel
+  name: CompressionLevel
+  nameWithType: PackageRequest.CompressionLevel
+  fullName: Meridian.Application.UI.PackageRequest.CompressionLevel
+- uid: Meridian.Application.UI.PackageRequest.IncludeQualityReport*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.IncludeQualityReport
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_IncludeQualityReport
+  name: IncludeQualityReport
+  nameWithType: PackageRequest.IncludeQualityReport
+  fullName: Meridian.Application.UI.PackageRequest.IncludeQualityReport
+- uid: Meridian.Application.UI.PackageRequest.IncludeDataDictionary*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.IncludeDataDictionary
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_IncludeDataDictionary
+  name: IncludeDataDictionary
+  nameWithType: PackageRequest.IncludeDataDictionary
+  fullName: Meridian.Application.UI.PackageRequest.IncludeDataDictionary
+- uid: Meridian.Application.UI.PackageRequest.IncludeLoaderScripts*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.IncludeLoaderScripts
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_IncludeLoaderScripts
+  name: IncludeLoaderScripts
+  nameWithType: PackageRequest.IncludeLoaderScripts
+  fullName: Meridian.Application.UI.PackageRequest.IncludeLoaderScripts
+- uid: Meridian.Application.UI.PackageRequest.VerifyChecksums*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.VerifyChecksums
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_VerifyChecksums
+  name: VerifyChecksums
+  nameWithType: PackageRequest.VerifyChecksums
+  fullName: Meridian.Application.UI.PackageRequest.VerifyChecksums
+- uid: Meridian.Application.UI.PackageRequest.Tags*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.Tags
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_Tags
+  name: Tags
+  nameWithType: PackageRequest.Tags
+  fullName: Meridian.Application.UI.PackageRequest.Tags
+- uid: Meridian.Application.UI.PackageRequest.CustomMetadata*
+  commentId: Overload:Meridian.Application.UI.PackageRequest.CustomMetadata
+  href: Meridian.Application.UI.PackageRequest.html#Meridian_Application_UI_PackageRequest_CustomMetadata
+  name: CustomMetadata
+  nameWithType: PackageRequest.CustomMetadata
+  fullName: Meridian.Application.UI.PackageRequest.CustomMetadata

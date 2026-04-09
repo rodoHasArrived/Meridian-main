@@ -1,0 +1,701 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  id: CustodianAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference
+  - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber
+  langs:
+  - csharp
+  - vb
+  name: CustodianAccountDetailsDto
+  nameWithType: CustodianAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustodianAccountDetailsDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: 'public sealed record CustodianAccountDetailsDto : IEquatable<CustodianAccountDetailsDto>'
+    content.vb: Public NotInheritable Class CustodianAccountDetailsDto Implements IEquatable(Of CustodianAccountDetailsDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.CustodianAccountDetailsDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: CustodianAccountDetailsDto(string?, string?, string?, string?, string?, string?, string?, string?)
+  nameWithType: CustodianAccountDetailsDto.CustodianAccountDetailsDto(string?, string?, string?, string?, string?, string?, string?, string?)
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CustodianAccountDetailsDto(string?, string?, string?, string?, string?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: public CustodianAccountDetailsDto(string? SubAccountNumber, string? DtcParticipantCode, string? CrestMemberCode, string? EuroclearAccountNumber, string? ClearstreamAccountNumber, string? PrimebrokerGiveupCode, string? SafekeepingLocation, string? ServiceAgreementReference)
+    parameters:
+    - id: SubAccountNumber
+      type: System.String
+    - id: DtcParticipantCode
+      type: System.String
+    - id: CrestMemberCode
+      type: System.String
+    - id: EuroclearAccountNumber
+      type: System.String
+    - id: ClearstreamAccountNumber
+      type: System.String
+    - id: PrimebrokerGiveupCode
+      type: System.String
+    - id: SafekeepingLocation
+      type: System.String
+    - id: ServiceAgreementReference
+      type: System.String
+    content.vb: Public Sub New(SubAccountNumber As String, DtcParticipantCode As String, CrestMemberCode As String, EuroclearAccountNumber As String, ClearstreamAccountNumber As String, PrimebrokerGiveupCode As String, SafekeepingLocation As String, ServiceAgreementReference As String)
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.#ctor*
+  nameWithType.vb: CustodianAccountDetailsDto.New(String, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.New(String, String, String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String, String, String)
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber
+  id: SubAccountNumber
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: SubAccountNumber
+  nameWithType: CustodianAccountDetailsDto.SubAccountNumber
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubAccountNumber
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? SubAccountNumber { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SubAccountNumber As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode
+  id: DtcParticipantCode
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: DtcParticipantCode
+  nameWithType: CustodianAccountDetailsDto.DtcParticipantCode
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DtcParticipantCode
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? DtcParticipantCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DtcParticipantCode As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode
+  id: CrestMemberCode
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: CrestMemberCode
+  nameWithType: CustodianAccountDetailsDto.CrestMemberCode
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrestMemberCode
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? CrestMemberCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CrestMemberCode As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber
+  id: EuroclearAccountNumber
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: EuroclearAccountNumber
+  nameWithType: CustodianAccountDetailsDto.EuroclearAccountNumber
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EuroclearAccountNumber
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? EuroclearAccountNumber { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EuroclearAccountNumber As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber
+  id: ClearstreamAccountNumber
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: ClearstreamAccountNumber
+  nameWithType: CustodianAccountDetailsDto.ClearstreamAccountNumber
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearstreamAccountNumber
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? ClearstreamAccountNumber { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ClearstreamAccountNumber As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  id: PrimebrokerGiveupCode
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: PrimebrokerGiveupCode
+  nameWithType: CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimebrokerGiveupCode
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? PrimebrokerGiveupCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimebrokerGiveupCode As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation
+  id: SafekeepingLocation
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: SafekeepingLocation
+  nameWithType: CustodianAccountDetailsDto.SafekeepingLocation
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SafekeepingLocation
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? SafekeepingLocation { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SafekeepingLocation As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation*
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference
+  commentId: P:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference
+  id: ServiceAgreementReference
+  parent: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  langs:
+  - csharp
+  - vb
+  name: ServiceAgreementReference
+  nameWithType: CustodianAccountDetailsDto.ServiceAgreementReference
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceAgreementReference
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? ServiceAgreementReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ServiceAgreementReference As String
+  overload: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.CustodianAccountDetailsDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.CustodianAccountDetailsDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CustodianAccountDetailsDto>
+  nameWithType: IEquatable<CustodianAccountDetailsDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.CustodianAccountDetailsDto>
+  nameWithType.vb: IEquatable(Of CustodianAccountDetailsDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.CustodianAccountDetailsDto)
+  name.vb: IEquatable(Of CustodianAccountDetailsDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+    name: CustodianAccountDetailsDto
+    href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+    name: CustodianAccountDetailsDto
+    href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.#ctor
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: CustodianAccountDetailsDto
+  nameWithType: CustodianAccountDetailsDto.CustodianAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CustodianAccountDetailsDto
+  nameWithType.vb: CustodianAccountDetailsDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_SubAccountNumber
+  name: SubAccountNumber
+  nameWithType: CustodianAccountDetailsDto.SubAccountNumber
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SubAccountNumber
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_DtcParticipantCode
+  name: DtcParticipantCode
+  nameWithType: CustodianAccountDetailsDto.DtcParticipantCode
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.DtcParticipantCode
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_CrestMemberCode
+  name: CrestMemberCode
+  nameWithType: CustodianAccountDetailsDto.CrestMemberCode
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.CrestMemberCode
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_EuroclearAccountNumber
+  name: EuroclearAccountNumber
+  nameWithType: CustodianAccountDetailsDto.EuroclearAccountNumber
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.EuroclearAccountNumber
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_ClearstreamAccountNumber
+  name: ClearstreamAccountNumber
+  nameWithType: CustodianAccountDetailsDto.ClearstreamAccountNumber
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ClearstreamAccountNumber
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_PrimebrokerGiveupCode
+  name: PrimebrokerGiveupCode
+  nameWithType: CustodianAccountDetailsDto.PrimebrokerGiveupCode
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.PrimebrokerGiveupCode
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_SafekeepingLocation
+  name: SafekeepingLocation
+  nameWithType: CustodianAccountDetailsDto.SafekeepingLocation
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.SafekeepingLocation
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html#Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_ServiceAgreementReference
+  name: ServiceAgreementReference
+  nameWithType: CustodianAccountDetailsDto.ServiceAgreementReference
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.ServiceAgreementReference

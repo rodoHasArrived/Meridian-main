@@ -1,0 +1,735 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  commentId: T:Meridian.Ui.Shared.Endpoints.MetricsDiff
+  id: MetricsDiff
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.#ctor(System.Decimal,System.Decimal,System.Int32,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn
+  - Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta
+  langs:
+  - csharp
+  - vb
+  name: MetricsDiff
+  nameWithType: MetricsDiff
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MetricsDiff
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2346
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: High-level metrics delta between two runs.
+  example: []
+  syntax:
+    content: 'public sealed record MetricsDiff : IEquatable<MetricsDiff>'
+    content.vb: Public NotInheritable Class MetricsDiff Implements IEquatable(Of MetricsDiff)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.Endpoints.MetricsDiff}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.#ctor(System.Decimal,System.Decimal,System.Int32,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  commentId: M:Meridian.Ui.Shared.Endpoints.MetricsDiff.#ctor(System.Decimal,System.Decimal,System.Int32,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})
+  id: '#ctor(System.Decimal,System.Decimal,System.Int32,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal})'
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: MetricsDiff(decimal, decimal, int, decimal?, decimal?, decimal?, decimal?)
+  nameWithType: MetricsDiff.MetricsDiff(decimal, decimal, int, decimal?, decimal?, decimal?, decimal?)
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.MetricsDiff(decimal, decimal, int, decimal?, decimal?, decimal?, decimal?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2346
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: High-level metrics delta between two runs.
+  example: []
+  syntax:
+    content: public MetricsDiff(decimal NetPnlDelta, decimal TotalReturnDelta, int FillCountDelta, decimal? BaseNetPnl, decimal? TargetNetPnl, decimal? BaseTotalReturn, decimal? TargetTotalReturn)
+    parameters:
+    - id: NetPnlDelta
+      type: System.Decimal
+    - id: TotalReturnDelta
+      type: System.Decimal
+    - id: FillCountDelta
+      type: System.Int32
+    - id: BaseNetPnl
+      type: System.Nullable{System.Decimal}
+    - id: TargetNetPnl
+      type: System.Nullable{System.Decimal}
+    - id: BaseTotalReturn
+      type: System.Nullable{System.Decimal}
+    - id: TargetTotalReturn
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub New(NetPnlDelta As Decimal, TotalReturnDelta As Decimal, FillCountDelta As Integer, BaseNetPnl As Decimal?, TargetNetPnl As Decimal?, BaseTotalReturn As Decimal?, TargetTotalReturn As Decimal?)
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.#ctor*
+  nameWithType.vb: MetricsDiff.New(Decimal, Decimal, Integer, Decimal?, Decimal?, Decimal?, Decimal?)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.MetricsDiff.New(Decimal, Decimal, Integer, Decimal?, Decimal?, Decimal?, Decimal?)
+  name.vb: New(Decimal, Decimal, Integer, Decimal?, Decimal?, Decimal?, Decimal?)
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta
+  id: NetPnlDelta
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: NetPnlDelta
+  nameWithType: MetricsDiff.NetPnlDelta
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetPnlDelta
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2347
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal NetPnlDelta { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetPnlDelta As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta*
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta
+  id: TotalReturnDelta
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: TotalReturnDelta
+  nameWithType: MetricsDiff.TotalReturnDelta
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReturnDelta
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2348
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal TotalReturnDelta { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalReturnDelta As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta*
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta
+  id: FillCountDelta
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: FillCountDelta
+  nameWithType: MetricsDiff.FillCountDelta
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillCountDelta
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2349
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public int FillCountDelta { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FillCountDelta As Integer
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta*
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl
+  id: BaseNetPnl
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: BaseNetPnl
+  nameWithType: MetricsDiff.BaseNetPnl
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseNetPnl
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2350
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal? BaseNetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property BaseNetPnl As Decimal?
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl*
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl
+  id: TargetNetPnl
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: TargetNetPnl
+  nameWithType: MetricsDiff.TargetNetPnl
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetNetPnl
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2351
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal? TargetNetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TargetNetPnl As Decimal?
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl*
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn
+  id: BaseTotalReturn
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: BaseTotalReturn
+  nameWithType: MetricsDiff.BaseTotalReturn
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseTotalReturn
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2352
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal? BaseTotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property BaseTotalReturn As Decimal?
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn*
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn
+  commentId: P:Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn
+  id: TargetTotalReturn
+  parent: Meridian.Ui.Shared.Endpoints.MetricsDiff
+  langs:
+  - csharp
+  - vb
+  name: TargetTotalReturn
+  nameWithType: MetricsDiff.TargetTotalReturn
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetTotalReturn
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 2353
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal? TargetTotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TargetTotalReturn As Decimal?
+  overload: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.Endpoints.MetricsDiff}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.Endpoints.MetricsDiff}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MetricsDiff>
+  nameWithType: IEquatable<MetricsDiff>
+  fullName: System.IEquatable<Meridian.Ui.Shared.Endpoints.MetricsDiff>
+  nameWithType.vb: IEquatable(Of MetricsDiff)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.Endpoints.MetricsDiff)
+  name.vb: IEquatable(Of MetricsDiff)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.Endpoints.MetricsDiff
+    name: MetricsDiff
+    href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.Endpoints.MetricsDiff
+    name: MetricsDiff
+    href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.#ctor
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff__ctor_System_Decimal_System_Decimal_System_Int32_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__
+  name: MetricsDiff
+  nameWithType: MetricsDiff.MetricsDiff
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.MetricsDiff
+  nameWithType.vb: MetricsDiff.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.MetricsDiff.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_NetPnlDelta
+  name: NetPnlDelta
+  nameWithType: MetricsDiff.NetPnlDelta
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.NetPnlDelta
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_TotalReturnDelta
+  name: TotalReturnDelta
+  nameWithType: MetricsDiff.TotalReturnDelta
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.TotalReturnDelta
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_FillCountDelta
+  name: FillCountDelta
+  nameWithType: MetricsDiff.FillCountDelta
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.FillCountDelta
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_BaseNetPnl
+  name: BaseNetPnl
+  nameWithType: MetricsDiff.BaseNetPnl
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseNetPnl
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_TargetNetPnl
+  name: TargetNetPnl
+  nameWithType: MetricsDiff.TargetNetPnl
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetNetPnl
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_BaseTotalReturn
+  name: BaseTotalReturn
+  nameWithType: MetricsDiff.BaseTotalReturn
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.BaseTotalReturn
+- uid: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn
+  href: Meridian.Ui.Shared.Endpoints.MetricsDiff.html#Meridian_Ui_Shared_Endpoints_MetricsDiff_TargetTotalReturn
+  name: TargetTotalReturn
+  nameWithType: MetricsDiff.TargetTotalReturn
+  fullName: Meridian.Ui.Shared.Endpoints.MetricsDiff.TargetTotalReturn

@@ -1,0 +1,1075 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.SourceRegistry
+  commentId: T:Meridian.Storage.Services.SourceRegistry
+  id: SourceRegistry
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.SourceRegistry.#ctor(System.String)
+  - Meridian.Storage.Services.SourceRegistry.GetAllSources
+  - Meridian.Storage.Services.SourceRegistry.GetAllSymbols
+  - Meridian.Storage.Services.SourceRegistry.GetSourceInfo(System.String)
+  - Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder
+  - Meridian.Storage.Services.SourceRegistry.GetSymbolInfo(System.String)
+  - Meridian.Storage.Services.SourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  - Meridian.Storage.Services.SourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  - Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias(System.String)
+  langs:
+  - csharp
+  - vb
+  name: SourceRegistry
+  nameWithType: SourceRegistry
+  fullName: Meridian.Storage.Services.SourceRegistry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceRegistry
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: In-memory implementation of source and symbol registry with JSON persistence.
+  example: []
+  syntax:
+    content: 'public sealed class SourceRegistry : ISourceRegistry'
+    content.vb: Public NotInheritable Class SourceRegistry Implements ISourceRegistry
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.SourceRegistry.#ctor(System.String)
+  commentId: M:Meridian.Storage.Services.SourceRegistry.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: SourceRegistry(string?)
+  nameWithType: SourceRegistry.SourceRegistry(string?)
+  fullName: Meridian.Storage.Services.SourceRegistry.SourceRegistry(string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public SourceRegistry(string? persistencePath = null)
+    parameters:
+    - id: persistencePath
+      type: System.String
+    content.vb: Public Sub New(persistencePath As String = Nothing)
+  overload: Meridian.Storage.Services.SourceRegistry.#ctor*
+  nameWithType.vb: SourceRegistry.New(String)
+  fullName.vb: Meridian.Storage.Services.SourceRegistry.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Services.SourceRegistry.GetSourceInfo(System.String)
+  commentId: M:Meridian.Storage.Services.SourceRegistry.GetSourceInfo(System.String)
+  id: GetSourceInfo(System.String)
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetSourceInfo(string)
+  nameWithType: SourceRegistry.GetSourceInfo(string)
+  fullName: Meridian.Storage.Services.SourceRegistry.GetSourceInfo(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSourceInfo
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Gets information about a registered data source.
+  example: []
+  syntax:
+    content: public SourceInfo? GetSourceInfo(string sourceId)
+    parameters:
+    - id: sourceId
+      type: System.String
+    return:
+      type: Meridian.Storage.Interfaces.SourceInfo
+    content.vb: Public Function GetSourceInfo(sourceId As String) As SourceInfo
+  overload: Meridian.Storage.Services.SourceRegistry.GetSourceInfo*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(System.String)
+  nameWithType.vb: SourceRegistry.GetSourceInfo(String)
+  fullName.vb: Meridian.Storage.Services.SourceRegistry.GetSourceInfo(String)
+  name.vb: GetSourceInfo(String)
+- uid: Meridian.Storage.Services.SourceRegistry.GetSymbolInfo(System.String)
+  commentId: M:Meridian.Storage.Services.SourceRegistry.GetSymbolInfo(System.String)
+  id: GetSymbolInfo(System.String)
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolInfo(string)
+  nameWithType: SourceRegistry.GetSymbolInfo(string)
+  fullName: Meridian.Storage.Services.SourceRegistry.GetSymbolInfo(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolInfo
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Gets information about a symbol.
+  example: []
+  syntax:
+    content: public SymbolInfo? GetSymbolInfo(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Storage.Interfaces.SymbolInfo
+    content.vb: Public Function GetSymbolInfo(symbol As String) As SymbolInfo
+  overload: Meridian.Storage.Services.SourceRegistry.GetSymbolInfo*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(System.String)
+  nameWithType.vb: SourceRegistry.GetSymbolInfo(String)
+  fullName.vb: Meridian.Storage.Services.SourceRegistry.GetSymbolInfo(String)
+  name.vb: GetSymbolInfo(String)
+- uid: Meridian.Storage.Services.SourceRegistry.GetAllSources
+  commentId: M:Meridian.Storage.Services.SourceRegistry.GetAllSources
+  id: GetAllSources
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAllSources()
+  nameWithType: SourceRegistry.GetAllSources()
+  fullName: Meridian.Storage.Services.SourceRegistry.GetAllSources()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSources
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Gets all registered sources.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SourceInfo> GetAllSources()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Interfaces.SourceInfo}
+    content.vb: Public Function GetAllSources() As IReadOnlyList(Of SourceInfo)
+  overload: Meridian.Storage.Services.SourceRegistry.GetAllSources*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.GetAllSources
+- uid: Meridian.Storage.Services.SourceRegistry.GetAllSymbols
+  commentId: M:Meridian.Storage.Services.SourceRegistry.GetAllSymbols
+  id: GetAllSymbols
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAllSymbols()
+  nameWithType: SourceRegistry.GetAllSymbols()
+  fullName: Meridian.Storage.Services.SourceRegistry.GetAllSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSymbols
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Gets all registered symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SymbolInfo> GetAllSymbols()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Interfaces.SymbolInfo}
+    content.vb: Public Function GetAllSymbols() As IReadOnlyList(Of SymbolInfo)
+  overload: Meridian.Storage.Services.SourceRegistry.GetAllSymbols*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.GetAllSymbols
+- uid: Meridian.Storage.Services.SourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  commentId: M:Meridian.Storage.Services.SourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  id: RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterSource(SourceInfo)
+  nameWithType: SourceRegistry.RegisterSource(SourceInfo)
+  fullName: Meridian.Storage.Services.SourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSource
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Registers or updates a data source.
+  example: []
+  syntax:
+    content: public void RegisterSource(SourceInfo source)
+    parameters:
+    - id: source
+      type: Meridian.Storage.Interfaces.SourceInfo
+    content.vb: Public Sub RegisterSource(source As SourceInfo)
+  overload: Meridian.Storage.Services.SourceRegistry.RegisterSource*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+- uid: Meridian.Storage.Services.SourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  commentId: M:Meridian.Storage.Services.SourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  id: RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbol(SymbolInfo)
+  nameWithType: SourceRegistry.RegisterSymbol(SymbolInfo)
+  fullName: Meridian.Storage.Services.SourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbol
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Registers or updates a symbol.
+  example: []
+  syntax:
+    content: public void RegisterSymbol(SymbolInfo symbol)
+    parameters:
+    - id: symbol
+      type: Meridian.Storage.Interfaces.SymbolInfo
+    content.vb: Public Sub RegisterSymbol(symbol As SymbolInfo)
+  overload: Meridian.Storage.Services.SourceRegistry.RegisterSymbol*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+- uid: Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias(System.String)
+  commentId: M:Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias(System.String)
+  id: ResolveSymbolAlias(System.String)
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: ResolveSymbolAlias(string)
+  nameWithType: SourceRegistry.ResolveSymbolAlias(string)
+  fullName: Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveSymbolAlias
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Resolves a symbol alias to its canonical name.
+  example: []
+  syntax:
+    content: public string ResolveSymbolAlias(string alias)
+    parameters:
+    - id: alias
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Function ResolveSymbolAlias([alias] As String) As String
+  overload: Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(System.String)
+  nameWithType.vb: SourceRegistry.ResolveSymbolAlias(String)
+  fullName.vb: Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias(String)
+  name.vb: ResolveSymbolAlias(String)
+- uid: Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder
+  commentId: M:Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder
+  id: GetSourcePriorityOrder
+  parent: Meridian.Storage.Services.SourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetSourcePriorityOrder()
+  nameWithType: SourceRegistry.GetSourcePriorityOrder()
+  fullName: Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/SourceRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSourcePriorityOrder
+    path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Gets the priority order for conflict resolution.
+  example: []
+  syntax:
+    content: public string[] GetSourcePriorityOrder()
+    return:
+      type: System.String[]
+    content.vb: Public Function GetSourcePriorityOrder() As String()
+  overload: Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder*
+  implements:
+  - Meridian.Storage.Interfaces.ISourceRegistry.GetSourcePriorityOrder
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Interfaces.ISourceRegistry
+  commentId: T:Meridian.Storage.Interfaces.ISourceRegistry
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html
+  name: ISourceRegistry
+  nameWithType: ISourceRegistry
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Services.SourceRegistry.#ctor*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.#ctor
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry__ctor_System_String_
+  name: SourceRegistry
+  nameWithType: SourceRegistry.SourceRegistry
+  fullName: Meridian.Storage.Services.SourceRegistry.SourceRegistry
+  nameWithType.vb: SourceRegistry.New
+  fullName.vb: Meridian.Storage.Services.SourceRegistry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.SourceRegistry.GetSourceInfo*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.GetSourceInfo
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_GetSourceInfo_System_String_
+  name: GetSourceInfo
+  nameWithType: SourceRegistry.GetSourceInfo
+  fullName: Meridian.Storage.Services.SourceRegistry.GetSourceInfo
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(System.String)
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  isExternal: true
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSourceInfo_System_String_
+  name: GetSourceInfo(string)
+  nameWithType: ISourceRegistry.GetSourceInfo(string)
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(string)
+  nameWithType.vb: ISourceRegistry.GetSourceInfo(String)
+  fullName.vb: Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(String)
+  name.vb: GetSourceInfo(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(System.String)
+    name: GetSourceInfo
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSourceInfo_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSourceInfo(System.String)
+    name: GetSourceInfo
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSourceInfo_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Interfaces.SourceInfo
+  commentId: T:Meridian.Storage.Interfaces.SourceInfo
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.SourceInfo.html
+  name: SourceInfo
+  nameWithType: SourceInfo
+  fullName: Meridian.Storage.Interfaces.SourceInfo
+- uid: Meridian.Storage.Services.SourceRegistry.GetSymbolInfo*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.GetSymbolInfo
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_GetSymbolInfo_System_String_
+  name: GetSymbolInfo
+  nameWithType: SourceRegistry.GetSymbolInfo
+  fullName: Meridian.Storage.Services.SourceRegistry.GetSymbolInfo
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(System.String)
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  isExternal: true
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSymbolInfo_System_String_
+  name: GetSymbolInfo(string)
+  nameWithType: ISourceRegistry.GetSymbolInfo(string)
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(string)
+  nameWithType.vb: ISourceRegistry.GetSymbolInfo(String)
+  fullName.vb: Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(String)
+  name.vb: GetSymbolInfo(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(System.String)
+    name: GetSymbolInfo
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSymbolInfo_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSymbolInfo(System.String)
+    name: GetSymbolInfo
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSymbolInfo_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Interfaces.SymbolInfo
+  commentId: T:Meridian.Storage.Interfaces.SymbolInfo
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.SymbolInfo.html
+  name: SymbolInfo
+  nameWithType: SymbolInfo
+  fullName: Meridian.Storage.Interfaces.SymbolInfo
+- uid: Meridian.Storage.Services.SourceRegistry.GetAllSources*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.GetAllSources
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_GetAllSources
+  name: GetAllSources
+  nameWithType: SourceRegistry.GetAllSources
+  fullName: Meridian.Storage.Services.SourceRegistry.GetAllSources
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSources
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.GetAllSources
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetAllSources
+  name: GetAllSources()
+  nameWithType: ISourceRegistry.GetAllSources()
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSources()
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSources
+    name: GetAllSources
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetAllSources
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSources
+    name: GetAllSources
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetAllSources
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Interfaces.SourceInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Interfaces.SourceInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SourceInfo>
+  nameWithType: IReadOnlyList<SourceInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Interfaces.SourceInfo>
+  nameWithType.vb: IReadOnlyList(Of SourceInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Interfaces.SourceInfo)
+  name.vb: IReadOnlyList(Of SourceInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.SourceInfo
+    name: SourceInfo
+    href: Meridian.Storage.Interfaces.SourceInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.SourceInfo
+    name: SourceInfo
+    href: Meridian.Storage.Interfaces.SourceInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.SourceRegistry.GetAllSymbols*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.GetAllSymbols
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_GetAllSymbols
+  name: GetAllSymbols
+  nameWithType: SourceRegistry.GetAllSymbols
+  fullName: Meridian.Storage.Services.SourceRegistry.GetAllSymbols
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSymbols
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.GetAllSymbols
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetAllSymbols
+  name: GetAllSymbols()
+  nameWithType: ISourceRegistry.GetAllSymbols()
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSymbols()
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSymbols
+    name: GetAllSymbols
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetAllSymbols
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetAllSymbols
+    name: GetAllSymbols
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetAllSymbols
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Interfaces.SymbolInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Interfaces.SymbolInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SymbolInfo>
+  nameWithType: IReadOnlyList<SymbolInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Interfaces.SymbolInfo>
+  nameWithType.vb: IReadOnlyList(Of SymbolInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Interfaces.SymbolInfo)
+  name.vb: IReadOnlyList(Of SymbolInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.SymbolInfo
+    name: SymbolInfo
+    href: Meridian.Storage.Interfaces.SymbolInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.SymbolInfo
+    name: SymbolInfo
+    href: Meridian.Storage.Interfaces.SymbolInfo.html
+  - name: )
+- uid: Meridian.Storage.Services.SourceRegistry.RegisterSource*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.RegisterSource
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_RegisterSource_Meridian_Storage_Interfaces_SourceInfo_
+  name: RegisterSource
+  nameWithType: SourceRegistry.RegisterSource
+  fullName: Meridian.Storage.Services.SourceRegistry.RegisterSource
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_RegisterSource_Meridian_Storage_Interfaces_SourceInfo_
+  name: RegisterSource(SourceInfo)
+  nameWithType: ISourceRegistry.RegisterSource(SourceInfo)
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+    name: RegisterSource
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_RegisterSource_Meridian_Storage_Interfaces_SourceInfo_
+  - name: (
+  - uid: Meridian.Storage.Interfaces.SourceInfo
+    name: SourceInfo
+    href: Meridian.Storage.Interfaces.SourceInfo.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSource(Meridian.Storage.Interfaces.SourceInfo)
+    name: RegisterSource
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_RegisterSource_Meridian_Storage_Interfaces_SourceInfo_
+  - name: (
+  - uid: Meridian.Storage.Interfaces.SourceInfo
+    name: SourceInfo
+    href: Meridian.Storage.Interfaces.SourceInfo.html
+  - name: )
+- uid: Meridian.Storage.Services.SourceRegistry.RegisterSymbol*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.RegisterSymbol
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_RegisterSymbol_Meridian_Storage_Interfaces_SymbolInfo_
+  name: RegisterSymbol
+  nameWithType: SourceRegistry.RegisterSymbol
+  fullName: Meridian.Storage.Services.SourceRegistry.RegisterSymbol
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_RegisterSymbol_Meridian_Storage_Interfaces_SymbolInfo_
+  name: RegisterSymbol(SymbolInfo)
+  nameWithType: ISourceRegistry.RegisterSymbol(SymbolInfo)
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+    name: RegisterSymbol
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_RegisterSymbol_Meridian_Storage_Interfaces_SymbolInfo_
+  - name: (
+  - uid: Meridian.Storage.Interfaces.SymbolInfo
+    name: SymbolInfo
+    href: Meridian.Storage.Interfaces.SymbolInfo.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.RegisterSymbol(Meridian.Storage.Interfaces.SymbolInfo)
+    name: RegisterSymbol
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_RegisterSymbol_Meridian_Storage_Interfaces_SymbolInfo_
+  - name: (
+  - uid: Meridian.Storage.Interfaces.SymbolInfo
+    name: SymbolInfo
+    href: Meridian.Storage.Interfaces.SymbolInfo.html
+  - name: )
+- uid: Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_ResolveSymbolAlias_System_String_
+  name: ResolveSymbolAlias
+  nameWithType: SourceRegistry.ResolveSymbolAlias
+  fullName: Meridian.Storage.Services.SourceRegistry.ResolveSymbolAlias
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(System.String)
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(System.String)
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  isExternal: true
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_ResolveSymbolAlias_System_String_
+  name: ResolveSymbolAlias(string)
+  nameWithType: ISourceRegistry.ResolveSymbolAlias(string)
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(string)
+  nameWithType.vb: ISourceRegistry.ResolveSymbolAlias(String)
+  fullName.vb: Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(String)
+  name.vb: ResolveSymbolAlias(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(System.String)
+    name: ResolveSymbolAlias
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_ResolveSymbolAlias_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.ResolveSymbolAlias(System.String)
+    name: ResolveSymbolAlias
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_ResolveSymbolAlias_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder*
+  commentId: Overload:Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder
+  href: Meridian.Storage.Services.SourceRegistry.html#Meridian_Storage_Services_SourceRegistry_GetSourcePriorityOrder
+  name: GetSourcePriorityOrder
+  nameWithType: SourceRegistry.GetSourcePriorityOrder
+  fullName: Meridian.Storage.Services.SourceRegistry.GetSourcePriorityOrder
+- uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSourcePriorityOrder
+  commentId: M:Meridian.Storage.Interfaces.ISourceRegistry.GetSourcePriorityOrder
+  parent: Meridian.Storage.Interfaces.ISourceRegistry
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSourcePriorityOrder
+  name: GetSourcePriorityOrder()
+  nameWithType: ISourceRegistry.GetSourcePriorityOrder()
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry.GetSourcePriorityOrder()
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSourcePriorityOrder
+    name: GetSourcePriorityOrder
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSourcePriorityOrder
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.ISourceRegistry.GetSourcePriorityOrder
+    name: GetSourcePriorityOrder
+    href: Meridian.Storage.Interfaces.ISourceRegistry.html#Meridian_Storage_Interfaces_ISourceRegistry_GetSourcePriorityOrder
+  - name: (
+  - name: )
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )

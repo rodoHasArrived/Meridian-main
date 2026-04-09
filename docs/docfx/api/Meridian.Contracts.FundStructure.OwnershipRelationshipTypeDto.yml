@@ -1,0 +1,267 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  id: OwnershipRelationshipTypeDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Advises
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.AllocatesTo
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.ClearsFor
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.CustodiesFor
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Operates
+  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Owns
+  langs:
+  - csharp
+  - vb
+  name: OwnershipRelationshipTypeDto
+  nameWithType: OwnershipRelationshipTypeDto
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OwnershipRelationshipTypeDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<OwnershipRelationshipTypeDto>))]
+
+      public enum OwnershipRelationshipTypeDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of OwnershipRelationshipTypeDto)))>
+
+      Public Enum OwnershipRelationshipTypeDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto}
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Owns
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Owns
+  id: Owns
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Owns
+  nameWithType: OwnershipRelationshipTypeDto.Owns
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Owns
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Owns
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Owns = 0
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Advises
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Advises
+  id: Advises
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Advises
+  nameWithType: OwnershipRelationshipTypeDto.Advises
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Advises
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Advises
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Advises = 1
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Operates
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Operates
+  id: Operates
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Operates
+  nameWithType: OwnershipRelationshipTypeDto.Operates
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Operates
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Operates
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Operates = 2
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.ClearsFor
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.ClearsFor
+  id: ClearsFor
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: ClearsFor
+  nameWithType: OwnershipRelationshipTypeDto.ClearsFor
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.ClearsFor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearsFor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: ClearsFor = 3
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.CustodiesFor
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.CustodiesFor
+  id: CustodiesFor
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: CustodiesFor
+  nameWithType: OwnershipRelationshipTypeDto.CustodiesFor
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.CustodiesFor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustodiesFor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: CustodiesFor = 4
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.AllocatesTo
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.AllocatesTo
+  id: AllocatesTo
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: AllocatesTo
+  nameWithType: OwnershipRelationshipTypeDto.AllocatesTo
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.AllocatesTo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocatesTo
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: AllocatesTo = 5
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
+  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
+  id: BanksFor
+  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  langs:
+  - csharp
+  - vb
+  name: BanksFor
+  nameWithType: OwnershipRelationshipTypeDto.BanksFor
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BanksFor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: BanksFor = 6
+    return:
+      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.html
+  name: OwnershipRelationshipTypeDto
+  nameWithType: OwnershipRelationshipTypeDto
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto

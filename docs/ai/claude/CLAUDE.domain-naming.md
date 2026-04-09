@@ -189,6 +189,20 @@ unless there is a distinct conceptual reason (e.g. `MaturityTerms` is a value-ob
 | New option instrument type | `OptDef` |
 | New future instrument type | `FutDef` |
 
+### 5.4a Preferred / Convertible Equity Naming
+
+When extending the Phase 1.5 equity model, use the following names consistently:
+
+- `PrefShrDef` for preferred-share definition payloads
+- `ConvPrefDef` for convertible preferred-share definition payloads
+- `DivTr` for dividend and income traits
+- `RedTr` for redemption traits
+- `CallTr` for callable traits
+- `ConvTr` for convertibility traits
+
+Do not mix these with longer alternates such as `PreferredShareDefinition`, `DividendTrait`,
+or `ConversionTermsTrait` in adjacent domain code.
+
 ### 5.5 Category / Taxonomy Unions — marker suffix
 
 Closed sets used for classification. Apply the correct semantic suffix:
@@ -492,5 +506,5 @@ If two candidate names are both correct, choose the one that:
 *See also:*
 - [`CLAUDE.fsharp.md`](CLAUDE.fsharp.md) — F# domain module patterns and interop rules
 - [`CLAUDE.providers.md`](CLAUDE.providers.md) — provider adapter naming (different conventions)
-- [`../_shared/project-context.md`](../../../docs/generated/project-context.md) — codebase statistics and key abstractions
+- [`../_shared/project-context.md`](../../generated/project-context.md) — codebase statistics and key abstractions
 - [`../../../docs/plans/ufl-supported-assets-index.md`](../../plans/ufl-supported-assets-index.md) — UFL asset package index

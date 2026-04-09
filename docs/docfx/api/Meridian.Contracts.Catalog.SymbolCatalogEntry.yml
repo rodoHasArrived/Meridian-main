@@ -1,0 +1,964 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  commentId: T:Meridian.Contracts.Catalog.SymbolCatalogEntry
+  id: SymbolCatalogEntry
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol
+  - Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes
+  langs:
+  - csharp
+  - vb
+  name: SymbolCatalogEntry
+  nameWithType: SymbolCatalogEntry
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCatalogEntry
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Per-symbol catalog entry.
+  example: []
+  syntax:
+    content: public sealed class SymbolCatalogEntry
+    content.vb: Public NotInheritable Class SymbolCatalogEntry
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolCatalogEntry.Symbol
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Canonical symbol name.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases
+  id: Aliases
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Aliases
+  nameWithType: SymbolCatalogEntry.Aliases
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aliases
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Known aliases for this symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("aliases")]
+
+      public string[]? Aliases { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("aliases")>
+
+      Public Property Aliases As String()
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: aliases
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: SymbolCatalogEntry.AssetClass
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Asset class (equity, option, future, forex, crypto).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("assetClass")]
+
+      public string? AssetClass { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("assetClass")>
+
+      Public Property AssetClass As String
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: assetClass
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange
+  id: Exchange
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: SymbolCatalogEntry.Exchange
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Primary exchange.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("exchange")]
+
+      public string? Exchange { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("exchange")>
+
+      Public Property Exchange As String
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: exchange
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange
+  id: DateRange
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: DateRange
+  nameWithType: SymbolCatalogEntry.DateRange
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRange
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Date range for this symbol's data.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dateRange")]
+
+      public CatalogDateRange? DateRange { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Catalog.CatalogDateRange
+    content.vb: >-
+      <JsonPropertyName("dateRange")>
+
+      Public Property DateRange As CatalogDateRange
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dateRange
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount
+  id: FileCount
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: FileCount
+  nameWithType: SymbolCatalogEntry.FileCount
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCount
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of files for this symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("fileCount")]
+
+      public int FileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("fileCount")>
+
+      Public Property FileCount As Integer
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileCount
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount
+  id: EventCount
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: SymbolCatalogEntry.EventCount
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total events for this symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventCount")]
+
+      public long EventCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("eventCount")>
+
+      Public Property EventCount As Long
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventCount
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: SymbolCatalogEntry.TotalBytes
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total bytes for this symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalBytes")]
+
+      public long TotalBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalBytes")>
+
+      Public Property TotalBytes As Long
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalBytes
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes
+  id: EventTypes
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: SymbolCatalogEntry.EventTypes
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Available event types for this symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventTypes")]
+
+      public string[] EventTypes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("eventTypes")>
+
+      Public Property EventTypes As String()
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventTypes
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources
+  id: Sources
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: SymbolCatalogEntry.Sources
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Data sources for this symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sources")]
+
+      public string[] Sources { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("sources")>
+
+      Public Property Sources As String()
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sources
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: SymbolCatalogEntry.LastUpdated
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Last updated timestamp.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastUpdated")]
+
+      public DateTime LastUpdated { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("lastUpdated")>
+
+      Public Property LastUpdated As Date
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastUpdated
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange
+  commentId: P:Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange
+  id: SequenceRange
+  parent: Meridian.Contracts.Catalog.SymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SequenceRange
+  nameWithType: SymbolCatalogEntry.SequenceRange
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceRange
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Sequence range tracking.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sequenceRange")]
+
+      public SequenceRange? SequenceRange { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Catalog.SequenceRange
+    content.vb: >-
+      <JsonPropertyName("sequenceRange")>
+
+      Public Property SequenceRange As SequenceRange
+  overload: Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sequenceRange
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_Symbol
+  name: Symbol
+  nameWithType: SymbolCatalogEntry.Symbol
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_Aliases
+  name: Aliases
+  nameWithType: SymbolCatalogEntry.Aliases
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Aliases
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_AssetClass
+  name: AssetClass
+  nameWithType: SymbolCatalogEntry.AssetClass
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.AssetClass
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_Exchange
+  name: Exchange
+  nameWithType: SymbolCatalogEntry.Exchange
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Exchange
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_DateRange
+  name: DateRange
+  nameWithType: SymbolCatalogEntry.DateRange
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.DateRange
+- uid: Meridian.Contracts.Catalog.CatalogDateRange
+  commentId: T:Meridian.Contracts.Catalog.CatalogDateRange
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CatalogDateRange.html
+  name: CatalogDateRange
+  nameWithType: CatalogDateRange
+  fullName: Meridian.Contracts.Catalog.CatalogDateRange
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_FileCount
+  name: FileCount
+  nameWithType: SymbolCatalogEntry.FileCount
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.FileCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_EventCount
+  name: EventCount
+  nameWithType: SymbolCatalogEntry.EventCount
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_TotalBytes
+  name: TotalBytes
+  nameWithType: SymbolCatalogEntry.TotalBytes
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.TotalBytes
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_EventTypes
+  name: EventTypes
+  nameWithType: SymbolCatalogEntry.EventTypes
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.EventTypes
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_Sources
+  name: Sources
+  nameWithType: SymbolCatalogEntry.Sources
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.Sources
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_LastUpdated
+  name: LastUpdated
+  nameWithType: SymbolCatalogEntry.LastUpdated
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.LastUpdated
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange
+  href: Meridian.Contracts.Catalog.SymbolCatalogEntry.html#Meridian_Contracts_Catalog_SymbolCatalogEntry_SequenceRange
+  name: SequenceRange
+  nameWithType: SymbolCatalogEntry.SequenceRange
+  fullName: Meridian.Contracts.Catalog.SymbolCatalogEntry.SequenceRange
+- uid: Meridian.Contracts.Catalog.SequenceRange
+  commentId: T:Meridian.Contracts.Catalog.SequenceRange
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.SequenceRange.html
+  name: SequenceRange
+  nameWithType: SequenceRange
+  fullName: Meridian.Contracts.Catalog.SequenceRange

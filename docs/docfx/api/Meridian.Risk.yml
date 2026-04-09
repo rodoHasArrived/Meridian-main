@@ -1,0 +1,53 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Risk
+  commentId: N:Meridian.Risk
+  id: Meridian.Risk
+  children:
+  - Meridian.Risk.CompositeRiskValidator
+  - Meridian.Risk.IRiskRule
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Risk
+  nameWithType: Meridian.Risk
+  fullName: Meridian.Risk
+  type: Namespace
+  assemblies:
+  - Meridian.Risk
+references:
+- uid: Meridian.Risk.CompositeRiskValidator
+  commentId: T:Meridian.Risk.CompositeRiskValidator
+  href: Meridian.Risk.CompositeRiskValidator.html
+  name: CompositeRiskValidator
+  nameWithType: CompositeRiskValidator
+  fullName: Meridian.Risk.CompositeRiskValidator
+- uid: Meridian.Risk.IRiskRule
+  commentId: T:Meridian.Risk.IRiskRule
+  parent: Meridian.Risk
+  href: Meridian.Risk.IRiskRule.html
+  name: IRiskRule
+  nameWithType: IRiskRule
+  fullName: Meridian.Risk.IRiskRule
+- uid: Meridian.Risk
+  commentId: N:Meridian.Risk
+  href: Meridian.html
+  name: Meridian.Risk
+  nameWithType: Meridian.Risk
+  fullName: Meridian.Risk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Risk
+    name: Risk
+    href: Meridian.Risk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Risk
+    name: Risk
+    href: Meridian.Risk.html

@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.CompressionPriority
+  commentId: T:Meridian.Storage.Archival.CompressionPriority
+  id: CompressionPriority
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.CompressionPriority.Balanced
+  - Meridian.Storage.Archival.CompressionPriority.Size
+  - Meridian.Storage.Archival.CompressionPriority.Speed
+  langs:
+  - csharp
+  - vb
+  name: CompressionPriority
+  nameWithType: CompressionPriority
+  fullName: Meridian.Storage.Archival.CompressionPriority
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionPriority
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Compression priority preference.
+  example: []
+  syntax:
+    content: 'public enum CompressionPriority : byte'
+    content.vb: Public Enum CompressionPriority As Byte
+- uid: Meridian.Storage.Archival.CompressionPriority.Speed
+  commentId: F:Meridian.Storage.Archival.CompressionPriority.Speed
+  id: Speed
+  parent: Meridian.Storage.Archival.CompressionPriority
+  langs:
+  - csharp
+  - vb
+  name: Speed
+  nameWithType: CompressionPriority.Speed
+  fullName: Meridian.Storage.Archival.CompressionPriority.Speed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Speed
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Prioritize compression speed.
+  example: []
+  syntax:
+    content: Speed = 0
+    return:
+      type: Meridian.Storage.Archival.CompressionPriority
+- uid: Meridian.Storage.Archival.CompressionPriority.Balanced
+  commentId: F:Meridian.Storage.Archival.CompressionPriority.Balanced
+  id: Balanced
+  parent: Meridian.Storage.Archival.CompressionPriority
+  langs:
+  - csharp
+  - vb
+  name: Balanced
+  nameWithType: CompressionPriority.Balanced
+  fullName: Meridian.Storage.Archival.CompressionPriority.Balanced
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balanced
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Balance between speed and size.
+  example: []
+  syntax:
+    content: Balanced = 1
+    return:
+      type: Meridian.Storage.Archival.CompressionPriority
+- uid: Meridian.Storage.Archival.CompressionPriority.Size
+  commentId: F:Meridian.Storage.Archival.CompressionPriority.Size
+  id: Size
+  parent: Meridian.Storage.Archival.CompressionPriority
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: CompressionPriority.Size
+  fullName: Meridian.Storage.Archival.CompressionPriority.Size
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Prioritize smallest file size.
+  example: []
+  syntax:
+    content: Size = 2
+    return:
+      type: Meridian.Storage.Archival.CompressionPriority
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Storage.Archival.CompressionPriority
+  commentId: T:Meridian.Storage.Archival.CompressionPriority
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.CompressionPriority.html
+  name: CompressionPriority
+  nameWithType: CompressionPriority
+  fullName: Meridian.Storage.Archival.CompressionPriority

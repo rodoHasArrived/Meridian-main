@@ -24,15 +24,16 @@
   <!-- Windows: Full WPF application -->
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <!-- Align the desktop TFM with LiveCharts/SkiaSharp's Windows-specific assets to avoid NU1701 fallback to .NET Framework assemblies. -->
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <RootNamespace>Meridian.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
     <!-- Required for System.Windows.Forms.NotifyIcon (balloon-tip notifications) -->
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <!-- ApplicationIcon temporarily commented out until Assets/app.ico is created -->
-    <!-- <ApplicationIcon>Assets\app.ico</ApplicationIcon> -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
 
     <!-- Assembly Information -->
     <AssemblyName>Meridian.Desktop</AssemblyName>

@@ -1,0 +1,1457 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundAccountSummary
+  commentId: T:Meridian.Contracts.Workstation.FundAccountSummary
+  id: FundAccountSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundAccountSummary.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.Decimal,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.FundAccountSummary.AccountCode
+  - Meridian.Contracts.Workstation.FundAccountSummary.AccountId
+  - Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked
+  - Meridian.Contracts.Workstation.FundAccountSummary.AccountType
+  - Meridian.Contracts.Workstation.FundAccountSummary.BankName
+  - Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency
+  - Meridian.Contracts.Workstation.FundAccountSummary.CashBalance
+  - Meridian.Contracts.Workstation.FundAccountSummary.DisplayName
+  - Meridian.Contracts.Workstation.FundAccountSummary.EntityId
+  - Meridian.Contracts.Workstation.FundAccountSummary.Institution
+  - Meridian.Contracts.Workstation.FundAccountSummary.IsActive
+  - Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate
+  - Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference
+  - Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue
+  - Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks
+  - Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId
+  - Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns
+  - Meridian.Contracts.Workstation.FundAccountSummary.RunId
+  - Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue
+  - Meridian.Contracts.Workstation.FundAccountSummary.SleeveId
+  - Meridian.Contracts.Workstation.FundAccountSummary.StrategyId
+  - Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel
+  - Meridian.Contracts.Workstation.FundAccountSummary.VehicleId
+  - Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel
+  langs:
+  - csharp
+  - vb
+  name: FundAccountSummary
+  nameWithType: FundAccountSummary
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundAccountSummary
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Account-first row used by governance banking and account tabs.
+  example: []
+  syntax:
+    content: 'public sealed record FundAccountSummary : IEquatable<FundAccountSummary>'
+    content.vb: Public NotInheritable Class FundAccountSummary Implements IEquatable(Of FundAccountSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundAccountSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.Decimal,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.FundAccountSummary.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.Decimal,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String)
+  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.Decimal,System.Decimal,System.Decimal,System.Nullable{System.DateOnly},System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: FundAccountSummary(Guid, AccountTypeDto, string, string, string, string?, bool, decimal, decimal, decimal, DateOnly?, int, int, string?, string?, string?, string?, Guid?, Guid?, Guid?, string?, string?, string, string)
+  nameWithType: FundAccountSummary.FundAccountSummary(Guid, AccountTypeDto, string, string, string, string?, bool, decimal, decimal, decimal, DateOnly?, int, int, string?, string?, string?, string?, Guid?, Guid?, Guid?, string?, string?, string, string)
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.FundAccountSummary(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, string, string, string, string?, bool, decimal, decimal, decimal, System.DateOnly?, int, int, string?, string?, string?, string?, System.Guid?, System.Guid?, System.Guid?, string?, string?, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Account-first row used by governance banking and account tabs.
+  example: []
+  syntax:
+    content: public FundAccountSummary(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, string? Institution, bool IsActive, decimal CashBalance, decimal SecuritiesMarketValue, decimal NetAssetValue, DateOnly? LastSnapshotDate, int ReconciliationRuns, int OpenBreaks, string? PortfolioId, string? LedgerReference, string? BankName, string? AccountNumberMasked, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? StrategyId = null, string? RunId = null, string StructureLabel = "Unassigned", string WorkflowLabel = "Manual")
+    parameters:
+    - id: AccountId
+      type: System.Guid
+    - id: AccountType
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+    - id: AccountCode
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: Institution
+      type: System.String
+    - id: IsActive
+      type: System.Boolean
+    - id: CashBalance
+      type: System.Decimal
+    - id: SecuritiesMarketValue
+      type: System.Decimal
+    - id: NetAssetValue
+      type: System.Decimal
+    - id: LastSnapshotDate
+      type: System.Nullable{System.DateOnly}
+    - id: ReconciliationRuns
+      type: System.Int32
+    - id: OpenBreaks
+      type: System.Int32
+    - id: PortfolioId
+      type: System.String
+    - id: LedgerReference
+      type: System.String
+    - id: BankName
+      type: System.String
+    - id: AccountNumberMasked
+      type: System.String
+    - id: EntityId
+      type: System.Nullable{System.Guid}
+    - id: SleeveId
+      type: System.Nullable{System.Guid}
+    - id: VehicleId
+      type: System.Nullable{System.Guid}
+    - id: StrategyId
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: StructureLabel
+      type: System.String
+    - id: WorkflowLabel
+      type: System.String
+    content.vb: Public Sub New(AccountId As Guid, AccountType As AccountTypeDto, AccountCode As String, DisplayName As String, BaseCurrency As String, Institution As String, IsActive As Boolean, CashBalance As Decimal, SecuritiesMarketValue As Decimal, NetAssetValue As Decimal, LastSnapshotDate As DateOnly?, ReconciliationRuns As Integer, OpenBreaks As Integer, PortfolioId As String, LedgerReference As String, BankName As String, AccountNumberMasked As String, EntityId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, StrategyId As String = Nothing, RunId As String = Nothing, StructureLabel As String = "Unassigned", WorkflowLabel As String = "Manual")
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.#ctor*
+  nameWithType.vb: FundAccountSummary.New(Guid, AccountTypeDto, String, String, String, String, Boolean, Decimal, Decimal, Decimal, DateOnly?, Integer, Integer, String, String, String, String, Guid?, Guid?, Guid?, String, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.FundAccountSummary.New(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, String, String, String, String, Boolean, Decimal, Decimal, Decimal, System.DateOnly?, Integer, Integer, String, String, String, String, System.Guid?, System.Guid?, System.Guid?, String, String, String, String)
+  name.vb: New(Guid, AccountTypeDto, String, String, String, String, Boolean, Decimal, Decimal, Decimal, DateOnly?, Integer, Integer, String, String, String, String, Guid?, Guid?, Guid?, String, String, String, String)
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: FundAccountSummary.AccountId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AccountId As Guid
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.AccountId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountType
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.AccountType
+  id: AccountType
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: AccountType
+  nameWithType: FundAccountSummary.AccountType
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountType
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public AccountTypeDto AccountType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.AccountTypeDto
+    content.vb: Public Property AccountType As AccountTypeDto
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.AccountType*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountCode
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.AccountCode
+  id: AccountCode
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: AccountCode
+  nameWithType: FundAccountSummary.AccountCode
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountCode
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountCode As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.AccountCode*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.DisplayName
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: FundAccountSummary.DisplayName
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.DisplayName*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: FundAccountSummary.BaseCurrency
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.Institution
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.Institution
+  id: Institution
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: Institution
+  nameWithType: FundAccountSummary.Institution
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.Institution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Institution
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? Institution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Institution As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.Institution*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.IsActive
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.IsActive
+  id: IsActive
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: IsActive
+  nameWithType: FundAccountSummary.IsActive
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.IsActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsActive
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public bool IsActive { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsActive As Boolean
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.IsActive*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.CashBalance
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.CashBalance
+  id: CashBalance
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: CashBalance
+  nameWithType: FundAccountSummary.CashBalance
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.CashBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashBalance
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal CashBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CashBalance As Decimal
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.CashBalance*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue
+  id: SecuritiesMarketValue
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: SecuritiesMarketValue
+  nameWithType: FundAccountSummary.SecuritiesMarketValue
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecuritiesMarketValue
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal SecuritiesMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property SecuritiesMarketValue As Decimal
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue
+  id: NetAssetValue
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: NetAssetValue
+  nameWithType: FundAccountSummary.NetAssetValue
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetAssetValue
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetAssetValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetAssetValue As Decimal
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate
+  id: LastSnapshotDate
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: LastSnapshotDate
+  nameWithType: FundAccountSummary.LastSnapshotDate
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSnapshotDate
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateOnly? LastSnapshotDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastSnapshotDate As DateOnly?
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns
+  id: ReconciliationRuns
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRuns
+  nameWithType: FundAccountSummary.ReconciliationRuns
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationRuns
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int ReconciliationRuns { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ReconciliationRuns As Integer
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks
+  id: OpenBreaks
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: OpenBreaks
+  nameWithType: FundAccountSummary.OpenBreaks
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenBreaks
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int OpenBreaks { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property OpenBreaks As Integer
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: FundAccountSummary.PortfolioId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference
+  id: LedgerReference
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: LedgerReference
+  nameWithType: FundAccountSummary.LedgerReference
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReference
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? LedgerReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerReference As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.BankName
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.BankName
+  id: BankName
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: BankName
+  nameWithType: FundAccountSummary.BankName
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.BankName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? BankName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BankName As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.BankName*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked
+  id: AccountNumberMasked
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: AccountNumberMasked
+  nameWithType: FundAccountSummary.AccountNumberMasked
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountNumberMasked
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AccountNumberMasked { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountNumberMasked As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.EntityId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: FundAccountSummary.EntityId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid? EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property EntityId As Guid?
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.EntityId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.SleeveId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.SleeveId
+  id: SleeveId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: FundAccountSummary.SleeveId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid? SleeveId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SleeveId As Guid?
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.SleeveId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.VehicleId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.VehicleId
+  id: VehicleId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: FundAccountSummary.VehicleId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid? VehicleId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property VehicleId As Guid?
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.VehicleId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.StrategyId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.StrategyId
+  id: StrategyId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: FundAccountSummary.StrategyId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.StrategyId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.RunId
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: FundAccountSummary.RunId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.RunId*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel
+  id: StructureLabel
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: StructureLabel
+  nameWithType: FundAccountSummary.StructureLabel
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StructureLabel
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string StructureLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StructureLabel As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel*
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel
+  commentId: P:Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel
+  id: WorkflowLabel
+  parent: Meridian.Contracts.Workstation.FundAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: WorkflowLabel
+  nameWithType: FundAccountSummary.WorkflowLabel
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkflowLabel
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string WorkflowLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WorkflowLabel As String
+  overload: Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundAccountSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundAccountSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundAccountSummary>
+  nameWithType: IEquatable<FundAccountSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundAccountSummary>
+  nameWithType.vb: IEquatable(Of FundAccountSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundAccountSummary)
+  name.vb: IEquatable(Of FundAccountSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundAccountSummary
+    name: FundAccountSummary
+    href: Meridian.Contracts.Workstation.FundAccountSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundAccountSummary
+    name: FundAccountSummary
+    href: Meridian.Contracts.Workstation.FundAccountSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.#ctor
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary__ctor_System_Guid_Meridian_Contracts_FundStructure_AccountTypeDto_System_String_System_String_System_String_System_String_System_Boolean_System_Decimal_System_Decimal_System_Decimal_System_Nullable_System_DateOnly__System_Int32_System_Int32_System_String_System_String_System_String_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_System_String_System_String_System_String_
+  name: FundAccountSummary
+  nameWithType: FundAccountSummary.FundAccountSummary
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.FundAccountSummary
+  nameWithType.vb: FundAccountSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.FundAccountSummary.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.FundStructure.AccountTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountTypeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountTypeDto.html
+  name: AccountTypeDto
+  nameWithType: AccountTypeDto
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.AccountId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_AccountId
+  name: AccountId
+  nameWithType: FundAccountSummary.AccountId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountType*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.AccountType
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_AccountType
+  name: AccountType
+  nameWithType: FundAccountSummary.AccountType
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountType
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountCode*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.AccountCode
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_AccountCode
+  name: AccountCode
+  nameWithType: FundAccountSummary.AccountCode
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountCode
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.DisplayName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.DisplayName
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_DisplayName
+  name: DisplayName
+  nameWithType: FundAccountSummary.DisplayName
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.DisplayName
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_BaseCurrency
+  name: BaseCurrency
+  nameWithType: FundAccountSummary.BaseCurrency
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.BaseCurrency
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.Institution*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.Institution
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_Institution
+  name: Institution
+  nameWithType: FundAccountSummary.Institution
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.Institution
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.IsActive*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.IsActive
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_IsActive
+  name: IsActive
+  nameWithType: FundAccountSummary.IsActive
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.IsActive
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.CashBalance*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.CashBalance
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_CashBalance
+  name: CashBalance
+  nameWithType: FundAccountSummary.CashBalance
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.CashBalance
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_SecuritiesMarketValue
+  name: SecuritiesMarketValue
+  nameWithType: FundAccountSummary.SecuritiesMarketValue
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.SecuritiesMarketValue
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_NetAssetValue
+  name: NetAssetValue
+  nameWithType: FundAccountSummary.NetAssetValue
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.NetAssetValue
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_LastSnapshotDate
+  name: LastSnapshotDate
+  nameWithType: FundAccountSummary.LastSnapshotDate
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.LastSnapshotDate
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_ReconciliationRuns
+  name: ReconciliationRuns
+  nameWithType: FundAccountSummary.ReconciliationRuns
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.ReconciliationRuns
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_OpenBreaks
+  name: OpenBreaks
+  nameWithType: FundAccountSummary.OpenBreaks
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.OpenBreaks
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_PortfolioId
+  name: PortfolioId
+  nameWithType: FundAccountSummary.PortfolioId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.PortfolioId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_LedgerReference
+  name: LedgerReference
+  nameWithType: FundAccountSummary.LedgerReference
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.LedgerReference
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.BankName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.BankName
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_BankName
+  name: BankName
+  nameWithType: FundAccountSummary.BankName
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.BankName
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_AccountNumberMasked
+  name: AccountNumberMasked
+  nameWithType: FundAccountSummary.AccountNumberMasked
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.AccountNumberMasked
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.EntityId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.EntityId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_EntityId
+  name: EntityId
+  nameWithType: FundAccountSummary.EntityId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.EntityId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.SleeveId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.SleeveId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_SleeveId
+  name: SleeveId
+  nameWithType: FundAccountSummary.SleeveId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.SleeveId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.VehicleId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.VehicleId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_VehicleId
+  name: VehicleId
+  nameWithType: FundAccountSummary.VehicleId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.VehicleId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.StrategyId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.StrategyId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_StrategyId
+  name: StrategyId
+  nameWithType: FundAccountSummary.StrategyId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.StrategyId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.RunId
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_RunId
+  name: RunId
+  nameWithType: FundAccountSummary.RunId
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.RunId
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_StructureLabel
+  name: StructureLabel
+  nameWithType: FundAccountSummary.StructureLabel
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.StructureLabel
+- uid: Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel
+  href: Meridian.Contracts.Workstation.FundAccountSummary.html#Meridian_Contracts_Workstation_FundAccountSummary_WorkflowLabel
+  name: WorkflowLabel
+  nameWithType: FundAccountSummary.WorkflowLabel
+  fullName: Meridian.Contracts.Workstation.FundAccountSummary.WorkflowLabel

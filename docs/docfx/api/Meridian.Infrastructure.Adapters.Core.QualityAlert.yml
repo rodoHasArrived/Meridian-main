@@ -1,0 +1,759 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityAlert
+  id: QualityAlert
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.#ctor(System.String,System.Double,Meridian.Infrastructure.Adapters.Core.QualitySeverity,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue})
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.Message
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.Score
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol
+  - Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues
+  langs:
+  - csharp
+  - vb
+  name: QualityAlert
+  nameWithType: QualityAlert
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityAlert
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Quality alert for a symbol below threshold.
+  example: []
+  syntax:
+    content: 'public sealed record QualityAlert : IEquatable<QualityAlert>'
+    content.vb: Public NotInheritable Class QualityAlert Implements IEquatable(Of QualityAlert)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.QualityAlert}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.#ctor(System.String,System.Double,Meridian.Infrastructure.Adapters.Core.QualitySeverity,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityAlert.#ctor(System.String,System.Double,Meridian.Infrastructure.Adapters.Core.QualitySeverity,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue})
+  id: '#ctor(System.String,System.Double,Meridian.Infrastructure.Adapters.Core.QualitySeverity,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue})'
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: QualityAlert(string, double, QualitySeverity, string, DateTimeOffset, IReadOnlyList<QualityIssue>)
+  nameWithType: QualityAlert.QualityAlert(string, double, QualitySeverity, string, DateTimeOffset, IReadOnlyList<QualityIssue>)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.QualityAlert(string, double, Meridian.Infrastructure.Adapters.Core.QualitySeverity, string, System.DateTimeOffset, System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.QualityIssue>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Quality alert for a symbol below threshold.
+  example: []
+  syntax:
+    content: public QualityAlert(string Symbol, double Score, QualitySeverity Severity, string Message, DateTimeOffset DetectedAt, IReadOnlyList<QualityIssue> TopIssues)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Score
+      type: System.Double
+    - id: Severity
+      type: Meridian.Infrastructure.Adapters.Core.QualitySeverity
+    - id: Message
+      type: System.String
+    - id: DetectedAt
+      type: System.DateTimeOffset
+    - id: TopIssues
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue}
+    content.vb: Public Sub New(Symbol As String, Score As Double, Severity As QualitySeverity, Message As String, DetectedAt As DateTimeOffset, TopIssues As IReadOnlyList(Of QualityIssue))
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.#ctor*
+  nameWithType.vb: QualityAlert.New(String, Double, QualitySeverity, String, DateTimeOffset, IReadOnlyList(Of QualityIssue))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityAlert.New(String, Double, Meridian.Infrastructure.Adapters.Core.QualitySeverity, String, System.DateTimeOffset, System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.QualityIssue))
+  name.vb: New(String, Double, QualitySeverity, String, DateTimeOffset, IReadOnlyList(Of QualityIssue))
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: QualityAlert.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Score
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityAlert.Score
+  id: Score
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: QualityAlert.Score
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double Score { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Score As Double
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.Score*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity
+  id: Severity
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: QualityAlert.Severity
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public QualitySeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualitySeverity
+    content.vb: Public Property Severity As QualitySeverity
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Message
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityAlert.Message
+  id: Message
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: QualityAlert.Message
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.Message*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt
+  id: DetectedAt
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: DetectedAt
+  nameWithType: QualityAlert.DetectedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateTimeOffset DetectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property DetectedAt As DateTimeOffset
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues
+  id: TopIssues
+  parent: Meridian.Infrastructure.Adapters.Core.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: TopIssues
+  nameWithType: QualityAlert.TopIssues
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TopIssues
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public IReadOnlyList<QualityIssue> TopIssues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue}
+    content.vb: Public Property TopIssues As IReadOnlyList(Of QualityIssue)
+  overload: Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.QualityAlert}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.QualityAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityAlert>
+  nameWithType: IEquatable<QualityAlert>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.QualityAlert>
+  nameWithType.vb: IEquatable(Of QualityAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.QualityAlert)
+  name.vb: IEquatable(Of QualityAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityAlert
+    name: QualityAlert
+    href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityAlert
+    name: QualityAlert
+    href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert__ctor_System_String_System_Double_Meridian_Infrastructure_Adapters_Core_QualitySeverity_System_String_System_DateTimeOffset_System_Collections_Generic_IReadOnlyList_Meridian_Infrastructure_Adapters_Core_QualityIssue__
+  name: QualityAlert
+  nameWithType: QualityAlert.QualityAlert
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.QualityAlert
+  nameWithType.vb: QualityAlert.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Infrastructure.Adapters.Core.QualitySeverity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualitySeverity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.QualitySeverity.html
+  name: QualitySeverity
+  nameWithType: QualitySeverity
+  fullName: Meridian.Infrastructure.Adapters.Core.QualitySeverity
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.QualityIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<QualityIssue>
+  nameWithType: IReadOnlyList<QualityIssue>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.QualityIssue>
+  nameWithType.vb: IReadOnlyList(Of QualityIssue)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.QualityIssue)
+  name.vb: IReadOnlyList(Of QualityIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityIssue
+    name: QualityIssue
+    href: Meridian.Infrastructure.Adapters.Core.QualityIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityIssue
+    name: QualityIssue
+    href: Meridian.Infrastructure.Adapters.Core.QualityIssue.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert_Symbol
+  name: Symbol
+  nameWithType: QualityAlert.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Symbol
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Score*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.Score
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert_Score
+  name: Score
+  nameWithType: QualityAlert.Score
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Score
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert_Severity
+  name: Severity
+  nameWithType: QualityAlert.Severity
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Severity
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.Message*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.Message
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert_Message
+  name: Message
+  nameWithType: QualityAlert.Message
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.Message
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert_DetectedAt
+  name: DetectedAt
+  nameWithType: QualityAlert.DetectedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.DetectedAt
+- uid: Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues
+  href: Meridian.Infrastructure.Adapters.Core.QualityAlert.html#Meridian_Infrastructure_Adapters_Core_QualityAlert_TopIssues
+  name: TopIssues
+  nameWithType: QualityAlert.TopIssues
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityAlert.TopIssues

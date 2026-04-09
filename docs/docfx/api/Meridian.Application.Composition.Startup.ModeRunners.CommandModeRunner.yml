@@ -1,0 +1,597 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  id: CommandModeRunner
+  parent: Meridian.Application.Composition.Startup.ModeRunners
+  children:
+  - Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.#ctor(Serilog.ILogger)
+  - Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: CommandModeRunner
+  nameWithType: CommandModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommandModeRunner
+    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.ModeRunners
+  summary: >-
+    Handles one-shot CLI command dispatch (help, validate-config, symbols, dry-run, etc.).
+
+    Attempts to dispatch the raw args through the command dispatcher.
+
+    Returns the exit code when a command was handled, or <code>null</code> to signal pass-through
+
+    to the next startup phase.
+  example: []
+  syntax:
+    content: public sealed class CommandModeRunner
+    content.vb: Public NotInheritable Class CommandModeRunner
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.#ctor(Serilog.ILogger)
+  commentId: M:Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.#ctor(Serilog.ILogger)
+  id: '#ctor(Serilog.ILogger)'
+  parent: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  langs:
+  - csharp
+  - vb
+  name: CommandModeRunner(ILogger)
+  nameWithType: CommandModeRunner.CommandModeRunner(ILogger)
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.CommandModeRunner(Serilog.ILogger)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.ModeRunners
+  syntax:
+    content: public CommandModeRunner(ILogger log)
+    parameters:
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(log As ILogger)
+  overload: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.#ctor*
+  nameWithType.vb: CommandModeRunner.New(ILogger)
+  fullName.vb: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.New(Serilog.ILogger)
+  name.vb: New(ILogger)
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext,System.Threading.CancellationToken)
+  id: TryRunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext,System.Threading.CancellationToken)
+  parent: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
+  langs:
+  - csharp
+  - vb
+  name: TryRunAsync(StartupContext, CancellationToken)
+  nameWithType: CommandModeRunner.TryRunAsync(StartupContext, CancellationToken)
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryRunAsync
+    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.ModeRunners
+  summary: Tries to dispatch a CLI command from the startup context.
+  example: []
+  syntax:
+    content: public Task<int?> TryRunAsync(StartupContext ctx, CancellationToken ct = default)
+    parameters:
+    - id: ctx
+      type: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Nullable{System.Int32}}
+      description: >-
+        The command's exit code when a command was matched and handled;
+
+        <code>null</code> when no command matched and startup should continue to a runtime mode.
+    content.vb: Public Function TryRunAsync(ctx As StartupContext, ct As CancellationToken = Nothing) As Task(Of Integer?)
+  overload: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync*
+references:
+- uid: Meridian.Application.Composition.Startup.ModeRunners
+  commentId: N:Meridian.Application.Composition.Startup.ModeRunners
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup.ModeRunners
+  nameWithType: Meridian.Application.Composition.Startup.ModeRunners
+  fullName: Meridian.Application.Composition.Startup.ModeRunners
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.ModeRunners
+    name: ModeRunners
+    href: Meridian.Application.Composition.Startup.ModeRunners.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.ModeRunners
+    name: ModeRunners
+    href: Meridian.Application.Composition.Startup.ModeRunners.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.#ctor*
+  commentId: Overload:Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.#ctor
+  href: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.html#Meridian_Application_Composition_Startup_ModeRunners_CommandModeRunner__ctor_Serilog_ILogger_
+  name: CommandModeRunner
+  nameWithType: CommandModeRunner.CommandModeRunner
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.CommandModeRunner
+  nameWithType.vb: CommandModeRunner.New
+  fullName.vb: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync*
+  commentId: Overload:Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync
+  href: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.html#Meridian_Application_Composition_Startup_ModeRunners_CommandModeRunner_TryRunAsync_Meridian_Application_Composition_Startup_StartupModels_StartupContext_System_Threading_CancellationToken_
+  name: TryRunAsync
+  nameWithType: CommandModeRunner.TryRunAsync
+  fullName: Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner.TryRunAsync
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  parent: Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html
+  name: StartupContext
+  nameWithType: StartupContext
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Nullable{System.Int32}}
+  commentId: T:System.Threading.Tasks.Task{System.Nullable{System.Int32}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int?>
+  nameWithType: Task<int?>
+  fullName: System.Threading.Tasks.Task<int?>
+  nameWithType.vb: Task(Of Integer?)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer?)
+  name.vb: Task(Of Integer?)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: )
+- uid: Meridian.Application.Composition.Startup.StartupModels
+  commentId: N:Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup.StartupModels
+  nameWithType: Meridian.Application.Composition.Startup.StartupModels
+  fullName: Meridian.Application.Composition.Startup.StartupModels
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

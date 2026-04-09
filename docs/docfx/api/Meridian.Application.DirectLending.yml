@@ -1,0 +1,120 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.DirectLending
+  commentId: N:Meridian.Application.DirectLending
+  id: Meridian.Application.DirectLending
+  children:
+  - Meridian.Application.DirectLending.DailyAccrualWorker
+  - Meridian.Application.DirectLending.DirectLendingEventRebuilder
+  - Meridian.Application.DirectLending.DirectLendingOutboxDispatcher
+  - Meridian.Application.DirectLending.IDirectLendingCommandService
+  - Meridian.Application.DirectLending.IDirectLendingQueryService
+  - Meridian.Application.DirectLending.IDirectLendingService
+  - Meridian.Application.DirectLending.InMemoryDirectLendingService
+  - Meridian.Application.DirectLending.PostgresDirectLendingCommandService
+  - Meridian.Application.DirectLending.PostgresDirectLendingQueryService
+  - Meridian.Application.DirectLending.PostgresDirectLendingService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.DirectLending
+  nameWithType: Meridian.Application.DirectLending
+  fullName: Meridian.Application.DirectLending
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.DirectLending.DailyAccrualWorker
+  commentId: T:Meridian.Application.DirectLending.DailyAccrualWorker
+  href: Meridian.Application.DirectLending.DailyAccrualWorker.html
+  name: DailyAccrualWorker
+  nameWithType: DailyAccrualWorker
+  fullName: Meridian.Application.DirectLending.DailyAccrualWorker
+- uid: Meridian.Application.DirectLending.DirectLendingEventRebuilder
+  commentId: T:Meridian.Application.DirectLending.DirectLendingEventRebuilder
+  parent: Meridian.Application.DirectLending
+  href: Meridian.Application.DirectLending.DirectLendingEventRebuilder.html
+  name: DirectLendingEventRebuilder
+  nameWithType: DirectLendingEventRebuilder
+  fullName: Meridian.Application.DirectLending.DirectLendingEventRebuilder
+- uid: Meridian.Application.DirectLending.DirectLendingOutboxDispatcher
+  commentId: T:Meridian.Application.DirectLending.DirectLendingOutboxDispatcher
+  href: Meridian.Application.DirectLending.DirectLendingOutboxDispatcher.html
+  name: DirectLendingOutboxDispatcher
+  nameWithType: DirectLendingOutboxDispatcher
+  fullName: Meridian.Application.DirectLending.DirectLendingOutboxDispatcher
+- uid: Meridian.Application.DirectLending.IDirectLendingCommandService
+  commentId: T:Meridian.Application.DirectLending.IDirectLendingCommandService
+  parent: Meridian.Application.DirectLending
+  href: Meridian.Application.DirectLending.IDirectLendingCommandService.html
+  name: IDirectLendingCommandService
+  nameWithType: IDirectLendingCommandService
+  fullName: Meridian.Application.DirectLending.IDirectLendingCommandService
+- uid: Meridian.Application.DirectLending.IDirectLendingQueryService
+  commentId: T:Meridian.Application.DirectLending.IDirectLendingQueryService
+  parent: Meridian.Application.DirectLending
+  href: Meridian.Application.DirectLending.IDirectLendingQueryService.html
+  name: IDirectLendingQueryService
+  nameWithType: IDirectLendingQueryService
+  fullName: Meridian.Application.DirectLending.IDirectLendingQueryService
+- uid: Meridian.Application.DirectLending.IDirectLendingService
+  commentId: T:Meridian.Application.DirectLending.IDirectLendingService
+  parent: Meridian.Application.DirectLending
+  href: Meridian.Application.DirectLending.IDirectLendingService.html
+  name: IDirectLendingService
+  nameWithType: IDirectLendingService
+  fullName: Meridian.Application.DirectLending.IDirectLendingService
+- uid: Meridian.Application.DirectLending.InMemoryDirectLendingService
+  commentId: T:Meridian.Application.DirectLending.InMemoryDirectLendingService
+  href: Meridian.Application.DirectLending.InMemoryDirectLendingService.html
+  name: InMemoryDirectLendingService
+  nameWithType: InMemoryDirectLendingService
+  fullName: Meridian.Application.DirectLending.InMemoryDirectLendingService
+- uid: Meridian.Application.DirectLending.PostgresDirectLendingCommandService
+  commentId: T:Meridian.Application.DirectLending.PostgresDirectLendingCommandService
+  href: Meridian.Application.DirectLending.PostgresDirectLendingCommandService.html
+  name: PostgresDirectLendingCommandService
+  nameWithType: PostgresDirectLendingCommandService
+  fullName: Meridian.Application.DirectLending.PostgresDirectLendingCommandService
+- uid: Meridian.Application.DirectLending.PostgresDirectLendingQueryService
+  commentId: T:Meridian.Application.DirectLending.PostgresDirectLendingQueryService
+  href: Meridian.Application.DirectLending.PostgresDirectLendingQueryService.html
+  name: PostgresDirectLendingQueryService
+  nameWithType: PostgresDirectLendingQueryService
+  fullName: Meridian.Application.DirectLending.PostgresDirectLendingQueryService
+- uid: Meridian.Application.DirectLending.PostgresDirectLendingService
+  commentId: T:Meridian.Application.DirectLending.PostgresDirectLendingService
+  href: Meridian.Application.DirectLending.PostgresDirectLendingService.html
+  name: PostgresDirectLendingService
+  nameWithType: PostgresDirectLendingService
+  fullName: Meridian.Application.DirectLending.PostgresDirectLendingService
+- uid: Meridian.Application.DirectLending
+  commentId: N:Meridian.Application.DirectLending
+  href: Meridian.html
+  name: Meridian.Application.DirectLending
+  nameWithType: Meridian.Application.DirectLending
+  fullName: Meridian.Application.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.DirectLending
+    name: DirectLending
+    href: Meridian.Application.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.DirectLending
+    name: DirectLending
+    href: Meridian.Application.DirectLending.html

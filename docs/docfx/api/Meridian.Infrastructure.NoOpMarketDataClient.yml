@@ -1,0 +1,1349 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.NoOpMarketDataClient
+  commentId: T:Meridian.Infrastructure.NoOpMarketDataClient
+  id: NoOpMarketDataClient
+  parent: Meridian.Infrastructure
+  children:
+  - Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync
+  - Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled
+  - Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities
+  - Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription
+  - Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName
+  - Meridian.Infrastructure.NoOpMarketDataClient.ProviderId
+  - Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes
+  - Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority
+  - Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: NoOpMarketDataClient
+  nameWithType: NoOpMarketDataClient
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NoOpMarketDataClient
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: >-
+    Runtime no-op implementation used when no data provider is configured or available.
+
+    Keeps Program logic identical in all builds.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "No-op data provider for disabled/unconfigured scenarios")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      public sealed class NoOpMarketDataClient : IMarketDataClient, IProviderMetadata, IAsyncDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "No-op data provider for disabled/unconfigured scenarios")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      Public NotInheritable Class NoOpMarketDataClient Implements IMarketDataClient, IProviderMetadata, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: No-op data provider for disabled/unconfigured scenarios
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: NoOpMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  example: []
+  syntax:
+    content: public bool IsEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsEnabled As Boolean
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderId
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: NoOpMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: public string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ProviderId*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: NoOpMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderDisplayName As String
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: NoOpMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: public string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderDescription As String
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: NoOpMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: public int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property ProviderPriority As Integer
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: NoOpMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: public ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes
+  commentId: P:Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes
+  id: ProviderNotes
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderNotes
+  nameWithType: NoOpMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderNotes
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Informational notes about using this provider (displayed in UI).
+  example: []
+  syntax:
+    content: public string[] ProviderNotes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderNotes As String()
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: NoOpMarketDataClient.DisposeAsync()
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: NoOpMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  example: []
+  syntax:
+    content: public Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: NoOpMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: NoOpMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Subscribe to market depth for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public int SubscribeMarketDepth(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeMarketDepth(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: NoOpMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Unsubscribe a previously returned depth subscription id.
+  example: []
+  syntax:
+    content: public void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  nameWithType.vb: NoOpMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: NoOpMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Subscribe to tick-by-tick trade prints for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: NoOpMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/NoOpMarketDataClient.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure
+  summary: Unsubscribe a previously returned trade subscription id.
+  example: []
+  syntax:
+    content: public void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  nameWithType.vb: NoOpMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+references:
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_IsEnabled
+  name: IsEnabled
+  nameWithType: NoOpMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: IsEnabled
+  nameWithType: IMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ProviderId
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ProviderId
+  name: ProviderId
+  nameWithType: NoOpMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderId
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: NoOpMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ProviderDescription
+  name: ProviderDescription
+  nameWithType: NoOpMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ProviderPriority
+  name: ProviderPriority
+  nameWithType: NoOpMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: NoOpMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ProviderNotes
+  name: ProviderNotes
+  nameWithType: NoOpMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ProviderNotes
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderNotes
+  name: ProviderNotes
+  nameWithType: IProviderMetadata.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_DisposeAsync
+  name: DisposeAsync
+  nameWithType: NoOpMarketDataClient.DisposeAsync
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: NoOpMarketDataClient.ConnectAsync
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.ConnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: NoOpMarketDataClient.DisconnectAsync
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.DisconnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: NoOpMarketDataClient.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: NoOpMarketDataClient.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: NoOpMarketDataClient.SubscribeTrades
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.SubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html#Meridian_Infrastructure_NoOpMarketDataClient_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: NoOpMarketDataClient.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient.UnsubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeTrades(int)
+  nameWithType: IMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )

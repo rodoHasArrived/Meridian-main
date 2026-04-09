@@ -9,13 +9,13 @@
 
 ## Overview
 
-Security Master is the event-sourced golden record for all financial instruments (securities) in the Meridian platform. It provides a centralized, version-controlled, audit-trailed definition of securities across 14 asset classes, supporting trading execution, backtesting, and portfolio reconciliation.
+Security Master is the event-sourced golden record for all financial instruments (securities) in the Meridian platform. It provides a centralized, version-controlled, audit-trailed definition of securities across 19 asset classes, supporting trading execution, backtesting, and portfolio reconciliation.
 
 **Key capabilities:**
 
 - **Event-sourced storage** — Every change (creation, amendment, deactivation) is recorded with full audit trail
-- **Multi-identifier support** — Resolve securities by ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, and custom provider aliases
-- **Asset class polymorphism** — 14 distinct asset classes with class-specific economic terms (coupon, strike, multiplier, etc.)
+- **Multi-identifier support** — Resolve securities by ISIN, CUSIP, Ticker, FIGI, SEDOL, ProviderSymbol, or InternalCode
+- **Asset class polymorphism** — 19 distinct asset classes with class-specific economic terms (coupon, strike, multiplier, etc.)
 - **Version-based concurrency** — Optimistic locking prevents concurrent amendment conflicts
 - **Corporate actions** — Immutable record of dividends, splits, mergers, and other adjustments
 - **Trading parameters** — Lot size, tick size, and trading status for order routing and fill models
@@ -64,7 +64,7 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'security_
 
 ## Asset Class Coverage
 
-Security Master supports 14 asset classes:
+Security Master supports 19 asset classes:
 
 | Asset Class | Description | Key Terms |
 |-------------|-------------|-----------|
@@ -82,6 +82,10 @@ Security Master supports 14 asset classes:
 | **Swap** | Interest rate and other swaps | Legs (fixed/floating), maturity, currency |
 | **DirectLoan** | Direct lending / syndicated loans | Borrower, maturity, covenants |
 | **CashSweep** | Cash sweep programs | Program name, sweep vehicle, sweep frequency, target account type |
+| **Commodity** | Physical and financial commodity instruments | Commodity type, denomination, contract size |
+| **CryptoCurrency** | Cryptocurrency spot pairs | Base currency, quote currency, network |
+| **Cfd** | Contracts for difference | Underlying asset class, description, leverage |
+| **Warrant** | Equity and debt warrants | Underlying ID, warrant type, strike, expiry, multiplier |
 | **OtherSecurity** | Fallback for unmapped instruments | Category, sub-type, maturity, issuer |
 
 All asset classes also have **common terms:** Display name, Currency (ISO 4217 code), Country of risk, Issuer name, Exchange, Lot size, Tick size.

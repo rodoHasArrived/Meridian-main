@@ -1,0 +1,822 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  commentId: T:Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  id: ConnectionHealthSnapshot
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.#ctor(System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus},System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double)
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections
+  - Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections
+  langs:
+  - csharp
+  - vb
+  name: ConnectionHealthSnapshot
+  nameWithType: ConnectionHealthSnapshot
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionHealthSnapshot
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 635
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Snapshot of all connection health statuses.
+  example: []
+  syntax:
+    content: 'public readonly record struct ConnectionHealthSnapshot : IEquatable<ConnectionHealthSnapshot>'
+    content.vb: Public Structure ConnectionHealthSnapshot Implements IEquatable(Of ConnectionHealthSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.#ctor(System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus},System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double)
+  commentId: M:Meridian.Application.Monitoring.ConnectionHealthSnapshot.#ctor(System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus},System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double)
+  id: '#ctor(System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus},System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double)'
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ConnectionHealthSnapshot(DateTimeOffset, IReadOnlyList<ConnectionStatus>, int, int, int, double, double, double)
+  nameWithType: ConnectionHealthSnapshot.ConnectionHealthSnapshot(DateTimeOffset, IReadOnlyList<ConnectionStatus>, int, int, int, double, double, double)
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.ConnectionHealthSnapshot(System.DateTimeOffset, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ConnectionStatus>, int, int, int, double, double, double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 635
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Snapshot of all connection health statuses.
+  example: []
+  syntax:
+    content: public ConnectionHealthSnapshot(DateTimeOffset Timestamp, IReadOnlyList<ConnectionStatus> Connections, int TotalConnections, int HealthyConnections, int UnhealthyConnections, double GlobalAverageLatencyMs, double GlobalMinLatencyMs, double GlobalMaxLatencyMs)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Connections
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus}
+    - id: TotalConnections
+      type: System.Int32
+    - id: HealthyConnections
+      type: System.Int32
+    - id: UnhealthyConnections
+      type: System.Int32
+    - id: GlobalAverageLatencyMs
+      type: System.Double
+    - id: GlobalMinLatencyMs
+      type: System.Double
+    - id: GlobalMaxLatencyMs
+      type: System.Double
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Connections As IReadOnlyList(Of ConnectionStatus), TotalConnections As Integer, HealthyConnections As Integer, UnhealthyConnections As Integer, GlobalAverageLatencyMs As Double, GlobalMinLatencyMs As Double, GlobalMaxLatencyMs As Double)
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.#ctor*
+  nameWithType.vb: ConnectionHealthSnapshot.New(DateTimeOffset, IReadOnlyList(Of ConnectionStatus), Integer, Integer, Integer, Double, Double, Double)
+  fullName.vb: Meridian.Application.Monitoring.ConnectionHealthSnapshot.New(System.DateTimeOffset, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ConnectionStatus), Integer, Integer, Integer, Double, Double, Double)
+  name.vb: New(DateTimeOffset, IReadOnlyList(Of ConnectionStatus), Integer, Integer, Integer, Double, Double, Double)
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ConnectionHealthSnapshot.Timestamp
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 636
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections
+  id: Connections
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Connections
+  nameWithType: ConnectionHealthSnapshot.Connections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connections
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 637
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyList<ConnectionStatus> Connections { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus}
+    content.vb: Public Property Connections As IReadOnlyList(Of ConnectionStatus)
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections
+  id: TotalConnections
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalConnections
+  nameWithType: ConnectionHealthSnapshot.TotalConnections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalConnections
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 638
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int TotalConnections { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalConnections As Integer
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections
+  id: HealthyConnections
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: HealthyConnections
+  nameWithType: ConnectionHealthSnapshot.HealthyConnections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthyConnections
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 639
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int HealthyConnections { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HealthyConnections As Integer
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections
+  id: UnhealthyConnections
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnhealthyConnections
+  nameWithType: ConnectionHealthSnapshot.UnhealthyConnections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnhealthyConnections
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 640
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int UnhealthyConnections { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property UnhealthyConnections As Integer
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  id: GlobalAverageLatencyMs
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: GlobalAverageLatencyMs
+  nameWithType: ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalAverageLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 641
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double GlobalAverageLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalAverageLatencyMs As Double
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs
+  id: GlobalMinLatencyMs
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: GlobalMinLatencyMs
+  nameWithType: ConnectionHealthSnapshot.GlobalMinLatencyMs
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalMinLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 642
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double GlobalMinLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalMinLatencyMs As Double
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs*
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  commentId: P:Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  id: GlobalMaxLatencyMs
+  parent: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: GlobalMaxLatencyMs
+  nameWithType: ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalMaxLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    startLine: 643
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double GlobalMaxLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GlobalMaxLatencyMs As Double
+  overload: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ConnectionHealthSnapshot>
+  nameWithType: IEquatable<ConnectionHealthSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ConnectionHealthSnapshot>
+  nameWithType.vb: IEquatable(Of ConnectionHealthSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ConnectionHealthSnapshot)
+  name.vb: IEquatable(Of ConnectionHealthSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+    name: ConnectionHealthSnapshot
+    href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+    name: ConnectionHealthSnapshot
+    href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.#ctor
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot__ctor_System_DateTimeOffset_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_ConnectionStatus__System_Int32_System_Int32_System_Int32_System_Double_System_Double_System_Double_
+  name: ConnectionHealthSnapshot
+  nameWithType: ConnectionHealthSnapshot.ConnectionHealthSnapshot
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.ConnectionHealthSnapshot
+  nameWithType.vb: ConnectionHealthSnapshot.New
+  fullName.vb: Meridian.Application.Monitoring.ConnectionHealthSnapshot.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ConnectionStatus}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ConnectionStatus>
+  nameWithType: IReadOnlyList<ConnectionStatus>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ConnectionStatus>
+  nameWithType.vb: IReadOnlyList(Of ConnectionStatus)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ConnectionStatus)
+  name.vb: IReadOnlyList(Of ConnectionStatus)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ConnectionStatus
+    name: ConnectionStatus
+    href: Meridian.Application.Monitoring.ConnectionStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ConnectionStatus
+    name: ConnectionStatus
+    href: Meridian.Application.Monitoring.ConnectionStatus.html
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_Timestamp
+  name: Timestamp
+  nameWithType: ConnectionHealthSnapshot.Timestamp
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Timestamp
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_Connections
+  name: Connections
+  nameWithType: ConnectionHealthSnapshot.Connections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.Connections
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_TotalConnections
+  name: TotalConnections
+  nameWithType: ConnectionHealthSnapshot.TotalConnections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.TotalConnections
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_HealthyConnections
+  name: HealthyConnections
+  nameWithType: ConnectionHealthSnapshot.HealthyConnections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.HealthyConnections
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_UnhealthyConnections
+  name: UnhealthyConnections
+  nameWithType: ConnectionHealthSnapshot.UnhealthyConnections
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.UnhealthyConnections
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_GlobalAverageLatencyMs
+  name: GlobalAverageLatencyMs
+  nameWithType: ConnectionHealthSnapshot.GlobalAverageLatencyMs
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalAverageLatencyMs
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_GlobalMinLatencyMs
+  name: GlobalMinLatencyMs
+  nameWithType: ConnectionHealthSnapshot.GlobalMinLatencyMs
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMinLatencyMs
+- uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html#Meridian_Application_Monitoring_ConnectionHealthSnapshot_GlobalMaxLatencyMs
+  name: GlobalMaxLatencyMs
+  nameWithType: ConnectionHealthSnapshot.GlobalMaxLatencyMs
+  fullName: Meridian.Application.Monitoring.ConnectionHealthSnapshot.GlobalMaxLatencyMs

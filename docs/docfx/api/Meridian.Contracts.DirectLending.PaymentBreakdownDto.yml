@@ -1,0 +1,621 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  commentId: T:Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  id: PaymentBreakdownDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal
+  - Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated
+  langs:
+  - csharp
+  - vb
+  name: PaymentBreakdownDto
+  nameWithType: PaymentBreakdownDto
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaymentBreakdownDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record PaymentBreakdownDto : IEquatable<PaymentBreakdownDto>'
+    content.vb: Public NotInheritable Class PaymentBreakdownDto Implements IEquatable(Of PaymentBreakdownDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.PaymentBreakdownDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Contracts.DirectLending.PaymentBreakdownDto.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  id: '#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal)'
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: PaymentBreakdownDto(decimal, decimal, decimal, decimal, decimal)
+  nameWithType: PaymentBreakdownDto.PaymentBreakdownDto(decimal, decimal, decimal, decimal, decimal)
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.PaymentBreakdownDto(decimal, decimal, decimal, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public PaymentBreakdownDto(decimal ToInterest, decimal ToCommitmentFee, decimal ToFees, decimal ToPenalty, decimal ToPrincipal)
+    parameters:
+    - id: ToInterest
+      type: System.Decimal
+    - id: ToCommitmentFee
+      type: System.Decimal
+    - id: ToFees
+      type: System.Decimal
+    - id: ToPenalty
+      type: System.Decimal
+    - id: ToPrincipal
+      type: System.Decimal
+    content.vb: Public Sub New(ToInterest As Decimal, ToCommitmentFee As Decimal, ToFees As Decimal, ToPenalty As Decimal, ToPrincipal As Decimal)
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.#ctor*
+  nameWithType.vb: PaymentBreakdownDto.New(Decimal, Decimal, Decimal, Decimal, Decimal)
+  fullName.vb: Meridian.Contracts.DirectLending.PaymentBreakdownDto.New(Decimal, Decimal, Decimal, Decimal, Decimal)
+  name.vb: New(Decimal, Decimal, Decimal, Decimal, Decimal)
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest
+  commentId: P:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest
+  id: ToInterest
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: ToInterest
+  nameWithType: PaymentBreakdownDto.ToInterest
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToInterest
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal ToInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ToInterest As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest*
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee
+  commentId: P:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee
+  id: ToCommitmentFee
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: ToCommitmentFee
+  nameWithType: PaymentBreakdownDto.ToCommitmentFee
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToCommitmentFee
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal ToCommitmentFee { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ToCommitmentFee As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee*
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees
+  commentId: P:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees
+  id: ToFees
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: ToFees
+  nameWithType: PaymentBreakdownDto.ToFees
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToFees
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal ToFees { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ToFees As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees*
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty
+  commentId: P:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty
+  id: ToPenalty
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: ToPenalty
+  nameWithType: PaymentBreakdownDto.ToPenalty
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToPenalty
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal ToPenalty { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ToPenalty As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty*
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal
+  commentId: P:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal
+  id: ToPrincipal
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: ToPrincipal
+  nameWithType: PaymentBreakdownDto.ToPrincipal
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToPrincipal
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal ToPrincipal { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ToPrincipal As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal*
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated
+  commentId: P:Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated
+  id: TotalAllocated
+  parent: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+  langs:
+  - csharp
+  - vb
+  name: TotalAllocated
+  nameWithType: PaymentBreakdownDto.TotalAllocated
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAllocated
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal TotalAllocated { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property TotalAllocated As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.PaymentBreakdownDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.PaymentBreakdownDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PaymentBreakdownDto>
+  nameWithType: IEquatable<PaymentBreakdownDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.PaymentBreakdownDto>
+  nameWithType.vb: IEquatable(Of PaymentBreakdownDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.PaymentBreakdownDto)
+  name.vb: IEquatable(Of PaymentBreakdownDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+    name: PaymentBreakdownDto
+    href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto
+    name: PaymentBreakdownDto
+    href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.#ctor
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto__ctor_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_
+  name: PaymentBreakdownDto
+  nameWithType: PaymentBreakdownDto.PaymentBreakdownDto
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.PaymentBreakdownDto
+  nameWithType.vb: PaymentBreakdownDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.PaymentBreakdownDto.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto_ToInterest
+  name: ToInterest
+  nameWithType: PaymentBreakdownDto.ToInterest
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToInterest
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto_ToCommitmentFee
+  name: ToCommitmentFee
+  nameWithType: PaymentBreakdownDto.ToCommitmentFee
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToCommitmentFee
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto_ToFees
+  name: ToFees
+  nameWithType: PaymentBreakdownDto.ToFees
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToFees
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto_ToPenalty
+  name: ToPenalty
+  nameWithType: PaymentBreakdownDto.ToPenalty
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPenalty
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto_ToPrincipal
+  name: ToPrincipal
+  nameWithType: PaymentBreakdownDto.ToPrincipal
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.ToPrincipal
+- uid: Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated
+  href: Meridian.Contracts.DirectLending.PaymentBreakdownDto.html#Meridian_Contracts_DirectLending_PaymentBreakdownDto_TotalAllocated
+  name: TotalAllocated
+  nameWithType: PaymentBreakdownDto.TotalAllocated
+  fullName: Meridian.Contracts.DirectLending.PaymentBreakdownDto.TotalAllocated

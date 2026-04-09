@@ -1,0 +1,635 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  id: IBDurationStrings
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Day1
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Days5
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Month1
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months3
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months6
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds1800
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds3600
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds60
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Week1
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Weeks2
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Year1
+  langs:
+  - csharp
+  - vb
+  name: IBDurationStrings
+  nameWithType: IBDurationStrings
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBDurationStrings
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Valid duration strings for reqHistoricalData.
+  example: []
+  syntax:
+    content: public static class IBDurationStrings
+    content.vb: Public Module IBDurationStrings
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds60
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds60
+  id: Seconds60
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Seconds60
+  nameWithType: IBDurationStrings.Seconds60
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds60
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Seconds60
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Seconds60 = "60 S"
+    return:
+      type: System.String
+    content.vb: Public Const Seconds60 As String = "60 S"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds1800
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds1800
+  id: Seconds1800
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Seconds1800
+  nameWithType: IBDurationStrings.Seconds1800
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds1800
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Seconds1800
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Seconds1800 = "1800 S"
+    return:
+      type: System.String
+    content.vb: Public Const Seconds1800 As String = "1800 S"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds3600
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds3600
+  id: Seconds3600
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Seconds3600
+  nameWithType: IBDurationStrings.Seconds3600
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Seconds3600
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Seconds3600
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 303
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Seconds3600 = "3600 S"
+    return:
+      type: System.String
+    content.vb: Public Const Seconds3600 As String = "3600 S"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Day1
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Day1
+  id: Day1
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Day1
+  nameWithType: IBDurationStrings.Day1
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Day1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Day1
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Day1 = "1 D"
+    return:
+      type: System.String
+    content.vb: Public Const Day1 As String = "1 D"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Days5
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Days5
+  id: Days5
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Days5
+  nameWithType: IBDurationStrings.Days5
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Days5
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Days5
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Days5 = "5 D"
+    return:
+      type: System.String
+    content.vb: Public Const Days5 As String = "5 D"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Week1
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Week1
+  id: Week1
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Week1
+  nameWithType: IBDurationStrings.Week1
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Week1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Week1
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Week1 = "1 W"
+    return:
+      type: System.String
+    content.vb: Public Const Week1 As String = "1 W"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Weeks2
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Weeks2
+  id: Weeks2
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Weeks2
+  nameWithType: IBDurationStrings.Weeks2
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Weeks2
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weeks2
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Weeks2 = "2 W"
+    return:
+      type: System.String
+    content.vb: Public Const Weeks2 As String = "2 W"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Month1
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Month1
+  id: Month1
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Month1
+  nameWithType: IBDurationStrings.Month1
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Month1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Month1
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 308
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Month1 = "1 M"
+    return:
+      type: System.String
+    content.vb: Public Const Month1 As String = "1 M"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months3
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months3
+  id: Months3
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Months3
+  nameWithType: IBDurationStrings.Months3
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months3
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Months3
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 309
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Months3 = "3 M"
+    return:
+      type: System.String
+    content.vb: Public Const Months3 As String = "3 M"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months6
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months6
+  id: Months6
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Months6
+  nameWithType: IBDurationStrings.Months6
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Months6
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Months6
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Months6 = "6 M"
+    return:
+      type: System.String
+    content.vb: Public Const Months6 As String = "6 M"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Year1
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Year1
+  id: Year1
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings
+  langs:
+  - csharp
+  - vb
+  name: Year1
+  nameWithType: IBDurationStrings.Year1
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBDurationStrings.Year1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Year1
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 311
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const string Year1 = "1 Y"
+    return:
+      type: System.String
+    content.vb: Public Const Year1 As String = "1 Y"
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

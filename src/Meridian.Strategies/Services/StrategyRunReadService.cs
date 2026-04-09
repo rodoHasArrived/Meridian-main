@@ -292,7 +292,9 @@ public sealed class StrategyRunReadService
             AuditReference: run.AuditReference,
             Execution: BuildExecutionSummary(run),
             Promotion: BuildPromotionSummary(run),
-            Governance: BuildGovernanceSummary(run));
+            Governance: BuildGovernanceSummary(run),
+            FundProfileId: run.FundProfileId,
+            FundDisplayName: run.FundDisplayName);
     }
 
     private static StrategyRunExecutionSummary BuildExecutionSummary(StrategyRunEntry run)
@@ -543,6 +545,26 @@ public sealed class StrategyRunReadService
                 TotalUnrealizedPnl: bySymbol.Sum(static a => a.UnrealizedPnl),
                 TotalCommissions: bySymbol.Sum(static a => a.Commissions),
                 BySymbol: bySymbol);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Returns lot-level open and closed lot data for the given run,
+    /// optionally filtered by <paramref name="symbol"/>.
+    /// Returns <c>null</c> when the run does not exist or has no snapshot data.
+    /// </summary>
+    public async Task<RunLotSummary?> GetLotSummaryAsync(string runId, string? symbol = null, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            if (!string.Equals(run.RunId, runId, StringComparison.Ordinal))
+                continue;
+
+            return _portfolioReadService.BuildLotSummary(run, symbol);
         }
 
         return null;

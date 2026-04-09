@@ -1,0 +1,132 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.CoordinationMode
+  commentId: T:Meridian.Application.Config.CoordinationMode
+  id: CoordinationMode
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.CoordinationMode.SharedStorage
+  - Meridian.Application.Config.CoordinationMode.SingleInstance
+  langs:
+  - csharp
+  - vb
+  name: CoordinationMode
+  nameWithType: CoordinationMode
+  fullName: Meridian.Application.Config.CoordinationMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Config/CoordinationConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoordinationMode
+    path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<CoordinationMode>))]
+
+      public enum CoordinationMode
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of CoordinationMode)))>
+
+      Public Enum CoordinationMode
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Application.Config.CoordinationMode}
+- uid: Meridian.Application.Config.CoordinationMode.SingleInstance
+  commentId: F:Meridian.Application.Config.CoordinationMode.SingleInstance
+  id: SingleInstance
+  parent: Meridian.Application.Config.CoordinationMode
+  langs:
+  - csharp
+  - vb
+  name: SingleInstance
+  nameWithType: CoordinationMode.SingleInstance
+  fullName: Meridian.Application.Config.CoordinationMode.SingleInstance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/CoordinationConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SingleInstance
+    path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: SingleInstance = 0
+    return:
+      type: Meridian.Application.Config.CoordinationMode
+- uid: Meridian.Application.Config.CoordinationMode.SharedStorage
+  commentId: F:Meridian.Application.Config.CoordinationMode.SharedStorage
+  id: SharedStorage
+  parent: Meridian.Application.Config.CoordinationMode
+  langs:
+  - csharp
+  - vb
+  name: SharedStorage
+  nameWithType: CoordinationMode.SharedStorage
+  fullName: Meridian.Application.Config.CoordinationMode.SharedStorage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/CoordinationConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharedStorage
+    path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: SharedStorage = 1
+    return:
+      type: Meridian.Application.Config.CoordinationMode
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.CoordinationMode
+  commentId: T:Meridian.Application.Config.CoordinationMode
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.CoordinationMode.html
+  name: CoordinationMode
+  nameWithType: CoordinationMode
+  fullName: Meridian.Application.Config.CoordinationMode

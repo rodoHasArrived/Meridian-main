@@ -1,7 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Workstation;
+using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -106,6 +107,36 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     // ── Positions grid ────────────────────────────────────────────────────────
 
     public ObservableCollection<AccountPositionRow> Positions { get; } = [];
+
+    // ── Navigation parameter ──────────────────────────────────────────────────
+
+    private object? _parameter;
+
+    /// <summary>
+    /// Receives the account ID string set by NavigationService after page creation.
+    /// </summary>
+    public object? Parameter
+    {
+        get => _parameter;
+        set
+        {
+            if (!SetProperty(ref _parameter, value))
+            {
+                return;
+            }
+
+            if (value is string accountId)
+            {
+                _ = InitializeAsync(accountId);
+                return;
+            }
+
+            if (value is FundOperationsNavigationContext context && context.AccountId is Guid accountGuid)
+            {
+                _ = InitializeAsync(accountGuid.ToString("D"));
+            }
+        }
+    }
 
     // ── Commands ──────────────────────────────────────────────────────────────
 

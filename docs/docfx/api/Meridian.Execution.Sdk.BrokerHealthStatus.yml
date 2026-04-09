@@ -1,0 +1,706 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus
+  commentId: T:Meridian.Execution.Sdk.BrokerHealthStatus
+  id: BrokerHealthStatus
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt
+  - Meridian.Execution.Sdk.BrokerHealthStatus.Healthy(System.String)
+  - Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected
+  - Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy
+  - Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen
+  - Meridian.Execution.Sdk.BrokerHealthStatus.Message
+  - Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy(System.String)
+  langs:
+  - csharp
+  - vb
+  name: BrokerHealthStatus
+  nameWithType: BrokerHealthStatus
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerHealthStatus
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Health check result for a brokerage gateway.
+  example: []
+  syntax:
+    content: 'public sealed record BrokerHealthStatus : IEquatable<BrokerHealthStatus>'
+    content.vb: Public NotInheritable Class BrokerHealthStatus Implements IEquatable(Of BrokerHealthStatus)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.BrokerHealthStatus}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy
+  commentId: P:Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy
+  id: IsHealthy
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: BrokerHealthStatus.IsHealthy
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Whether the gateway is healthy and can accept orders.
+  example: []
+  syntax:
+    content: public required bool IsHealthy { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHealthy As Boolean
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy*
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected
+  commentId: P:Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected
+  id: IsConnected
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: BrokerHealthStatus.IsConnected
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Whether the connection to the broker is alive.
+  example: []
+  syntax:
+    content: public bool IsConnected { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsConnected As Boolean
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected*
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen
+  commentId: P:Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen
+  id: IsMarketOpen
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: IsMarketOpen
+  nameWithType: BrokerHealthStatus.IsMarketOpen
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsMarketOpen
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Whether the market is currently open for trading.
+  example: []
+  syntax:
+    content: public bool? IsMarketOpen { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property IsMarketOpen As Boolean?
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen*
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.Message
+  commentId: P:Meridian.Execution.Sdk.BrokerHealthStatus.Message
+  id: Message
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: BrokerHealthStatus.Message
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Human-readable status message.
+  example: []
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.Message*
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt
+  commentId: P:Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt
+  id: CheckedAt
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: CheckedAt
+  nameWithType: BrokerHealthStatus.CheckedAt
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckedAt
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Timestamp of the health check.
+  example: []
+  syntax:
+    content: public DateTimeOffset CheckedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CheckedAt As DateTimeOffset
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt*
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.Healthy(System.String)
+  commentId: M:Meridian.Execution.Sdk.BrokerHealthStatus.Healthy(System.String)
+  id: Healthy(System.String)
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Healthy(string?)
+  nameWithType: BrokerHealthStatus.Healthy(string?)
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.Healthy(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public static BrokerHealthStatus Healthy(string? message = null)
+    parameters:
+    - id: message
+      type: System.String
+    return:
+      type: Meridian.Execution.Sdk.BrokerHealthStatus
+    content.vb: Public Shared Function Healthy(message As String = Nothing) As BrokerHealthStatus
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.Healthy*
+  nameWithType.vb: BrokerHealthStatus.Healthy(String)
+  fullName.vb: Meridian.Execution.Sdk.BrokerHealthStatus.Healthy(String)
+  name.vb: Healthy(String)
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy(System.String)
+  commentId: M:Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy(System.String)
+  id: Unhealthy(System.String)
+  parent: Meridian.Execution.Sdk.BrokerHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Unhealthy(string)
+  nameWithType: BrokerHealthStatus.Unhealthy(string)
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unhealthy
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public static BrokerHealthStatus Unhealthy(string reason)
+    parameters:
+    - id: reason
+      type: System.String
+    return:
+      type: Meridian.Execution.Sdk.BrokerHealthStatus
+    content.vb: Public Shared Function Unhealthy(reason As String) As BrokerHealthStatus
+  overload: Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy*
+  nameWithType.vb: BrokerHealthStatus.Unhealthy(String)
+  fullName.vb: Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy(String)
+  name.vb: Unhealthy(String)
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.BrokerHealthStatus}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.BrokerHealthStatus}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BrokerHealthStatus>
+  nameWithType: IEquatable<BrokerHealthStatus>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.BrokerHealthStatus>
+  nameWithType.vb: IEquatable(Of BrokerHealthStatus)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.BrokerHealthStatus)
+  name.vb: IEquatable(Of BrokerHealthStatus)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokerHealthStatus
+    name: BrokerHealthStatus
+    href: Meridian.Execution.Sdk.BrokerHealthStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokerHealthStatus
+    name: BrokerHealthStatus
+    href: Meridian.Execution.Sdk.BrokerHealthStatus.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_IsHealthy
+  name: IsHealthy
+  nameWithType: BrokerHealthStatus.IsHealthy
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.IsHealthy
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_IsConnected
+  name: IsConnected
+  nameWithType: BrokerHealthStatus.IsConnected
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.IsConnected
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_IsMarketOpen
+  name: IsMarketOpen
+  nameWithType: BrokerHealthStatus.IsMarketOpen
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.IsMarketOpen
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.Message*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.Message
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_Message
+  name: Message
+  nameWithType: BrokerHealthStatus.Message
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.Message
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_CheckedAt
+  name: CheckedAt
+  nameWithType: BrokerHealthStatus.CheckedAt
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.CheckedAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.Healthy*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.Healthy
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_Healthy_System_String_
+  name: Healthy
+  nameWithType: BrokerHealthStatus.Healthy
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.Healthy
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus
+  commentId: T:Meridian.Execution.Sdk.BrokerHealthStatus
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html
+  name: BrokerHealthStatus
+  nameWithType: BrokerHealthStatus
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus
+- uid: Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy
+  href: Meridian.Execution.Sdk.BrokerHealthStatus.html#Meridian_Execution_Sdk_BrokerHealthStatus_Unhealthy_System_String_
+  name: Unhealthy
+  nameWithType: BrokerHealthStatus.Unhealthy
+  fullName: Meridian.Execution.Sdk.BrokerHealthStatus.Unhealthy

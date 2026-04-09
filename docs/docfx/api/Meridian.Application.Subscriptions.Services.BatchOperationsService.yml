@@ -1,0 +1,1185 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  commentId: T:Meridian.Application.Subscriptions.Services.BatchOperationsService
+  id: BatchOperationsService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.#ctor(Meridian.Application.UI.ConfigStore,Meridian.Application.Subscriptions.Services.WatchlistService)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchAddRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync(Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchDeleteRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync(System.String[],System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync(System.String[],System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync(System.String[],System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync(System.String[],System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchFilter,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync(Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync(Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync(Meridian.Application.Subscriptions.Models.BatchToggleRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchUpdateRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BatchOperationsService
+  nameWithType: BatchOperationsService
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchOperationsService
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Service for performing batch operations on symbol subscriptions.
+
+    Supports bulk delete, toggle, update, and other multi-symbol operations.
+  example: []
+  syntax:
+    content: public sealed class BatchOperationsService
+    content.vb: Public NotInheritable Class BatchOperationsService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.#ctor(Meridian.Application.UI.ConfigStore,Meridian.Application.Subscriptions.Services.WatchlistService)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.#ctor(Meridian.Application.UI.ConfigStore,Meridian.Application.Subscriptions.Services.WatchlistService)
+  id: '#ctor(Meridian.Application.UI.ConfigStore,Meridian.Application.Subscriptions.Services.WatchlistService)'
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: BatchOperationsService(ConfigStore, WatchlistService)
+  nameWithType: BatchOperationsService.BatchOperationsService(ConfigStore, WatchlistService)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.BatchOperationsService(Meridian.Application.UI.ConfigStore, Meridian.Application.Subscriptions.Services.WatchlistService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public BatchOperationsService(ConfigStore configStore, WatchlistService watchlistService)
+    parameters:
+    - id: configStore
+      type: Meridian.Application.UI.ConfigStore
+    - id: watchlistService
+      type: Meridian.Application.Subscriptions.Services.WatchlistService
+    content.vb: Public Sub New(configStore As ConfigStore, watchlistService As WatchlistService)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.#ctor*
+  nameWithType.vb: BatchOperationsService.New(ConfigStore, WatchlistService)
+  fullName.vb: Meridian.Application.Subscriptions.Services.BatchOperationsService.New(Meridian.Application.UI.ConfigStore, Meridian.Application.Subscriptions.Services.WatchlistService)
+  name.vb: New(ConfigStore, WatchlistService)
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchDeleteRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchDeleteRequest,System.Threading.CancellationToken)
+  id: DeleteSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchDeleteRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: DeleteSymbolsAsync(BatchDeleteRequest, CancellationToken)
+  nameWithType: BatchOperationsService.DeleteSymbolsAsync(BatchDeleteRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchDeleteRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Delete multiple symbols at once.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> DeleteSymbolsAsync(BatchDeleteRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchDeleteRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function DeleteSymbolsAsync(request As BatchDeleteRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync(Meridian.Application.Subscriptions.Models.BatchToggleRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync(Meridian.Application.Subscriptions.Models.BatchToggleRequest,System.Threading.CancellationToken)
+  id: ToggleSubscriptionsAsync(Meridian.Application.Subscriptions.Models.BatchToggleRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: ToggleSubscriptionsAsync(BatchToggleRequest, CancellationToken)
+  nameWithType: BatchOperationsService.ToggleSubscriptionsAsync(BatchToggleRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync(Meridian.Application.Subscriptions.Models.BatchToggleRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToggleSubscriptionsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Toggle subscription settings for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> ToggleSubscriptionsAsync(BatchToggleRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchToggleRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function ToggleSubscriptionsAsync(request As BatchToggleRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchUpdateRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchUpdateRequest,System.Threading.CancellationToken)
+  id: UpdateSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchUpdateRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: UpdateSymbolsAsync(BatchUpdateRequest, CancellationToken)
+  nameWithType: BatchOperationsService.UpdateSymbolsAsync(BatchUpdateRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchUpdateRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Update configuration for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> UpdateSymbolsAsync(BatchUpdateRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchUpdateRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function UpdateSymbolsAsync(request As BatchUpdateRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchAddRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchAddRequest,System.Threading.CancellationToken)
+  id: AddSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchAddRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: AddSymbolsAsync(BatchAddRequest, CancellationToken)
+  nameWithType: BatchOperationsService.AddSymbolsAsync(BatchAddRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchAddRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Add multiple symbols at once.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> AddSymbolsAsync(BatchAddRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchAddRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function AddSymbolsAsync(request As BatchAddRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync(System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync(System.String[],System.Threading.CancellationToken)
+  id: EnableTradesAsync(System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: EnableTradesAsync(string[], CancellationToken)
+  nameWithType: BatchOperationsService.EnableTradesAsync(string[], CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync(string[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableTradesAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Enable trades for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> EnableTradesAsync(string[] symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function EnableTradesAsync(symbols As String(), ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync*
+  nameWithType.vb: BatchOperationsService.EnableTradesAsync(String(), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync(String(), System.Threading.CancellationToken)
+  name.vb: EnableTradesAsync(String(), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync(System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync(System.String[],System.Threading.CancellationToken)
+  id: DisableTradesAsync(System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: DisableTradesAsync(string[], CancellationToken)
+  nameWithType: BatchOperationsService.DisableTradesAsync(string[], CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync(string[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisableTradesAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Disable trades for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> DisableTradesAsync(string[] symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function DisableTradesAsync(symbols As String(), ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync*
+  nameWithType.vb: BatchOperationsService.DisableTradesAsync(String(), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync(String(), System.Threading.CancellationToken)
+  name.vb: DisableTradesAsync(String(), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync(System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync(System.String[],System.Threading.CancellationToken)
+  id: EnableDepthAsync(System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: EnableDepthAsync(string[], CancellationToken)
+  nameWithType: BatchOperationsService.EnableDepthAsync(string[], CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync(string[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableDepthAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Enable depth for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> EnableDepthAsync(string[] symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function EnableDepthAsync(symbols As String(), ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync*
+  nameWithType.vb: BatchOperationsService.EnableDepthAsync(String(), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync(String(), System.Threading.CancellationToken)
+  name.vb: EnableDepthAsync(String(), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync(System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync(System.String[],System.Threading.CancellationToken)
+  id: DisableDepthAsync(System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: DisableDepthAsync(string[], CancellationToken)
+  nameWithType: BatchOperationsService.DisableDepthAsync(string[], CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync(string[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisableDepthAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Disable depth for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> DisableDepthAsync(string[] symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function DisableDepthAsync(symbols As String(), ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync*
+  nameWithType.vb: BatchOperationsService.DisableDepthAsync(String(), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync(String(), System.Threading.CancellationToken)
+  name.vb: DisableDepthAsync(String(), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync(Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync(Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest,System.Threading.CancellationToken)
+  id: CopySettingsAsync(Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: CopySettingsAsync(BatchCopySettingsRequest, CancellationToken)
+  nameWithType: BatchOperationsService.CopySettingsAsync(BatchCopySettingsRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync(Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CopySettingsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Copy settings from one symbol to multiple others.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> CopySettingsAsync(BatchCopySettingsRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function CopySettingsAsync(request As BatchCopySettingsRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchFilter,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchFilter,System.Threading.CancellationToken)
+  id: GetFilteredSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchFilter,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: GetFilteredSymbolsAsync(BatchFilter, CancellationToken)
+  nameWithType: BatchOperationsService.GetFilteredSymbolsAsync(BatchFilter, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync(Meridian.Application.Subscriptions.Models.BatchFilter, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFilteredSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get symbols matching a filter.
+  example: []
+  syntax:
+    content: public Task<string[]> GetFilteredSymbolsAsync(BatchFilter filter, CancellationToken ct = default)
+    parameters:
+    - id: filter
+      type: Meridian.Application.Subscriptions.Models.BatchFilter
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String[]}
+    content.vb: Public Function GetFilteredSymbolsAsync(filter As BatchFilter, ct As CancellationToken = Nothing) As Task(Of String())
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync(Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync(Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest,System.Threading.CancellationToken)
+  id: PerformFilteredOperationAsync(Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: PerformFilteredOperationAsync(BatchFilteredOperationRequest, CancellationToken)
+  nameWithType: BatchOperationsService.PerformFilteredOperationAsync(BatchFilteredOperationRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync(Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerformFilteredOperationAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 439
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Perform a batch operation with a filter.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> PerformFilteredOperationAsync(BatchFilteredOperationRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function PerformFilteredOperationAsync(request As BatchFilteredOperationRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync*
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync(Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync(Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest,System.Threading.CancellationToken)
+  id: MoveToWatchlistAsync(Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.BatchOperationsService
+  langs:
+  - csharp
+  - vb
+  name: MoveToWatchlistAsync(BatchMoveToWatchlistRequest, CancellationToken)
+  nameWithType: BatchOperationsService.MoveToWatchlistAsync(BatchMoveToWatchlistRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync(Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MoveToWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
+    startLine: 486
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Move symbols to a watchlist.
+  example: []
+  syntax:
+    content: public Task<BatchOperationResult> MoveToWatchlistAsync(BatchMoveToWatchlistRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+    content.vb: Public Function MoveToWatchlistAsync(request As BatchMoveToWatchlistRequest, ct As CancellationToken = Nothing) As Task(Of BatchOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync*
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.#ctor
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService__ctor_Meridian_Application_UI_ConfigStore_Meridian_Application_Subscriptions_Services_WatchlistService_
+  name: BatchOperationsService
+  nameWithType: BatchOperationsService.BatchOperationsService
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.BatchOperationsService
+  nameWithType.vb: BatchOperationsService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.BatchOperationsService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService
+  commentId: T:Meridian.Application.Subscriptions.Services.WatchlistService
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html
+  name: WatchlistService
+  nameWithType: WatchlistService
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_DeleteSymbolsAsync_Meridian_Application_Subscriptions_Models_BatchDeleteRequest_System_Threading_CancellationToken_
+  name: DeleteSymbolsAsync
+  nameWithType: BatchOperationsService.DeleteSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.DeleteSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchDeleteRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchDeleteRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchDeleteRequest.html
+  name: BatchDeleteRequest
+  nameWithType: BatchDeleteRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchDeleteRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BatchOperationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BatchOperationResult>
+  nameWithType: Task<BatchOperationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.BatchOperationResult>
+  nameWithType.vb: Task(Of BatchOperationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.BatchOperationResult)
+  name.vb: Task(Of BatchOperationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.BatchOperationResult
+    name: BatchOperationResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.BatchOperationResult
+    name: BatchOperationResult
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_ToggleSubscriptionsAsync_Meridian_Application_Subscriptions_Models_BatchToggleRequest_System_Threading_CancellationToken_
+  name: ToggleSubscriptionsAsync
+  nameWithType: BatchOperationsService.ToggleSubscriptionsAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.ToggleSubscriptionsAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchToggleRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchToggleRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchToggleRequest.html
+  name: BatchToggleRequest
+  nameWithType: BatchToggleRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchToggleRequest
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_UpdateSymbolsAsync_Meridian_Application_Subscriptions_Models_BatchUpdateRequest_System_Threading_CancellationToken_
+  name: UpdateSymbolsAsync
+  nameWithType: BatchOperationsService.UpdateSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.UpdateSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchUpdateRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchUpdateRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchUpdateRequest.html
+  name: BatchUpdateRequest
+  nameWithType: BatchUpdateRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchUpdateRequest
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_AddSymbolsAsync_Meridian_Application_Subscriptions_Models_BatchAddRequest_System_Threading_CancellationToken_
+  name: AddSymbolsAsync
+  nameWithType: BatchOperationsService.AddSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.AddSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchAddRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchAddRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchAddRequest.html
+  name: BatchAddRequest
+  nameWithType: BatchAddRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchAddRequest
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_EnableTradesAsync_System_String___System_Threading_CancellationToken_
+  name: EnableTradesAsync
+  nameWithType: BatchOperationsService.EnableTradesAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableTradesAsync
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_DisableTradesAsync_System_String___System_Threading_CancellationToken_
+  name: DisableTradesAsync
+  nameWithType: BatchOperationsService.DisableTradesAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableTradesAsync
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_EnableDepthAsync_System_String___System_Threading_CancellationToken_
+  name: EnableDepthAsync
+  nameWithType: BatchOperationsService.EnableDepthAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.EnableDepthAsync
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_DisableDepthAsync_System_String___System_Threading_CancellationToken_
+  name: DisableDepthAsync
+  nameWithType: BatchOperationsService.DisableDepthAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.DisableDepthAsync
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_CopySettingsAsync_Meridian_Application_Subscriptions_Models_BatchCopySettingsRequest_System_Threading_CancellationToken_
+  name: CopySettingsAsync
+  nameWithType: BatchOperationsService.CopySettingsAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.CopySettingsAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest.html
+  name: BatchCopySettingsRequest
+  nameWithType: BatchCopySettingsRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchCopySettingsRequest
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_GetFilteredSymbolsAsync_Meridian_Application_Subscriptions_Models_BatchFilter_System_Threading_CancellationToken_
+  name: GetFilteredSymbolsAsync
+  nameWithType: BatchOperationsService.GetFilteredSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.GetFilteredSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchFilter
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchFilter
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchFilter.html
+  name: BatchFilter
+  nameWithType: BatchFilter
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilter
+- uid: System.Threading.Tasks.Task{System.String[]}
+  commentId: T:System.Threading.Tasks.Task{System.String[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string[]>
+  nameWithType: Task<string[]>
+  fullName: System.Threading.Tasks.Task<string[]>
+  nameWithType.vb: Task(Of String())
+  fullName.vb: System.Threading.Tasks.Task(Of String())
+  name.vb: Task(Of String())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_PerformFilteredOperationAsync_Meridian_Application_Subscriptions_Models_BatchFilteredOperationRequest_System_Threading_CancellationToken_
+  name: PerformFilteredOperationAsync
+  nameWithType: BatchOperationsService.PerformFilteredOperationAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.PerformFilteredOperationAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest.html
+  name: BatchFilteredOperationRequest
+  nameWithType: BatchFilteredOperationRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchFilteredOperationRequest
+- uid: Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.BatchOperationsService.html#Meridian_Application_Subscriptions_Services_BatchOperationsService_MoveToWatchlistAsync_Meridian_Application_Subscriptions_Models_BatchMoveToWatchlistRequest_System_Threading_CancellationToken_
+  name: MoveToWatchlistAsync
+  nameWithType: BatchOperationsService.MoveToWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.BatchOperationsService.MoveToWatchlistAsync
+- uid: Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest.html
+  name: BatchMoveToWatchlistRequest
+  nameWithType: BatchMoveToWatchlistRequest
+  fullName: Meridian.Application.Subscriptions.Models.BatchMoveToWatchlistRequest

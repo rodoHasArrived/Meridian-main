@@ -1,0 +1,54 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions
+  commentId: N:Meridian.Application.Subscriptions
+  id: Meridian.Application.Subscriptions
+  children:
+  - Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Subscriptions
+  nameWithType: Meridian.Application.Subscriptions
+  fullName: Meridian.Application.Subscriptions
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  commentId: T:Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  parent: Meridian.Application.Subscriptions
+  href: Meridian.Application.Subscriptions.SubscriptionOrchestrator.html
+  name: SubscriptionOrchestrator
+  nameWithType: SubscriptionOrchestrator
+  fullName: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+- uid: Meridian.Application.Subscriptions
+  commentId: N:Meridian.Application.Subscriptions
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions
+  nameWithType: Meridian.Application.Subscriptions
+  fullName: Meridian.Application.Subscriptions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html

@@ -1,0 +1,566 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ProviderComparison
+  commentId: T:Meridian.Ui.Services.ProviderComparison
+  id: ProviderComparison
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ProviderComparison.ConsistencyScore
+  - Meridian.Ui.Services.ProviderComparison.Provider1
+  - Meridian.Ui.Services.ProviderComparison.Provider2
+  - Meridian.Ui.Services.ProviderComparison.RecordsMatched
+  - Meridian.Ui.Services.ProviderComparison.RecordsMismatched
+  - Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1
+  - Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2
+  langs:
+  - csharp
+  - vb
+  name: ProviderComparison
+  nameWithType: ProviderComparison
+  fullName: Meridian.Ui.Services.ProviderComparison
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderComparison
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class ProviderComparison
+    content.vb: Public NotInheritable Class ProviderComparison
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ProviderComparison.Provider1
+  commentId: P:Meridian.Ui.Services.ProviderComparison.Provider1
+  id: Provider1
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: Provider1
+  nameWithType: ProviderComparison.Provider1
+  fullName: Meridian.Ui.Services.ProviderComparison.Provider1
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider1
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Provider1 { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider1 As String
+  overload: Meridian.Ui.Services.ProviderComparison.Provider1*
+- uid: Meridian.Ui.Services.ProviderComparison.Provider2
+  commentId: P:Meridian.Ui.Services.ProviderComparison.Provider2
+  id: Provider2
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: Provider2
+  nameWithType: ProviderComparison.Provider2
+  fullName: Meridian.Ui.Services.ProviderComparison.Provider2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider2
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Provider2 { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider2 As String
+  overload: Meridian.Ui.Services.ProviderComparison.Provider2*
+- uid: Meridian.Ui.Services.ProviderComparison.ConsistencyScore
+  commentId: P:Meridian.Ui.Services.ProviderComparison.ConsistencyScore
+  id: ConsistencyScore
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: ConsistencyScore
+  nameWithType: ProviderComparison.ConsistencyScore
+  fullName: Meridian.Ui.Services.ProviderComparison.ConsistencyScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsistencyScore
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double ConsistencyScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ConsistencyScore As Double
+  overload: Meridian.Ui.Services.ProviderComparison.ConsistencyScore*
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsMatched
+  commentId: P:Meridian.Ui.Services.ProviderComparison.RecordsMatched
+  id: RecordsMatched
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: RecordsMatched
+  nameWithType: ProviderComparison.RecordsMatched
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsMatched
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordsMatched
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long RecordsMatched { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RecordsMatched As Long
+  overload: Meridian.Ui.Services.ProviderComparison.RecordsMatched*
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsMismatched
+  commentId: P:Meridian.Ui.Services.ProviderComparison.RecordsMismatched
+  id: RecordsMismatched
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: RecordsMismatched
+  nameWithType: ProviderComparison.RecordsMismatched
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsMismatched
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordsMismatched
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long RecordsMismatched { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RecordsMismatched As Long
+  overload: Meridian.Ui.Services.ProviderComparison.RecordsMismatched*
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1
+  commentId: P:Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1
+  id: RecordsOnlyIn1
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: RecordsOnlyIn1
+  nameWithType: ProviderComparison.RecordsOnlyIn1
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordsOnlyIn1
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long RecordsOnlyIn1 { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RecordsOnlyIn1 As Long
+  overload: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1*
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2
+  commentId: P:Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2
+  id: RecordsOnlyIn2
+  parent: Meridian.Ui.Services.ProviderComparison
+  langs:
+  - csharp
+  - vb
+  name: RecordsOnlyIn2
+  nameWithType: ProviderComparison.RecordsOnlyIn2
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordsOnlyIn2
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long RecordsOnlyIn2 { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RecordsOnlyIn2 As Long
+  overload: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ProviderComparison.Provider1*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.Provider1
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_Provider1
+  name: Provider1
+  nameWithType: ProviderComparison.Provider1
+  fullName: Meridian.Ui.Services.ProviderComparison.Provider1
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ProviderComparison.Provider2*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.Provider2
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_Provider2
+  name: Provider2
+  nameWithType: ProviderComparison.Provider2
+  fullName: Meridian.Ui.Services.ProviderComparison.Provider2
+- uid: Meridian.Ui.Services.ProviderComparison.ConsistencyScore*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.ConsistencyScore
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_ConsistencyScore
+  name: ConsistencyScore
+  nameWithType: ProviderComparison.ConsistencyScore
+  fullName: Meridian.Ui.Services.ProviderComparison.ConsistencyScore
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsMatched*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.RecordsMatched
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_RecordsMatched
+  name: RecordsMatched
+  nameWithType: ProviderComparison.RecordsMatched
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsMatched
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsMismatched*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.RecordsMismatched
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_RecordsMismatched
+  name: RecordsMismatched
+  nameWithType: ProviderComparison.RecordsMismatched
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsMismatched
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_RecordsOnlyIn1
+  name: RecordsOnlyIn1
+  nameWithType: ProviderComparison.RecordsOnlyIn1
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn1
+- uid: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2*
+  commentId: Overload:Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2
+  href: Meridian.Ui.Services.ProviderComparison.html#Meridian_Ui_Services_ProviderComparison_RecordsOnlyIn2
+  name: RecordsOnlyIn2
+  nameWithType: ProviderComparison.RecordsOnlyIn2
+  fullName: Meridian.Ui.Services.ProviderComparison.RecordsOnlyIn2

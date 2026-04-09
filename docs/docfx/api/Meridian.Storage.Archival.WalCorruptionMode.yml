@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.WalCorruptionMode
+  commentId: T:Meridian.Storage.Archival.WalCorruptionMode
+  id: WalCorruptionMode
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.WalCorruptionMode.Alert
+  - Meridian.Storage.Archival.WalCorruptionMode.Halt
+  - Meridian.Storage.Archival.WalCorruptionMode.Skip
+  langs:
+  - csharp
+  - vb
+  name: WalCorruptionMode
+  nameWithType: WalCorruptionMode
+  fullName: Meridian.Storage.Archival.WalCorruptionMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WalCorruptionMode
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 1012
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Controls how the WAL responds when corrupted records are detected during recovery.
+  example: []
+  syntax:
+    content: public enum WalCorruptionMode
+    content.vb: Public Enum WalCorruptionMode
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Skip
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Skip
+  id: Skip
+  parent: Meridian.Storage.Archival.WalCorruptionMode
+  langs:
+  - csharp
+  - vb
+  name: Skip
+  nameWithType: WalCorruptionMode.Skip
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Skip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skip
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 1017
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Silently skip corrupt records and continue recovery (legacy behaviour).
+  example: []
+  syntax:
+    content: Skip = 0
+    return:
+      type: Meridian.Storage.Archival.WalCorruptionMode
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Alert
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Alert
+  id: Alert
+  parent: Meridian.Storage.Archival.WalCorruptionMode
+  langs:
+  - csharp
+  - vb
+  name: Alert
+  nameWithType: WalCorruptionMode.Alert
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Alert
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alert
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 1023
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Skip corrupt records but fire the <xref href="Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected" data-throw-if-not-resolved="false"></xref> event
+
+    so monitoring systems can alert operators. Recommended for production deployments.
+  example: []
+  syntax:
+    content: Alert = 1
+    return:
+      type: Meridian.Storage.Archival.WalCorruptionMode
+- uid: Meridian.Storage.Archival.WalCorruptionMode.Halt
+  commentId: F:Meridian.Storage.Archival.WalCorruptionMode.Halt
+  id: Halt
+  parent: Meridian.Storage.Archival.WalCorruptionMode
+  langs:
+  - csharp
+  - vb
+  name: Halt
+  nameWithType: WalCorruptionMode.Halt
+  fullName: Meridian.Storage.Archival.WalCorruptionMode.Halt
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/WriteAheadLog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Halt
+    path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
+    startLine: 1030
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Throw an <xref href="System.IO.InvalidDataException" data-throw-if-not-resolved="false"></xref> when any corrupt record is found.
+
+    Use this when data integrity is non-negotiable and manual operator review
+
+    is required before the application can start.
+  example: []
+  syntax:
+    content: Halt = 2
+    return:
+      type: Meridian.Storage.Archival.WalCorruptionMode
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Storage.Archival.WalCorruptionMode
+  commentId: T:Meridian.Storage.Archival.WalCorruptionMode
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WalCorruptionMode.html
+  name: WalCorruptionMode
+  nameWithType: WalCorruptionMode
+  fullName: Meridian.Storage.Archival.WalCorruptionMode
+- uid: Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+  commentId: E:Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+  href: Meridian.Storage.Archival.WriteAheadLog.html#Meridian_Storage_Archival_WriteAheadLog_CorruptionDetected
+  name: CorruptionDetected
+  nameWithType: WriteAheadLog.CorruptionDetected
+  fullName: Meridian.Storage.Archival.WriteAheadLog.CorruptionDetected
+- uid: System.IO.InvalidDataException
+  commentId: T:System.IO.InvalidDataException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.invaliddataexception
+  name: InvalidDataException
+  nameWithType: InvalidDataException
+  fullName: System.IO.InvalidDataException

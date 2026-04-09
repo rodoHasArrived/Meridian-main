@@ -4,14 +4,38 @@ open System
 
 [<RequireQualifiedAccess>]
 module SecurityMasterLegacyUpgrade =
+    let private preferredTermsFromClassification classification =
+        match classification with
+        | Some (EquityClassification.Preferred preferred)
+        | Some (EquityClassification.ConvertiblePreferred (preferred, _)) -> Some preferred
+        | _ -> None
+
     let private classificationFromKind (kind: SecurityKind) =
         match kind with
-        | SecurityKind.Equity _ ->
+        | SecurityKind.Equity terms ->
+            let family, subType, typeName =
+                match terms.Classification with
+                | Some (EquityClassification.Preferred _)
+                | Some (EquityClassification.ConvertiblePreferred _) ->
+                    let typeName =
+                        match terms.Classification with
+                        | Some (EquityClassification.ConvertiblePreferred _) -> "ConvertiblePreferredEquity"
+                        | _ -> "PreferredEquity"
+
+                    Some AssetFamily.PreferredEquity, SecuritySubType.PreferredShare, typeName
+                | Some (EquityClassification.Convertible _) ->
+                    Some AssetFamily.CommonEquity, SecuritySubType.CommonShare, "ConvertibleEquity"
+                | Some EquityClassification.Common
+                | None ->
+                    Some AssetFamily.CommonEquity, SecuritySubType.CommonShare, "Equity"
+                | Some (EquityClassification.Other label) ->
+                    Some (AssetFamily.OtherFamily "Equity"), SecuritySubType.OtherSubType label, label
+
             {
                 AssetClass = AssetClass.Equity
-                Family = Some AssetFamily.CommonEquity
-                SubType = SecuritySubType.CommonShare
-                TypeName = "Equity"
+                Family = family
+                SubType = subType
+                TypeName = typeName
                 IssuerType = None
                 RiskCountry = None
             }
@@ -185,14 +209,33 @@ module SecurityMasterLegacyUpgrade =
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
+            let preferredTerms = preferredTermsFromClassification terms.Classification
+
             {
                 SecurityTermModules.empty with
                     EquityBehavior =
                         Some {
                             ShareClass = terms.ShareClass
-                            VotingRights = None
-                            DistributionType = None
+                            VotingRights = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
+                            DistributionType = preferredTerms |> Option.map (fun preferred -> DividendType.asString preferred.DividendType)
                         }
+                    Redemption =
+                        preferredTerms
+                        |> Option.map (fun preferred ->
+                            {
+                                RedemptionType = Some (LiquidationPreference.asString preferred.LiquidationPreference)
+                                RedemptionPrice = preferred.RedemptionPrice
+                                IsBullet = None
+                                IsAmortizing = None
+                            })
+                    Call =
+                        preferredTerms
+                        |> Option.map (fun preferred ->
+                            {
+                                IsCallable = preferred.CallableDate.IsSome
+                                FirstCallDate = preferred.CallableDate
+                                CallPrice = None
+                            })
             }
         | SecurityKind.Option terms ->
             {

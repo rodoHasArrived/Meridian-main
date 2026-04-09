@@ -1,0 +1,765 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.MemoryInfo
+  commentId: T:Meridian.Application.Monitoring.MemoryInfo
+  id: MemoryInfo
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.MemoryInfo.#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  - Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb
+  - Meridian.Application.Monitoring.MemoryInfo.Gen0Collections
+  - Meridian.Application.Monitoring.MemoryInfo.Gen1Collections
+  - Meridian.Application.Monitoring.MemoryInfo.Gen2Collections
+  - Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb
+  - Meridian.Application.Monitoring.MemoryInfo.IsCritical
+  - Meridian.Application.Monitoring.MemoryInfo.IsWarning
+  - Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb
+  - Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb
+  langs:
+  - csharp
+  - vb
+  name: MemoryInfo
+  nameWithType: MemoryInfo
+  fullName: Meridian.Application.Monitoring.MemoryInfo
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MemoryInfo
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Information about memory usage.
+  example: []
+  syntax:
+    content: 'public readonly record struct MemoryInfo : IEquatable<MemoryInfo>'
+    content.vb: Public Structure MemoryInfo Implements IEquatable(Of MemoryInfo)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.MemoryInfo}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.MemoryInfo.#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Monitoring.MemoryInfo.#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  id: '#ctor(System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean)'
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: MemoryInfo(double, double, double, double, int, int, int, bool, bool)
+  nameWithType: MemoryInfo.MemoryInfo(double, double, double, double, int, int, int, bool, bool)
+  fullName: Meridian.Application.Monitoring.MemoryInfo.MemoryInfo(double, double, double, double, int, int, int, bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Information about memory usage.
+  example: []
+  syntax:
+    content: public MemoryInfo(double WorkingSetMb, double PrivateMemoryMb, double GcMemoryMb, double HeapSizeMb, int Gen0Collections, int Gen1Collections, int Gen2Collections, bool IsWarning, bool IsCritical)
+    parameters:
+    - id: WorkingSetMb
+      type: System.Double
+    - id: PrivateMemoryMb
+      type: System.Double
+    - id: GcMemoryMb
+      type: System.Double
+    - id: HeapSizeMb
+      type: System.Double
+    - id: Gen0Collections
+      type: System.Int32
+    - id: Gen1Collections
+      type: System.Int32
+    - id: Gen2Collections
+      type: System.Int32
+    - id: IsWarning
+      type: System.Boolean
+    - id: IsCritical
+      type: System.Boolean
+    content.vb: Public Sub New(WorkingSetMb As Double, PrivateMemoryMb As Double, GcMemoryMb As Double, HeapSizeMb As Double, Gen0Collections As Integer, Gen1Collections As Integer, Gen2Collections As Integer, IsWarning As Boolean, IsCritical As Boolean)
+  overload: Meridian.Application.Monitoring.MemoryInfo.#ctor*
+  nameWithType.vb: MemoryInfo.New(Double, Double, Double, Double, Integer, Integer, Integer, Boolean, Boolean)
+  fullName.vb: Meridian.Application.Monitoring.MemoryInfo.New(Double, Double, Double, Double, Integer, Integer, Integer, Boolean, Boolean)
+  name.vb: New(Double, Double, Double, Double, Integer, Integer, Integer, Boolean, Boolean)
+- uid: Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb
+  id: WorkingSetMb
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: WorkingSetMb
+  nameWithType: MemoryInfo.WorkingSetMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkingSetMb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double WorkingSetMb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property WorkingSetMb As Double
+  overload: Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb*
+- uid: Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb
+  id: PrivateMemoryMb
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: PrivateMemoryMb
+  nameWithType: MemoryInfo.PrivateMemoryMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrivateMemoryMb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double PrivateMemoryMb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property PrivateMemoryMb As Double
+  overload: Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb*
+- uid: Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb
+  id: GcMemoryMb
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: GcMemoryMb
+  nameWithType: MemoryInfo.GcMemoryMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GcMemoryMb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double GcMemoryMb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GcMemoryMb As Double
+  overload: Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb*
+- uid: Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb
+  id: HeapSizeMb
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: HeapSizeMb
+  nameWithType: MemoryInfo.HeapSizeMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeapSizeMb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double HeapSizeMb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property HeapSizeMb As Double
+  overload: Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb*
+- uid: Meridian.Application.Monitoring.MemoryInfo.Gen0Collections
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.Gen0Collections
+  id: Gen0Collections
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: Gen0Collections
+  nameWithType: MemoryInfo.Gen0Collections
+  fullName: Meridian.Application.Monitoring.MemoryInfo.Gen0Collections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gen0Collections
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int Gen0Collections { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Gen0Collections As Integer
+  overload: Meridian.Application.Monitoring.MemoryInfo.Gen0Collections*
+- uid: Meridian.Application.Monitoring.MemoryInfo.Gen1Collections
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.Gen1Collections
+  id: Gen1Collections
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: Gen1Collections
+  nameWithType: MemoryInfo.Gen1Collections
+  fullName: Meridian.Application.Monitoring.MemoryInfo.Gen1Collections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gen1Collections
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int Gen1Collections { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Gen1Collections As Integer
+  overload: Meridian.Application.Monitoring.MemoryInfo.Gen1Collections*
+- uid: Meridian.Application.Monitoring.MemoryInfo.Gen2Collections
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.Gen2Collections
+  id: Gen2Collections
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: Gen2Collections
+  nameWithType: MemoryInfo.Gen2Collections
+  fullName: Meridian.Application.Monitoring.MemoryInfo.Gen2Collections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gen2Collections
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public int Gen2Collections { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Gen2Collections As Integer
+  overload: Meridian.Application.Monitoring.MemoryInfo.Gen2Collections*
+- uid: Meridian.Application.Monitoring.MemoryInfo.IsWarning
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.IsWarning
+  id: IsWarning
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: IsWarning
+  nameWithType: MemoryInfo.IsWarning
+  fullName: Meridian.Application.Monitoring.MemoryInfo.IsWarning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsWarning
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public bool IsWarning { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsWarning As Boolean
+  overload: Meridian.Application.Monitoring.MemoryInfo.IsWarning*
+- uid: Meridian.Application.Monitoring.MemoryInfo.IsCritical
+  commentId: P:Meridian.Application.Monitoring.MemoryInfo.IsCritical
+  id: IsCritical
+  parent: Meridian.Application.Monitoring.MemoryInfo
+  langs:
+  - csharp
+  - vb
+  name: IsCritical
+  nameWithType: MemoryInfo.IsCritical
+  fullName: Meridian.Application.Monitoring.MemoryInfo.IsCritical
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsCritical
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public bool IsCritical { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsCritical As Boolean
+  overload: Meridian.Application.Monitoring.MemoryInfo.IsCritical*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.MemoryInfo}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.MemoryInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MemoryInfo>
+  nameWithType: IEquatable<MemoryInfo>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.MemoryInfo>
+  nameWithType.vb: IEquatable(Of MemoryInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.MemoryInfo)
+  name.vb: IEquatable(Of MemoryInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.MemoryInfo
+    name: MemoryInfo
+    href: Meridian.Application.Monitoring.MemoryInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.MemoryInfo
+    name: MemoryInfo
+    href: Meridian.Application.Monitoring.MemoryInfo.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.MemoryInfo.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.#ctor
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo__ctor_System_Double_System_Double_System_Double_System_Double_System_Int32_System_Int32_System_Int32_System_Boolean_System_Boolean_
+  name: MemoryInfo
+  nameWithType: MemoryInfo.MemoryInfo
+  fullName: Meridian.Application.Monitoring.MemoryInfo.MemoryInfo
+  nameWithType.vb: MemoryInfo.New
+  fullName.vb: Meridian.Application.Monitoring.MemoryInfo.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_WorkingSetMb
+  name: WorkingSetMb
+  nameWithType: MemoryInfo.WorkingSetMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.WorkingSetMb
+- uid: Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_PrivateMemoryMb
+  name: PrivateMemoryMb
+  nameWithType: MemoryInfo.PrivateMemoryMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.PrivateMemoryMb
+- uid: Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_GcMemoryMb
+  name: GcMemoryMb
+  nameWithType: MemoryInfo.GcMemoryMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.GcMemoryMb
+- uid: Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_HeapSizeMb
+  name: HeapSizeMb
+  nameWithType: MemoryInfo.HeapSizeMb
+  fullName: Meridian.Application.Monitoring.MemoryInfo.HeapSizeMb
+- uid: Meridian.Application.Monitoring.MemoryInfo.Gen0Collections*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.Gen0Collections
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_Gen0Collections
+  name: Gen0Collections
+  nameWithType: MemoryInfo.Gen0Collections
+  fullName: Meridian.Application.Monitoring.MemoryInfo.Gen0Collections
+- uid: Meridian.Application.Monitoring.MemoryInfo.Gen1Collections*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.Gen1Collections
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_Gen1Collections
+  name: Gen1Collections
+  nameWithType: MemoryInfo.Gen1Collections
+  fullName: Meridian.Application.Monitoring.MemoryInfo.Gen1Collections
+- uid: Meridian.Application.Monitoring.MemoryInfo.Gen2Collections*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.Gen2Collections
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_Gen2Collections
+  name: Gen2Collections
+  nameWithType: MemoryInfo.Gen2Collections
+  fullName: Meridian.Application.Monitoring.MemoryInfo.Gen2Collections
+- uid: Meridian.Application.Monitoring.MemoryInfo.IsWarning*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.IsWarning
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_IsWarning
+  name: IsWarning
+  nameWithType: MemoryInfo.IsWarning
+  fullName: Meridian.Application.Monitoring.MemoryInfo.IsWarning
+- uid: Meridian.Application.Monitoring.MemoryInfo.IsCritical*
+  commentId: Overload:Meridian.Application.Monitoring.MemoryInfo.IsCritical
+  href: Meridian.Application.Monitoring.MemoryInfo.html#Meridian_Application_Monitoring_MemoryInfo_IsCritical
+  name: IsCritical
+  nameWithType: MemoryInfo.IsCritical
+  fullName: Meridian.Application.Monitoring.MemoryInfo.IsCritical

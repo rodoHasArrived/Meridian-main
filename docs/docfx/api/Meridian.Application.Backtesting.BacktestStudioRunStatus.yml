@@ -1,0 +1,731 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunStatus
+  id: BacktestStudioRunStatus
+  parent: Meridian.Application.Backtesting
+  children:
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunStatus,System.Double,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.Message
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt
+  - Meridian.Application.Backtesting.BacktestStudioRunStatus.Status
+  langs:
+  - csharp
+  - vb
+  name: BacktestStudioRunStatus
+  nameWithType: BacktestStudioRunStatus
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestStudioRunStatus
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Current lifecycle status for a Backtest Studio run.
+  example: []
+  syntax:
+    content: 'public sealed record BacktestStudioRunStatus : IEquatable<BacktestStudioRunStatus>'
+    content.vb: Public NotInheritable Class BacktestStudioRunStatus Implements IEquatable(Of BacktestStudioRunStatus)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunStatus,System.Double,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Application.Backtesting.BacktestStudioRunStatus.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunStatus,System.Double,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunStatus,System.Double,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: BacktestStudioRunStatus(string, StrategyRunStatus, double, DateTimeOffset, DateTimeOffset?, string?)
+  nameWithType: BacktestStudioRunStatus.BacktestStudioRunStatus(string, StrategyRunStatus, double, DateTimeOffset, DateTimeOffset?, string?)
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.BacktestStudioRunStatus(string, Meridian.Contracts.Workstation.StrategyRunStatus, double, System.DateTimeOffset, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Current lifecycle status for a Backtest Studio run.
+  example: []
+  syntax:
+    content: public BacktestStudioRunStatus(string RunId, StrategyRunStatus Status, double Progress, DateTimeOffset StartedAt, DateTimeOffset? EstimatedCompletionAt, string? Message = null)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: Status
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    - id: Progress
+      type: System.Double
+    - id: StartedAt
+      type: System.DateTimeOffset
+    - id: EstimatedCompletionAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Message
+      type: System.String
+    content.vb: Public Sub New(RunId As String, Status As StrategyRunStatus, Progress As Double, StartedAt As DateTimeOffset, EstimatedCompletionAt As DateTimeOffset?, Message As String = Nothing)
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.#ctor*
+  nameWithType.vb: BacktestStudioRunStatus.New(String, StrategyRunStatus, Double, DateTimeOffset, DateTimeOffset?, String)
+  fullName.vb: Meridian.Application.Backtesting.BacktestStudioRunStatus.New(String, Meridian.Contracts.Workstation.StrategyRunStatus, Double, System.DateTimeOffset, System.DateTimeOffset?, String)
+  name.vb: New(String, StrategyRunStatus, Double, DateTimeOffset, DateTimeOffset?, String)
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId
+  id: RunId
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: BacktestStudioRunStatus.RunId
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.Status
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunStatus.Status
+  id: Status
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: BacktestStudioRunStatus.Status
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public StrategyRunStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    content.vb: Public Property Status As StrategyRunStatus
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.Status*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress
+  id: Progress
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Progress
+  nameWithType: BacktestStudioRunStatus.Progress
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Progress
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public double Progress { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Progress As Double
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt
+  id: StartedAt
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: BacktestStudioRunStatus.StartedAt
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public DateTimeOffset StartedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartedAt As DateTimeOffset
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt
+  id: EstimatedCompletionAt
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: EstimatedCompletionAt
+  nameWithType: BacktestStudioRunStatus.EstimatedCompletionAt
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedCompletionAt
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public DateTimeOffset? EstimatedCompletionAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property EstimatedCompletionAt As DateTimeOffset?
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt*
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.Message
+  commentId: P:Meridian.Application.Backtesting.BacktestStudioRunStatus.Message
+  id: Message
+  parent: Meridian.Application.Backtesting.BacktestStudioRunStatus
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: BacktestStudioRunStatus.Message
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Backtesting.BacktestStudioRunStatus.Message*
+references:
+- uid: Meridian.Application.Backtesting
+  commentId: N:Meridian.Application.Backtesting
+  href: Meridian.html
+  name: Meridian.Application.Backtesting
+  nameWithType: Meridian.Application.Backtesting
+  fullName: Meridian.Application.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  commentId: T:System.IEquatable{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BacktestStudioRunStatus>
+  nameWithType: IEquatable<BacktestStudioRunStatus>
+  fullName: System.IEquatable<Meridian.Application.Backtesting.BacktestStudioRunStatus>
+  nameWithType.vb: IEquatable(Of BacktestStudioRunStatus)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Backtesting.BacktestStudioRunStatus)
+  name.vb: IEquatable(Of BacktestStudioRunStatus)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+    name: BacktestStudioRunStatus
+    href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+    name: BacktestStudioRunStatus
+    href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.#ctor*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.#ctor
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus__ctor_System_String_Meridian_Contracts_Workstation_StrategyRunStatus_System_Double_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_
+  name: BacktestStudioRunStatus
+  nameWithType: BacktestStudioRunStatus.BacktestStudioRunStatus
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.BacktestStudioRunStatus
+  nameWithType.vb: BacktestStudioRunStatus.New
+  fullName.vb: Meridian.Application.Backtesting.BacktestStudioRunStatus.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus
+  nameWithType: StrategyRunStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus_RunId
+  name: RunId
+  nameWithType: BacktestStudioRunStatus.RunId
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.RunId
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.Status*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.Status
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus_Status
+  name: Status
+  nameWithType: BacktestStudioRunStatus.Status
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.Status
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus_Progress
+  name: Progress
+  nameWithType: BacktestStudioRunStatus.Progress
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.Progress
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus_StartedAt
+  name: StartedAt
+  nameWithType: BacktestStudioRunStatus.StartedAt
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.StartedAt
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus_EstimatedCompletionAt
+  name: EstimatedCompletionAt
+  nameWithType: BacktestStudioRunStatus.EstimatedCompletionAt
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.EstimatedCompletionAt
+- uid: Meridian.Application.Backtesting.BacktestStudioRunStatus.Message*
+  commentId: Overload:Meridian.Application.Backtesting.BacktestStudioRunStatus.Message
+  href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html#Meridian_Application_Backtesting_BacktestStudioRunStatus_Message
+  name: Message
+  nameWithType: BacktestStudioRunStatus.Message
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunStatus.Message

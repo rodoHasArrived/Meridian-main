@@ -84,6 +84,54 @@ public static class PerformanceBudgetRegistry
         MaxMeanNanosPerEvent: 1200);
 
     // -----------------------------------------------------------------------
+    // TradeDataCollector — per-trade hot path
+    // BOTTLENECK_REPORT.md P1: Combine lock acquisitions into single RegisterTradeAndBuildStats
+    // Before fix: RegisterTrade lock + BuildOrderFlowStats lock = 2 acquisitions per trade
+    // After fix:  RegisterTradeAndBuildStats = 1 acquisition per trade
+    // Allocation impact: unavoidable domain-model objects only (Trade + 2 × MarketEvent)
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// TradeDataCollector per-trade hot path — cache-warm path (symbol already registered).
+    /// The combined <c>RegisterTradeAndBuildStats</c> call uses a single lock acquisition.
+    /// Unavoidable domain objects (Trade + MarketEvent.Trade + MarketEvent.OrderFlow)
+    /// account for ≤1024 bytes; no extra allocations from the combined lock path.
+    /// </summary>
+    /// <remarks>
+    /// Enforces regression guard for the P1 combined-lock fix.
+    /// Budget measured at 992 bytes on warm path (3 heap objects: Trade record,
+    /// MarketEvent.Trade, MarketEvent.OrderFlow with OrderFlowStatistics payload).
+    /// Validated by <c>AllocationBudgetIntegrationTests.TradeCollector_PerTrade_AllocatesWithinBudget</c>.
+    /// </remarks>
+    public static readonly IPerformanceBudget TradeCollectorPerTrade = new PerformanceBudget(
+        StageName: "TradeCollector_PerTrade",
+        MaxAllocatedBytesPerEvent: 1024,
+        MaxMeanNanosPerEvent: 5_000);
+
+    // -----------------------------------------------------------------------
+    // MarketDepthCollector — per-snapshot creation
+    // BOTTLENECK_REPORT.md P1: Move ToArray() outside write lock; use ArrayPool inside lock
+    // Before fix: ToArray() on bids + asks inside write lock on every update
+    // After fix:  ArrayPool.Rent inside lock, Span.ToArray() outside lock
+    // Managed allocation: only the final LOBSnapshot record + 2 OrderBookLevel[] arrays
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// MarketDepthCollector snapshot creation — 10-level book.
+    /// ArrayPool.Rent/Return buffers must not appear as managed allocations.
+    /// Only the final <c>LOBSnapshot</c> record and its two <c>OrderBookLevel[]</c>
+    /// arrays are expected: ≤2048 managed bytes for a 10-level book.
+    /// </summary>
+    /// <remarks>
+    /// Enforces regression guard for the P1 ArrayPool snapshot fix.
+    /// Validated by <c>AllocationBudgetIntegrationTests.DepthCollector_Snapshot_AllocatesWithinBudget</c>.
+    /// </remarks>
+    public static readonly IPerformanceBudget DepthCollectorSnapshotSmall = new PerformanceBudget(
+        StageName: "DepthCollector_Snapshot_10Levels",
+        MaxAllocatedBytesPerEvent: 2048,
+        MaxMeanNanosPerEvent: 10_000);
+
+    // -----------------------------------------------------------------------
     // Newline scan — MemoryMappedJsonlReader inner loop
     // -----------------------------------------------------------------------
 

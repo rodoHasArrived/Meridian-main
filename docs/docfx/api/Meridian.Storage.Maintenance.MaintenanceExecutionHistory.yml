@@ -1,0 +1,1450 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  id: MaintenanceExecutionHistory
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.#ctor(System.String)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution(System.String)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  - Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceExecutionHistory
+  nameWithType: MaintenanceExecutionHistory
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceExecutionHistory
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Tracks maintenance execution history with file-based persistence.
+  example: []
+  syntax:
+    content: 'public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory'
+    content.vb: Public NotInheritable Class MaintenanceExecutionHistory Implements IMaintenanceExecutionHistory
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.#ctor(System.String)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceExecutionHistory(string)
+  nameWithType: MaintenanceExecutionHistory.MaintenanceExecutionHistory(string)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.MaintenanceExecutionHistory(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public MaintenanceExecutionHistory(string dataRoot)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(dataRoot As String)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.#ctor*
+  nameWithType.vb: MaintenanceExecutionHistory.New(String)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  id: RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: RecordExecution(MaintenanceExecution)
+  nameWithType: MaintenanceExecutionHistory.RecordExecution(MaintenanceExecution)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordExecution
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Record a new execution.
+  example: []
+  syntax:
+    content: public void RecordExecution(MaintenanceExecution execution)
+    parameters:
+    - id: execution
+      type: Meridian.Storage.Maintenance.MaintenanceExecution
+    content.vb: Public Sub RecordExecution(execution As MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  id: UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: UpdateExecution(MaintenanceExecution)
+  nameWithType: MaintenanceExecutionHistory.UpdateExecution(MaintenanceExecution)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateExecution
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Update an existing execution record.
+  example: []
+  syntax:
+    content: public void UpdateExecution(MaintenanceExecution execution)
+    parameters:
+    - id: execution
+      type: Meridian.Storage.Maintenance.MaintenanceExecution
+    content.vb: Public Sub UpdateExecution(execution As MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution(System.String)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution(System.String)
+  id: GetExecution(System.String)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetExecution(string)
+  nameWithType: MaintenanceExecutionHistory.GetExecution(string)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecution
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get a specific execution by ID.
+  example: []
+  syntax:
+    content: public MaintenanceExecution? GetExecution(string executionId)
+    parameters:
+    - id: executionId
+      type: System.String
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecution
+    content.vb: Public Function GetExecution(executionId As String) As MaintenanceExecution
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(System.String)
+  nameWithType.vb: MaintenanceExecutionHistory.GetExecution(String)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution(String)
+  name.vb: GetExecution(String)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+  id: GetRecentExecutions(System.Int32)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetRecentExecutions(int)
+  nameWithType: MaintenanceExecutionHistory.GetRecentExecutions(int)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get recent executions.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MaintenanceExecution> GetRecentExecutions(int limit = 50)
+    parameters:
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Public Function GetRecentExecutions(limit As Integer = 50) As IReadOnlyList(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+  nameWithType.vb: MaintenanceExecutionHistory.GetRecentExecutions(Integer)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions(Integer)
+  name.vb: GetRecentExecutions(Integer)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  id: GetExecutionsForSchedule(System.String,System.Int32)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetExecutionsForSchedule(string, int)
+  nameWithType: MaintenanceExecutionHistory.GetExecutionsForSchedule(string, int)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecutionsForSchedule
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get executions for a specific schedule.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MaintenanceExecution> GetExecutionsForSchedule(string scheduleId, int limit = 50)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Public Function GetExecutionsForSchedule(scheduleId As String, limit As Integer = 50) As IReadOnlyList(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  nameWithType.vb: MaintenanceExecutionHistory.GetExecutionsForSchedule(String, Integer)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule(String, Integer)
+  name.vb: GetExecutionsForSchedule(String, Integer)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+  id: GetFailedExecutions(System.Int32)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetFailedExecutions(int)
+  nameWithType: MaintenanceExecutionHistory.GetFailedExecutions(int)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFailedExecutions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get failed executions.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MaintenanceExecution> GetFailedExecutions(int limit = 50)
+    parameters:
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Public Function GetFailedExecutions(limit As Integer = 50) As IReadOnlyList(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+  nameWithType.vb: MaintenanceExecutionHistory.GetFailedExecutions(Integer)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions(Integer)
+  name.vb: GetFailedExecutions(Integer)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  id: GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetExecutionsByTimeRange(DateTimeOffset, DateTimeOffset)
+  nameWithType: MaintenanceExecutionHistory.GetExecutionsByTimeRange(DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExecutionsByTimeRange
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get executions within a time range.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MaintenanceExecution> GetExecutionsByTimeRange(DateTimeOffset from, DateTimeOffset to)
+    parameters:
+    - id: from
+      type: System.DateTimeOffset
+    - id: to
+      type: System.DateTimeOffset
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Maintenance.MaintenanceExecution}
+    content.vb: Public Function GetExecutionsByTimeRange(from As DateTimeOffset, [to] As DateTimeOffset) As IReadOnlyList(Of MaintenanceExecution)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  id: GetScheduleSummary(System.String,System.Int32)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetScheduleSummary(string, int)
+  nameWithType: MaintenanceExecutionHistory.GetScheduleSummary(string, int)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScheduleSummary
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get summary for a specific schedule.
+  example: []
+  syntax:
+    content: public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 10)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: recentCount
+      type: System.Int32
+    return:
+      type: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+    content.vb: Public Function GetScheduleSummary(scheduleId As String, recentCount As Integer = 10) As ScheduleExecutionSummary
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  nameWithType.vb: MaintenanceExecutionHistory.GetScheduleSummary(String, Integer)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary(String, Integer)
+  name.vb: GetScheduleSummary(String, Integer)
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+  id: GetStatistics(System.Nullable{System.TimeSpan})
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics(TimeSpan?)
+  nameWithType: MaintenanceExecutionHistory.GetStatistics(TimeSpan?)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics(System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Get overall maintenance statistics.
+  example: []
+  syntax:
+    content: public MaintenanceStatistics GetStatistics(TimeSpan? period = null)
+    parameters:
+    - id: period
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceStatistics
+    content.vb: Public Function GetStatistics(period As TimeSpan? = Nothing) As MaintenanceStatistics
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  id: CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionHistory
+  langs:
+  - csharp
+  - vb
+  name: CleanupOldRecordsAsync(int, CancellationToken)
+  nameWithType: MaintenanceExecutionHistory.CleanupOldRecordsAsync(int, CancellationToken)
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CleanupOldRecordsAsync
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Clean up old execution records.
+  example: []
+  syntax:
+    content: public Task<int> CleanupOldRecordsAsync(int maxAgeDays = 90, CancellationToken ct = default)
+    parameters:
+    - id: maxAgeDays
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+    content.vb: Public Function CleanupOldRecordsAsync(maxAgeDays As Integer = 90, ct As CancellationToken = Nothing) As Task(Of Integer)
+  overload: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync*
+  implements:
+  - Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  nameWithType.vb: MaintenanceExecutionHistory.CleanupOldRecordsAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync(Integer, System.Threading.CancellationToken)
+  name.vb: CleanupOldRecordsAsync(Integer, CancellationToken)
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  commentId: T:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html
+  name: IMaintenanceExecutionHistory
+  nameWithType: IMaintenanceExecutionHistory
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.#ctor*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.#ctor
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory__ctor_System_String_
+  name: MaintenanceExecutionHistory
+  nameWithType: MaintenanceExecutionHistory.MaintenanceExecutionHistory
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.MaintenanceExecutionHistory
+  nameWithType.vb: MaintenanceExecutionHistory.New
+  fullName.vb: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_RecordExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  name: RecordExecution
+  nameWithType: MaintenanceExecutionHistory.RecordExecution
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.RecordExecution
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_RecordExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  name: RecordExecution(MaintenanceExecution)
+  nameWithType: IMaintenanceExecutionHistory.RecordExecution(MaintenanceExecution)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+    name: RecordExecution
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_RecordExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  - name: (
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.RecordExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+    name: RecordExecution
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_RecordExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  - name: (
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceExecution
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecution
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  name: MaintenanceExecution
+  nameWithType: MaintenanceExecution
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecution
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_UpdateExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  name: UpdateExecution
+  nameWithType: MaintenanceExecutionHistory.UpdateExecution
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.UpdateExecution
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_UpdateExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  name: UpdateExecution(MaintenanceExecution)
+  nameWithType: IMaintenanceExecutionHistory.UpdateExecution(MaintenanceExecution)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+    name: UpdateExecution
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_UpdateExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  - name: (
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.UpdateExecution(Meridian.Storage.Maintenance.MaintenanceExecution)
+    name: UpdateExecution
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_UpdateExecution_Meridian_Storage_Maintenance_MaintenanceExecution_
+  - name: (
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetExecution_System_String_
+  name: GetExecution
+  nameWithType: MaintenanceExecutionHistory.GetExecution
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecution
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(System.String)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(System.String)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecution_System_String_
+  name: GetExecution(string)
+  nameWithType: IMaintenanceExecutionHistory.GetExecution(string)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(string)
+  nameWithType.vb: IMaintenanceExecutionHistory.GetExecution(String)
+  fullName.vb: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(String)
+  name.vb: GetExecution(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(System.String)
+    name: GetExecution
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecution_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecution(System.String)
+    name: GetExecution
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecution_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetRecentExecutions_System_Int32_
+  name: GetRecentExecutions
+  nameWithType: MaintenanceExecutionHistory.GetRecentExecutions
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetRecentExecutions
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetRecentExecutions_System_Int32_
+  name: GetRecentExecutions(int)
+  nameWithType: IMaintenanceExecutionHistory.GetRecentExecutions(int)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(int)
+  nameWithType.vb: IMaintenanceExecutionHistory.GetRecentExecutions(Integer)
+  fullName.vb: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(Integer)
+  name.vb: GetRecentExecutions(Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+    name: GetRecentExecutions
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetRecentExecutions_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetRecentExecutions(System.Int32)
+    name: GetRecentExecutions
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetRecentExecutions_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Maintenance.MaintenanceExecution}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Maintenance.MaintenanceExecution}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MaintenanceExecution>
+  nameWithType: IReadOnlyList<MaintenanceExecution>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Maintenance.MaintenanceExecution>
+  nameWithType.vb: IReadOnlyList(Of MaintenanceExecution)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Maintenance.MaintenanceExecution)
+  name.vb: IReadOnlyList(Of MaintenanceExecution)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Maintenance.MaintenanceExecution
+    name: MaintenanceExecution
+    href: Meridian.Storage.Maintenance.MaintenanceExecution.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetExecutionsForSchedule_System_String_System_Int32_
+  name: GetExecutionsForSchedule
+  nameWithType: MaintenanceExecutionHistory.GetExecutionsForSchedule
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsForSchedule
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecutionsForSchedule_System_String_System_Int32_
+  name: GetExecutionsForSchedule(string, int)
+  nameWithType: IMaintenanceExecutionHistory.GetExecutionsForSchedule(string, int)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(string, int)
+  nameWithType.vb: IMaintenanceExecutionHistory.GetExecutionsForSchedule(String, Integer)
+  fullName.vb: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(String, Integer)
+  name.vb: GetExecutionsForSchedule(String, Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+    name: GetExecutionsForSchedule
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecutionsForSchedule_System_String_System_Int32_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsForSchedule(System.String,System.Int32)
+    name: GetExecutionsForSchedule
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecutionsForSchedule_System_String_System_Int32_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetFailedExecutions_System_Int32_
+  name: GetFailedExecutions
+  nameWithType: MaintenanceExecutionHistory.GetFailedExecutions
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetFailedExecutions
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetFailedExecutions_System_Int32_
+  name: GetFailedExecutions(int)
+  nameWithType: IMaintenanceExecutionHistory.GetFailedExecutions(int)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(int)
+  nameWithType.vb: IMaintenanceExecutionHistory.GetFailedExecutions(Integer)
+  fullName.vb: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(Integer)
+  name.vb: GetFailedExecutions(Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+    name: GetFailedExecutions
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetFailedExecutions_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetFailedExecutions(System.Int32)
+    name: GetFailedExecutions
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetFailedExecutions_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetExecutionsByTimeRange_System_DateTimeOffset_System_DateTimeOffset_
+  name: GetExecutionsByTimeRange
+  nameWithType: MaintenanceExecutionHistory.GetExecutionsByTimeRange
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetExecutionsByTimeRange
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecutionsByTimeRange_System_DateTimeOffset_System_DateTimeOffset_
+  name: GetExecutionsByTimeRange(DateTimeOffset, DateTimeOffset)
+  nameWithType: IMaintenanceExecutionHistory.GetExecutionsByTimeRange(DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset, System.DateTimeOffset)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+    name: GetExecutionsByTimeRange
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecutionsByTimeRange_System_DateTimeOffset_System_DateTimeOffset_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetExecutionsByTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+    name: GetExecutionsByTimeRange
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetExecutionsByTimeRange_System_DateTimeOffset_System_DateTimeOffset_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetScheduleSummary_System_String_System_Int32_
+  name: GetScheduleSummary
+  nameWithType: MaintenanceExecutionHistory.GetScheduleSummary
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetScheduleSummary
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetScheduleSummary_System_String_System_Int32_
+  name: GetScheduleSummary(string, int)
+  nameWithType: IMaintenanceExecutionHistory.GetScheduleSummary(string, int)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(string, int)
+  nameWithType.vb: IMaintenanceExecutionHistory.GetScheduleSummary(String, Integer)
+  fullName.vb: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(String, Integer)
+  name.vb: GetScheduleSummary(String, Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+    name: GetScheduleSummary
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetScheduleSummary_System_String_System_Int32_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetScheduleSummary(System.String,System.Int32)
+    name: GetScheduleSummary
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetScheduleSummary_System_String_System_Int32_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  commentId: T:Meridian.Storage.Maintenance.ScheduleExecutionSummary
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.ScheduleExecutionSummary.html
+  name: ScheduleExecutionSummary
+  nameWithType: ScheduleExecutionSummary
+  fullName: Meridian.Storage.Maintenance.ScheduleExecutionSummary
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_GetStatistics_System_Nullable_System_TimeSpan__
+  name: GetStatistics
+  nameWithType: MaintenanceExecutionHistory.GetStatistics
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.GetStatistics
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetStatistics_System_Nullable_System_TimeSpan__
+  name: GetStatistics(TimeSpan?)
+  nameWithType: IMaintenanceExecutionHistory.GetStatistics(TimeSpan?)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetStatistics(System.TimeSpan?)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+    name: GetStatistics
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetStatistics_System_Nullable_System_TimeSpan__
+  - name: (
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.GetStatistics(System.Nullable{System.TimeSpan})
+    name: GetStatistics
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_GetStatistics_System_Nullable_System_TimeSpan__
+  - name: (
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  - name: )
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Meridian.Storage.Maintenance.MaintenanceStatistics
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceStatistics
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceStatistics.html
+  name: MaintenanceStatistics
+  nameWithType: MaintenanceStatistics
+  fullName: Meridian.Storage.Maintenance.MaintenanceStatistics
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_MaintenanceExecutionHistory_CleanupOldRecordsAsync_System_Int32_System_Threading_CancellationToken_
+  name: CleanupOldRecordsAsync
+  nameWithType: MaintenanceExecutionHistory.CleanupOldRecordsAsync
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionHistory.CleanupOldRecordsAsync
+- uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory
+  isExternal: true
+  href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_CleanupOldRecordsAsync_System_Int32_System_Threading_CancellationToken_
+  name: CleanupOldRecordsAsync(int, CancellationToken)
+  nameWithType: IMaintenanceExecutionHistory.CleanupOldRecordsAsync(int, CancellationToken)
+  fullName: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(int, System.Threading.CancellationToken)
+  nameWithType.vb: IMaintenanceExecutionHistory.CleanupOldRecordsAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(Integer, System.Threading.CancellationToken)
+  name.vb: CleanupOldRecordsAsync(Integer, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+    name: CleanupOldRecordsAsync
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_CleanupOldRecordsAsync_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.CleanupOldRecordsAsync(System.Int32,System.Threading.CancellationToken)
+    name: CleanupOldRecordsAsync
+    href: Meridian.Storage.Maintenance.IMaintenanceExecutionHistory.html#Meridian_Storage_Maintenance_IMaintenanceExecutionHistory_CleanupOldRecordsAsync_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

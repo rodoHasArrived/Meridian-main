@@ -25,6 +25,7 @@ namespace Meridian.Application.Config;
 /// <param name="Backfill">Optional historical backfill defaults.</param>
 /// <param name="Sources">Source registry persistence path.</param>
 /// <param name="DataSources">Multiple data source configurations for real-time and historical data.</param>
+/// <param name="ProviderConnections">Relationship-aware provider connections, bindings, policies, presets, and certifications.</param>
 /// <param name="Derivatives">Derivatives (options) data collection configuration.</param>
 /// <param name="ProviderRegistry">Unified provider registry configuration controlling attribute-based discovery.</param>
 /// <param name="Coordination">Multi-instance coordination configuration.</param>
@@ -47,6 +48,7 @@ public sealed record AppConfig(
     BackfillConfig? Backfill = null,
     SourceRegistryConfig? Sources = null,
     DataSourcesConfig? DataSources = null,
+    ProviderConnectionsConfig? ProviderConnections = null,
     DerivativesConfig? Derivatives = null,
     ProviderRegistryConfig? ProviderRegistry = null,
     CoordinationConfig? Coordination = null,

@@ -1,0 +1,640 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  id: CanonicalizationMetricsSnapshot
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped
+  - Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizationMetricsSnapshot
+  nameWithType: CanonicalizationMetricsSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalizationMetricsSnapshot
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Snapshot of canonicalization pipeline metrics.
+  example: []
+  syntax:
+    content: 'public readonly record struct CanonicalizationMetricsSnapshot : IEquatable<CanonicalizationMetricsSnapshot>'
+    content.vb: Public Structure CanonicalizationMetricsSnapshot Implements IEquatable(Of CanonicalizationMetricsSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)
+  commentId: M:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)
+  id: '#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Double)'
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizationMetricsSnapshot(long, long, long, long, long, double)
+  nameWithType: CanonicalizationMetricsSnapshot.CanonicalizationMetricsSnapshot(long, long, long, long, long, double)
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.CanonicalizationMetricsSnapshot(long, long, long, long, long, double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Snapshot of canonicalization pipeline metrics.
+  example: []
+  syntax:
+    content: public CanonicalizationMetricsSnapshot(long Canonicalized, long Skipped, long Unresolved, long DualWrites, long Quarantined, double AverageDurationUs)
+    parameters:
+    - id: Canonicalized
+      type: System.Int64
+    - id: Skipped
+      type: System.Int64
+    - id: Unresolved
+      type: System.Int64
+    - id: DualWrites
+      type: System.Int64
+    - id: Quarantined
+      type: System.Int64
+    - id: AverageDurationUs
+      type: System.Double
+    content.vb: Public Sub New(Canonicalized As Long, Skipped As Long, Unresolved As Long, DualWrites As Long, Quarantined As Long, AverageDurationUs As Double)
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.#ctor*
+  nameWithType.vb: CanonicalizationMetricsSnapshot.New(Long, Long, Long, Long, Long, Double)
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.New(Long, Long, Long, Long, Long, Double)
+  name.vb: New(Long, Long, Long, Long, Long, Double)
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized
+  id: Canonicalized
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Canonicalized
+  nameWithType: CanonicalizationMetricsSnapshot.Canonicalized
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Canonicalized
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long Canonicalized { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Canonicalized As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized*
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped
+  id: Skipped
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Skipped
+  nameWithType: CanonicalizationMetricsSnapshot.Skipped
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skipped
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long Skipped { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Skipped As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped*
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved
+  id: Unresolved
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Unresolved
+  nameWithType: CanonicalizationMetricsSnapshot.Unresolved
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unresolved
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long Unresolved { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Unresolved As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved*
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites
+  id: DualWrites
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DualWrites
+  nameWithType: CanonicalizationMetricsSnapshot.DualWrites
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DualWrites
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long DualWrites { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DualWrites As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites*
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined
+  id: Quarantined
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Quarantined
+  nameWithType: CanonicalizationMetricsSnapshot.Quarantined
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quarantined
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public long Quarantined { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quarantined As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined*
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs
+  id: AverageDurationUs
+  parent: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AverageDurationUs
+  nameWithType: CanonicalizationMetricsSnapshot.AverageDurationUs
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageDurationUs
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public double AverageDurationUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageDurationUs As Double
+  overload: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs*
+references:
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: System.IEquatable{Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CanonicalizationMetricsSnapshot>
+  nameWithType: IEquatable<CanonicalizationMetricsSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot>
+  nameWithType.vb: IEquatable(Of CanonicalizationMetricsSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot)
+  name.vb: IEquatable(Of CanonicalizationMetricsSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+    name: CanonicalizationMetricsSnapshot
+    href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+    name: CanonicalizationMetricsSnapshot
+    href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.#ctor
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot__ctor_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Double_
+  name: CanonicalizationMetricsSnapshot
+  nameWithType: CanonicalizationMetricsSnapshot.CanonicalizationMetricsSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.CanonicalizationMetricsSnapshot
+  nameWithType.vb: CanonicalizationMetricsSnapshot.New
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot_Canonicalized
+  name: Canonicalized
+  nameWithType: CanonicalizationMetricsSnapshot.Canonicalized
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Canonicalized
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot_Skipped
+  name: Skipped
+  nameWithType: CanonicalizationMetricsSnapshot.Skipped
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Skipped
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot_Unresolved
+  name: Unresolved
+  nameWithType: CanonicalizationMetricsSnapshot.Unresolved
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Unresolved
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot_DualWrites
+  name: DualWrites
+  nameWithType: CanonicalizationMetricsSnapshot.DualWrites
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.DualWrites
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot_Quarantined
+  name: Quarantined
+  nameWithType: CanonicalizationMetricsSnapshot.Quarantined
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.Quarantined
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html#Meridian_Application_Canonicalization_CanonicalizationMetricsSnapshot_AverageDurationUs
+  name: AverageDurationUs
+  nameWithType: CanonicalizationMetricsSnapshot.AverageDurationUs
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.AverageDurationUs

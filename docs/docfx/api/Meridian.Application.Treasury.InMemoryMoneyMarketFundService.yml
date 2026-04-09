@@ -1,0 +1,1957 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  commentId: T:Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  id: InMemoryMoneyMarketFundService
+  parent: Meridian.Application.Treasury
+  children:
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: InMemoryMoneyMarketFundService
+  nameWithType: InMemoryMoneyMarketFundService
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InMemoryMoneyMarketFundService
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    In-memory implementation of <xref href="Meridian.Application.Treasury.IMoneyMarketFundService" data-throw-if-not-resolved="false"></xref> and
+
+    <xref href="Meridian.Application.Treasury.IMmfLiquidityService" data-throw-if-not-resolved="false"></xref> for unit testing and development scenarios.
+
+    Fund records are registered directly via <xref href="Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid%2cSystem.String%2cSystem.String%2cSystem.String%2cSystem.Boolean%2cSystem.Nullable%7bSystem.Int32%7d%2cSystem.Boolean%2cSystem.Boolean%2cSystem.Nullable%7bMeridian.Contracts.Treasury.MmfLiquidityState%7d%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
+
+    Liquidity state is computed from WAM bands unless overridden per-fund.
+  example: []
+  syntax:
+    content: 'public sealed class InMemoryMoneyMarketFundService : IMoneyMarketFundService, IMmfLiquidityService'
+    content.vb: Public NotInheritable Class InMemoryMoneyMarketFundService Implements IMoneyMarketFundService, IMmfLiquidityService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService
+  - Meridian.Application.Treasury.IMmfLiquidityService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+  id: RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: RegisterAsync(Guid, string, string, string?, bool, int?, bool, bool, MmfLiquidityState?, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.RegisterAsync(Guid, string, string, string?, bool, int?, bool, bool, MmfLiquidityState?, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid, string, string, string?, bool, int?, bool, bool, Meridian.Contracts.Treasury.MmfLiquidityState?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Seeds the in-memory store with an MMF record.
+
+    Calling this with the same <code class="paramref">securityId</code> twice overwrites the earlier entry.
+  example: []
+  syntax:
+    content: public Task RegisterAsync(Guid securityId, string displayName, string currency, string? fundFamily, bool isSweepEligible, int? weightedAverageMaturityDays, bool hasLiquidityFee, bool isActive = true, MmfLiquidityState? liquidityStateOverride = null, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: displayName
+      type: System.String
+    - id: currency
+      type: System.String
+    - id: fundFamily
+      type: System.String
+    - id: isSweepEligible
+      type: System.Boolean
+    - id: weightedAverageMaturityDays
+      type: System.Nullable{System.Int32}
+    - id: hasLiquidityFee
+      type: System.Boolean
+    - id: isActive
+      type: System.Boolean
+    - id: liquidityStateOverride
+      type: System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RegisterAsync(securityId As Guid, displayName As String, currency As String, fundFamily As String, isSweepEligible As Boolean, weightedAverageMaturityDays As Integer?, hasLiquidityFee As Boolean, isActive As Boolean = True, liquidityStateOverride As MmfLiquidityState? = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync*
+  nameWithType.vb: InMemoryMoneyMarketFundService.RegisterAsync(Guid, String, String, String, Boolean, Integer?, Boolean, Boolean, MmfLiquidityState?, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid, String, String, String, Boolean, Integer?, Boolean, Boolean, Meridian.Contracts.Treasury.MmfLiquidityState?, System.Threading.CancellationToken)
+  name.vb: RegisterAsync(Guid, String, String, String, Boolean, Integer?, Boolean, Boolean, MmfLiquidityState?, CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetByIdAsync(Guid, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByIdAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the full MMF reference record for the given security ID,
+
+    or <code>null</code> if the security does not exist or is not an MMF.
+  example: []
+  syntax:
+    content: public Task<MmfDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfDetailDto}
+    content.vb: Public Function GetByIdAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of MmfDetailDto)
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+  id: SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(MmfSearchQuery, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.SearchAsync(MmfSearchQuery, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Searches for MMFs matching the given criteria.
+
+    Returns an empty list when no matches are found.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<MmfDetailDto>> SearchAsync(MmfSearchQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.Treasury.MmfSearchQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+    content.vb: Public Function SearchAsync(query As MmfSearchQuery, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of MmfDetailDto))
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetLiquidityAsync(Guid, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetLiquidityAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLiquidityAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the current liquidity projection (state and WAM) for the given MMF,
+
+    or <code>null</code> if the security does not exist.
+  example: []
+  syntax:
+    content: public Task<MmfLiquidityDto?> GetLiquidityAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+    content.vb: Public Function GetLiquidityAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of MmfLiquidityDto)
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetSweepProfileAsync(Guid, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetSweepProfileAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSweepProfileAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the sweep-eligibility and fee profile for the given MMF,
+
+    or <code>null</code> if the security does not exist.
+  example: []
+  syntax:
+    content: public Task<MmfSweepProfileDto?> GetSweepProfileAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfSweepProfileDto}
+    content.vb: Public Function GetSweepProfileAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of MmfSweepProfileDto)
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  id: GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetFundFamilyAsync(string, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetFundFamilyAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFundFamilyAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the fund-family grouping for the given normalised family name,
+
+    or <code>null</code> if no MMFs are registered under that family.
+  example: []
+  syntax:
+    content: public Task<MmfFundFamilyDto?> GetFundFamilyAsync(string normalizedFamilyName, CancellationToken ct = default)
+    parameters:
+    - id: normalizedFamilyName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+    content.vb: Public Function GetFundFamilyAsync(normalizedFamilyName As String, ct As CancellationToken = Nothing) As Task(Of MmfFundFamilyDto)
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: InMemoryMoneyMarketFundService.GetFundFamilyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync(String, System.Threading.CancellationToken)
+  name.vb: GetFundFamilyAsync(String, CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  id: GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetRebuildCheckpointsAsync(CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync(CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRebuildCheckpointsAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: Returns all projection rebuild checkpoints across registered MMFs.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<MmfRebuildCheckpointDto>> GetRebuildCheckpointsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfRebuildCheckpointDto}}
+    content.vb: Public Function GetRebuildCheckpointsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of MmfRebuildCheckpointDto))
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+  id: RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: RebuildProjectionsAsync(Guid, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.RebuildProjectionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildProjectionsAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Triggers a deterministic rebuild of all projections for the given MMF
+
+    and records a rebuild checkpoint.
+  example: []
+  syntax:
+    content: public Task RebuildProjectionsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RebuildProjectionsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync*
+  implements:
+  - Meridian.Application.Treasury.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetLiquidityStateAsync(Guid, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetLiquidityStateAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLiquidityStateAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the current liquidity state for the given MMF,
+
+    or <code>null</code> if the security does not exist.
+  example: []
+  syntax:
+    content: public Task<MmfLiquidityDto?> GetLiquidityStateAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+    content.vb: Public Function GetLiquidityStateAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of MmfLiquidityDto)
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync*
+  implements:
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  id: GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetFamilyProjectionAsync(string, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFamilyProjectionAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the fund-family projection for the given normalised family name,
+
+    or <code>null</code> if no MMFs are registered under that family.
+  example: []
+  syntax:
+    content: public Task<MmfFundFamilyDto?> GetFamilyProjectionAsync(string normalizedFamilyName, CancellationToken ct = default)
+    parameters:
+    - id: normalizedFamilyName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+    content.vb: Public Function GetFamilyProjectionAsync(normalizedFamilyName As String, ct As CancellationToken = Nothing) As Task(Of MmfFundFamilyDto)
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync*
+  implements:
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync(String, System.Threading.CancellationToken)
+  name.vb: GetFamilyProjectionAsync(String, CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  id: GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetByFamilyAsync(string, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetByFamilyAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByFamilyAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns all MMFs belonging to the given fund family.
+
+    Returns an empty list when no members are found.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<MmfDetailDto>> GetByFamilyAsync(string normalizedFamilyName, CancellationToken ct = default)
+    parameters:
+    - id: normalizedFamilyName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+    content.vb: Public Function GetByFamilyAsync(normalizedFamilyName As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of MmfDetailDto))
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync*
+  implements:
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: InMemoryMoneyMarketFundService.GetByFamilyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync(String, System.Threading.CancellationToken)
+  name.vb: GetByFamilyAsync(String, CancellationToken)
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  id: GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: GetAllLiquidFundsAsync(CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync(CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllLiquidFundsAsync
+    path: ../../src/Meridian.Application/Treasury/InMemoryMoneyMarketFundService.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns all active MMFs currently in the <xref href="Meridian.Contracts.Treasury.MmfLiquidityState.Liquid" data-throw-if-not-resolved="false"></xref> state.
+
+    Used by treasury and cash-management dashboards for portfolio-level liquidity views.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<MmfLiquidityDto>> GetAllLiquidFundsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfLiquidityDto}}
+    content.vb: Public Function GetAllLiquidFundsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of MmfLiquidityDto))
+  overload: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync*
+  implements:
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService
+  commentId: T:Meridian.Application.Treasury.IMoneyMarketFundService
+  parent: Meridian.Application.Treasury
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html
+  name: IMoneyMarketFundService
+  nameWithType: IMoneyMarketFundService
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService
+- uid: Meridian.Application.Treasury.IMmfLiquidityService
+  commentId: T:Meridian.Application.Treasury.IMmfLiquidityService
+  parent: Meridian.Application.Treasury
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html
+  name: IMmfLiquidityService
+  nameWithType: IMmfLiquidityService
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_RegisterAsync_System_Guid_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_Boolean_System_Boolean_System_Nullable_Meridian_Contracts_Treasury_MmfLiquidityState__System_Threading_CancellationToken_
+  name: RegisterAsync(Guid, string, string, string, bool, int?, bool, bool, MmfLiquidityState?, CancellationToken)
+  nameWithType: InMemoryMoneyMarketFundService.RegisterAsync(Guid, string, string, string, bool, int?, bool, bool, MmfLiquidityState?, CancellationToken)
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid, string, string, string, bool, int?, bool, bool, Meridian.Contracts.Treasury.MmfLiquidityState?, System.Threading.CancellationToken)
+  nameWithType.vb: InMemoryMoneyMarketFundService.RegisterAsync(Guid, String, String, String, Boolean, Integer?, Boolean, Boolean, MmfLiquidityState?, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid, String, String, String, Boolean, Integer?, Boolean, Boolean, Meridian.Contracts.Treasury.MmfLiquidityState?, System.Threading.CancellationToken)
+  name.vb: RegisterAsync(Guid, String, String, String, Boolean, Integer?, Boolean, Boolean, MmfLiquidityState?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+    name: RegisterAsync
+    href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_RegisterAsync_System_Guid_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_Boolean_System_Boolean_System_Nullable_Meridian_Contracts_Treasury_MmfLiquidityState__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityState
+    name: MmfLiquidityState
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync(System.Guid,System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.Boolean,System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState},System.Threading.CancellationToken)
+    name: RegisterAsync
+    href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_RegisterAsync_System_Guid_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_Boolean_System_Boolean_System_Nullable_Meridian_Contracts_Treasury_MmfLiquidityState__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityState
+    name: MmfLiquidityState
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Treasury
+  commentId: N:Meridian.Application.Treasury
+  href: Meridian.html
+  name: Meridian.Application.Treasury
+  nameWithType: Meridian.Application.Treasury
+  fullName: Meridian.Application.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Treasury
+    name: Treasury
+    href: Meridian.Application.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Treasury
+    name: Treasury
+    href: Meridian.Application.Treasury.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_RegisterAsync_System_Guid_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_Boolean_System_Boolean_System_Nullable_Meridian_Contracts_Treasury_MmfLiquidityState__System_Threading_CancellationToken_
+  name: RegisterAsync
+  nameWithType: InMemoryMoneyMarketFundService.RegisterAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RegisterAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState}
+  commentId: T:System.Nullable{Meridian.Contracts.Treasury.MmfLiquidityState}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Treasury.MmfLiquidityState.html
+  name: MmfLiquidityState?
+  nameWithType: MmfLiquidityState?
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState?
+  spec.csharp:
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityState
+    name: MmfLiquidityState
+    href: Meridian.Contracts.Treasury.MmfLiquidityState.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityState
+    name: MmfLiquidityState
+    href: Meridian.Contracts.Treasury.MmfLiquidityState.html
+  - name: '?'
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetByIdAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetByIdAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByIdAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetByIdAsync(Guid, CancellationToken)
+  nameWithType: IMoneyMarketFundService.GetByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.GetByIdAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetByIdAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetByIdAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfDetailDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfDetailDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MmfDetailDto>
+  nameWithType: Task<MmfDetailDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Treasury.MmfDetailDto>
+  nameWithType.vb: Task(Of MmfDetailDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Treasury.MmfDetailDto)
+  name.vb: Task(Of MmfDetailDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfDetailDto
+    name: MmfDetailDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfDetailDto
+    name: MmfDetailDto
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_SearchAsync_Meridian_Contracts_Treasury_MmfSearchQuery_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: InMemoryMoneyMarketFundService.SearchAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.SearchAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_SearchAsync_Meridian_Contracts_Treasury_MmfSearchQuery_System_Threading_CancellationToken_
+  name: SearchAsync(MmfSearchQuery, CancellationToken)
+  nameWithType: IMoneyMarketFundService.SearchAsync(MmfSearchQuery, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_SearchAsync_Meridian_Contracts_Treasury_MmfSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Treasury.MmfSearchQuery
+    name: MmfSearchQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.SearchAsync(Meridian.Contracts.Treasury.MmfSearchQuery,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_SearchAsync_Meridian_Contracts_Treasury_MmfSearchQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Treasury.MmfSearchQuery
+    name: MmfSearchQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Treasury.MmfSearchQuery
+  commentId: T:Meridian.Contracts.Treasury.MmfSearchQuery
+  parent: Meridian.Contracts.Treasury
+  href: Meridian.Contracts.Treasury.MmfSearchQuery.html
+  name: MmfSearchQuery
+  nameWithType: MmfSearchQuery
+  fullName: Meridian.Contracts.Treasury.MmfSearchQuery
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<MmfDetailDto>>
+  nameWithType: Task<IReadOnlyList<MmfDetailDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Treasury.MmfDetailDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of MmfDetailDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Treasury.MmfDetailDto))
+  name.vb: Task(Of IReadOnlyList(Of MmfDetailDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfDetailDto
+    name: MmfDetailDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfDetailDto
+    name: MmfDetailDto
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Treasury
+  commentId: N:Meridian.Contracts.Treasury
+  href: Meridian.html
+  name: Meridian.Contracts.Treasury
+  nameWithType: Meridian.Contracts.Treasury
+  fullName: Meridian.Contracts.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetLiquidityAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetLiquidityAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetLiquidityAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetLiquidityAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetLiquidityAsync(Guid, CancellationToken)
+  nameWithType: IMoneyMarketFundService.GetLiquidityAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.GetLiquidityAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetLiquidityAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetLiquidityAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetLiquidityAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetLiquidityAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetLiquidityAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MmfLiquidityDto>
+  nameWithType: Task<MmfLiquidityDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Treasury.MmfLiquidityDto>
+  nameWithType.vb: Task(Of MmfLiquidityDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Treasury.MmfLiquidityDto)
+  name.vb: Task(Of MmfLiquidityDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetSweepProfileAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetSweepProfileAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetSweepProfileAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetSweepProfileAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetSweepProfileAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetSweepProfileAsync(Guid, CancellationToken)
+  nameWithType: IMoneyMarketFundService.GetSweepProfileAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetSweepProfileAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetSweepProfileAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetSweepProfileAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetSweepProfileAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetSweepProfileAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfSweepProfileDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfSweepProfileDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MmfSweepProfileDto>
+  nameWithType: Task<MmfSweepProfileDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Treasury.MmfSweepProfileDto>
+  nameWithType.vb: Task(Of MmfSweepProfileDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Treasury.MmfSweepProfileDto)
+  name.vb: Task(Of MmfSweepProfileDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfSweepProfileDto
+    name: MmfSweepProfileDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfSweepProfileDto
+    name: MmfSweepProfileDto
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetFundFamilyAsync_System_String_System_Threading_CancellationToken_
+  name: GetFundFamilyAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetFundFamilyAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFundFamilyAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetFundFamilyAsync_System_String_System_Threading_CancellationToken_
+  name: GetFundFamilyAsync(string, CancellationToken)
+  nameWithType: IMoneyMarketFundService.GetFundFamilyAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IMoneyMarketFundService.GetFundFamilyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(String, System.Threading.CancellationToken)
+  name.vb: GetFundFamilyAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+    name: GetFundFamilyAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetFundFamilyAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetFundFamilyAsync(System.String,System.Threading.CancellationToken)
+    name: GetFundFamilyAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetFundFamilyAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MmfFundFamilyDto>
+  nameWithType: Task<MmfFundFamilyDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Treasury.MmfFundFamilyDto>
+  nameWithType.vb: Task(Of MmfFundFamilyDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Treasury.MmfFundFamilyDto)
+  name.vb: Task(Of MmfFundFamilyDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfFundFamilyDto
+    name: MmfFundFamilyDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfFundFamilyDto
+    name: MmfFundFamilyDto
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetRebuildCheckpointsAsync_System_Threading_CancellationToken_
+  name: GetRebuildCheckpointsAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetRebuildCheckpointsAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetRebuildCheckpointsAsync_System_Threading_CancellationToken_
+  name: GetRebuildCheckpointsAsync(CancellationToken)
+  nameWithType: IMoneyMarketFundService.GetRebuildCheckpointsAsync(CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+    name: GetRebuildCheckpointsAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetRebuildCheckpointsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.GetRebuildCheckpointsAsync(System.Threading.CancellationToken)
+    name: GetRebuildCheckpointsAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_GetRebuildCheckpointsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfRebuildCheckpointDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfRebuildCheckpointDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<MmfRebuildCheckpointDto>>
+  nameWithType: Task<IReadOnlyList<MmfRebuildCheckpointDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Treasury.MmfRebuildCheckpointDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of MmfRebuildCheckpointDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Treasury.MmfRebuildCheckpointDto))
+  name.vb: Task(Of IReadOnlyList(Of MmfRebuildCheckpointDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+    name: MmfRebuildCheckpointDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+    name: MmfRebuildCheckpointDto
+  - name: )
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_RebuildProjectionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: RebuildProjectionsAsync
+  nameWithType: InMemoryMoneyMarketFundService.RebuildProjectionsAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.RebuildProjectionsAsync
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMoneyMarketFundService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_RebuildProjectionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: RebuildProjectionsAsync(Guid, CancellationToken)
+  nameWithType: IMoneyMarketFundService.RebuildProjectionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: RebuildProjectionsAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_RebuildProjectionsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMoneyMarketFundService.RebuildProjectionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: RebuildProjectionsAsync
+    href: Meridian.Application.Treasury.IMoneyMarketFundService.html#Meridian_Application_Treasury_IMoneyMarketFundService_RebuildProjectionsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetLiquidityStateAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetLiquidityStateAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetLiquidityStateAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetLiquidityStateAsync
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetLiquidityStateAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetLiquidityStateAsync(Guid, CancellationToken)
+  nameWithType: IMmfLiquidityService.GetLiquidityStateAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetLiquidityStateAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetLiquidityStateAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetLiquidityStateAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetLiquidityStateAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetFamilyProjectionAsync_System_String_System_Threading_CancellationToken_
+  name: GetFamilyProjectionAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetFamilyProjectionAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetFamilyProjectionAsync
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetFamilyProjectionAsync_System_String_System_Threading_CancellationToken_
+  name: GetFamilyProjectionAsync(string, CancellationToken)
+  nameWithType: IMmfLiquidityService.GetFamilyProjectionAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IMmfLiquidityService.GetFamilyProjectionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(String, System.Threading.CancellationToken)
+  name.vb: GetFamilyProjectionAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+    name: GetFamilyProjectionAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetFamilyProjectionAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+    name: GetFamilyProjectionAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetFamilyProjectionAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetByFamilyAsync_System_String_System_Threading_CancellationToken_
+  name: GetByFamilyAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetByFamilyAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetByFamilyAsync
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetByFamilyAsync_System_String_System_Threading_CancellationToken_
+  name: GetByFamilyAsync(string, CancellationToken)
+  nameWithType: IMmfLiquidityService.GetByFamilyAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IMmfLiquidityService.GetByFamilyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(String, System.Threading.CancellationToken)
+  name.vb: GetByFamilyAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+    name: GetByFamilyAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetByFamilyAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+    name: GetByFamilyAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetByFamilyAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  commentId: F:Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  name: Liquid
+  nameWithType: MmfLiquidityState.Liquid
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync*
+  commentId: Overload:Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html#Meridian_Application_Treasury_InMemoryMoneyMarketFundService_GetAllLiquidFundsAsync_System_Threading_CancellationToken_
+  name: GetAllLiquidFundsAsync
+  nameWithType: InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.GetAllLiquidFundsAsync
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  isExternal: true
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetAllLiquidFundsAsync_System_Threading_CancellationToken_
+  name: GetAllLiquidFundsAsync(CancellationToken)
+  nameWithType: IMmfLiquidityService.GetAllLiquidFundsAsync(CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+    name: GetAllLiquidFundsAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetAllLiquidFundsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+    name: GetAllLiquidFundsAsync
+    href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetAllLiquidFundsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfLiquidityDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfLiquidityDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<MmfLiquidityDto>>
+  nameWithType: Task<IReadOnlyList<MmfLiquidityDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Treasury.MmfLiquidityDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of MmfLiquidityDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Treasury.MmfLiquidityDto))
+  name.vb: Task(Of IReadOnlyList(Of MmfLiquidityDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: )
+  - name: )

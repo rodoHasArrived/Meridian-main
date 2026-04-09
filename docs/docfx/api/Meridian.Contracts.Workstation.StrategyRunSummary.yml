@@ -1,0 +1,1405 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunSummary
+  id: StrategyRunSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)
+  - Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
+  - Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
+  - Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
+  - Meridian.Contracts.Workstation.StrategyRunSummary.Engine
+  - Meridian.Contracts.Workstation.StrategyRunSummary.Execution
+  - Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference
+  - Meridian.Contracts.Workstation.StrategyRunSummary.FillCount
+  - Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity
+  - Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName
+  - Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId
+  - Meridian.Contracts.Workstation.StrategyRunSummary.Governance
+  - Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt
+  - Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
+  - Meridian.Contracts.Workstation.StrategyRunSummary.Mode
+  - Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+  - Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
+  - Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
+  - Meridian.Contracts.Workstation.StrategyRunSummary.RunId
+  - Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt
+  - Meridian.Contracts.Workstation.StrategyRunSummary.Status
+  - Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId
+  - Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName
+  - Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunSummary
+  nameWithType: StrategyRunSummary
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunSummary
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Summary row shown in a run browser or recent-run list.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyRunSummary : IEquatable<StrategyRunSummary>'
+    content.vb: Public NotInheritable Class StrategyRunSummary Implements IEquatable(Of StrategyRunSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.StrategyRunSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunSummary(string, string, string, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, DateTimeOffset, string?, StrategyRunExecutionSummary?, StrategyRunPromotionSummary?, StrategyRunGovernanceSummary?, string?, string?)
+  nameWithType: StrategyRunSummary.StrategyRunSummary(string, string, string, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, DateTimeOffset, string?, StrategyRunExecutionSummary?, StrategyRunPromotionSummary?, StrategyRunGovernanceSummary?, string?, string?)
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyRunSummary(string, string, string, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Contracts.Workstation.StrategyRunStatus, System.DateTimeOffset, System.DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, System.DateTimeOffset, string?, Meridian.Contracts.Workstation.StrategyRunExecutionSummary?, Meridian.Contracts.Workstation.StrategyRunPromotionSummary?, Meridian.Contracts.Workstation.StrategyRunGovernanceSummary?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Summary row shown in a run browser or recent-run list.
+  example: []
+  syntax:
+    content: public StrategyRunSummary(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, string? DatasetReference, string? FeedReference, string? PortfolioId, string? LedgerReference, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, int FillCount, DateTimeOffset LastUpdatedAt, string? AuditReference = null, StrategyRunExecutionSummary? Execution = null, StrategyRunPromotionSummary? Promotion = null, StrategyRunGovernanceSummary? Governance = null, string? FundProfileId = null, string? FundDisplayName = null)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: Mode
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    - id: Engine
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+    - id: Status
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    - id: StartedAt
+      type: System.DateTimeOffset
+    - id: CompletedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: DatasetReference
+      type: System.String
+    - id: FeedReference
+      type: System.String
+    - id: PortfolioId
+      type: System.String
+    - id: LedgerReference
+      type: System.String
+    - id: NetPnl
+      type: System.Nullable{System.Decimal}
+    - id: TotalReturn
+      type: System.Nullable{System.Decimal}
+    - id: FinalEquity
+      type: System.Nullable{System.Decimal}
+    - id: FillCount
+      type: System.Int32
+    - id: LastUpdatedAt
+      type: System.DateTimeOffset
+    - id: AuditReference
+      type: System.String
+    - id: Execution
+      type: Meridian.Contracts.Workstation.StrategyRunExecutionSummary
+    - id: Promotion
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+    - id: Governance
+      type: Meridian.Contracts.Workstation.StrategyRunGovernanceSummary
+    - id: FundProfileId
+      type: System.String
+    - id: FundDisplayName
+      type: System.String
+    content.vb: Public Sub New(RunId As String, StrategyId As String, StrategyName As String, Mode As StrategyRunMode, Engine As StrategyRunEngine, Status As StrategyRunStatus, StartedAt As DateTimeOffset, CompletedAt As DateTimeOffset?, DatasetReference As String, FeedReference As String, PortfolioId As String, LedgerReference As String, NetPnl As Decimal?, TotalReturn As Decimal?, FinalEquity As Decimal?, FillCount As Integer, LastUpdatedAt As DateTimeOffset, AuditReference As String = Nothing, Execution As StrategyRunExecutionSummary = Nothing, Promotion As StrategyRunPromotionSummary = Nothing, Governance As StrategyRunGovernanceSummary = Nothing, FundProfileId As String = Nothing, FundDisplayName As String = Nothing)
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor*
+  nameWithType.vb: StrategyRunSummary.New(String, String, String, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, DateTimeOffset, String, StrategyRunExecutionSummary, StrategyRunPromotionSummary, StrategyRunGovernanceSummary, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunSummary.New(String, String, String, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Contracts.Workstation.StrategyRunStatus, System.DateTimeOffset, System.DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, System.DateTimeOffset, String, Meridian.Contracts.Workstation.StrategyRunExecutionSummary, Meridian.Contracts.Workstation.StrategyRunPromotionSummary, Meridian.Contracts.Workstation.StrategyRunGovernanceSummary, String, String)
+  name.vb: New(String, String, String, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, DateTimeOffset, String, StrategyRunExecutionSummary, StrategyRunPromotionSummary, StrategyRunGovernanceSummary, String, String)
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.RunId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: StrategyRunSummary.RunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.RunId*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId
+  id: StrategyId
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: StrategyRunSummary.StrategyId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName
+  id: StrategyName
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: StrategyRunSummary.StrategyName
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Mode
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.Mode
+  id: Mode
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: Mode
+  nameWithType: StrategyRunSummary.Mode
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Mode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mode
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunMode Mode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    content.vb: Public Property Mode As StrategyRunMode
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.Mode*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Engine
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.Engine
+  id: Engine
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: Engine
+  nameWithType: StrategyRunSummary.Engine
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Engine
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Engine
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunEngine Engine { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+    content.vb: Public Property Engine As StrategyRunEngine
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.Engine*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Status
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.Status
+  id: Status
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: StrategyRunSummary.Status
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    content.vb: Public Property Status As StrategyRunStatus
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.Status*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt
+  id: StartedAt
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: StrategyRunSummary.StartedAt
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset StartedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartedAt As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: StrategyRunSummary.CompletedAt
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
+  id: DatasetReference
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: DatasetReference
+  nameWithType: StrategyRunSummary.DatasetReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatasetReference
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? DatasetReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DatasetReference As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference
+  id: FeedReference
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: FeedReference
+  nameWithType: StrategyRunSummary.FeedReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeedReference
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? FeedReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FeedReference As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: StrategyRunSummary.PortfolioId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
+  id: LedgerReference
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: LedgerReference
+  nameWithType: StrategyRunSummary.LedgerReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReference
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? LedgerReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerReference As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+  id: NetPnl
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: NetPnl
+  nameWithType: StrategyRunSummary.NetPnl
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetPnl
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? NetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property NetPnl As Decimal?
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn
+  id: TotalReturn
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalReturn
+  nameWithType: StrategyRunSummary.TotalReturn
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReturn
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? TotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TotalReturn As Decimal?
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity
+  id: FinalEquity
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: FinalEquity
+  nameWithType: StrategyRunSummary.FinalEquity
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinalEquity
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? FinalEquity { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property FinalEquity As Decimal?
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FillCount
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.FillCount
+  id: FillCount
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: FillCount
+  nameWithType: StrategyRunSummary.FillCount
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FillCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillCount
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int FillCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FillCount As Integer
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.FillCount*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt
+  id: LastUpdatedAt
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: LastUpdatedAt
+  nameWithType: StrategyRunSummary.LastUpdatedAt
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdatedAt
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset LastUpdatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdatedAt As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
+  id: AuditReference
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: AuditReference
+  nameWithType: StrategyRunSummary.AuditReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditReference
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AuditReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AuditReference As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Execution
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.Execution
+  id: Execution
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: Execution
+  nameWithType: StrategyRunSummary.Execution
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Execution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Execution
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunExecutionSummary? Execution { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunExecutionSummary
+    content.vb: Public Property Execution As StrategyRunExecutionSummary
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.Execution*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
+  id: Promotion
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: Promotion
+  nameWithType: StrategyRunSummary.Promotion
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Promotion
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunPromotionSummary? Promotion { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+    content.vb: Public Property Promotion As StrategyRunPromotionSummary
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.Promotion*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Governance
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.Governance
+  id: Governance
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: Governance
+  nameWithType: StrategyRunSummary.Governance
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Governance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Governance
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunGovernanceSummary? Governance { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunGovernanceSummary
+    content.vb: Public Property Governance As StrategyRunGovernanceSummary
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.Governance*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId
+  id: FundProfileId
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: StrategyRunSummary.FundProfileId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? FundProfileId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundProfileId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName
+  id: FundDisplayName
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: FundDisplayName
+  nameWithType: StrategyRunSummary.FundDisplayName
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundDisplayName
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? FundDisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundDisplayName As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.StrategyRunSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.StrategyRunSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyRunSummary>
+  nameWithType: IEquatable<StrategyRunSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.StrategyRunSummary>
+  nameWithType.vb: IEquatable(Of StrategyRunSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.StrategyRunSummary)
+  name.vb: IEquatable(Of StrategyRunSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunSummary
+    name: StrategyRunSummary
+    href: Meridian.Contracts.Workstation.StrategyRunSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunSummary
+    name: StrategyRunSummary
+    href: Meridian.Contracts.Workstation.StrategyRunSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.#ctor
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary__ctor_System_String_System_String_System_String_Meridian_Contracts_Workstation_StrategyRunMode_Meridian_Contracts_Workstation_StrategyRunEngine_Meridian_Contracts_Workstation_StrategyRunStatus_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_System_String_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Int32_System_DateTimeOffset_System_String_Meridian_Contracts_Workstation_StrategyRunExecutionSummary_Meridian_Contracts_Workstation_StrategyRunPromotionSummary_Meridian_Contracts_Workstation_StrategyRunGovernanceSummary_System_String_System_String_
+  name: StrategyRunSummary
+  nameWithType: StrategyRunSummary.StrategyRunSummary
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyRunSummary
+  nameWithType.vb: StrategyRunSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunMode
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunMode
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  name: StrategyRunMode
+  nameWithType: StrategyRunMode
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunEngine
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunEngine.html
+  name: StrategyRunEngine
+  nameWithType: StrategyRunEngine
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus
+  nameWithType: StrategyRunStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Workstation.StrategyRunExecutionSummary
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunExecutionSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunExecutionSummary.html
+  name: StrategyRunExecutionSummary
+  nameWithType: StrategyRunExecutionSummary
+  fullName: Meridian.Contracts.Workstation.StrategyRunExecutionSummary
+- uid: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionSummary.html
+  name: StrategyRunPromotionSummary
+  nameWithType: StrategyRunPromotionSummary
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionSummary
+- uid: Meridian.Contracts.Workstation.StrategyRunGovernanceSummary
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunGovernanceSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunGovernanceSummary.html
+  name: StrategyRunGovernanceSummary
+  nameWithType: StrategyRunGovernanceSummary
+  fullName: Meridian.Contracts.Workstation.StrategyRunGovernanceSummary
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.RunId
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_RunId
+  name: RunId
+  nameWithType: StrategyRunSummary.RunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.RunId
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_StrategyId
+  name: StrategyId
+  nameWithType: StrategyRunSummary.StrategyId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyId
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_StrategyName
+  name: StrategyName
+  nameWithType: StrategyRunSummary.StrategyName
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyName
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Mode*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.Mode
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_Mode
+  name: Mode
+  nameWithType: StrategyRunSummary.Mode
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Mode
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Engine*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.Engine
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_Engine
+  name: Engine
+  nameWithType: StrategyRunSummary.Engine
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Engine
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Status*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.Status
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_Status
+  name: Status
+  nameWithType: StrategyRunSummary.Status
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Status
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_StartedAt
+  name: StartedAt
+  nameWithType: StrategyRunSummary.StartedAt
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StartedAt
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_CompletedAt
+  name: CompletedAt
+  nameWithType: StrategyRunSummary.CompletedAt
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_DatasetReference
+  name: DatasetReference
+  nameWithType: StrategyRunSummary.DatasetReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_FeedReference
+  name: FeedReference
+  nameWithType: StrategyRunSummary.FeedReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FeedReference
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_PortfolioId
+  name: PortfolioId
+  nameWithType: StrategyRunSummary.PortfolioId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_LedgerReference
+  name: LedgerReference
+  nameWithType: StrategyRunSummary.LedgerReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_NetPnl
+  name: NetPnl
+  nameWithType: StrategyRunSummary.NetPnl
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_TotalReturn
+  name: TotalReturn
+  nameWithType: StrategyRunSummary.TotalReturn
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.TotalReturn
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_FinalEquity
+  name: FinalEquity
+  nameWithType: StrategyRunSummary.FinalEquity
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FinalEquity
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FillCount*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.FillCount
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_FillCount
+  name: FillCount
+  nameWithType: StrategyRunSummary.FillCount
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FillCount
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_LastUpdatedAt
+  name: LastUpdatedAt
+  nameWithType: StrategyRunSummary.LastUpdatedAt
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.LastUpdatedAt
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_AuditReference
+  name: AuditReference
+  nameWithType: StrategyRunSummary.AuditReference
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Execution*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.Execution
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_Execution
+  name: Execution
+  nameWithType: StrategyRunSummary.Execution
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Execution
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Promotion*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_Promotion
+  name: Promotion
+  nameWithType: StrategyRunSummary.Promotion
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.Governance*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.Governance
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_Governance
+  name: Governance
+  nameWithType: StrategyRunSummary.Governance
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.Governance
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_FundProfileId
+  name: FundProfileId
+  nameWithType: StrategyRunSummary.FundProfileId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FundProfileId
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_FundDisplayName
+  name: FundDisplayName
+  nameWithType: StrategyRunSummary.FundDisplayName
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName

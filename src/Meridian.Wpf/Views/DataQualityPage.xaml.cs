@@ -17,15 +17,17 @@ public partial class DataQualityPage : Page
 
     public DataQualityPage(DataQualityViewModel viewModel)
     {
+        // XAML applies SelectedIndex values during InitializeComponent, which raises
+        // SelectionChanged before the page constructor completes.
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
-        _viewModel = viewModel;
         DataContext = _viewModel;
 
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
         SizeChanged += (_, _) => RenderTrendChart(_viewModel.TrendPoints);
-        _viewModel.TrendChartChanged += (_, _) => RenderTrendChart(_viewModel.TrendPoints);
-        _viewModel.DrilldownChanged += (_, _) => ApplyDrilldownHeatmap();
+        _viewModel.TrendChartChanged += (_, _) => Dispatcher.InvokeAsync(() => RenderTrendChart(_viewModel.TrendPoints));
+        _viewModel.DrilldownChanged += (_, _) => Dispatcher.InvokeAsync(ApplyDrilldownHeatmap);
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -126,6 +128,11 @@ public partial class DataQualityPage : Page
 
     private void RenderTrendChart(IReadOnlyList<TrendPoint> points)
     {
+        if (TrendChartLine is null || TrendChartFill is null || XAxisLabels is null || TrendChart is null)
+        {
+            return;
+        }
+
         if (points.Count == 0)
         {
             TrendChartLine.Points = new PointCollection();
@@ -158,12 +165,13 @@ public partial class DataQualityPage : Page
         TrendChartFill.Points = fillPoints;
 
         XAxisLabels.Children.Clear();
+        var labelBrush = TryFindResource("ConsoleTextMutedBrush") as Brush ?? Brushes.Gray;
         foreach (var label in points.Select(p => p.Label))
         {
             XAxisLabels.Children.Add(new TextBlock
             {
                 Text = label,
-                Foreground = (Brush)Resources["ConsoleTextMutedBrush"],
+                Foreground = labelBrush,
                 Margin = new Thickness(0, 0, 16, 0)
             });
         }
@@ -173,6 +181,11 @@ public partial class DataQualityPage : Page
     {
         var heatmapCells = new[] { HeatmapCell0, HeatmapCell1, HeatmapCell2, HeatmapCell3, HeatmapCell4, HeatmapCell5, HeatmapCell6 };
         var dayLabels = new[] { HeatmapDay0Label, HeatmapDay1Label, HeatmapDay2Label, HeatmapDay3Label, HeatmapDay4Label, HeatmapDay5Label, HeatmapDay6Label };
+
+        if (heatmapCells.Any(cell => cell is null) || dayLabels.Any(label => label is null))
+        {
+            return;
+        }
 
         for (var i = 0; i < heatmapCells.Length; i++)
         {

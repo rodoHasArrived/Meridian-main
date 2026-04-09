@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.JobPriority
+  commentId: T:Meridian.Storage.Services.JobPriority
+  id: JobPriority
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.JobPriority.Critical
+  - Meridian.Storage.Services.JobPriority.Deferred
+  - Meridian.Storage.Services.JobPriority.High
+  - Meridian.Storage.Services.JobPriority.Low
+  - Meridian.Storage.Services.JobPriority.Normal
+  langs:
+  - csharp
+  - vb
+  name: JobPriority
+  nameWithType: JobPriority
+  fullName: Meridian.Storage.Services.JobPriority
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobPriority
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum JobPriority : byte'
+    content.vb: Public Enum JobPriority As Byte
+- uid: Meridian.Storage.Services.JobPriority.Critical
+  commentId: F:Meridian.Storage.Services.JobPriority.Critical
+  id: Critical
+  parent: Meridian.Storage.Services.JobPriority
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: JobPriority.Critical
+  fullName: Meridian.Storage.Services.JobPriority.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 651
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Critical = 0
+    return:
+      type: Meridian.Storage.Services.JobPriority
+- uid: Meridian.Storage.Services.JobPriority.High
+  commentId: F:Meridian.Storage.Services.JobPriority.High
+  id: High
+  parent: Meridian.Storage.Services.JobPriority
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: JobPriority.High
+  fullName: Meridian.Storage.Services.JobPriority.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 652
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: High = 1
+    return:
+      type: Meridian.Storage.Services.JobPriority
+- uid: Meridian.Storage.Services.JobPriority.Normal
+  commentId: F:Meridian.Storage.Services.JobPriority.Normal
+  id: Normal
+  parent: Meridian.Storage.Services.JobPriority
+  langs:
+  - csharp
+  - vb
+  name: Normal
+  nameWithType: JobPriority.Normal
+  fullName: Meridian.Storage.Services.JobPriority.Normal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normal
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 653
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Normal = 2
+    return:
+      type: Meridian.Storage.Services.JobPriority
+- uid: Meridian.Storage.Services.JobPriority.Low
+  commentId: F:Meridian.Storage.Services.JobPriority.Low
+  id: Low
+  parent: Meridian.Storage.Services.JobPriority
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: JobPriority.Low
+  fullName: Meridian.Storage.Services.JobPriority.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 654
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Low = 3
+    return:
+      type: Meridian.Storage.Services.JobPriority
+- uid: Meridian.Storage.Services.JobPriority.Deferred
+  commentId: F:Meridian.Storage.Services.JobPriority.Deferred
+  id: Deferred
+  parent: Meridian.Storage.Services.JobPriority
+  langs:
+  - csharp
+  - vb
+  name: Deferred
+  nameWithType: JobPriority.Deferred
+  fullName: Meridian.Storage.Services.JobPriority.Deferred
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deferred
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 655
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Deferred = 4
+    return:
+      type: Meridian.Storage.Services.JobPriority
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.JobPriority
+  commentId: T:Meridian.Storage.Services.JobPriority
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.JobPriority.html
+  name: JobPriority
+  nameWithType: JobPriority
+  fullName: Meridian.Storage.Services.JobPriority

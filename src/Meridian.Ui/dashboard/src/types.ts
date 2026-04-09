@@ -1,4 +1,4 @@
-export type WorkspaceKey = "research" | "trading" | "data-operations" | "governance";
+export type WorkspaceKey = "overview" | "research" | "trading" | "data-operations" | "governance";
 
 export interface SessionInfo {
   displayName: string;
@@ -23,6 +23,42 @@ export interface MetricSnapshot {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export type SecurityCoverageStatus = "Resolved" | "Partial" | "Missing" | "Unavailable";
+
+export interface SecurityCoverageReference {
+  source: string;
+  symbol: string;
+  accountName: string | null;
+  securityId: string | null;
+  displayName: string;
+  assetClass: string | null;
+  subType: string | null;
+  currency: string | null;
+  status: string | null;
+  primaryIdentifier: string | null;
+  coverageStatus: SecurityCoverageStatus;
+  coverageReason: string | null;
+  matchedIdentifierKind: string | null;
+  matchedIdentifierValue: string | null;
+  matchedProvider: string | null;
+  securityDetailUrl: string | null;
+}
+
+export interface SecurityCoverageSummary {
+  portfolioResolved: number;
+  portfolioMissing: number;
+  portfolioPartial: number;
+  ledgerResolved: number;
+  ledgerMissing: number;
+  ledgerPartial: number;
+  hasIssues: boolean;
+  tone: "default" | "success" | "warning" | "danger";
+  summary: string;
+  resolvedReferences: SecurityCoverageReference[];
+  reviewReferences: SecurityCoverageReference[];
+  missingReferences: SecurityCoverageReference[];
+}
+
 export interface ResearchRunRecord {
   id: string;
   strategyName: string;
@@ -39,6 +75,10 @@ export interface ResearchRunRecord {
   netPnl?: number | null;
   totalReturn?: number | null;
   finalEquity?: number | null;
+  securityCoverage?: SecurityCoverageSummary;
+  drillIn?: TradingRunDrillIn;
+  ledgerReference?: string | null;
+  portfolioId?: string | null;
 }
 
 // --- Promotion workflow types ---
@@ -174,6 +214,8 @@ export interface TradingPosition {
   dayPnl: string;
   unrealizedPnl: string;
   exposure: string;
+  security?: WorkstationSecurityReference | null;
+  securityDetailUrl?: string | null;
 }
 
 export interface TradingOrder {
@@ -220,6 +262,29 @@ export interface BrokerageWiringStatus {
   notes: string;
 }
 
+export interface TradingRunDrillIn {
+  equityCurve: string;
+  fills: string;
+  attribution: string;
+  ledger: string | null;
+  cashFlows: string;
+  comparison: string;
+}
+
+export interface TradingRunMode {
+  runId: string;
+  mode: "backtest" | "paper" | "live";
+  status: string;
+  netPnl: number | null;
+  totalReturn: number | null;
+  drillIn: TradingRunDrillIn;
+}
+
+export interface TradingRunComparison {
+  strategyName: string;
+  modes: TradingRunMode[];
+}
+
 export interface TradingWorkspaceResponse {
   metrics: MetricSnapshot[];
   positions: TradingPosition[];
@@ -227,6 +292,8 @@ export interface TradingWorkspaceResponse {
   fills: TradingFill[];
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
+  comparisons?: TradingRunComparison[];
+  drillIn?: TradingRunDrillIn | null;
 }
 
 export interface GovernanceReconciliationRecord {
@@ -235,9 +302,27 @@ export interface GovernanceReconciliationRecord {
   mode: "paper" | "live" | "backtest";
   status: string;
   lastUpdated: string;
+  auditReference?: string | null;
+  ledgerReference?: string | null;
+  portfolioId?: string | null;
   breakCount: number;
   openBreakCount: number;
   reconciliationStatus: "NotStarted" | "BreaksOpen" | "SecurityCoverageOpen" | "Resolved" | "Balanced";
+  securityCoverage: SecurityCoverageSummary;
+  cashFlow?: GovernanceRunCashFlowSummary | null;
+  latestReconciliation?: GovernanceLatestReconciliation | null;
+}
+
+export interface GovernanceRunCashFlowSummary {
+  cashBalance: number;
+  ledgerCashBalance: number;
+  cashVariance: number;
+  financing: number;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  journalEntryCount: number;
+  tone: "default" | "success" | "warning" | "danger";
+  summary: string;
 }
 
 export interface GovernanceCashFlowSummary {
@@ -275,6 +360,43 @@ export interface GovernanceWorkspaceResponse {
   breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: GovernanceCashFlowSummary;
   reporting: GovernanceReportingSummary;
+  workspace?: {
+    totalRuns: number;
+    reconciledRuns: number;
+    ledgerReadyRuns: number;
+    openBreaks: number;
+    securityIssues: number;
+  };
+}
+
+export interface ReconciliationSecurityCoverageIssue {
+  source: string;
+  symbol: string;
+  accountName: string | null;
+  reason: string;
+  securityId: string | null;
+  displayName: string | null;
+  assetClass: string | null;
+  subType: string | null;
+  coverageStatus: SecurityCoverageStatus;
+  coverageReason: string | null;
+  currency: string | null;
+  matchedIdentifierKind: string | null;
+  matchedIdentifierValue: string | null;
+  matchedProvider: string | null;
+}
+
+export interface GovernanceLatestReconciliation {
+  reconciliationRunId: string;
+  breakCount: number;
+  openBreakCount: number;
+  matchCount: number;
+  hasTimingDrift: boolean;
+  securityIssueCount: number;
+  hasSecurityCoverageIssues: boolean;
+  securityCoverageIssues: ReconciliationSecurityCoverageIssue[];
+  lastUpdated: string;
+  tone: "default" | "success" | "warning" | "danger";
 }
 
 export type ReconciliationBreakQueueStatus = "Open" | "InReview" | "Resolved" | "Dismissed";
@@ -382,13 +504,18 @@ export interface RunDiff {
 // --- Security reference ---
 
 export interface WorkstationSecurityReference {
-  securityId: string;
+  securityId: string | null;
   displayName: string;
-  assetClass: string;
-  currency: string;
-  status: "Active" | "Inactive" | "Pending";
+  assetClass: string | null;
+  currency: string | null;
+  status: "Active" | "Inactive" | "Pending" | "Deactivated" | string;
   primaryIdentifier: string | null;
   subType: string | null;
+  coverageStatus?: SecurityCoverageStatus;
+  matchedIdentifierKind?: string | null;
+  matchedIdentifierValue?: string | null;
+  matchedProvider?: string | null;
+  resolutionReason?: string | null;
 }
 
 // --- Portfolio types ---
@@ -586,6 +713,13 @@ export interface SecurityIdentifierEntry {
   provider: string | null;
 }
 
+export interface SecurityAliasEntry {
+  provider: string;
+  value: string;
+  validFrom: string;
+  validTo: string | null;
+}
+
 export interface SecurityIdentityDrillIn {
   securityId: string;
   displayName: string;
@@ -595,6 +729,20 @@ export interface SecurityIdentityDrillIn {
   effectiveFrom: string;
   effectiveTo: string | null;
   identifiers: SecurityIdentifierEntry[];
+  aliases: SecurityAliasEntry[];
+}
+
+export interface SecurityMasterHistoryEvent {
+  globalSequence: number;
+  securityId: string;
+  streamVersion: number;
+  eventType: string;
+  eventTimestamp: string;
+  actor: string;
+  correlationId: string | null;
+  causationId: string | null;
+  payload: unknown;
+  metadata: unknown;
 }
 
 export interface SecurityMasterConflict {
@@ -649,4 +797,86 @@ export interface BackfillProgressResponse {
   provider: string | null;
   symbols: BackfillProgressEntry[];
   message: string | null;
+}
+
+// --- System Overview types ---
+
+export interface SystemEventRecord {
+  id: string;
+  type: "info" | "warning" | "error";
+  message: string;
+  source: string;
+  timestamp: string;
+}
+
+export interface SystemOverviewResponse {
+  systemStatus: "Healthy" | "Degraded" | "Offline";
+  providersOnline: number;
+  providersTotal: number;
+  activeRuns: number;
+  openPositions: number;
+  activeBackfills: number;
+  symbolsMonitored: number;
+  storageHealth: "Healthy" | "Warning" | "Critical";
+  lastHeartbeatUtc: string;
+  metrics: MetricSnapshot[];
+  recentEvents: SystemEventRecord[];
+}
+
+// --- Symbol management types ---
+
+export interface SymbolRecord {
+  symbol: string;
+  status: "Active" | "Monitored" | "Archived" | "Error";
+  provider: string | null;
+  lastEventAt: string | null;
+  eventCount: number;
+  hasHistoricalData: boolean;
+}
+
+export interface SymbolStatistics {
+  totalSymbols: number;
+  monitoredSymbols: number;
+  archivedSymbols: number;
+  symbolsWithErrors: number;
+  totalEventsLast24h: number;
+}
+
+// --- Quality monitoring types ---
+
+export interface QualitySymbolScore {
+  symbol: string;
+  completenessScore: number;
+  freshnessScore: number;
+  gapCount: number;
+  anomalyCount: number;
+  health: "Healthy" | "Warning" | "Critical";
+}
+
+export interface QualityGapEntry {
+  symbol: string;
+  provider: string;
+  from: string;
+  to: string;
+  estimatedBars: number;
+  status: "Open" | "Resolved";
+}
+
+export interface QualityAnomalyEntry {
+  anomalyId: string;
+  symbol: string;
+  anomalyType: string;
+  message: string;
+  detectedAt: string;
+  acknowledged: boolean;
+}
+
+export interface QualityDashboardResponse {
+  overallScore: number;
+  completenessScore: number;
+  freshnessScore: number;
+  anomalyRate: number;
+  symbols: QualitySymbolScore[];
+  recentGaps: QualityGapEntry[];
+  recentAnomalies: QualityAnomalyEntry[];
 }

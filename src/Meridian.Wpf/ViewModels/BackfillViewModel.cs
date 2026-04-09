@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -41,7 +43,7 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     private readonly DispatcherTimer _progressPollTimer;
     private CancellationTokenSource? _backfillCts;
 
-    // Last known symbol counts — used to restore taskbar progress after a resume.
+    // Last known symbol counts for taskbar progress updates.
     private ulong _lastCompletedSymbols;
     private ulong _lastTotalSymbols;
 
@@ -64,13 +66,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     {
         get => _overallProgressText;
         private set => SetProperty(ref _overallProgressText, value);
-    }
-
-    private string _pauseButtonContent = "Pause";
-    public string PauseButtonContent
-    {
-        get => _pauseButtonContent;
-        private set => SetProperty(ref _pauseButtonContent, value);
     }
 
     private bool _isBackfillActive;
@@ -302,37 +297,69 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     // ── M2: Delegate collection mutation to the ViewModel ───────────────────────
 
     /// <summary>
-    /// Updates an existing scheduled job in the collection.
-    /// Code-behind must not directly index into <see cref="ScheduledJobs"/>.
+    /// Replaces an existing scheduled job by recreating it through the backend API.
+    /// The current schedule API has create/delete operations but no dedicated update route.
     /// </summary>
-    public void UpdateScheduledJob(ScheduledJobInfo job, string name, string nextRun)
+    public async Task UpdateScheduledJobAsync(
+        ScheduledJobInfo job,
+        string name,
+        string frequencyTag,
+        string timeText,
+        CancellationToken ct = default)
     {
-        var index = ScheduledJobs.IndexOf(job);
-        if (index >= 0)
-            ScheduledJobs[index] = new ScheduledJobInfo { Name = name, NextRun = nextRun };
+        var cronExpression = BuildCronExpression(frequencyTag, timeText);
+        if (cronExpression == null)
+        {
+            _notificationService.ShowNotification(
+                "Update Failed",
+                "Enter the schedule time in HH:mm format.",
+                NotificationType.Warning);
+            return;
+        }
 
-        _notificationService.ShowNotification(
-            "Job Updated",
-            $"Scheduled job '{name}' has been updated.",
-            NotificationType.Success);
+        if (!string.IsNullOrWhiteSpace(job.ScheduleId))
+        {
+            var deleted = await _backfillApiService.DeleteScheduleAsync(job.ScheduleId, ct);
+            if (!deleted)
+            {
+                _notificationService.ShowNotification(
+                    "Update Failed",
+                    $"Unable to update scheduled job '{job.Name}'.",
+                    NotificationType.Error);
+                return;
+            }
+        }
+
+        var recreated = await _backfillApiService.CreateScheduleAsync(new BackfillScheduleCreateRequest
+        {
+            Name = name,
+            Description = string.IsNullOrWhiteSpace(job.Description)
+                ? $"{name} managed from the desktop backfill page."
+                : job.Description,
+            Enabled = job.Enabled,
+            CronExpression = cronExpression,
+            TimeZoneId = TimeZoneInfo.Local.Id,
+            BackfillType = ParseBackfillType(job.BackfillType),
+            Symbols = job.Symbols.ToList(),
+            LookbackDays = job.LookbackDays,
+            Granularity = ParseGranularity(job.Granularity),
+            PreferredProviders = job.PreferredProviders.ToList()
+        }, ct);
+
+        if (recreated == null)
+        {
+            _notificationService.ShowNotification(
+                "Update Failed",
+                $"Unable to recreate scheduled job '{name}'.",
+                NotificationType.Error);
+            return;
+        }
+
+        await LoadScheduledJobsAsync(ct);
+        _notificationService.ShowNotification("Job Updated", $"Scheduled job '{name}' has been updated.", NotificationType.Success);
     }
 
     // ── M3: Stub-action methods — notifications belong in the ViewModel, not code-behind ──
-
-    public void HandleValidateData() =>
-        _notificationService.ShowNotification("Data Validation", "Starting data validation...", NotificationType.Info);
-
-    public void HandleRepairGaps() =>
-        _notificationService.ShowNotification("Gap Repair", "Checking for data gaps...", NotificationType.Info);
-
-    public void HandleFillAllGaps() =>
-        _notificationService.ShowNotification("Fill Gaps", "Analyzing all symbols for gaps...", NotificationType.Info);
-
-    public void HandleSaveSchedule() =>
-        _notificationService.ShowNotification("Schedule Saved", "Backfill schedule has been saved.", NotificationType.Success);
-
-    public void HandleRunScheduledJob(ScheduledJobInfo job) =>
-        _notificationService.ShowNotification("Running Job", $"Starting scheduled job: {job.Name}", NotificationType.Info);
 
     public void HandleUpdateToLatest() =>
         _notificationService.ShowNotification(
@@ -415,13 +442,26 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         ScheduledJobs.Clear();
         try
         {
-            var executions = await _backfillApiService.GetExecutionHistoryAsync(limit: 10);
-            foreach (var exec in executions)
+            var schedules = await _backfillApiService.GetSchedulesAsync(ct);
+            foreach (var schedule in schedules
+                .OrderBy(s => s.NextExecutionAt ?? DateTimeOffset.MaxValue)
+                .Take(10))
             {
                 ScheduledJobs.Add(new ScheduledJobInfo
                 {
-                    Name = $"{exec.Status}: {exec.SymbolsProcessed} symbols",
-                    NextRun = exec.CompletedAt?.ToString("g") ?? exec.StartedAt.ToString("g")
+                    ScheduleId = schedule.ScheduleId,
+                    Name = schedule.Name,
+                    NextRun = schedule.NextExecutionAt?.ToLocalTime().ToString("g") ?? "Not scheduled",
+                    Description = schedule.Description,
+                    CronExpression = schedule.CronExpression,
+                    Enabled = schedule.Enabled,
+                    FrequencyTag = InferFrequencyTag(schedule.CronExpression),
+                    TimeText = ExtractTimeText(schedule.CronExpression),
+                    BackfillType = schedule.BackfillType,
+                    LookbackDays = schedule.LookbackDays,
+                    Granularity = schedule.Granularity,
+                    Symbols = schedule.Symbols.ToArray(),
+                    PreferredProviders = schedule.PreferredProviders.ToArray()
                 });
             }
         }
@@ -431,6 +471,171 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         }
 
         HasNoScheduledJobs = ScheduledJobs.Count == 0;
+    }
+
+    public async Task ValidateDataAsync(string[] symbols, DateTime fromDate, DateTime toDate, CancellationToken ct = default)
+    {
+        await ScanGapsAsync(symbols, fromDate, toDate, ct);
+
+        var symbolsWithGaps = GetSymbolsWithGaps();
+        var message = symbolsWithGaps.Length == 0
+            ? "No data gaps were detected for the selected symbols and date range."
+            : $"Detected gaps in {symbolsWithGaps.Length} symbol(s). Review the gap analysis panel for details.";
+
+        _notificationService.ShowNotification("Data Validation", message, NotificationType.Info);
+    }
+
+    public async Task RepairGapsAsync(string[] symbols, DateTime fromDate, DateTime toDate, CancellationToken ct = default)
+    {
+        await ScanGapsAsync(symbols, fromDate, toDate, ct);
+        var symbolsWithGaps = GetSymbolsWithGaps();
+        if (symbolsWithGaps.Length == 0)
+        {
+            HandleNoGapsFound();
+            return;
+        }
+
+        await StartGapFillAsync(symbolsWithGaps, ComputeLookbackDays(fromDate, toDate), ct);
+    }
+
+    public async Task FillAllGapsAsync(string[] symbols, DateTime fromDate, DateTime toDate, CancellationToken ct = default)
+    {
+        var effectiveSymbols = symbols.Length > 0
+            ? symbols
+            : (await GetSubscribedSymbolsTextAsync()).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (effectiveSymbols.Length == 0)
+        {
+            _notificationService.ShowNotification(
+                "Fill Gaps",
+                "No symbols are available to analyze. Add symbols or subscribe to symbols first.",
+                NotificationType.Warning);
+            return;
+        }
+
+        await RepairGapsAsync(effectiveSymbols, fromDate, toDate, ct);
+    }
+
+    public async Task AutoFillGapsAsync(CancellationToken ct = default)
+    {
+        var symbolsWithGaps = GetSymbolsWithGaps();
+        if (symbolsWithGaps.Length == 0)
+        {
+            HandleNoGapsFound();
+            return;
+        }
+
+        await StartGapFillAsync(symbolsWithGaps, 30, ct);
+    }
+
+    public async Task SaveScheduleAsync(
+        bool enabled,
+        string frequencyTag,
+        string timeText,
+        bool includeAllSymbols,
+        string symbolsText,
+        CancellationToken ct = default)
+    {
+        var cronExpression = BuildCronExpression(frequencyTag, timeText);
+        if (cronExpression == null)
+        {
+            _notificationService.ShowNotification(
+                "Invalid Schedule",
+                "Enter the schedule time in HH:mm format.",
+                NotificationType.Warning);
+            return;
+        }
+
+        var scheduleSymbols = includeAllSymbols
+            ? new List<string>()
+            : ParseSymbols(symbolsText).ToList();
+
+        if (!includeAllSymbols && scheduleSymbols.Count == 0)
+        {
+            _notificationService.ShowNotification(
+                "Invalid Schedule",
+                "Enter at least one symbol or choose all subscribed symbols.",
+                NotificationType.Warning);
+            return;
+        }
+
+        var request = new BackfillScheduleCreateRequest
+        {
+            Name = BuildScheduleName(frequencyTag),
+            Description = $"Scheduled {frequencyTag.ToLowerInvariant()} gap-fill from the desktop backfill page.",
+            Enabled = enabled,
+            CronExpression = cronExpression,
+            TimeZoneId = TimeZoneInfo.Local.Id,
+            BackfillType = 0,
+            Symbols = scheduleSymbols,
+            LookbackDays = 30,
+            Granularity = 6
+        };
+
+        var created = await _backfillApiService.CreateScheduleAsync(request, ct);
+        if (created == null)
+        {
+            _notificationService.ShowNotification(
+                "Schedule Failed",
+                "Unable to save the backfill schedule. Ensure the backend is running.",
+                NotificationType.Error);
+            return;
+        }
+
+        await LoadScheduledJobsAsync(ct);
+        _notificationService.ShowNotification(
+            "Schedule Saved",
+            $"Saved scheduled backfill '{created.Name}'.",
+            NotificationType.Success);
+    }
+
+    public async Task RunScheduledJobAsync(ScheduledJobInfo job, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(job.ScheduleId))
+        {
+            _notificationService.ShowNotification(
+                "Run Failed",
+                "This schedule cannot be run because it has no identifier.",
+                NotificationType.Error);
+            return;
+        }
+
+        var execution = await _backfillApiService.RunScheduleNowAsync(job.ScheduleId, ct);
+        if (execution == null)
+        {
+            _notificationService.ShowNotification(
+                "Run Failed",
+                $"Unable to start scheduled job '{job.Name}'.",
+                NotificationType.Error);
+            return;
+        }
+
+        _notificationService.ShowNotification(
+            "Running Job",
+            $"Started scheduled job '{job.Name}' ({execution.ExecutionId}).",
+            NotificationType.Info);
+    }
+
+    public async Task DeleteScheduledJobAsync(ScheduledJobInfo job, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(job.ScheduleId))
+        {
+            DeleteScheduledJob(job);
+            return;
+        }
+
+        var deleted = await _backfillApiService.DeleteScheduleAsync(job.ScheduleId, ct);
+        if (!deleted)
+        {
+            _notificationService.ShowNotification(
+                "Delete Failed",
+                $"Unable to delete scheduled job '{job.Name}'.",
+                NotificationType.Error);
+            return;
+        }
+
+        DeleteScheduledJob(job);
+        HandleJobDeletedNotification(job.Name);
     }
 
     public async Task LoadResumableJobsAsync(CancellationToken ct = default)
@@ -543,7 +748,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         OverallProgressText = $"Overall: 0 / {symbols.Length} symbols complete";
         IsBackfillActive = true;
         IsProgressVisible = true;
-        PauseButtonContent = "Pause";
         _taskbarProgressService.SetIndeterminate();
 
         _notificationService.ShowNotification(
@@ -584,26 +788,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         }
     }
 
-    public void PauseOrResumeBackfill()
-    {
-        if (_backfillService.IsPaused)
-        {
-            _backfillService.Resume();
-            BackfillStatusText = "Running...";
-            PauseButtonContent = "Pause";
-            _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
-            _notificationService.ShowNotification("Backfill Resumed", "Backfill operation has been resumed.", NotificationType.Info);
-        }
-        else
-        {
-            _backfillService.Pause();
-            BackfillStatusText = "Paused";
-            PauseButtonContent = "Resume";
-            _taskbarProgressService.SetPaused();
-            _notificationService.ShowNotification("Backfill Paused", "Backfill operation has been paused.", NotificationType.Warning);
-        }
-    }
-
     public void CancelBackfill()
     {
         _backfillService.Cancel();
@@ -632,7 +816,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             BackfillStatusText = $"Resuming ({job.PendingCount} symbols remaining)...";
             IsBackfillActive = true;
             IsProgressVisible = true;
-            PauseButtonContent = "Pause";
             _taskbarProgressService.SetIndeterminate();
 
             _notificationService.ShowNotification(
@@ -870,6 +1053,50 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     public string[] GetSymbolsWithGaps() =>
         GapItems.Where(g => g.GapDays > 0).Select(g => g.Symbol).ToArray();
 
+    private async Task StartGapFillAsync(string[] symbols, int lookbackDays, CancellationToken ct)
+    {
+        SymbolProgress.Clear();
+        foreach (var symbol in symbols)
+        {
+            SymbolProgress.Add(new SymbolProgressInfo
+            {
+                Symbol = symbol.Trim().ToUpperInvariant(),
+                Progress = 0,
+                BarsText = "0 bars",
+                StatusText = "Pending",
+                TimeText = "--",
+                StatusBackground = new SolidColorBrush(Color.FromArgb(40, 139, 148, 158))
+            });
+        }
+
+        BackfillStatusText = "Gap fill running...";
+        OverallProgressText = $"Overall: 0 / {symbols.Length} symbols complete";
+        IsBackfillActive = true;
+        IsProgressVisible = true;
+        _taskbarProgressService.SetIndeterminate();
+        _progressPollTimer.Start();
+
+        try
+        {
+            await _backfillService.StartGapFillAsync(symbols, lookbackDays, ct: ct);
+        }
+        catch (OperationCanceledException)
+        {
+            _progressPollTimer.Stop();
+            BackfillStatusText = "Cancelled";
+            IsBackfillActive = false;
+            _taskbarProgressService.Clear();
+        }
+        catch (Exception ex)
+        {
+            _progressPollTimer.Stop();
+            BackfillStatusText = "Failed";
+            IsBackfillActive = false;
+            _taskbarProgressService.SetError();
+            _notificationService.ShowNotification("Gap Fill Failed", ex.Message, NotificationType.Error);
+        }
+    }
+
     // ── UI hint helpers ─────────────────────────────────────────────────────
     public void UpdateGranularityHint(string granularity)
     {
@@ -914,6 +1141,91 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         "Daily" => "daily",
         _ => granularity.ToLowerInvariant()
     };
+
+    private static string InferFrequencyTag(string cronExpression)
+    {
+        if (string.IsNullOrWhiteSpace(cronExpression))
+        {
+            return "Daily";
+        }
+
+        var parts = cronExpression.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 5)
+        {
+            return "Daily";
+        }
+
+        if (parts[2] == "1")
+        {
+            return "Monthly";
+        }
+
+        return parts[4] != "*" ? "Weekly" : "Daily";
+    }
+
+    private static string ExtractTimeText(string cronExpression)
+    {
+        var parts = cronExpression.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 5)
+        {
+            return "06:00";
+        }
+
+        return $"{parts[1].PadLeft(2, '0')}:{parts[0].PadLeft(2, '0')}";
+    }
+
+    private static string? BuildCronExpression(string frequencyTag, string timeText)
+    {
+        if (!TimeOnly.TryParseExact(timeText, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var time))
+        {
+            return null;
+        }
+
+        return frequencyTag switch
+        {
+            "Weekly" => $"{time.Minute} {time.Hour} * * 0",
+            "Monthly" => $"{time.Minute} {time.Hour} 1 * *",
+            _ => $"{time.Minute} {time.Hour} * * *"
+        };
+    }
+
+    private static int ComputeLookbackDays(DateTime fromDate, DateTime toDate) =>
+        Math.Max(1, (int)Math.Ceiling((toDate.Date - fromDate.Date).TotalDays));
+
+    private static string[] ParseSymbols(string? symbolsText) =>
+        (symbolsText ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => s.Trim().ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static string BuildScheduleName(string frequencyTag) =>
+        frequencyTag switch
+        {
+            "Weekly" => "Weekly Gap Fill",
+            "Monthly" => "Monthly Gap Fill",
+            _ => "Daily Gap Fill"
+        };
+
+    private static int ParseBackfillType(string? backfillType) =>
+        string.Equals(backfillType, "FullBackfill", StringComparison.OrdinalIgnoreCase) ? 1 :
+        string.Equals(backfillType, "RollingWindow", StringComparison.OrdinalIgnoreCase) ? 2 :
+        string.Equals(backfillType, "EndOfDay", StringComparison.OrdinalIgnoreCase) ? 3 :
+        0;
+
+    private static int ParseGranularity(string? granularity) =>
+        granularity?.ToLowerInvariant() switch
+        {
+            "1min" or "minute1" => 0,
+            "5min" or "minute5" => 1,
+            "15min" or "minute15" => 2,
+            "30min" or "minute30" => 3,
+            "hourly" or "hour1" => 4,
+            "hour4" => 5,
+            "weekly" => 7,
+            "monthly" => 8,
+            _ => 6
+        };
 
     public bool TryCreateStartRequest(
         string? symbolsText,
@@ -1054,16 +1366,6 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
             "Backfill",
             startCommand,
             "Ctrl+B"));
-
-        // Pause/Resume command
-        var pauseResumeCommand = new RelayCommand(PauseOrResumeBackfill);
-        commands.Add(new CommandEntry(
-            IsBackfillActive && !(_backfillService?.IsPaused ?? false) ? "Pause Backfill" : "Resume Backfill",
-            IsBackfillActive && !(_backfillService?.IsPaused ?? false)
-                ? "Pause the currently running backfill operation"
-                : "Resume a paused backfill operation",
-            "Backfill",
-            pauseResumeCommand));
 
         // Cancel command
         if (IsBackfillActive)

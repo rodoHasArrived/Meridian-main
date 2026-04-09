@@ -715,13 +715,15 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                         var tracedEvent = batchBuffer[i];
                         var evt = tracedEvent.Event;
                         using var processActivity = MarketDataTracing.StartProcessActivity(
-                            evt.Type.ToString(),
+                            GetEventTypeName(evt.Type),
                             evt.EffectiveSymbol,
                             tracedEvent.TraceContext.ParentContext);
                         processActivity?.SetTag("event.source", evt.Source);
                         processActivity?.SetTag("event.sequence", evt.Sequence);
 
-                        using var logScope = _logger.BeginScope(CreateLogScope(evt, tracedEvent.TraceContext, processActivity));
+                        using var logScope = _logger.IsEnabled(LogLevel.Debug)
+                            ? _logger.BeginScope(CreateLogScope(evt, tracedEvent.TraceContext, processActivity))
+                            : null;
 
                         // Deduplication check (when a dedup ledger is configured)
                         if (_dedupLedger != null)
@@ -762,7 +764,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
                             _sink.GetType().Name,
                             evt.EffectiveSymbol,
                             processActivity?.Context ?? tracedEvent.TraceContext.ParentContext);
-                        storageActivity?.SetTag("event.type", evt.Type.ToString());
+                        storageActivity?.SetTag("event.type", GetEventTypeName(evt.Type));
                         storageActivity?.SetTag("event.source", evt.Source);
 
                         await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
@@ -1039,7 +1041,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, 
             ["CorrelationId"] = traceContext.CorrelationId ?? activity?.TraceId.ToString(),
             ["TraceId"] = activity?.TraceId.ToString() ?? (traceContext.HasParent ? traceContext.ParentContext.TraceId.ToString() : null),
             ["SpanId"] = activity?.SpanId.ToString(),
-            ["EventType"] = evt.Type.ToString(),
+            ["EventType"] = GetEventTypeName(evt.Type),
             ["EventSource"] = evt.Source,
             ["Symbol"] = evt.EffectiveSymbol,
             ["Sequence"] = evt.Sequence

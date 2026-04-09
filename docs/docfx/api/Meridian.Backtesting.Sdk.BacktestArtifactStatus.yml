@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  id: BacktestArtifactStatus
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestArtifactStatus.Complete
+  - Meridian.Backtesting.Sdk.BacktestArtifactStatus.Missing
+  - Meridian.Backtesting.Sdk.BacktestArtifactStatus.Partial
+  langs:
+  - csharp
+  - vb
+  name: BacktestArtifactStatus
+  nameWithType: BacktestArtifactStatus
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestArtifactStatus
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Completeness state for a canonical backtest artifact when comparing results across engines.
+  example: []
+  syntax:
+    content: 'public enum BacktestArtifactStatus : byte'
+    content.vb: Public Enum BacktestArtifactStatus As Byte
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus.Missing
+  commentId: F:Meridian.Backtesting.Sdk.BacktestArtifactStatus.Missing
+  id: Missing
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  langs:
+  - csharp
+  - vb
+  name: Missing
+  nameWithType: BacktestArtifactStatus.Missing
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus.Missing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Missing
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Missing = 0
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus.Partial
+  commentId: F:Meridian.Backtesting.Sdk.BacktestArtifactStatus.Partial
+  id: Partial
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  langs:
+  - csharp
+  - vb
+  name: Partial
+  nameWithType: BacktestArtifactStatus.Partial
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus.Partial
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Partial
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Partial = 1
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus.Complete
+  commentId: F:Meridian.Backtesting.Sdk.BacktestArtifactStatus.Complete
+  id: Complete
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  langs:
+  - csharp
+  - vb
+  name: Complete
+  nameWithType: BacktestArtifactStatus.Complete
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus.Complete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Complete
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Complete = 2
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestArtifactStatus.html
+  name: BacktestArtifactStatus
+  nameWithType: BacktestArtifactStatus
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus

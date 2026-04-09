@@ -1,0 +1,480 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  commentId: T:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  id: DataQualityProviderComparisonItem
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText
+  - Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText
+  - Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText
+  - Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name
+  - Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status
+  langs:
+  - csharp
+  - vb
+  name: DataQualityProviderComparisonItem
+  nameWithType: DataQualityProviderComparisonItem
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityProviderComparisonItem
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public sealed class DataQualityProviderComparisonItem
+    content.vb: Public NotInheritable Class DataQualityProviderComparisonItem
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name
+  id: Name
+  parent: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: DataQualityProviderComparisonItem.Name
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText
+  id: CompletenessText
+  parent: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  langs:
+  - csharp
+  - vb
+  name: CompletenessText
+  nameWithType: DataQualityProviderComparisonItem.CompletenessText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string CompletenessText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompletenessText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText
+  id: LatencyText
+  parent: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  langs:
+  - csharp
+  - vb
+  name: LatencyText
+  nameWithType: DataQualityProviderComparisonItem.LatencyText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string LatencyText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LatencyText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText
+  id: FreshnessText
+  parent: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  langs:
+  - csharp
+  - vb
+  name: FreshnessText
+  nameWithType: DataQualityProviderComparisonItem.FreshnessText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FreshnessText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string FreshnessText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FreshnessText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status
+  id: Status
+  parent: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: DataQualityProviderComparisonItem.Status
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status*
+references:
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name
+  href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.html#Meridian_Ui_Services_DataQuality_DataQualityProviderComparisonItem_Name
+  name: Name
+  nameWithType: DataQualityProviderComparisonItem.Name
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText
+  href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.html#Meridian_Ui_Services_DataQuality_DataQualityProviderComparisonItem_CompletenessText
+  name: CompletenessText
+  nameWithType: DataQualityProviderComparisonItem.CompletenessText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.CompletenessText
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText
+  href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.html#Meridian_Ui_Services_DataQuality_DataQualityProviderComparisonItem_LatencyText
+  name: LatencyText
+  nameWithType: DataQualityProviderComparisonItem.LatencyText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.LatencyText
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText
+  href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.html#Meridian_Ui_Services_DataQuality_DataQualityProviderComparisonItem_FreshnessText
+  name: FreshnessText
+  nameWithType: DataQualityProviderComparisonItem.FreshnessText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.FreshnessText
+- uid: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status
+  href: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.html#Meridian_Ui_Services_DataQuality_DataQualityProviderComparisonItem_Status
+  name: Status
+  nameWithType: DataQualityProviderComparisonItem.Status
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityProviderComparisonItem.Status

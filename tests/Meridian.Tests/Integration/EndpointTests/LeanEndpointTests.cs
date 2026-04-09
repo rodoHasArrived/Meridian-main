@@ -310,6 +310,58 @@ public sealed class LeanEndpointTests
     }
 
     // -------------------------------------------------------------------------
+    // POST /api/lean/results/artifact
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task InspectResults_ValidLeanResultsFile_ReturnsArtifactSummary()
+    {
+        var leanResult = new
+        {
+            AlgorithmConfiguration = new
+            {
+                Algorithm = "ArtifactAlgorithm",
+                Parameters = new Dictionary<string, string>
+                {
+                    { "lookback", "20" }
+                }
+            },
+            Statistics = new Dictionary<string, string>
+            {
+                { "Total Return", "15%" },
+                { "Sharpe Ratio", "1.5" },
+                { "Total Trades", "42" }
+            },
+            Charts = new { Strategy = new { Series = new { Equity = new { } } } }
+        };
+
+        var tempFile = Path.GetTempFileName() + ".json";
+        try
+        {
+            await File.WriteAllTextAsync(tempFile, JsonSerializer.Serialize(leanResult));
+
+            var payload = new { resultsFilePath = tempFile };
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/api/lean/results/artifact", content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var doc = JsonDocument.Parse(body);
+            doc.RootElement.GetProperty("algorithmName").GetString().Should().Be("ArtifactAlgorithm");
+            doc.RootElement.GetProperty("resultsFilePath").GetString().Should().Be(tempFile);
+            doc.RootElement.GetProperty("sections").GetProperty("hasStatistics").GetBoolean().Should().BeTrue();
+            doc.RootElement.GetProperty("sections").GetProperty("hasParameters").GetBoolean().Should().BeTrue();
+            doc.RootElement.GetProperty("statistics").GetProperty("Total Trades").GetString().Should().Be("42");
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // POST /api/lean/results/ingest
     // -------------------------------------------------------------------------
 
@@ -395,6 +447,8 @@ public sealed class LeanEndpointTests
             doc.RootElement.TryGetProperty("backtestId", out var btId).Should().BeTrue();
             btId.GetString().Should().NotBeNullOrEmpty();
             doc.RootElement.GetProperty("algorithmName").GetString().Should().Be("TestAlgorithm");
+            doc.RootElement.GetProperty("artifactSummary").GetProperty("statistics").GetProperty("Total Return").GetString().Should().Be("15%");
+            doc.RootElement.GetProperty("totalTrades").GetInt32().Should().Be(42);
         }
         finally
         {

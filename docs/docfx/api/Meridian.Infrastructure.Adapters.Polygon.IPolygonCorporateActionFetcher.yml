@@ -1,0 +1,267 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  id: IPolygonCorporateActionFetcher
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  children:
+  - Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IPolygonCorporateActionFetcher
+  nameWithType: IPolygonCorporateActionFetcher
+  fullName: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPolygonCorporateActionFetcher
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Fetches corporate action data (dividends and stock splits) from Polygon.io REST API
+
+    and persists them to the Security Master event store.
+  example: []
+  syntax:
+    content: public interface IPolygonCorporateActionFetcher
+    content.vb: Public Interface IPolygonCorporateActionFetcher
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher
+- uid: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  id: FetchAndPersistAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  langs:
+  - csharp
+  - vb
+  name: FetchAndPersistAsync(string, Guid, CancellationToken)
+  nameWithType: IPolygonCorporateActionFetcher.FetchAndPersistAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync(string, System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchAndPersistAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Fetch and persist corporate actions for a specific security ticker.
+  example: []
+  syntax:
+    content: Task FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct)
+    parameters:
+    - id: ticker
+      type: System.String
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function FetchAndPersistAsync(ticker As String, securityId As Guid, ct As CancellationToken) As Task
+  overload: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync*
+  nameWithType.vb: IPolygonCorporateActionFetcher.FetchAndPersistAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: FetchAndPersistAsync(String, Guid, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync(System.Threading.CancellationToken)
+  id: FetchAndPersistAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  langs:
+  - csharp
+  - vb
+  name: FetchAndPersistAllAsync(CancellationToken)
+  nameWithType: IPolygonCorporateActionFetcher.FetchAndPersistAllAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchAndPersistAllAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Fetch and persist corporate actions for all active securities.
+  example: []
+  syntax:
+    content: Task FetchAndPersistAllAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function FetchAndPersistAllAsync(ct As CancellationToken) As Task
+  overload: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync*
+references:
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+- uid: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.html#Meridian_Infrastructure_Adapters_Polygon_IPolygonCorporateActionFetcher_FetchAndPersistAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: FetchAndPersistAsync
+  nameWithType: IPolygonCorporateActionFetcher.FetchAndPersistAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.html#Meridian_Infrastructure_Adapters_Polygon_IPolygonCorporateActionFetcher_FetchAndPersistAllAsync_System_Threading_CancellationToken_
+  name: FetchAndPersistAllAsync
+  nameWithType: IPolygonCorporateActionFetcher.FetchAndPersistAllAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.FetchAndPersistAllAsync

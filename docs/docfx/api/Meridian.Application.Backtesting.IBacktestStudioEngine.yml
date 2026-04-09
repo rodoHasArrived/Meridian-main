@@ -1,0 +1,495 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine
+  commentId: T:Meridian.Application.Backtesting.IBacktestStudioEngine
+  id: IBacktestStudioEngine
+  parent: Meridian.Application.Backtesting
+  children:
+  - Meridian.Application.Backtesting.IBacktestStudioEngine.Engine
+  - Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IBacktestStudioEngine
+  nameWithType: IBacktestStudioEngine
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBacktestStudioEngine
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Contract implemented by each Backtest Studio engine integration.
+  example: []
+  syntax:
+    content: public interface IBacktestStudioEngine
+    content.vb: Public Interface IBacktestStudioEngine
+  derivedClasses:
+  - Meridian.Backtesting.MeridianNativeBacktestStudioEngine
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.Engine
+  commentId: P:Meridian.Application.Backtesting.IBacktestStudioEngine.Engine
+  id: Engine
+  parent: Meridian.Application.Backtesting.IBacktestStudioEngine
+  langs:
+  - csharp
+  - vb
+  name: Engine
+  nameWithType: IBacktestStudioEngine.Engine
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.Engine
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Engine
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Engine identity used by orchestration and persistence.
+  example: []
+  syntax:
+    content: StrategyRunEngine Engine { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+    content.vb: ReadOnly Property Engine As StrategyRunEngine
+  overload: Meridian.Application.Backtesting.IBacktestStudioEngine.Engine*
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  id: StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backtesting.IBacktestStudioEngine
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(BacktestStudioRunRequest, CancellationToken)
+  nameWithType: IBacktestStudioEngine.StartAsync(BacktestStudioRunRequest, CancellationToken)
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Starts a new run and returns a stable handle for later status/result retrieval.
+  example: []
+  syntax:
+    content: Task<BacktestStudioRunHandle> StartAsync(BacktestStudioRunRequest request, CancellationToken ct)
+    parameters:
+    - id: request
+      type: Meridian.Application.Backtesting.BacktestStudioRunRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunHandle}
+    content.vb: Function StartAsync(request As BacktestStudioRunRequest, ct As CancellationToken) As Task(Of BacktestStudioRunHandle)
+  overload: Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync*
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync(System.String,System.Threading.CancellationToken)
+  id: GetStatusAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backtesting.IBacktestStudioEngine
+  langs:
+  - csharp
+  - vb
+  name: GetStatusAsync(string, CancellationToken)
+  nameWithType: IBacktestStudioEngine.GetStatusAsync(string, CancellationToken)
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusAsync
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: Returns the current engine-side status for a previously started run.
+  example: []
+  syntax:
+    content: Task<BacktestStudioRunStatus> GetStatusAsync(string runHandle, CancellationToken ct)
+    parameters:
+    - id: runHandle
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+    content.vb: Function GetStatusAsync(runHandle As String, ct As CancellationToken) As Task(Of BacktestStudioRunStatus)
+  overload: Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync*
+  nameWithType.vb: IBacktestStudioEngine.GetStatusAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync(String, System.Threading.CancellationToken)
+  name.vb: GetStatusAsync(String, CancellationToken)
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  id: GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backtesting.IBacktestStudioEngine
+  langs:
+  - csharp
+  - vb
+  name: GetCanonicalResultAsync(string, CancellationToken)
+  nameWithType: IBacktestStudioEngine.GetCanonicalResultAsync(string, CancellationToken)
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCanonicalResultAsync
+    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backtesting
+  summary: >-
+    Returns the canonical result for a previously started run.
+
+    Implementations may await completion before returning.
+  example: []
+  syntax:
+    content: Task<BacktestResult> GetCanonicalResultAsync(string runHandle, CancellationToken ct)
+    parameters:
+    - id: runHandle
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Backtesting.Sdk.BacktestResult}
+    content.vb: Function GetCanonicalResultAsync(runHandle As String, ct As CancellationToken) As Task(Of BacktestResult)
+  overload: Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync*
+  nameWithType.vb: IBacktestStudioEngine.GetCanonicalResultAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync(String, System.Threading.CancellationToken)
+  name.vb: GetCanonicalResultAsync(String, CancellationToken)
+references:
+- uid: Meridian.Application.Backtesting
+  commentId: N:Meridian.Application.Backtesting
+  href: Meridian.html
+  name: Meridian.Application.Backtesting
+  nameWithType: Meridian.Application.Backtesting
+  fullName: Meridian.Application.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.Engine*
+  commentId: Overload:Meridian.Application.Backtesting.IBacktestStudioEngine.Engine
+  href: Meridian.Application.Backtesting.IBacktestStudioEngine.html#Meridian_Application_Backtesting_IBacktestStudioEngine_Engine
+  name: Engine
+  nameWithType: IBacktestStudioEngine.Engine
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.Engine
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunEngine
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunEngine.html
+  name: StrategyRunEngine
+  nameWithType: StrategyRunEngine
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync*
+  commentId: Overload:Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync
+  href: Meridian.Application.Backtesting.IBacktestStudioEngine.html#Meridian_Application_Backtesting_IBacktestStudioEngine_StartAsync_Meridian_Application_Backtesting_BacktestStudioRunRequest_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: IBacktestStudioEngine.StartAsync
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.StartAsync
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunRequest
+  parent: Meridian.Application.Backtesting
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html
+  name: BacktestStudioRunRequest
+  nameWithType: BacktestStudioRunRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunHandle}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunHandle}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestStudioRunHandle>
+  nameWithType: Task<BacktestStudioRunHandle>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Backtesting.BacktestStudioRunHandle>
+  nameWithType.vb: Task(Of BacktestStudioRunHandle)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Backtesting.BacktestStudioRunHandle)
+  name.vb: Task(Of BacktestStudioRunHandle)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunHandle
+    name: BacktestStudioRunHandle
+    href: Meridian.Application.Backtesting.BacktestStudioRunHandle.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunHandle
+    name: BacktestStudioRunHandle
+    href: Meridian.Application.Backtesting.BacktestStudioRunHandle.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync*
+  commentId: Overload:Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync
+  href: Meridian.Application.Backtesting.IBacktestStudioEngine.html#Meridian_Application_Backtesting_IBacktestStudioEngine_GetStatusAsync_System_String_System_Threading_CancellationToken_
+  name: GetStatusAsync
+  nameWithType: IBacktestStudioEngine.GetStatusAsync
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.GetStatusAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestStudioRunStatus>
+  nameWithType: Task<BacktestStudioRunStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Backtesting.BacktestStudioRunStatus>
+  nameWithType.vb: Task(Of BacktestStudioRunStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Backtesting.BacktestStudioRunStatus)
+  name.vb: Task(Of BacktestStudioRunStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+    name: BacktestStudioRunStatus
+    href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+    name: BacktestStudioRunStatus
+    href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync*
+  commentId: Overload:Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync
+  href: Meridian.Application.Backtesting.IBacktestStudioEngine.html#Meridian_Application_Backtesting_IBacktestStudioEngine_GetCanonicalResultAsync_System_String_System_Threading_CancellationToken_
+  name: GetCanonicalResultAsync
+  nameWithType: IBacktestStudioEngine.GetCanonicalResultAsync
+  fullName: Meridian.Application.Backtesting.IBacktestStudioEngine.GetCanonicalResultAsync
+- uid: System.Threading.Tasks.Task{Meridian.Backtesting.Sdk.BacktestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Backtesting.Sdk.BacktestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestResult>
+  nameWithType: Task<BacktestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Backtesting.Sdk.BacktestResult>
+  nameWithType.vb: Task(Of BacktestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Backtesting.Sdk.BacktestResult)
+  name.vb: Task(Of BacktestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.BacktestResult
+    name: BacktestResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.BacktestResult
+    name: BacktestResult
+  - name: )

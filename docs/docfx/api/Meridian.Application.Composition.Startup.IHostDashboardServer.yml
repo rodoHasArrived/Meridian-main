@@ -1,0 +1,264 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup.IHostDashboardServer
+  commentId: T:Meridian.Application.Composition.Startup.IHostDashboardServer
+  id: IHostDashboardServer
+  parent: Meridian.Application.Composition.Startup
+  children:
+  - Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IHostDashboardServer
+  nameWithType: IHostDashboardServer
+  fullName: Meridian.Application.Composition.Startup.IHostDashboardServer
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IHostDashboardServer
+    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup
+  summary: Host-agnostic abstraction over the dashboard server used by shared startup orchestration.
+  example: []
+  syntax:
+    content: 'public interface IHostDashboardServer : IAsyncDisposable'
+    content.vb: Public Interface IHostDashboardServer Inherits IAsyncDisposable
+  inheritedMembers:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync(System.Threading.CancellationToken)
+  id: StartAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Composition.Startup.IHostDashboardServer
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(CancellationToken)
+  nameWithType: IHostDashboardServer.StartAsync(CancellationToken)
+  fullName: Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup
+  syntax:
+    content: Task StartAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function StartAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync*
+- uid: Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync(System.Threading.CancellationToken)
+  id: StopAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Composition.Startup.IHostDashboardServer
+  langs:
+  - csharp
+  - vb
+  name: StopAsync(CancellationToken)
+  nameWithType: IHostDashboardServer.StopAsync(CancellationToken)
+  fullName: Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAsync
+    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup
+  syntax:
+    content: Task StopAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function StopAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync*
+references:
+- uid: Meridian.Application.Composition.Startup
+  commentId: N:Meridian.Application.Composition.Startup
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup
+  nameWithType: Meridian.Application.Composition.Startup
+  fullName: Meridian.Application.Composition.Startup
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync*
+  commentId: Overload:Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync
+  href: Meridian.Application.Composition.Startup.IHostDashboardServer.html#Meridian_Application_Composition_Startup_IHostDashboardServer_StartAsync_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: IHostDashboardServer.StartAsync
+  fullName: Meridian.Application.Composition.Startup.IHostDashboardServer.StartAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync*
+  commentId: Overload:Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync
+  href: Meridian.Application.Composition.Startup.IHostDashboardServer.html#Meridian_Application_Composition_Startup_IHostDashboardServer_StopAsync_System_Threading_CancellationToken_
+  name: StopAsync
+  nameWithType: IHostDashboardServer.StopAsync
+  fullName: Meridian.Application.Composition.Startup.IHostDashboardServer.StopAsync

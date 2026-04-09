@@ -1,8 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
-using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
@@ -15,7 +15,7 @@ public partial class PositionBlotterPage : Page
         InitializeComponent();
         _viewModel = new PositionBlotterViewModel(
             ApiClientService.Instance,
-            NavigationService.Instance);
+            WpfServices.NavigationService.Instance);
         DataContext = _viewModel;
     }
 

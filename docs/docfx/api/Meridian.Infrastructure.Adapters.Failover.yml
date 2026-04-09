@@ -1,0 +1,104 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Failover
+  commentId: N:Meridian.Infrastructure.Adapters.Failover
+  id: Meridian.Infrastructure.Adapters.Failover
+  children:
+  - Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Failover
+  nameWithType: Meridian.Infrastructure.Adapters.Failover
+  fullName: Meridian.Infrastructure.Adapters.Failover
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient.html
+  name: FailoverAwareMarketDataClient
+  nameWithType: FailoverAwareMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry.html
+  name: StreamingFailoverRegistry
+  nameWithType: StreamingFailoverRegistry
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  parent: Meridian.Infrastructure.Adapters.Failover
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html
+  name: StreamingFailoverService
+  nameWithType: StreamingFailoverService
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html
+  name: FailoverTriggeredEvent
+  nameWithType: FailoverTriggeredEvent
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent.html
+  name: FailoverRecoveredEvent
+  nameWithType: FailoverRecoveredEvent
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html
+  name: FailoverRuleSnapshot
+  nameWithType: FailoverRuleSnapshot
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html
+  name: ProviderHealthSnapshot
+  nameWithType: ProviderHealthSnapshot
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+- uid: Meridian.Infrastructure.Adapters.Failover
+  commentId: N:Meridian.Infrastructure.Adapters.Failover
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Failover
+  nameWithType: Meridian.Infrastructure.Adapters.Failover
+  fullName: Meridian.Infrastructure.Adapters.Failover
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html

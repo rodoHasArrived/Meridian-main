@@ -1,0 +1,307 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.IStorageSink
+  commentId: T:Meridian.Storage.Interfaces.IStorageSink
+  id: IStorageSink
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IStorageSink
+  nameWithType: IStorageSink
+  fullName: Meridian.Storage.Interfaces.IStorageSink
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IStorageSink
+    path: ../../src/Meridian.Storage/Interfaces/IStorageSink.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  syntax:
+    content: 'public interface IStorageSink : IAsyncDisposable, IFlushable'
+    content.vb: Public Interface IStorageSink Inherits IAsyncDisposable, IFlushable
+  derivedClasses:
+  - Meridian.Storage.Archival.ArchivalStorageService
+  - Meridian.Storage.Sinks.CatalogSyncSink
+  - Meridian.Storage.Sinks.CompositeSink
+  - Meridian.Storage.Sinks.JsonlStorageSink
+  - Meridian.Storage.Sinks.ParquetStorageSink
+  inheritedMembers:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: IStorageSink.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageSink.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  syntax:
+    content: ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Function AppendAsync(evt As MarketEvent, ct As CancellationToken = Nothing) As ValueTask
+  overload: Meridian.Storage.Interfaces.IStorageSink.AppendAsync*
+- uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: IStorageSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageSink.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  syntax:
+    content: Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageSink.FlushAsync*
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageSink.AppendAsync
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: IStorageSink.AppendAsync
+  fullName: Meridian.Storage.Interfaces.IStorageSink.AppendAsync
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageSink.FlushAsync
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: IStorageSink.FlushAsync
+  fullName: Meridian.Storage.Interfaces.IStorageSink.FlushAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

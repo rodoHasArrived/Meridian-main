@@ -1,0 +1,1139 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+  commentId: T:Meridian.Application.Monitoring.Core.MonitoringAlert
+  id: MonitoringAlert
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.#ctor(System.String,Meridian.Application.Monitoring.Core.AlertSeverity,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Category
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Context
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Critical(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Error(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Exception
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Id
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Info(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Message
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Severity
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Source
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Title
+  - Meridian.Application.Monitoring.Core.MonitoringAlert.Warning(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  langs:
+  - csharp
+  - vb
+  name: MonitoringAlert
+  nameWithType: MonitoringAlert
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MonitoringAlert
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Represents a monitoring alert from any system component.
+  example: []
+  syntax:
+    content: 'public sealed record MonitoringAlert : IEquatable<MonitoringAlert>'
+    content.vb: Public NotInheritable Class MonitoringAlert Implements IEquatable(Of MonitoringAlert)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.#ctor(System.String,Meridian.Application.Monitoring.Core.AlertSeverity,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)
+  commentId: M:Meridian.Application.Monitoring.Core.MonitoringAlert.#ctor(System.String,Meridian.Application.Monitoring.Core.AlertSeverity,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)
+  id: '#ctor(System.String,Meridian.Application.Monitoring.Core.AlertSeverity,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)'
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: MonitoringAlert(string, AlertSeverity, AlertCategory, string, string, string, DateTimeOffset, IReadOnlyDictionary<string, object>?, Exception?)
+  nameWithType: MonitoringAlert.MonitoringAlert(string, AlertSeverity, AlertCategory, string, string, string, DateTimeOffset, IReadOnlyDictionary<string, object>?, Exception?)
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.MonitoringAlert(string, Meridian.Application.Monitoring.Core.AlertSeverity, Meridian.Application.Monitoring.Core.AlertCategory, string, string, string, System.DateTimeOffset, System.Collections.Generic.IReadOnlyDictionary<string, object>?, System.Exception?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Represents a monitoring alert from any system component.
+  example: []
+  syntax:
+    content: public MonitoringAlert(string Id, AlertSeverity Severity, AlertCategory Category, string Source, string Title, string Message, DateTimeOffset Timestamp, IReadOnlyDictionary<string, object>? Context = null, Exception? Exception = null)
+    parameters:
+    - id: Id
+      type: System.String
+      description: Unique alert identifier.
+    - id: Severity
+      type: Meridian.Application.Monitoring.Core.AlertSeverity
+      description: Alert severity level.
+    - id: Category
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+      description: Alert category for filtering and routing.
+    - id: Source
+      type: System.String
+      description: Component that generated the alert.
+    - id: Title
+      type: System.String
+      description: Short summary of the alert.
+    - id: Message
+      type: System.String
+      description: Detailed alert message.
+    - id: Timestamp
+      type: System.DateTimeOffset
+      description: When the alert was generated.
+    - id: Context
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+      description: Additional context data.
+    - id: Exception
+      type: System.Exception
+      description: Related exception if applicable.
+    content.vb: Public Sub New(Id As String, Severity As AlertSeverity, Category As AlertCategory, Source As String, Title As String, Message As String, Timestamp As DateTimeOffset, Context As IReadOnlyDictionary(Of String, Object) = Nothing, Exception As Exception = Nothing)
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.#ctor*
+  nameWithType.vb: MonitoringAlert.New(String, AlertSeverity, AlertCategory, String, String, String, DateTimeOffset, IReadOnlyDictionary(Of String, Object), Exception)
+  fullName.vb: Meridian.Application.Monitoring.Core.MonitoringAlert.New(String, Meridian.Application.Monitoring.Core.AlertSeverity, Meridian.Application.Monitoring.Core.AlertCategory, String, String, String, System.DateTimeOffset, System.Collections.Generic.IReadOnlyDictionary(Of String, Object), System.Exception)
+  name.vb: New(String, AlertSeverity, AlertCategory, String, String, String, DateTimeOffset, IReadOnlyDictionary(Of String, Object), Exception)
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Id
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Id
+  id: Id
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: MonitoringAlert.Id
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Unique alert identifier.
+  example: []
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Id*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Severity
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Severity
+  id: Severity
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: MonitoringAlert.Severity
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Alert severity level.
+  example: []
+  syntax:
+    content: public AlertSeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertSeverity
+    content.vb: Public Property Severity As AlertSeverity
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Severity*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Category
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Category
+  id: Category
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: MonitoringAlert.Category
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Alert category for filtering and routing.
+  example: []
+  syntax:
+    content: public AlertCategory Category { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+    content.vb: Public Property Category As AlertCategory
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Category*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Source
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Source
+  id: Source
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: MonitoringAlert.Source
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Component that generated the alert.
+  example: []
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Source*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Title
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Title
+  id: Title
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: MonitoringAlert.Title
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Short summary of the alert.
+  example: []
+  syntax:
+    content: public string Title { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Title*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Message
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Message
+  id: Message
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: MonitoringAlert.Message
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Detailed alert message.
+  example: []
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Message*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: MonitoringAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: When the alert was generated.
+  example: []
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Context
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Context
+  id: Context
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Context
+  nameWithType: MonitoringAlert.Context
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Context
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Context
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Additional context data.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, object>? Context { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: Public Property Context As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Context*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Exception
+  commentId: P:Meridian.Application.Monitoring.Core.MonitoringAlert.Exception
+  id: Exception
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Exception
+  nameWithType: MonitoringAlert.Exception
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Exception
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exception
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Related exception if applicable.
+  example: []
+  syntax:
+    content: public Exception? Exception { get; init; }
+    parameters: []
+    return:
+      type: System.Exception
+    content.vb: Public Property Exception As Exception
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Exception*
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Info(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.MonitoringAlert.Info(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Info(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Info(string, AlertCategory, string, string, IReadOnlyDictionary<string, object>?)
+  nameWithType: MonitoringAlert.Info(string, AlertCategory, string, string, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Info(string, Meridian.Application.Monitoring.Core.AlertCategory, string, string, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates an info alert.
+  example: []
+  syntax:
+    content: public static MonitoringAlert Info(string source, AlertCategory category, string title, string message, IReadOnlyDictionary<string, object>? context = null)
+    parameters:
+    - id: source
+      type: System.String
+    - id: category
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: context
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.MonitoringAlert
+    content.vb: Public Shared Function Info(source As String, category As AlertCategory, title As String, message As String, context As IReadOnlyDictionary(Of String, Object) = Nothing) As MonitoringAlert
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Info*
+  nameWithType.vb: MonitoringAlert.Info(String, AlertCategory, String, String, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.MonitoringAlert.Info(String, Meridian.Application.Monitoring.Core.AlertCategory, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Info(String, AlertCategory, String, String, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Warning(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.MonitoringAlert.Warning(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Warning(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Warning(string, AlertCategory, string, string, IReadOnlyDictionary<string, object>?)
+  nameWithType: MonitoringAlert.Warning(string, AlertCategory, string, string, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Warning(string, Meridian.Application.Monitoring.Core.AlertCategory, string, string, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates a warning alert.
+  example: []
+  syntax:
+    content: public static MonitoringAlert Warning(string source, AlertCategory category, string title, string message, IReadOnlyDictionary<string, object>? context = null)
+    parameters:
+    - id: source
+      type: System.String
+    - id: category
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: context
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.MonitoringAlert
+    content.vb: Public Shared Function Warning(source As String, category As AlertCategory, title As String, message As String, context As IReadOnlyDictionary(Of String, Object) = Nothing) As MonitoringAlert
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Warning*
+  nameWithType.vb: MonitoringAlert.Warning(String, AlertCategory, String, String, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.MonitoringAlert.Warning(String, Meridian.Application.Monitoring.Core.AlertCategory, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Warning(String, AlertCategory, String, String, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Error(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.MonitoringAlert.Error(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Error(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Error(string, AlertCategory, string, string, Exception?, IReadOnlyDictionary<string, object>?)
+  nameWithType: MonitoringAlert.Error(string, AlertCategory, string, string, Exception?, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Error(string, Meridian.Application.Monitoring.Core.AlertCategory, string, string, System.Exception?, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates an error alert.
+  example: []
+  syntax:
+    content: public static MonitoringAlert Error(string source, AlertCategory category, string title, string message, Exception? exception = null, IReadOnlyDictionary<string, object>? context = null)
+    parameters:
+    - id: source
+      type: System.String
+    - id: category
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    - id: context
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.MonitoringAlert
+    content.vb: Public Shared Function [Error](source As String, category As AlertCategory, title As String, message As String, exception As Exception = Nothing, context As IReadOnlyDictionary(Of String, Object) = Nothing) As MonitoringAlert
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Error*
+  nameWithType.vb: MonitoringAlert.Error(String, AlertCategory, String, String, Exception, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.MonitoringAlert.Error(String, Meridian.Application.Monitoring.Core.AlertCategory, String, String, System.Exception, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Error(String, AlertCategory, String, String, Exception, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Critical(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.MonitoringAlert.Critical(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Critical(System.String,Meridian.Application.Monitoring.Core.AlertCategory,System.String,System.String,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.MonitoringAlert
+  langs:
+  - csharp
+  - vb
+  name: Critical(string, AlertCategory, string, string, Exception?, IReadOnlyDictionary<string, object>?)
+  nameWithType: MonitoringAlert.Critical(string, AlertCategory, string, string, Exception?, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Critical(string, Meridian.Application.Monitoring.Core.AlertCategory, string, string, System.Exception?, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates a critical alert.
+  example: []
+  syntax:
+    content: public static MonitoringAlert Critical(string source, AlertCategory category, string title, string message, Exception? exception = null, IReadOnlyDictionary<string, object>? context = null)
+    parameters:
+    - id: source
+      type: System.String
+    - id: category
+      type: Meridian.Application.Monitoring.Core.AlertCategory
+    - id: title
+      type: System.String
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    - id: context
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.MonitoringAlert
+    content.vb: Public Shared Function Critical(source As String, category As AlertCategory, title As String, message As String, exception As Exception = Nothing, context As IReadOnlyDictionary(Of String, Object) = Nothing) As MonitoringAlert
+  overload: Meridian.Application.Monitoring.Core.MonitoringAlert.Critical*
+  nameWithType.vb: MonitoringAlert.Critical(String, AlertCategory, String, String, Exception, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.MonitoringAlert.Critical(String, Meridian.Application.Monitoring.Core.AlertCategory, String, String, System.Exception, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Critical(String, AlertCategory, String, String, Exception, IReadOnlyDictionary(Of String, Object))
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MonitoringAlert>
+  nameWithType: IEquatable<MonitoringAlert>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.Core.MonitoringAlert>
+  nameWithType.vb: IEquatable(Of MonitoringAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.Core.MonitoringAlert)
+  name.vb: IEquatable(Of MonitoringAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.#ctor
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert__ctor_System_String_Meridian_Application_Monitoring_Core_AlertSeverity_Meridian_Application_Monitoring_Core_AlertCategory_System_String_System_String_System_String_System_DateTimeOffset_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__System_Exception_
+  name: MonitoringAlert
+  nameWithType: MonitoringAlert.MonitoringAlert
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.MonitoringAlert
+  nameWithType.vb: MonitoringAlert.New
+  fullName.vb: Meridian.Application.Monitoring.Core.MonitoringAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.Core.AlertSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.AlertSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertSeverity.html
+  name: AlertSeverity
+  nameWithType: AlertSeverity
+  fullName: Meridian.Application.Monitoring.Core.AlertSeverity
+- uid: Meridian.Application.Monitoring.Core.AlertCategory
+  commentId: T:Meridian.Application.Monitoring.Core.AlertCategory
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertCategory.html
+  name: AlertCategory
+  nameWithType: AlertCategory
+  fullName: Meridian.Application.Monitoring.Core.AlertCategory
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Id*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Id
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Id
+  name: Id
+  nameWithType: MonitoringAlert.Id
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Id
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Severity*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Severity
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Severity
+  name: Severity
+  nameWithType: MonitoringAlert.Severity
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Severity
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Category*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Category
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Category
+  name: Category
+  nameWithType: MonitoringAlert.Category
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Category
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Source*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Source
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Source
+  name: Source
+  nameWithType: MonitoringAlert.Source
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Source
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Title*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Title
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Title
+  name: Title
+  nameWithType: MonitoringAlert.Title
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Title
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Message*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Message
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Message
+  name: Message
+  nameWithType: MonitoringAlert.Message
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Message
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Timestamp
+  name: Timestamp
+  nameWithType: MonitoringAlert.Timestamp
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Timestamp
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Context*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Context
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Context
+  name: Context
+  nameWithType: MonitoringAlert.Context
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Context
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Exception*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Exception
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Exception
+  name: Exception
+  nameWithType: MonitoringAlert.Exception
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Exception
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Info*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Info
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Info_System_String_Meridian_Application_Monitoring_Core_AlertCategory_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Info
+  nameWithType: MonitoringAlert.Info
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Info
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+  commentId: T:Meridian.Application.Monitoring.Core.MonitoringAlert
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  name: MonitoringAlert
+  nameWithType: MonitoringAlert
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Warning*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Warning
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Warning_System_String_Meridian_Application_Monitoring_Core_AlertCategory_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Warning
+  nameWithType: MonitoringAlert.Warning
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Warning
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Error*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Error
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Error_System_String_Meridian_Application_Monitoring_Core_AlertCategory_System_String_System_String_System_Exception_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Error
+  nameWithType: MonitoringAlert.Error
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Error
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert.Critical*
+  commentId: Overload:Meridian.Application.Monitoring.Core.MonitoringAlert.Critical
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html#Meridian_Application_Monitoring_Core_MonitoringAlert_Critical_System_String_Meridian_Application_Monitoring_Core_AlertCategory_System_String_System_String_System_Exception_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Critical
+  nameWithType: MonitoringAlert.Critical
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert.Critical

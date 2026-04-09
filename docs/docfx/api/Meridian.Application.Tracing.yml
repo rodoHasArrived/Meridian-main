@@ -1,0 +1,83 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Tracing
+  commentId: N:Meridian.Application.Tracing
+  id: Meridian.Application.Tracing
+  children:
+  - Meridian.Application.Tracing.EventTraceContext
+  - Meridian.Application.Tracing.MarketDataTracing
+  - Meridian.Application.Tracing.OpenTelemetryConfiguration
+  - Meridian.Application.Tracing.OpenTelemetrySetup
+  - Meridian.Application.Tracing.TracedEventMetrics
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Tracing
+  nameWithType: Meridian.Application.Tracing
+  fullName: Meridian.Application.Tracing
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Tracing.EventTraceContext
+  commentId: T:Meridian.Application.Tracing.EventTraceContext
+  parent: Meridian.Application.Tracing
+  href: Meridian.Application.Tracing.EventTraceContext.html
+  name: EventTraceContext
+  nameWithType: EventTraceContext
+  fullName: Meridian.Application.Tracing.EventTraceContext
+- uid: Meridian.Application.Tracing.OpenTelemetrySetup
+  commentId: T:Meridian.Application.Tracing.OpenTelemetrySetup
+  href: Meridian.Application.Tracing.OpenTelemetrySetup.html
+  name: OpenTelemetrySetup
+  nameWithType: OpenTelemetrySetup
+  fullName: Meridian.Application.Tracing.OpenTelemetrySetup
+- uid: Meridian.Application.Tracing.MarketDataTracing
+  commentId: T:Meridian.Application.Tracing.MarketDataTracing
+  href: Meridian.Application.Tracing.MarketDataTracing.html
+  name: MarketDataTracing
+  nameWithType: MarketDataTracing
+  fullName: Meridian.Application.Tracing.MarketDataTracing
+- uid: Meridian.Application.Tracing.OpenTelemetryConfiguration
+  commentId: T:Meridian.Application.Tracing.OpenTelemetryConfiguration
+  parent: Meridian.Application.Tracing
+  href: Meridian.Application.Tracing.OpenTelemetryConfiguration.html
+  name: OpenTelemetryConfiguration
+  nameWithType: OpenTelemetryConfiguration
+  fullName: Meridian.Application.Tracing.OpenTelemetryConfiguration
+- uid: Meridian.Application.Tracing.TracedEventMetrics
+  commentId: T:Meridian.Application.Tracing.TracedEventMetrics
+  href: Meridian.Application.Tracing.TracedEventMetrics.html
+  name: TracedEventMetrics
+  nameWithType: TracedEventMetrics
+  fullName: Meridian.Application.Tracing.TracedEventMetrics
+- uid: Meridian.Application.Tracing
+  commentId: N:Meridian.Application.Tracing
+  href: Meridian.html
+  name: Meridian.Application.Tracing
+  nameWithType: Meridian.Application.Tracing
+  fullName: Meridian.Application.Tracing
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Tracing
+    name: Tracing
+    href: Meridian.Application.Tracing.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Tracing
+    name: Tracing
+    href: Meridian.Application.Tracing.html

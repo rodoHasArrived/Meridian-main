@@ -1,0 +1,924 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  id: SymbolGapInfo
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges(System.Int32)
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol
+  - Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate
+  langs:
+  - csharp
+  - vb
+  name: SymbolGapInfo
+  nameWithType: SymbolGapInfo
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolGapInfo
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gap information for a single symbol.
+  example: []
+  syntax:
+    content: public sealed class SymbolGapInfo
+    content.vb: Public NotInheritable Class SymbolGapInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolGapInfo.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate
+  id: FromDate
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: SymbolGapInfo.FromDate
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateOnly FromDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property FromDate As DateOnly
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate
+  id: ToDate
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: SymbolGapInfo.ToDate
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateOnly ToDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ToDate As DateOnly
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity
+  id: Granularity
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: SymbolGapInfo.Granularity
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DataGranularity Granularity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    content.vb: Public Property Granularity As DataGranularity
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays
+  id: ExpectedDays
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: ExpectedDays
+  nameWithType: SymbolGapInfo.ExpectedDays
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedDays
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int ExpectedDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ExpectedDays As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays
+  id: CoveredDays
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: CoveredDays
+  nameWithType: SymbolGapInfo.CoveredDays
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoveredDays
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int CoveredDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CoveredDays As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps
+  id: HasGaps
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: HasGaps
+  nameWithType: SymbolGapInfo.HasGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasGaps
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool HasGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasGaps As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates
+  id: GapDates
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: GapDates
+  nameWithType: SymbolGapInfo.GapDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapDates
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public List<DateOnly> GapDates { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.DateOnly}
+    content.vb: Public Property GapDates As List(Of DateOnly)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates
+  id: ExistingDates
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: ExistingDates
+  nameWithType: SymbolGapInfo.ExistingDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExistingDates
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public List<DateOnly> ExistingDates { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.DateOnly}
+    content.vb: Public Property ExistingDates As List(Of DateOnly)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent
+  id: CoveragePercent
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: CoveragePercent
+  nameWithType: SymbolGapInfo.CoveragePercent
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoveragePercent
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double CoveragePercent { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property CoveragePercent As Double
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges(System.Int32)
+  id: GetGapRanges(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo
+  langs:
+  - csharp
+  - vb
+  name: GetGapRanges(int)
+  nameWithType: SymbolGapInfo.GetGapRanges(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGapRanges
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
+    startLine: 537
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get consolidated date ranges for gaps (to minimize requests).
+  example: []
+  syntax:
+    content: public List<(DateOnly From, DateOnly To)> GetGapRanges(int maxDaysPerRange = 365)
+    parameters:
+    - id: maxDaysPerRange
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.List{System.ValueTuple{System.DateOnly,System.DateOnly}}
+    content.vb: Public Function GetGapRanges(maxDaysPerRange As Integer = 365) As List(Of (From As DateOnly, [To] As DateOnly))
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges*
+  nameWithType.vb: SymbolGapInfo.GetGapRanges(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges(Integer)
+  name.vb: GetGapRanges(Integer)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_Symbol
+  name: Symbol
+  nameWithType: SymbolGapInfo.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_FromDate
+  name: FromDate
+  nameWithType: SymbolGapInfo.FromDate
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.FromDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_ToDate
+  name: ToDate
+  nameWithType: SymbolGapInfo.ToDate
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ToDate
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_Granularity
+  name: Granularity
+  nameWithType: SymbolGapInfo.Granularity
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.Granularity
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_ExpectedDays
+  name: ExpectedDays
+  nameWithType: SymbolGapInfo.ExpectedDays
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExpectedDays
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_CoveredDays
+  name: CoveredDays
+  nameWithType: SymbolGapInfo.CoveredDays
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveredDays
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_HasGaps
+  name: HasGaps
+  nameWithType: SymbolGapInfo.HasGaps
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.HasGaps
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_GapDates
+  name: GapDates
+  nameWithType: SymbolGapInfo.GapDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GapDates
+- uid: System.Collections.Generic.List{System.DateOnly}
+  commentId: T:System.Collections.Generic.List{System.DateOnly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<DateOnly>
+  nameWithType: List<DateOnly>
+  fullName: System.Collections.Generic.List<System.DateOnly>
+  nameWithType.vb: List(Of DateOnly)
+  fullName.vb: System.Collections.Generic.List(Of System.DateOnly)
+  name.vb: List(Of DateOnly)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_ExistingDates
+  name: ExistingDates
+  nameWithType: SymbolGapInfo.ExistingDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.ExistingDates
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_CoveragePercent
+  name: CoveragePercent
+  nameWithType: SymbolGapInfo.CoveragePercent
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.CoveragePercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges
+  href: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.html#Meridian_Infrastructure_Adapters_Core_SymbolGapInfo_GetGapRanges_System_Int32_
+  name: GetGapRanges
+  nameWithType: SymbolGapInfo.GetGapRanges
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolGapInfo.GetGapRanges
+- uid: System.Collections.Generic.List{System.ValueTuple{System.DateOnly,System.DateOnly}}
+  commentId: T:System.Collections.Generic.List{System.ValueTuple{System.DateOnly,System.DateOnly}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<(DateOnly From, DateOnly To)>
+  nameWithType: List<(DateOnly From, DateOnly To)>
+  fullName: System.Collections.Generic.List<(System.DateOnly From, System.DateOnly To)>
+  nameWithType.vb: List(Of (From As DateOnly, To As DateOnly))
+  fullName.vb: System.Collections.Generic.List(Of (From As System.DateOnly, To As System.DateOnly))
+  name.vb: List(Of (From As DateOnly, To As DateOnly))
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.DateOnly}.From
+    name: From
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.dateonly-.from
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.DateOnly}.To
+    name: To
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.dateonly-.to
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.DateOnly,System.DateOnly}.From
+    name: From
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.dateonly-.from
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.DateOnly}.To
+    name: To
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.dateonly-.to
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+  - name: )

@@ -1,0 +1,1470 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ErrorResponse
+  commentId: T:Meridian.Contracts.Api.ErrorResponse
+  id: ErrorResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ErrorResponse.CorrelationId
+  - Meridian.Contracts.Api.ErrorResponse.Detail
+  - Meridian.Contracts.Api.ErrorResponse.ErrorCode
+  - Meridian.Contracts.Api.ErrorResponse.Errors
+  - Meridian.Contracts.Api.ErrorResponse.Extensions
+  - Meridian.Contracts.Api.ErrorResponse.FromErrorCode(System.Int32,System.String,System.String,System.String)
+  - Meridian.Contracts.Api.ErrorResponse.Instance
+  - Meridian.Contracts.Api.ErrorResponse.InternalError(System.String,System.String)
+  - Meridian.Contracts.Api.ErrorResponse.NotFound(System.String,System.String,System.String)
+  - Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded(System.String,System.Nullable{System.TimeSpan},System.String)
+  - Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable(System.String,System.String,System.String)
+  - Meridian.Contracts.Api.ErrorResponse.Status
+  - Meridian.Contracts.Api.ErrorResponse.Timeout(System.String,System.TimeSpan,System.String)
+  - Meridian.Contracts.Api.ErrorResponse.Timestamp
+  - Meridian.Contracts.Api.ErrorResponse.Title
+  - Meridian.Contracts.Api.ErrorResponse.Type
+  - Meridian.Contracts.Api.ErrorResponse.Validation(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError},System.String)
+  langs:
+  - csharp
+  - vb
+  name: ErrorResponse
+  nameWithType: ErrorResponse
+  fullName: Meridian.Contracts.Api.ErrorResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorResponse
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: >-
+    Standardized error response for all HTTP API endpoints.
+
+    Follows RFC 7807 (Problem Details for HTTP APIs) conventions.
+  example: []
+  syntax:
+    content: public sealed class ErrorResponse
+    content.vb: Public NotInheritable Class ErrorResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ErrorResponse.Type
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Type
+  id: Type
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: ErrorResponse.Type
+  fullName: Meridian.Contracts.Api.ErrorResponse.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: A URI reference that identifies the problem type.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("type")]
+
+      public string Type { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("type")>
+
+      Public Property Type As String
+  overload: Meridian.Contracts.Api.ErrorResponse.Type*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: type
+- uid: Meridian.Contracts.Api.ErrorResponse.Title
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Title
+  id: Title
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: ErrorResponse.Title
+  fullName: Meridian.Contracts.Api.ErrorResponse.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: A short, human-readable summary of the problem type.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("title")]
+
+      public required string Title { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("title")>
+
+      Public Property Title As String
+  overload: Meridian.Contracts.Api.ErrorResponse.Title*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: title
+- uid: Meridian.Contracts.Api.ErrorResponse.Status
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Status
+  id: Status
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ErrorResponse.Status
+  fullName: Meridian.Contracts.Api.ErrorResponse.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: The HTTP status code.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("status")]
+
+      public required int Status { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("status")>
+
+      Public Property Status As Integer
+  overload: Meridian.Contracts.Api.ErrorResponse.Status*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: status
+- uid: Meridian.Contracts.Api.ErrorResponse.Detail
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Detail
+  id: Detail
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Detail
+  nameWithType: ErrorResponse.Detail
+  fullName: Meridian.Contracts.Api.ErrorResponse.Detail
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Detail
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: A human-readable explanation specific to this occurrence of the problem.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("detail")]
+
+      public string? Detail { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("detail")>
+
+      Public Property Detail As String
+  overload: Meridian.Contracts.Api.ErrorResponse.Detail*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: detail
+- uid: Meridian.Contracts.Api.ErrorResponse.Instance
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Instance
+  id: Instance
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: ErrorResponse.Instance
+  fullName: Meridian.Contracts.Api.ErrorResponse.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: A URI reference that identifies the specific occurrence of the problem.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("instance")]
+
+      public string? Instance { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("instance")>
+
+      Public Property Instance As String
+  overload: Meridian.Contracts.Api.ErrorResponse.Instance*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: instance
+- uid: Meridian.Contracts.Api.ErrorResponse.ErrorCode
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.ErrorCode
+  id: ErrorCode
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorCode
+  nameWithType: ErrorResponse.ErrorCode
+  fullName: Meridian.Contracts.Api.ErrorResponse.ErrorCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCode
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Application-specific error code for programmatic handling.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("errorCode")]
+
+      public int ErrorCode { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("errorCode")>
+
+      Public Property ErrorCode As Integer
+  overload: Meridian.Contracts.Api.ErrorResponse.ErrorCode*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorCode
+- uid: Meridian.Contracts.Api.ErrorResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ErrorResponse.Timestamp
+  fullName: Meridian.Contracts.Api.ErrorResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Timestamp when the error occurred.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("timestamp")]
+
+      public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: >-
+      <JsonPropertyName("timestamp")>
+
+      Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.ErrorResponse.Timestamp*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: timestamp
+- uid: Meridian.Contracts.Api.ErrorResponse.CorrelationId
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.CorrelationId
+  id: CorrelationId
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: CorrelationId
+  nameWithType: ErrorResponse.CorrelationId
+  fullName: Meridian.Contracts.Api.ErrorResponse.CorrelationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrelationId
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Correlation ID for distributed tracing.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("correlationId")]
+
+      public string? CorrelationId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("correlationId")>
+
+      Public Property CorrelationId As String
+  overload: Meridian.Contracts.Api.ErrorResponse.CorrelationId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: correlationId
+- uid: Meridian.Contracts.Api.ErrorResponse.Errors
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Errors
+  id: Errors
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Errors
+  nameWithType: ErrorResponse.Errors
+  fullName: Meridian.Contracts.Api.ErrorResponse.Errors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Errors
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Validation errors if applicable.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("errors")]
+
+      [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+
+      public IReadOnlyList<FieldError>? Errors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.FieldError}
+    content.vb: >-
+      <JsonPropertyName("errors")>
+
+      <JsonIgnore(Condition:=JsonIgnoreCondition.WhenWritingNull)>
+
+      Public Property Errors As IReadOnlyList(Of FieldError)
+  overload: Meridian.Contracts.Api.ErrorResponse.Errors*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errors
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Condition
+      type: System.Text.Json.Serialization.JsonIgnoreCondition
+      value: 3
+- uid: Meridian.Contracts.Api.ErrorResponse.Extensions
+  commentId: P:Meridian.Contracts.Api.ErrorResponse.Extensions
+  id: Extensions
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Extensions
+  nameWithType: ErrorResponse.Extensions
+  fullName: Meridian.Contracts.Api.ErrorResponse.Extensions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Extensions
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Additional context information.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("extensions")]
+
+      [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+
+      public IReadOnlyDictionary<string, object?>? Extensions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: >-
+      <JsonPropertyName("extensions")>
+
+      <JsonIgnore(Condition:=JsonIgnoreCondition.WhenWritingNull)>
+
+      Public Property Extensions As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Contracts.Api.ErrorResponse.Extensions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: extensions
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Condition
+      type: System.Text.Json.Serialization.JsonIgnoreCondition
+      value: 3
+- uid: Meridian.Contracts.Api.ErrorResponse.Validation(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError},System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.Validation(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError},System.String)
+  id: Validation(System.String,System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError},System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Validation(string, IEnumerable<FieldError>?, string?)
+  nameWithType: ErrorResponse.Validation(string, IEnumerable<FieldError>?, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.Validation(string, System.Collections.Generic.IEnumerable<Meridian.Contracts.Api.FieldError>?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a validation error response.
+  example: []
+  syntax:
+    content: public static ErrorResponse Validation(string detail, IEnumerable<FieldError>? fieldErrors = null, string? correlationId = null)
+    parameters:
+    - id: detail
+      type: System.String
+    - id: fieldErrors
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError}
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function Validation(detail As String, fieldErrors As IEnumerable(Of FieldError) = Nothing, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.Validation*
+  nameWithType.vb: ErrorResponse.Validation(String, IEnumerable(Of FieldError), String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.Validation(String, System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Api.FieldError), String)
+  name.vb: Validation(String, IEnumerable(Of FieldError), String)
+- uid: Meridian.Contracts.Api.ErrorResponse.NotFound(System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.NotFound(System.String,System.String,System.String)
+  id: NotFound(System.String,System.String,System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: NotFound(string, string, string?)
+  nameWithType: ErrorResponse.NotFound(string, string, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.NotFound(string, string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotFound
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a not found error response.
+  example: []
+  syntax:
+    content: public static ErrorResponse NotFound(string entityType, string entityId, string? correlationId = null)
+    parameters:
+    - id: entityType
+      type: System.String
+    - id: entityId
+      type: System.String
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function NotFound(entityType As String, entityId As String, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.NotFound*
+  nameWithType.vb: ErrorResponse.NotFound(String, String, String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.NotFound(String, String, String)
+  name.vb: NotFound(String, String, String)
+- uid: Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded(System.String,System.Nullable{System.TimeSpan},System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded(System.String,System.Nullable{System.TimeSpan},System.String)
+  id: RateLimitExceeded(System.String,System.Nullable{System.TimeSpan},System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: RateLimitExceeded(string, TimeSpan?, string?)
+  nameWithType: ErrorResponse.RateLimitExceeded(string, TimeSpan?, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded(string, System.TimeSpan?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitExceeded
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a rate limit exceeded error response.
+  example: []
+  syntax:
+    content: public static ErrorResponse RateLimitExceeded(string provider, TimeSpan? retryAfter = null, string? correlationId = null)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: retryAfter
+      type: System.Nullable{System.TimeSpan}
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function RateLimitExceeded(provider As String, retryAfter As TimeSpan? = Nothing, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded*
+  nameWithType.vb: ErrorResponse.RateLimitExceeded(String, TimeSpan?, String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded(String, System.TimeSpan?, String)
+  name.vb: RateLimitExceeded(String, TimeSpan?, String)
+- uid: Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable(System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable(System.String,System.String,System.String)
+  id: ServiceUnavailable(System.String,System.String,System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: ServiceUnavailable(string, string?, string?)
+  nameWithType: ErrorResponse.ServiceUnavailable(string, string?, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable(string, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceUnavailable
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a service unavailable error response.
+  example: []
+  syntax:
+    content: public static ErrorResponse ServiceUnavailable(string service, string? reason = null, string? correlationId = null)
+    parameters:
+    - id: service
+      type: System.String
+    - id: reason
+      type: System.String
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function ServiceUnavailable(service As String, reason As String = Nothing, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable*
+  nameWithType.vb: ErrorResponse.ServiceUnavailable(String, String, String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable(String, String, String)
+  name.vb: ServiceUnavailable(String, String, String)
+- uid: Meridian.Contracts.Api.ErrorResponse.InternalError(System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.InternalError(System.String,System.String)
+  id: InternalError(System.String,System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: InternalError(string?, string?)
+  nameWithType: ErrorResponse.InternalError(string?, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.InternalError(string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InternalError
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates an internal server error response.
+  example: []
+  syntax:
+    content: public static ErrorResponse InternalError(string? detail = null, string? correlationId = null)
+    parameters:
+    - id: detail
+      type: System.String
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function InternalError(detail As String = Nothing, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.InternalError*
+  nameWithType.vb: ErrorResponse.InternalError(String, String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.InternalError(String, String)
+  name.vb: InternalError(String, String)
+- uid: Meridian.Contracts.Api.ErrorResponse.Timeout(System.String,System.TimeSpan,System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.Timeout(System.String,System.TimeSpan,System.String)
+  id: Timeout(System.String,System.TimeSpan,System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: Timeout(string, TimeSpan, string?)
+  nameWithType: ErrorResponse.Timeout(string, TimeSpan, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.Timeout(string, System.TimeSpan, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timeout
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a timeout error response.
+  example: []
+  syntax:
+    content: public static ErrorResponse Timeout(string operation, TimeSpan timeout, string? correlationId = null)
+    parameters:
+    - id: operation
+      type: System.String
+    - id: timeout
+      type: System.TimeSpan
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function Timeout(operation As String, timeout As TimeSpan, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.Timeout*
+  nameWithType.vb: ErrorResponse.Timeout(String, TimeSpan, String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.Timeout(String, System.TimeSpan, String)
+  name.vb: Timeout(String, TimeSpan, String)
+- uid: Meridian.Contracts.Api.ErrorResponse.FromErrorCode(System.Int32,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.ErrorResponse.FromErrorCode(System.Int32,System.String,System.String,System.String)
+  id: FromErrorCode(System.Int32,System.String,System.String,System.String)
+  parent: Meridian.Contracts.Api.ErrorResponse
+  langs:
+  - csharp
+  - vb
+  name: FromErrorCode(int, string, string?, string?)
+  nameWithType: ErrorResponse.FromErrorCode(int, string, string?, string?)
+  fullName: Meridian.Contracts.Api.ErrorResponse.FromErrorCode(int, string, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromErrorCode
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates an error response from an error code.
+  example: []
+  syntax:
+    content: public static ErrorResponse FromErrorCode(int errorCode, string message, string? detail = null, string? correlationId = null)
+    parameters:
+    - id: errorCode
+      type: System.Int32
+    - id: message
+      type: System.String
+    - id: detail
+      type: System.String
+    - id: correlationId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ErrorResponse
+    content.vb: Public Shared Function FromErrorCode(errorCode As Integer, message As String, detail As String = Nothing, correlationId As String = Nothing) As ErrorResponse
+  overload: Meridian.Contracts.Api.ErrorResponse.FromErrorCode*
+  nameWithType.vb: ErrorResponse.FromErrorCode(Integer, String, String, String)
+  fullName.vb: Meridian.Contracts.Api.ErrorResponse.FromErrorCode(Integer, String, String, String)
+  name.vb: FromErrorCode(Integer, String, String, String)
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.ErrorResponse.Type*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Type
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Type
+  name: Type
+  nameWithType: ErrorResponse.Type
+  fullName: Meridian.Contracts.Api.ErrorResponse.Type
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.ErrorResponse.Title*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Title
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Title
+  name: Title
+  nameWithType: ErrorResponse.Title
+  fullName: Meridian.Contracts.Api.ErrorResponse.Title
+- uid: Meridian.Contracts.Api.ErrorResponse.Status*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Status
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Status
+  name: Status
+  nameWithType: ErrorResponse.Status
+  fullName: Meridian.Contracts.Api.ErrorResponse.Status
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.ErrorResponse.Detail*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Detail
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Detail
+  name: Detail
+  nameWithType: ErrorResponse.Detail
+  fullName: Meridian.Contracts.Api.ErrorResponse.Detail
+- uid: Meridian.Contracts.Api.ErrorResponse.Instance*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Instance
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Instance
+  name: Instance
+  nameWithType: ErrorResponse.Instance
+  fullName: Meridian.Contracts.Api.ErrorResponse.Instance
+- uid: Meridian.Contracts.Api.ErrorResponse.ErrorCode*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.ErrorCode
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_ErrorCode
+  name: ErrorCode
+  nameWithType: ErrorResponse.ErrorCode
+  fullName: Meridian.Contracts.Api.ErrorResponse.ErrorCode
+- uid: Meridian.Contracts.Api.ErrorResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Timestamp
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Timestamp
+  name: Timestamp
+  nameWithType: ErrorResponse.Timestamp
+  fullName: Meridian.Contracts.Api.ErrorResponse.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Api.ErrorResponse.CorrelationId*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.CorrelationId
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_CorrelationId
+  name: CorrelationId
+  nameWithType: ErrorResponse.CorrelationId
+  fullName: Meridian.Contracts.Api.ErrorResponse.CorrelationId
+- uid: Meridian.Contracts.Api.ErrorResponse.Errors*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Errors
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Errors
+  name: Errors
+  nameWithType: ErrorResponse.Errors
+  fullName: Meridian.Contracts.Api.ErrorResponse.Errors
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.FieldError}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.FieldError}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FieldError>
+  nameWithType: IReadOnlyList<FieldError>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Api.FieldError>
+  nameWithType.vb: IReadOnlyList(Of FieldError)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Api.FieldError)
+  name.vb: IReadOnlyList(Of FieldError)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Api.FieldError
+    name: FieldError
+    href: Meridian.Contracts.Api.FieldError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.FieldError
+    name: FieldError
+    href: Meridian.Contracts.Api.FieldError.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Api.ErrorResponse.Extensions*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Extensions
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Extensions
+  name: Extensions
+  nameWithType: ErrorResponse.Extensions
+  fullName: Meridian.Contracts.Api.ErrorResponse.Extensions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Contracts.Api.ErrorResponse.Validation*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Validation
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Validation_System_String_System_Collections_Generic_IEnumerable_Meridian_Contracts_Api_FieldError__System_String_
+  name: Validation
+  nameWithType: ErrorResponse.Validation
+  fullName: Meridian.Contracts.Api.ErrorResponse.Validation
+- uid: System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Contracts.Api.FieldError}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<FieldError>
+  nameWithType: IEnumerable<FieldError>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Contracts.Api.FieldError>
+  nameWithType.vb: IEnumerable(Of FieldError)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Api.FieldError)
+  name.vb: IEnumerable(Of FieldError)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.FieldError
+    name: FieldError
+    href: Meridian.Contracts.Api.FieldError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.FieldError
+    name: FieldError
+    href: Meridian.Contracts.Api.FieldError.html
+  - name: )
+- uid: Meridian.Contracts.Api.ErrorResponse
+  commentId: T:Meridian.Contracts.Api.ErrorResponse
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ErrorResponse.html
+  name: ErrorResponse
+  nameWithType: ErrorResponse
+  fullName: Meridian.Contracts.Api.ErrorResponse
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.ErrorResponse.NotFound*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.NotFound
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_NotFound_System_String_System_String_System_String_
+  name: NotFound
+  nameWithType: ErrorResponse.NotFound
+  fullName: Meridian.Contracts.Api.ErrorResponse.NotFound
+- uid: Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_RateLimitExceeded_System_String_System_Nullable_System_TimeSpan__System_String_
+  name: RateLimitExceeded
+  nameWithType: ErrorResponse.RateLimitExceeded
+  fullName: Meridian.Contracts.Api.ErrorResponse.RateLimitExceeded
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_ServiceUnavailable_System_String_System_String_System_String_
+  name: ServiceUnavailable
+  nameWithType: ErrorResponse.ServiceUnavailable
+  fullName: Meridian.Contracts.Api.ErrorResponse.ServiceUnavailable
+- uid: Meridian.Contracts.Api.ErrorResponse.InternalError*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.InternalError
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_InternalError_System_String_System_String_
+  name: InternalError
+  nameWithType: ErrorResponse.InternalError
+  fullName: Meridian.Contracts.Api.ErrorResponse.InternalError
+- uid: Meridian.Contracts.Api.ErrorResponse.Timeout*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.Timeout
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_Timeout_System_String_System_TimeSpan_System_String_
+  name: Timeout
+  nameWithType: ErrorResponse.Timeout
+  fullName: Meridian.Contracts.Api.ErrorResponse.Timeout
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Contracts.Api.ErrorResponse.FromErrorCode*
+  commentId: Overload:Meridian.Contracts.Api.ErrorResponse.FromErrorCode
+  href: Meridian.Contracts.Api.ErrorResponse.html#Meridian_Contracts_Api_ErrorResponse_FromErrorCode_System_Int32_System_String_System_String_System_String_
+  name: FromErrorCode
+  nameWithType: ErrorResponse.FromErrorCode
+  fullName: Meridian.Contracts.Api.ErrorResponse.FromErrorCode

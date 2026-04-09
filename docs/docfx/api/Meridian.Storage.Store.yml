@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Store
+  commentId: N:Meridian.Storage.Store
+  id: Meridian.Storage.Store
+  children:
+  - Meridian.Storage.Store.CompositeMarketDataStore
+  - Meridian.Storage.Store.JsonlMarketDataStore
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.Store
+  nameWithType: Meridian.Storage.Store
+  fullName: Meridian.Storage.Store
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.Store.CompositeMarketDataStore
+  commentId: T:Meridian.Storage.Store.CompositeMarketDataStore
+  href: Meridian.Storage.Store.CompositeMarketDataStore.html
+  name: CompositeMarketDataStore
+  nameWithType: CompositeMarketDataStore
+  fullName: Meridian.Storage.Store.CompositeMarketDataStore
+- uid: Meridian.Storage.Store.JsonlMarketDataStore
+  commentId: T:Meridian.Storage.Store.JsonlMarketDataStore
+  href: Meridian.Storage.Store.JsonlMarketDataStore.html
+  name: JsonlMarketDataStore
+  nameWithType: JsonlMarketDataStore
+  fullName: Meridian.Storage.Store.JsonlMarketDataStore

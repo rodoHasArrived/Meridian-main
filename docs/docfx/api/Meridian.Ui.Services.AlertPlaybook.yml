@@ -1,0 +1,554 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.AlertPlaybook
+  commentId: T:Meridian.Ui.Services.AlertPlaybook
+  id: AlertPlaybook
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.AlertPlaybook.Categories
+  - Meridian.Ui.Services.AlertPlaybook.PossibleCauses
+  - Meridian.Ui.Services.AlertPlaybook.RemediationSteps
+  - Meridian.Ui.Services.AlertPlaybook.Title
+  - Meridian.Ui.Services.AlertPlaybook.WhatHappened
+  - Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored
+  langs:
+  - csharp
+  - vb
+  name: AlertPlaybook
+  nameWithType: AlertPlaybook
+  fullName: Meridian.Ui.Services.AlertPlaybook
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertPlaybook
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Remediation playbook for an alert type.
+  example: []
+  syntax:
+    content: public sealed class AlertPlaybook
+    content.vb: Public NotInheritable Class AlertPlaybook
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.AlertPlaybook.Title
+  commentId: P:Meridian.Ui.Services.AlertPlaybook.Title
+  id: Title
+  parent: Meridian.Ui.Services.AlertPlaybook
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: AlertPlaybook.Title
+  fullName: Meridian.Ui.Services.AlertPlaybook.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Title { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Ui.Services.AlertPlaybook.Title*
+- uid: Meridian.Ui.Services.AlertPlaybook.WhatHappened
+  commentId: P:Meridian.Ui.Services.AlertPlaybook.WhatHappened
+  id: WhatHappened
+  parent: Meridian.Ui.Services.AlertPlaybook
+  langs:
+  - csharp
+  - vb
+  name: WhatHappened
+  nameWithType: AlertPlaybook.WhatHappened
+  fullName: Meridian.Ui.Services.AlertPlaybook.WhatHappened
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WhatHappened
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string WhatHappened { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WhatHappened As String
+  overload: Meridian.Ui.Services.AlertPlaybook.WhatHappened*
+- uid: Meridian.Ui.Services.AlertPlaybook.Categories
+  commentId: P:Meridian.Ui.Services.AlertPlaybook.Categories
+  id: Categories
+  parent: Meridian.Ui.Services.AlertPlaybook
+  langs:
+  - csharp
+  - vb
+  name: Categories
+  nameWithType: AlertPlaybook.Categories
+  fullName: Meridian.Ui.Services.AlertPlaybook.Categories
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Categories
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[] Categories { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Categories As String()
+  overload: Meridian.Ui.Services.AlertPlaybook.Categories*
+- uid: Meridian.Ui.Services.AlertPlaybook.PossibleCauses
+  commentId: P:Meridian.Ui.Services.AlertPlaybook.PossibleCauses
+  id: PossibleCauses
+  parent: Meridian.Ui.Services.AlertPlaybook
+  langs:
+  - csharp
+  - vb
+  name: PossibleCauses
+  nameWithType: AlertPlaybook.PossibleCauses
+  fullName: Meridian.Ui.Services.AlertPlaybook.PossibleCauses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PossibleCauses
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 531
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[] PossibleCauses { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property PossibleCauses As String()
+  overload: Meridian.Ui.Services.AlertPlaybook.PossibleCauses*
+- uid: Meridian.Ui.Services.AlertPlaybook.RemediationSteps
+  commentId: P:Meridian.Ui.Services.AlertPlaybook.RemediationSteps
+  id: RemediationSteps
+  parent: Meridian.Ui.Services.AlertPlaybook
+  langs:
+  - csharp
+  - vb
+  name: RemediationSteps
+  nameWithType: AlertPlaybook.RemediationSteps
+  fullName: Meridian.Ui.Services.AlertPlaybook.RemediationSteps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemediationSteps
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public RemediationStep[] RemediationSteps { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.RemediationStep[]
+    content.vb: Public Property RemediationSteps As RemediationStep()
+  overload: Meridian.Ui.Services.AlertPlaybook.RemediationSteps*
+- uid: Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored
+  commentId: P:Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored
+  id: WhatHappensIfIgnored
+  parent: Meridian.Ui.Services.AlertPlaybook
+  langs:
+  - csharp
+  - vb
+  name: WhatHappensIfIgnored
+  nameWithType: AlertPlaybook.WhatHappensIfIgnored
+  fullName: Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WhatHappensIfIgnored
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 533
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string WhatHappensIfIgnored { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WhatHappensIfIgnored As String
+  overload: Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.AlertPlaybook.Title*
+  commentId: Overload:Meridian.Ui.Services.AlertPlaybook.Title
+  href: Meridian.Ui.Services.AlertPlaybook.html#Meridian_Ui_Services_AlertPlaybook_Title
+  name: Title
+  nameWithType: AlertPlaybook.Title
+  fullName: Meridian.Ui.Services.AlertPlaybook.Title
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.AlertPlaybook.WhatHappened*
+  commentId: Overload:Meridian.Ui.Services.AlertPlaybook.WhatHappened
+  href: Meridian.Ui.Services.AlertPlaybook.html#Meridian_Ui_Services_AlertPlaybook_WhatHappened
+  name: WhatHappened
+  nameWithType: AlertPlaybook.WhatHappened
+  fullName: Meridian.Ui.Services.AlertPlaybook.WhatHappened
+- uid: Meridian.Ui.Services.AlertPlaybook.Categories*
+  commentId: Overload:Meridian.Ui.Services.AlertPlaybook.Categories
+  href: Meridian.Ui.Services.AlertPlaybook.html#Meridian_Ui_Services_AlertPlaybook_Categories
+  name: Categories
+  nameWithType: AlertPlaybook.Categories
+  fullName: Meridian.Ui.Services.AlertPlaybook.Categories
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.AlertPlaybook.PossibleCauses*
+  commentId: Overload:Meridian.Ui.Services.AlertPlaybook.PossibleCauses
+  href: Meridian.Ui.Services.AlertPlaybook.html#Meridian_Ui_Services_AlertPlaybook_PossibleCauses
+  name: PossibleCauses
+  nameWithType: AlertPlaybook.PossibleCauses
+  fullName: Meridian.Ui.Services.AlertPlaybook.PossibleCauses
+- uid: Meridian.Ui.Services.AlertPlaybook.RemediationSteps*
+  commentId: Overload:Meridian.Ui.Services.AlertPlaybook.RemediationSteps
+  href: Meridian.Ui.Services.AlertPlaybook.html#Meridian_Ui_Services_AlertPlaybook_RemediationSteps
+  name: RemediationSteps
+  nameWithType: AlertPlaybook.RemediationSteps
+  fullName: Meridian.Ui.Services.AlertPlaybook.RemediationSteps
+- uid: Meridian.Ui.Services.RemediationStep[]
+  isExternal: true
+  href: Meridian.Ui.Services.RemediationStep.html
+  name: RemediationStep[]
+  nameWithType: RemediationStep[]
+  fullName: Meridian.Ui.Services.RemediationStep[]
+  nameWithType.vb: RemediationStep()
+  fullName.vb: Meridian.Ui.Services.RemediationStep()
+  name.vb: RemediationStep()
+  spec.csharp:
+  - uid: Meridian.Ui.Services.RemediationStep
+    name: RemediationStep
+    href: Meridian.Ui.Services.RemediationStep.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Ui.Services.RemediationStep
+    name: RemediationStep
+    href: Meridian.Ui.Services.RemediationStep.html
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored*
+  commentId: Overload:Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored
+  href: Meridian.Ui.Services.AlertPlaybook.html#Meridian_Ui_Services_AlertPlaybook_WhatHappensIfIgnored
+  name: WhatHappensIfIgnored
+  nameWithType: AlertPlaybook.WhatHappensIfIgnored
+  fullName: Meridian.Ui.Services.AlertPlaybook.WhatHappensIfIgnored

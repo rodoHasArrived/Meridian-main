@@ -38,7 +38,7 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
                 foreach (var (symbol, pos) in account.Positions)
                 {
                     var contribution = new RunPositionContribution(
-                        runId, account.AccountId, pos.Quantity, pos.AverageCostBasis, pos.UnrealisedPnl);
+                        runId, account.AccountId, pos.Quantity, pos.AverageCostBasis, pos.UnrealizedPnl);
 
                     if (!symbolMap.TryGetValue(symbol, out var list))
                     {
@@ -54,7 +54,7 @@ public sealed class AggregatePortfolioService : IAggregatePortfolioService
                     symbolCostBasis[symbol] = (
                         agg.totalQty + pos.Quantity,
                         agg.totalWeightedCost + pos.Quantity * pos.AverageCostBasis,
-                        agg.totalUnrealised + pos.UnrealisedPnl);
+                        agg.totalUnrealised + pos.UnrealizedPnl);
                 }
             }
         }

@@ -1,0 +1,37 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Risk.Rules
+  commentId: N:Meridian.Risk.Rules
+  id: Meridian.Risk.Rules
+  children:
+  - Meridian.Risk.Rules.DrawdownCircuitBreaker
+  - Meridian.Risk.Rules.OrderRateThrottle
+  - Meridian.Risk.Rules.PositionLimitRule
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Risk.Rules
+  nameWithType: Meridian.Risk.Rules
+  fullName: Meridian.Risk.Rules
+  type: Namespace
+  assemblies:
+  - Meridian.Risk
+references:
+- uid: Meridian.Risk.Rules.DrawdownCircuitBreaker
+  commentId: T:Meridian.Risk.Rules.DrawdownCircuitBreaker
+  href: Meridian.Risk.Rules.DrawdownCircuitBreaker.html
+  name: DrawdownCircuitBreaker
+  nameWithType: DrawdownCircuitBreaker
+  fullName: Meridian.Risk.Rules.DrawdownCircuitBreaker
+- uid: Meridian.Risk.Rules.OrderRateThrottle
+  commentId: T:Meridian.Risk.Rules.OrderRateThrottle
+  href: Meridian.Risk.Rules.OrderRateThrottle.html
+  name: OrderRateThrottle
+  nameWithType: OrderRateThrottle
+  fullName: Meridian.Risk.Rules.OrderRateThrottle
+- uid: Meridian.Risk.Rules.PositionLimitRule
+  commentId: T:Meridian.Risk.Rules.PositionLimitRule
+  href: Meridian.Risk.Rules.PositionLimitRule.html
+  name: PositionLimitRule
+  nameWithType: PositionLimitRule
+  fullName: Meridian.Risk.Rules.PositionLimitRule

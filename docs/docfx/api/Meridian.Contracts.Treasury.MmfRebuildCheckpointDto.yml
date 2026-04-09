@@ -1,0 +1,584 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  commentId: T:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  id: MmfRebuildCheckpointDto
+  parent: Meridian.Contracts.Treasury
+  children:
+  - Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.String)
+  - Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion
+  - Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt
+  - Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource
+  - Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId
+  langs:
+  - csharp
+  - vb
+  name: MmfRebuildCheckpointDto
+  nameWithType: MmfRebuildCheckpointDto
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MmfRebuildCheckpointDto
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  summary: >-
+    Tracks the last successful projection rebuild for a money market fund.
+
+    Used by governance and operations to verify rebuild freshness.
+  example: []
+  syntax:
+    content: 'public sealed record MmfRebuildCheckpointDto : IEquatable<MmfRebuildCheckpointDto>'
+    content.vb: Public NotInheritable Class MmfRebuildCheckpointDto Implements IEquatable(Of MmfRebuildCheckpointDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Treasury.MmfRebuildCheckpointDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.String)
+  id: '#ctor(System.Guid,System.Int64,System.DateTimeOffset,System.String)'
+  parent: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  langs:
+  - csharp
+  - vb
+  name: MmfRebuildCheckpointDto(Guid, long, DateTimeOffset, string)
+  nameWithType: MmfRebuildCheckpointDto.MmfRebuildCheckpointDto(Guid, long, DateTimeOffset, string)
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.MmfRebuildCheckpointDto(System.Guid, long, System.DateTimeOffset, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  summary: >-
+    Tracks the last successful projection rebuild for a money market fund.
+
+    Used by governance and operations to verify rebuild freshness.
+  example: []
+  syntax:
+    content: public MmfRebuildCheckpointDto(Guid SecurityId, long AggregateVersion, DateTimeOffset CheckpointedAt, string RebuildSource)
+    parameters:
+    - id: SecurityId
+      type: System.Guid
+    - id: AggregateVersion
+      type: System.Int64
+    - id: CheckpointedAt
+      type: System.DateTimeOffset
+    - id: RebuildSource
+      type: System.String
+    content.vb: Public Sub New(SecurityId As Guid, AggregateVersion As Long, CheckpointedAt As DateTimeOffset, RebuildSource As String)
+  overload: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.#ctor*
+  nameWithType.vb: MmfRebuildCheckpointDto.New(Guid, Long, DateTimeOffset, String)
+  fullName.vb: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.New(System.Guid, Long, System.DateTimeOffset, String)
+  name.vb: New(Guid, Long, DateTimeOffset, String)
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId
+  commentId: P:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: MmfRebuildCheckpointDto.SecurityId
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId*
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion
+  commentId: P:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion
+  id: AggregateVersion
+  parent: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  langs:
+  - csharp
+  - vb
+  name: AggregateVersion
+  nameWithType: MmfRebuildCheckpointDto.AggregateVersion
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregateVersion
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public long AggregateVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AggregateVersion As Long
+  overload: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion*
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt
+  commentId: P:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt
+  id: CheckpointedAt
+  parent: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  langs:
+  - csharp
+  - vb
+  name: CheckpointedAt
+  nameWithType: MmfRebuildCheckpointDto.CheckpointedAt
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckpointedAt
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public DateTimeOffset CheckpointedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CheckpointedAt As DateTimeOffset
+  overload: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt*
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource
+  commentId: P:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource
+  id: RebuildSource
+  parent: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+  langs:
+  - csharp
+  - vb
+  name: RebuildSource
+  nameWithType: MmfRebuildCheckpointDto.RebuildSource
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildSource
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public string RebuildSource { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RebuildSource As String
+  overload: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource*
+references:
+- uid: Meridian.Contracts.Treasury
+  commentId: N:Meridian.Contracts.Treasury
+  href: Meridian.html
+  name: Meridian.Contracts.Treasury
+  nameWithType: Meridian.Contracts.Treasury
+  fullName: Meridian.Contracts.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Treasury.MmfRebuildCheckpointDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Treasury.MmfRebuildCheckpointDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MmfRebuildCheckpointDto>
+  nameWithType: IEquatable<MmfRebuildCheckpointDto>
+  fullName: System.IEquatable<Meridian.Contracts.Treasury.MmfRebuildCheckpointDto>
+  nameWithType.vb: IEquatable(Of MmfRebuildCheckpointDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Treasury.MmfRebuildCheckpointDto)
+  name.vb: IEquatable(Of MmfRebuildCheckpointDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+    name: MmfRebuildCheckpointDto
+    href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto
+    name: MmfRebuildCheckpointDto
+    href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.#ctor
+  href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html#Meridian_Contracts_Treasury_MmfRebuildCheckpointDto__ctor_System_Guid_System_Int64_System_DateTimeOffset_System_String_
+  name: MmfRebuildCheckpointDto
+  nameWithType: MmfRebuildCheckpointDto.MmfRebuildCheckpointDto
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.MmfRebuildCheckpointDto
+  nameWithType.vb: MmfRebuildCheckpointDto.New
+  fullName.vb: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId
+  href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html#Meridian_Contracts_Treasury_MmfRebuildCheckpointDto_SecurityId
+  name: SecurityId
+  nameWithType: MmfRebuildCheckpointDto.SecurityId
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.SecurityId
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion
+  href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html#Meridian_Contracts_Treasury_MmfRebuildCheckpointDto_AggregateVersion
+  name: AggregateVersion
+  nameWithType: MmfRebuildCheckpointDto.AggregateVersion
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.AggregateVersion
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt
+  href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html#Meridian_Contracts_Treasury_MmfRebuildCheckpointDto_CheckpointedAt
+  name: CheckpointedAt
+  nameWithType: MmfRebuildCheckpointDto.CheckpointedAt
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.CheckpointedAt
+- uid: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource
+  href: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.html#Meridian_Contracts_Treasury_MmfRebuildCheckpointDto_RebuildSource
+  name: RebuildSource
+  nameWithType: MmfRebuildCheckpointDto.RebuildSource
+  fullName: Meridian.Contracts.Treasury.MmfRebuildCheckpointDto.RebuildSource

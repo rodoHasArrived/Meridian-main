@@ -130,7 +130,7 @@ public sealed class CashFlowViewModelTests
         var (vm, _) = CreateEmpty();
 
         vm.Parameter = null;
-        await Task.Delay(50); // allow async load to settle
+        await vm.LastLoadTask;
 
         vm.StatusText.Should().Contain("Select a strategy run");
     }
@@ -141,7 +141,7 @@ public sealed class CashFlowViewModelTests
         var (vm, _) = CreateEmpty();
 
         vm.Parameter = "unknown-run-id";
-        await Task.Delay(50);
+        await vm.LastLoadTask;
 
         vm.StatusText.Should().Contain("unknown-run-id");
         vm.Entries.Should().BeEmpty();
@@ -156,7 +156,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         vm.Entries.Should().HaveCount(3, "three cash flow events were recorded");
         vm.TotalEntriesText.Should().Be("3");
@@ -168,7 +168,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         // Inflows: trade 500 + dividend 20 = 520; Outflows: commission 1
         vm.TotalInflowsText.Should().NotBe("-");
@@ -182,7 +182,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         vm.BucketSummaryText.Should().NotBe("-");
     }
@@ -193,7 +193,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         vm.Title.Should().Contain(runId[..8]);
     }
@@ -204,7 +204,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeTrue();
         vm.OpenPortfolioCommand.CanExecute(null).Should().BeTrue();
@@ -219,7 +219,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         var timestamps = vm.Entries.Select(e => e.Timestamp).ToList();
         timestamps.Should().BeInAscendingOrder();
@@ -233,7 +233,7 @@ public sealed class CashFlowViewModelTests
         var (vm, runId) = CreateWithTradeRun();
 
         vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LastLoadTask;
 
         vm.BucketSummaryText.Should().NotBe("-");
         vm.BucketSummaryText.Should().Contain("d"); // bucket day width label

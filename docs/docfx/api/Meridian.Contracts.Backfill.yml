@@ -1,0 +1,75 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Backfill
+  commentId: N:Meridian.Contracts.Backfill
+  id: Meridian.Contracts.Backfill
+  children:
+  - Meridian.Contracts.Backfill.BackfillJobStatus
+  - Meridian.Contracts.Backfill.BackfillProgress
+  - Meridian.Contracts.Backfill.SymbolBackfillProgress
+  - Meridian.Contracts.Backfill.SymbolBackfillStatus
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Backfill
+  nameWithType: Meridian.Contracts.Backfill
+  fullName: Meridian.Contracts.Backfill
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Backfill.BackfillJobStatus
+  commentId: T:Meridian.Contracts.Backfill.BackfillJobStatus
+  href: Meridian.Contracts.Backfill.BackfillJobStatus.html
+  name: BackfillJobStatus
+  nameWithType: BackfillJobStatus
+  fullName: Meridian.Contracts.Backfill.BackfillJobStatus
+- uid: Meridian.Contracts.Backfill.SymbolBackfillStatus
+  commentId: T:Meridian.Contracts.Backfill.SymbolBackfillStatus
+  href: Meridian.Contracts.Backfill.SymbolBackfillStatus.html
+  name: SymbolBackfillStatus
+  nameWithType: SymbolBackfillStatus
+  fullName: Meridian.Contracts.Backfill.SymbolBackfillStatus
+- uid: Meridian.Contracts.Backfill.BackfillProgress
+  commentId: T:Meridian.Contracts.Backfill.BackfillProgress
+  parent: Meridian.Contracts.Backfill
+  href: Meridian.Contracts.Backfill.BackfillProgress.html
+  name: BackfillProgress
+  nameWithType: BackfillProgress
+  fullName: Meridian.Contracts.Backfill.BackfillProgress
+- uid: Meridian.Contracts.Backfill.SymbolBackfillProgress
+  commentId: T:Meridian.Contracts.Backfill.SymbolBackfillProgress
+  href: Meridian.Contracts.Backfill.SymbolBackfillProgress.html
+  name: SymbolBackfillProgress
+  nameWithType: SymbolBackfillProgress
+  fullName: Meridian.Contracts.Backfill.SymbolBackfillProgress
+- uid: Meridian.Contracts.Backfill
+  commentId: N:Meridian.Contracts.Backfill
+  href: Meridian.html
+  name: Meridian.Contracts.Backfill
+  nameWithType: Meridian.Contracts.Backfill
+  fullName: Meridian.Contracts.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Backfill
+    name: Backfill
+    href: Meridian.Contracts.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Backfill
+    name: Backfill
+    href: Meridian.Contracts.Backfill.html

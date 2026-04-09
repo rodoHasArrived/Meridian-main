@@ -1,0 +1,1849 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  id: AlpacaMarketDataClient
+  parent: Meridian.Infrastructure.Adapters.Alpaca
+  children:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.AlpacaOptions)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: AlpacaMarketDataClient
+  nameWithType: AlpacaMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaMarketDataClient
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Alpaca Market Data client (WebSocket) that implements the IMarketDataClient abstraction.
+
+    Extends <xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase" data-throw-if-not-resolved="false"></xref>, which centralises connection lifecycle,
+
+    resilience (retry + circuit breaker), heartbeat monitoring, and automatic reconnection.
+
+    ~80 LOC of WebSocket boilerplate removed compared to the previous direct implementation.
+
+
+    Current support:
+
+    - Trades: YES (streams "t" messages and forwards to TradeDataCollector)
+
+    - Depth (L2): NO (Alpaca stock stream provides quotes/BBO, not full L2 updates; method returns -1)
+
+
+    Notes:
+
+    - Alpaca typically limits to 1 active stream connection per user per endpoint.
+
+    - Authentication is performed by sending an "auth" message immediately after connect.
+      The auth response arrives in the main receive loop (no separate handshake step).
+  example: []
+  syntax:
+    content: >-
+      [DataSource("alpaca", "Alpaca Markets", DataSourceType.Realtime, DataSourceCategory.Broker, Priority = 10, Description = "WebSocket streaming from Alpaca Markets")]
+
+      [ImplementsAdr("ADR-001", "Alpaca streaming data provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+
+      [RequiresCredential("ALPACA_KEY_ID", EnvironmentVariables = new string[] { "ALPACA_KEY_ID", "ALPACA__KEYID" }, DisplayName = "API Key ID", Description = "Alpaca API key ID from https://app.alpaca.markets/brokerage/papers")]
+
+      [RequiresCredential("ALPACA_SECRET_KEY", EnvironmentVariables = new string[] { "ALPACA_SECRET_KEY", "ALPACA__SECRETKEY" }, DisplayName = "API Secret Key", Description = "Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")]
+
+      public sealed class AlpacaMarketDataClient : WebSocketProviderBase, IMarketDataClient, IProviderMetadata, IAsyncDisposable
+    content.vb: >-
+      <DataSource("alpaca", "Alpaca Markets", DataSourceType.Realtime, DataSourceCategory.Broker, Priority:=10, Description:="WebSocket streaming from Alpaca Markets")>
+
+      <ImplementsAdr("ADR-001", "Alpaca streaming data provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
+
+      <RequiresCredential("ALPACA_KEY_ID", EnvironmentVariables:=New String() { "ALPACA_KEY_ID", "ALPACA__KEYID" }, DisplayName:="API Key ID", Description:="Alpaca API key ID from https://app.alpaca.markets/brokerage/papers")>
+
+      <RequiresCredential("ALPACA_SECRET_KEY", EnvironmentVariables:=New String() { "ALPACA_SECRET_KEY", "ALPACA__SECRETKEY" }, DisplayName:="API Secret Key", Description:="Alpaca API secret key from https://app.alpaca.markets/brokerage/papers")>
+
+      Public NotInheritable Class AlpacaMarketDataClient Inherits WebSocketProviderBase Implements IMarketDataClient, IProviderMetadata, IAsyncDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: alpaca
+    - type: System.String
+      value: Alpaca Markets
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 0
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 1
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 10
+    - name: Description
+      type: System.String
+      value: WebSocket streaming from Alpaca Markets
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Alpaca streaming data provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based provider discovery
+  - type: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+    ctor: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ALPACA_KEY_ID
+    namedArguments:
+    - name: DisplayName
+      type: System.String
+      value: API Key ID
+    - name: Description
+      type: System.String
+      value: Alpaca API key ID from https://app.alpaca.markets/brokerage/papers
+  - type: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+    ctor: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ALPACA_SECRET_KEY
+    namedArguments:
+    - name: DisplayName
+      type: System.String
+      value: API Secret Key
+    - name: Description
+      type: System.String
+      value: Alpaca API secret key from https://app.alpaca.markets/brokerage/papers
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.AlpacaOptions)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.AlpacaOptions)
+  id: '#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.AlpacaOptions)'
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: AlpacaMarketDataClient(TradeDataCollector, QuoteCollector, AlpacaOptions)
+  nameWithType: AlpacaMarketDataClient.AlpacaMarketDataClient(TradeDataCollector, QuoteCollector, AlpacaOptions)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AlpacaMarketDataClient(Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Application.Config.AlpacaOptions)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  syntax:
+    content: public AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector, AlpacaOptions opt)
+    parameters:
+    - id: tradeCollector
+      type: Meridian.Domain.Collectors.TradeDataCollector
+    - id: quoteCollector
+      type: Meridian.Domain.Collectors.QuoteCollector
+    - id: opt
+      type: Meridian.Application.Config.AlpacaOptions
+    content.vb: Public Sub New(tradeCollector As TradeDataCollector, quoteCollector As QuoteCollector, opt As AlpacaOptions)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.#ctor*
+  nameWithType.vb: AlpacaMarketDataClient.New(TradeDataCollector, QuoteCollector, AlpacaOptions)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.New(Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Application.Config.AlpacaOptions)
+  name.vb: New(TradeDataCollector, QuoteCollector, AlpacaOptions)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: AlpacaMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  example: []
+  syntax:
+    content: public override bool IsEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Overrides ReadOnly Property IsEnabled As Boolean
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: AlpacaMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: public override string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property ProviderId As String
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: AlpacaMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public override string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property ProviderDisplayName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: AlpacaMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: public override string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property ProviderDescription As String
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: AlpacaMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: public override int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property ProviderPriority As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: AlpacaMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: public override ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Overrides ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields
+  id: ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCredentialFields
+  nameWithType: AlpacaMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCredentialFields
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  example: []
+  syntax:
+    content: public ProviderCredentialField[] ProviderCredentialFields { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+    content.vb: Public ReadOnly Property ProviderCredentialFields As ProviderCredentialField()
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes
+  id: ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderNotes
+  nameWithType: AlpacaMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderNotes
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  example: []
+  syntax:
+    content: public string[] ProviderNotes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderNotes As String()
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri
+  id: BuildWebSocketUri
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: BuildWebSocketUri()
+  nameWithType: AlpacaMarketDataClient.BuildWebSocketUri()
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildWebSocketUri
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Builds the WebSocket endpoint URI for this provider.
+  example: []
+  syntax:
+    content: protected override Uri BuildWebSocketUri()
+    return:
+      type: System.Uri
+    content.vb: Protected Overrides Function BuildWebSocketUri() As Uri
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  id: AuthenticateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: AuthenticateAsync(CancellationToken)
+  nameWithType: AlpacaMarketDataClient.AuthenticateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuthenticateAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Sends provider-specific authentication messages after WebSocket connection.
+  remarks: >-
+    Alpaca does not use a pre-loop handshake. Authentication is performed by sending a
+
+    single "auth" message; the auth success/failure response arrives in
+
+    <xref href="Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)" data-throw-if-not-resolved="false"></xref> as a status message (type "success" or "error").
+  example: []
+  syntax:
+    content: protected override Task AuthenticateAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function AuthenticateAsync(ct As CancellationToken) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+  id: HandleMessageAsync(System.String)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: HandleMessageAsync(string)
+  nameWithType: AlpacaMarketDataClient.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleMessageAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Handles an incoming WebSocket text message.
+
+    Implementations should parse JSON and route to appropriate collectors.
+  example: []
+  syntax:
+    content: protected override Task HandleMessageAsync(string message)
+    parameters:
+    - id: message
+      type: System.String
+      description: The raw text message from the WebSocket.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function HandleMessageAsync(message As String) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync*
+  nameWithType.vb: AlpacaMarketDataClient.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  id: ResubscribeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeAsync(CancellationToken)
+  nameWithType: AlpacaMarketDataClient.ResubscribeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Re-subscribes to all active symbols after a reconnection.
+
+    Called automatically when the connection manager reconnects successfully.
+  example: []
+  syntax:
+    content: protected override Task ResubscribeAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function ResubscribeAsync(ct As CancellationToken) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: AlpacaMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Subscribe to tick-by-tick trade prints for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public override int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Overrides Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: AlpacaMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Unsubscribe a previously returned trade subscription id.
+  example: []
+  syntax:
+    content: public override void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Overrides Sub UnsubscribeTrades(subscriptionId As Integer)
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades*
+  nameWithType.vb: AlpacaMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: AlpacaMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Subscribe to market depth for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public override int SubscribeMarketDepth(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Overrides Function SubscribeMarketDepth(cfg As SymbolConfig) As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: AlpacaMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Unsubscribe a previously returned depth subscription id.
+  example: []
+  syntax:
+    content: public override void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Overrides Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth*
+  nameWithType.vb: AlpacaMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  commentId: T:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html
+  name: WebSocketProviderBase
+  nameWithType: WebSocketProviderBase
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+- uid: Meridian.Infrastructure.Adapters.Alpaca
+  commentId: N:Meridian.Infrastructure.Adapters.Alpaca
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Alpaca
+  nameWithType: Meridian.Infrastructure.Adapters.Alpaca
+  fullName: Meridian.Infrastructure.Adapters.Alpaca
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Alpaca
+    name: Alpaca
+    href: Meridian.Infrastructure.Adapters.Alpaca.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Alpaca
+    name: Alpaca
+    href: Meridian.Infrastructure.Adapters.Alpaca.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  name: DisposeAsync()
+  nameWithType: WebSocketProviderBase.DisposeAsync()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+    name: DisposeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+    name: DisposeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.#ctor
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient__ctor_Meridian_Domain_Collectors_TradeDataCollector_Meridian_Domain_Collectors_QuoteCollector_Meridian_Application_Config_AlpacaOptions_
+  name: AlpacaMarketDataClient
+  nameWithType: AlpacaMarketDataClient.AlpacaMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AlpacaMarketDataClient
+  nameWithType.vb: AlpacaMarketDataClient.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.New
+  name.vb: New
+- uid: Meridian.Domain.Collectors.TradeDataCollector
+  commentId: T:Meridian.Domain.Collectors.TradeDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.TradeDataCollector.html
+  name: TradeDataCollector
+  nameWithType: TradeDataCollector
+  fullName: Meridian.Domain.Collectors.TradeDataCollector
+- uid: Meridian.Domain.Collectors.QuoteCollector
+  commentId: T:Meridian.Domain.Collectors.QuoteCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.QuoteCollector.html
+  name: QuoteCollector
+  nameWithType: QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector
+- uid: Meridian.Application.Config.AlpacaOptions
+  commentId: T:Meridian.Application.Config.AlpacaOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlpacaOptions.html
+  name: AlpacaOptions
+  nameWithType: AlpacaOptions
+  fullName: Meridian.Application.Config.AlpacaOptions
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_IsEnabled
+  name: IsEnabled
+  nameWithType: WebSocketProviderBase.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_IsEnabled
+  name: IsEnabled
+  nameWithType: AlpacaMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.IsEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderId
+  name: ProviderId
+  nameWithType: WebSocketProviderBase.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderId
+  name: ProviderId
+  nameWithType: AlpacaMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: WebSocketProviderBase.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: AlpacaMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderDescription
+  name: ProviderDescription
+  nameWithType: WebSocketProviderBase.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderDescription
+  name: ProviderDescription
+  nameWithType: AlpacaMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderPriority
+  name: ProviderPriority
+  nameWithType: WebSocketProviderBase.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderPriority
+  name: ProviderPriority
+  nameWithType: AlpacaMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderPriority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: WebSocketProviderBase.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: AlpacaMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: AlpacaMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  name: ProviderCredentialField[]
+  nameWithType: ProviderCredentialField[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  nameWithType.vb: ProviderCredentialField()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField()
+  name.vb: ProviderCredentialField()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ProviderNotes
+  name: ProviderNotes
+  nameWithType: AlpacaMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ProviderNotes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  name: BuildWebSocketUri()
+  nameWithType: WebSocketProviderBase.BuildWebSocketUri()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+    name: BuildWebSocketUri
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+    name: BuildWebSocketUri
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_BuildWebSocketUri
+  name: BuildWebSocketUri
+  nameWithType: AlpacaMarketDataClient.BuildWebSocketUri
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.BuildWebSocketUri
+- uid: System.Uri
+  commentId: T:System.Uri
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uri
+  name: Uri
+  nameWithType: Uri
+  fullName: System.Uri
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_HandleMessageAsync_System_String_
+  name: HandleMessageAsync(string)
+  nameWithType: AlpacaMarketDataClient.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(string)
+  nameWithType.vb: AlpacaMarketDataClient.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  name: AuthenticateAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.AuthenticateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+    name: AuthenticateAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+    name: AuthenticateAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_AuthenticateAsync_System_Threading_CancellationToken_
+  name: AuthenticateAsync
+  nameWithType: AlpacaMarketDataClient.AuthenticateAsync
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.AuthenticateAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  name: HandleMessageAsync(string)
+  nameWithType: WebSocketProviderBase.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(string)
+  nameWithType.vb: WebSocketProviderBase.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_HandleMessageAsync_System_String_
+  name: HandleMessageAsync
+  nameWithType: AlpacaMarketDataClient.HandleMessageAsync
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.HandleMessageAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  name: ResubscribeAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ResubscribeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+    name: ResubscribeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+    name: ResubscribeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_ResubscribeAsync_System_Threading_CancellationToken_
+  name: ResubscribeAsync
+  nameWithType: AlpacaMarketDataClient.ResubscribeAsync
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.ResubscribeAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: WebSocketProviderBase.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: AlpacaMarketDataClient.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeTrades
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades(int)
+  nameWithType: WebSocketProviderBase.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(int)
+  nameWithType.vb: WebSocketProviderBase.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: AlpacaMarketDataClient.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeTrades
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: WebSocketProviderBase.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: AlpacaMarketDataClient.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: WebSocketProviderBase.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(int)
+  nameWithType.vb: WebSocketProviderBase.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaMarketDataClient_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: AlpacaMarketDataClient.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.UnsubscribeMarketDepth

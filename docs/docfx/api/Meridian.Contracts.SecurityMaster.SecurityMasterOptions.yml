@@ -1,0 +1,530 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  id: SecurityMasterOptions
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString
+  - Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache
+  - Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize
+  - Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault
+  - Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema
+  - Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterOptions
+  nameWithType: SecurityMasterOptions
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterOptions
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public sealed class SecurityMasterOptions
+    content.vb: Public NotInheritable Class SecurityMasterOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString
+  id: ConnectionString
+  parent: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  langs:
+  - csharp
+  - vb
+  name: ConnectionString
+  nameWithType: SecurityMasterOptions.ConnectionString
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionString
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string ConnectionString { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConnectionString As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString*
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema
+  id: Schema
+  parent: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  langs:
+  - csharp
+  - vb
+  name: Schema
+  nameWithType: SecurityMasterOptions.Schema
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Schema
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string Schema { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Schema As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema*
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions
+  id: SnapshotIntervalVersions
+  parent: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  langs:
+  - csharp
+  - vb
+  name: SnapshotIntervalVersions
+  nameWithType: SecurityMasterOptions.SnapshotIntervalVersions
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnapshotIntervalVersions
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public int SnapshotIntervalVersions { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SnapshotIntervalVersions As Integer
+  overload: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions*
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize
+  id: ProjectionReplayBatchSize
+  parent: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  langs:
+  - csharp
+  - vb
+  name: ProjectionReplayBatchSize
+  nameWithType: SecurityMasterOptions.ProjectionReplayBatchSize
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectionReplayBatchSize
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public int ProjectionReplayBatchSize { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ProjectionReplayBatchSize As Integer
+  overload: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize*
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache
+  id: PreloadProjectionCache
+  parent: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  langs:
+  - csharp
+  - vb
+  name: PreloadProjectionCache
+  nameWithType: SecurityMasterOptions.PreloadProjectionCache
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreloadProjectionCache
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public bool PreloadProjectionCache { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property PreloadProjectionCache As Boolean
+  overload: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache*
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault
+  id: ResolveInactiveByDefault
+  parent: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
+  langs:
+  - csharp
+  - vb
+  name: ResolveInactiveByDefault
+  nameWithType: SecurityMasterOptions.ResolveInactiveByDefault
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveInactiveByDefault
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public bool ResolveInactiveByDefault { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ResolveInactiveByDefault As Boolean
+  overload: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html#Meridian_Contracts_SecurityMaster_SecurityMasterOptions_ConnectionString
+  name: ConnectionString
+  nameWithType: SecurityMasterOptions.ConnectionString
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ConnectionString
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html#Meridian_Contracts_SecurityMaster_SecurityMasterOptions_Schema
+  name: Schema
+  nameWithType: SecurityMasterOptions.Schema
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.Schema
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html#Meridian_Contracts_SecurityMaster_SecurityMasterOptions_SnapshotIntervalVersions
+  name: SnapshotIntervalVersions
+  nameWithType: SecurityMasterOptions.SnapshotIntervalVersions
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.SnapshotIntervalVersions
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html#Meridian_Contracts_SecurityMaster_SecurityMasterOptions_ProjectionReplayBatchSize
+  name: ProjectionReplayBatchSize
+  nameWithType: SecurityMasterOptions.ProjectionReplayBatchSize
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ProjectionReplayBatchSize
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html#Meridian_Contracts_SecurityMaster_SecurityMasterOptions_PreloadProjectionCache
+  name: PreloadProjectionCache
+  nameWithType: SecurityMasterOptions.PreloadProjectionCache
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.PreloadProjectionCache
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault
+  href: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.html#Meridian_Contracts_SecurityMaster_SecurityMasterOptions_ResolveInactiveByDefault
+  name: ResolveInactiveByDefault
+  nameWithType: SecurityMasterOptions.ResolveInactiveByDefault
+  fullName: Meridian.Contracts.SecurityMaster.SecurityMasterOptions.ResolveInactiveByDefault

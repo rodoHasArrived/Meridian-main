@@ -1,0 +1,1075 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolManagementService
+  id: SymbolManagementService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Subscriptions.Services.SymbolAddOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols(Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols(Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync(Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SymbolManagementService
+  nameWithType: SymbolManagementService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolManagementService
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Unified service for symbol management operations including:
+
+    - Adding/removing symbols from configuration
+
+    - Listing monitored symbols
+
+    - Scanning archived data for symbols
+  example: []
+  syntax:
+    content: public sealed class SymbolManagementService
+    content.vb: Public NotInheritable Class SymbolManagementService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)
+  id: '#ctor(Meridian.Application.UI.ConfigStore,System.String,Serilog.ILogger)'
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: SymbolManagementService(ConfigStore, string, ILogger?)
+  nameWithType: SymbolManagementService.SymbolManagementService(ConfigStore, string, ILogger?)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.SymbolManagementService(Meridian.Application.UI.ConfigStore, string, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public SymbolManagementService(ConfigStore configStore, string dataRoot, ILogger? log = null)
+    parameters:
+    - id: configStore
+      type: Meridian.Application.UI.ConfigStore
+    - id: dataRoot
+      type: System.String
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(configStore As ConfigStore, dataRoot As String, log As ILogger = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.#ctor*
+  nameWithType.vb: SymbolManagementService.New(ConfigStore, String, ILogger)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolManagementService.New(Meridian.Application.UI.ConfigStore, String, Serilog.ILogger)
+  name.vb: New(ConfigStore, String, ILogger)
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Subscriptions.Services.SymbolAddOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Subscriptions.Services.SymbolAddOptions,System.Threading.CancellationToken)
+  id: AddSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Subscriptions.Services.SymbolAddOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: AddSymbolsAsync(IEnumerable<string>, SymbolAddOptions?, CancellationToken)
+  nameWithType: SymbolManagementService.AddSymbolsAsync(IEnumerable<string>, SymbolAddOptions?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync(System.Collections.Generic.IEnumerable<string>, Meridian.Application.Subscriptions.Services.SymbolAddOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Add one or more symbols to the configuration for monitoring.
+  example: []
+  syntax:
+    content: public Task<SymbolOperationResult> AddSymbolsAsync(IEnumerable<string> symbols, SymbolAddOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: options
+      type: Meridian.Application.Subscriptions.Services.SymbolAddOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolOperationResult}
+    content.vb: Public Function AddSymbolsAsync(symbols As IEnumerable(Of String), options As SymbolAddOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of SymbolOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync*
+  nameWithType.vb: SymbolManagementService.AddSymbolsAsync(IEnumerable(Of String), SymbolAddOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync(System.Collections.Generic.IEnumerable(Of String), Meridian.Application.Subscriptions.Services.SymbolAddOptions, System.Threading.CancellationToken)
+  name.vb: AddSymbolsAsync(IEnumerable(Of String), SymbolAddOptions, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: RemoveSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: RemoveSymbolsAsync(IEnumerable<string>, CancellationToken)
+  nameWithType: SymbolManagementService.RemoveSymbolsAsync(IEnumerable<string>, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync(System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Remove symbols from the configuration.
+  example: []
+  syntax:
+    content: public Task<SymbolOperationResult> RemoveSymbolsAsync(IEnumerable<string> symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolOperationResult}
+    content.vb: Public Function RemoveSymbolsAsync(symbols As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of SymbolOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync*
+  nameWithType.vb: SymbolManagementService.RemoveSymbolsAsync(IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync(System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: RemoveSymbolsAsync(IEnumerable(Of String), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols
+  id: GetMonitoredSymbols
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: GetMonitoredSymbols()
+  nameWithType: SymbolManagementService.GetMonitoredSymbols()
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMonitoredSymbols
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get all symbols currently configured for monitoring.
+  example: []
+  syntax:
+    content: public MonitoredSymbolsResult GetMonitoredSymbols()
+    return:
+      type: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+    content.vb: Public Function GetMonitoredSymbols() As MonitoredSymbolsResult
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols*
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync(Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync(Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions,System.Threading.CancellationToken)
+  id: GetArchivedSymbolsAsync(Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: GetArchivedSymbolsAsync(ArchivedSymbolsOptions?, CancellationToken)
+  nameWithType: SymbolManagementService.GetArchivedSymbolsAsync(ArchivedSymbolsOptions?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync(Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetArchivedSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Scan the data directory for archived symbols.
+  example: []
+  syntax:
+    content: public Task<ArchivedSymbolsResult> GetArchivedSymbolsAsync(ArchivedSymbolsOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult}
+    content.vb: Public Function GetArchivedSymbolsAsync(options As ArchivedSymbolsOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of ArchivedSymbolsResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync*
+  nameWithType.vb: SymbolManagementService.GetArchivedSymbolsAsync(ArchivedSymbolsOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync(Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions, System.Threading.CancellationToken)
+  name.vb: GetArchivedSymbolsAsync(ArchivedSymbolsOptions, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync(System.String,System.Threading.CancellationToken)
+  id: GetSymbolStatusAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolStatusAsync(string, CancellationToken)
+  nameWithType: SymbolManagementService.GetSymbolStatusAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolStatusAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get a comprehensive symbol status report combining monitored and archived data.
+  example: []
+  syntax:
+    content: public Task<SymbolStatusReport> GetSymbolStatusAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolStatusReport}
+    content.vb: Public Function GetSymbolStatusAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SymbolStatusReport)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync*
+  nameWithType.vb: SymbolManagementService.GetSymbolStatusAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync(String, System.Threading.CancellationToken)
+  name.vb: GetSymbolStatusAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols(Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols(Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult)
+  id: DisplayMonitoredSymbols(Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: DisplayMonitoredSymbols(MonitoredSymbolsResult)
+  nameWithType: SymbolManagementService.DisplayMonitoredSymbols(MonitoredSymbolsResult)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols(Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayMonitoredSymbols
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Display formatted symbol management output to console.
+  example: []
+  syntax:
+    content: public void DisplayMonitoredSymbols(MonitoredSymbolsResult result)
+    parameters:
+    - id: result
+      type: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+    content.vb: Public Sub DisplayMonitoredSymbols(result As MonitoredSymbolsResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols*
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols(Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols(Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  id: DisplayArchivedSymbols(Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: DisplayArchivedSymbols(ArchivedSymbolsResult)
+  nameWithType: SymbolManagementService.DisplayArchivedSymbols(ArchivedSymbolsResult)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols(Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayArchivedSymbols
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Display formatted archived symbols output to console.
+  example: []
+  syntax:
+    content: public void DisplayArchivedSymbols(ArchivedSymbolsResult result)
+    parameters:
+    - id: result
+      type: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+    content.vb: Public Sub DisplayArchivedSymbols(result As ArchivedSymbolsResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols*
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync(System.Threading.CancellationToken)
+  id: DisplayAllSymbolsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolManagementService
+  langs:
+  - csharp
+  - vb
+  name: DisplayAllSymbolsAsync(CancellationToken)
+  nameWithType: SymbolManagementService.DisplayAllSymbolsAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayAllSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Display a combined view of monitored and archived symbols.
+  example: []
+  syntax:
+    content: public Task DisplayAllSymbolsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisplayAllSymbolsAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync*
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.#ctor
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService__ctor_Meridian_Application_UI_ConfigStore_System_String_Serilog_ILogger_
+  name: SymbolManagementService
+  nameWithType: SymbolManagementService.SymbolManagementService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.SymbolManagementService
+  nameWithType.vb: SymbolManagementService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolManagementService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_AddSymbolsAsync_System_Collections_Generic_IEnumerable_System_String__Meridian_Application_Subscriptions_Services_SymbolAddOptions_System_Threading_CancellationToken_
+  name: AddSymbolsAsync
+  nameWithType: SymbolManagementService.AddSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.AddSymbolsAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SymbolAddOptions
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolAddOptions
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.SymbolAddOptions.html
+  name: SymbolAddOptions
+  nameWithType: SymbolAddOptions
+  fullName: Meridian.Application.Subscriptions.Services.SymbolAddOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolOperationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolOperationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolOperationResult>
+  nameWithType: Task<SymbolOperationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Services.SymbolOperationResult>
+  nameWithType.vb: Task(Of SymbolOperationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Services.SymbolOperationResult)
+  name.vb: Task(Of SymbolOperationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.SymbolOperationResult
+    name: SymbolOperationResult
+    href: Meridian.Application.Subscriptions.Services.SymbolOperationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.SymbolOperationResult
+    name: SymbolOperationResult
+    href: Meridian.Application.Subscriptions.Services.SymbolOperationResult.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_RemoveSymbolsAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: RemoveSymbolsAsync
+  nameWithType: SymbolManagementService.RemoveSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.RemoveSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_GetMonitoredSymbols
+  name: GetMonitoredSymbols
+  nameWithType: SymbolManagementService.GetMonitoredSymbols
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetMonitoredSymbols
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+  commentId: T:Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult.html
+  name: MonitoredSymbolsResult
+  nameWithType: MonitoredSymbolsResult
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolsResult
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_GetArchivedSymbolsAsync_Meridian_Application_Subscriptions_Services_ArchivedSymbolsOptions_System_Threading_CancellationToken_
+  name: GetArchivedSymbolsAsync
+  nameWithType: SymbolManagementService.GetArchivedSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetArchivedSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+  commentId: T:Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions.html
+  name: ArchivedSymbolsOptions
+  nameWithType: ArchivedSymbolsOptions
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ArchivedSymbolsResult>
+  nameWithType: Task<ArchivedSymbolsResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult>
+  nameWithType.vb: Task(Of ArchivedSymbolsResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult)
+  name.vb: Task(Of ArchivedSymbolsResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+    name: ArchivedSymbolsResult
+    href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+    name: ArchivedSymbolsResult
+    href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_GetSymbolStatusAsync_System_String_System_Threading_CancellationToken_
+  name: GetSymbolStatusAsync
+  nameWithType: SymbolManagementService.GetSymbolStatusAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.GetSymbolStatusAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolStatusReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.SymbolStatusReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolStatusReport>
+  nameWithType: Task<SymbolStatusReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Services.SymbolStatusReport>
+  nameWithType.vb: Task(Of SymbolStatusReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Services.SymbolStatusReport)
+  name.vb: Task(Of SymbolStatusReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.SymbolStatusReport
+    name: SymbolStatusReport
+    href: Meridian.Application.Subscriptions.Services.SymbolStatusReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.SymbolStatusReport
+    name: SymbolStatusReport
+    href: Meridian.Application.Subscriptions.Services.SymbolStatusReport.html
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_DisplayMonitoredSymbols_Meridian_Application_Subscriptions_Services_MonitoredSymbolsResult_
+  name: DisplayMonitoredSymbols
+  nameWithType: SymbolManagementService.DisplayMonitoredSymbols
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayMonitoredSymbols
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_DisplayArchivedSymbols_Meridian_Application_Subscriptions_Services_ArchivedSymbolsResult_
+  name: DisplayArchivedSymbols
+  nameWithType: SymbolManagementService.DisplayArchivedSymbols
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayArchivedSymbols
+- uid: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  commentId: T:Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+  parent: Meridian.Application.Subscriptions.Services
+  href: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult.html
+  name: ArchivedSymbolsResult
+  nameWithType: ArchivedSymbolsResult
+  fullName: Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult
+- uid: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolManagementService.html#Meridian_Application_Subscriptions_Services_SymbolManagementService_DisplayAllSymbolsAsync_System_Threading_CancellationToken_
+  name: DisplayAllSymbolsAsync
+  nameWithType: SymbolManagementService.DisplayAllSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolManagementService.DisplayAllSymbolsAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

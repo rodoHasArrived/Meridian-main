@@ -1,7 +1,10 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -10,24 +13,24 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class MainShellViewModelTests
 {
-    private static MainPageViewModel CreateMainPageViewModel()
+    private static MainPageViewModel CreateMainPageViewModel(FundContextService? fundContextService = null)
     {
         var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
-        navigationService.ClearHistory();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-        return new MainPageViewModel(navigationService, fixtureModeDetector);
+        return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService);
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
     {
         var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
-        navigationService.ClearHistory();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
@@ -45,7 +48,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToDashboard()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToResearchShell()
     {
         WpfTestThread.Run(() =>
         {
@@ -53,8 +56,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("Dashboard");
-            vm.CurrentPageTitle.Should().Be("Dashboard");
+            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.CurrentPageTitle.Should().Be("Research Workspace");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -76,6 +79,25 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void CommandPaletteQuery_FindsFundOperationsRoutes()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "fund";
+
+            vm.CommandPalettePages.Should().Contain("FundAccounts");
+            vm.CommandPalettePages.Should().Contain("FundBanking");
+            vm.CommandPalettePages.Should().Contain("FundPortfolio");
+            vm.CommandPalettePages.Should().Contain("FundCashFinancing");
+            vm.CommandPalettePages.Should().Contain("FundTrialBalance");
+            vm.CommandPalettePages.Should().Contain("FundReconciliation");
+            vm.CommandPalettePages.Should().Contain("FundAuditTrail");
+        });
+    }
+
+    [Fact]
     public void NavigateToPageCommand_UpdatesCurrentPage()
     {
         WpfTestThread.Run(() =>
@@ -92,11 +114,44 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void NavigateToEventReplay_KeepsResearchWorkspaceActive()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("EventReplay");
+
+            vm.CurrentWorkspace.Should().Be("research");
+            vm.CurrentPageTag.Should().Be("EventReplay");
+        });
+    }
+
+    [Fact]
+    public void NavigateToTradingRoutes_InfersTradingWorkspace()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.NavigateToPageCommand.Execute("OrderBook");
+            vm.CurrentWorkspace.Should().Be("trading");
+
+            vm.NavigateToPageCommand.Execute("PositionBlotter");
+            vm.CurrentWorkspace.Should().Be("trading");
+
+            vm.NavigateToPageCommand.Execute("RunRisk");
+            vm.CurrentWorkspace.Should().Be("trading");
+        });
+    }
+
+    [Fact]
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
         WpfTestThread.Run(() =>
         {
             var detector = FixtureModeDetector.Instance;
+            NavigationService.Instance.ResetForTests();
             detector.SetFixtureMode(false);
             detector.UpdateBackendReachability(true);
 
@@ -129,5 +184,56 @@ public sealed class MainShellViewModelTests
             vm.ClipboardBannerVisibility.Should().Be(Visibility.Collapsed);
             vm.AddClipboardSymbolsCommand.CanExecute(null).Should().BeFalse();
         });
+    }
+
+    [Fact]
+    public void ActiveFundDisplay_WhenFundSelected_ShowsFundBadgeAndMetadata()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            using var vm = CreateMainPageViewModel(fundContext);
+
+            vm.ActiveFundVisibility.Should().Be(Visibility.Visible);
+            vm.ActiveFundName.Should().Be("Alpha Credit");
+            vm.ActiveFundSubtitle.Should().Contain("USD");
+        });
+    }
+
+    [Fact]
+    public void SwitchFundCommand_RaisesFundSwitchRequest()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            using var vm = CreateMainPageViewModel(fundContext);
+            var raised = false;
+            fundContext.FundSwitchRequested += (_, _) => raised = true;
+
+            vm.SwitchFundCommand.Execute(null);
+
+            raised.Should().BeTrue();
+        });
+    }
+
+    private static async Task<FundContextService> CreateFundContextAsync()
+    {
+        var storagePath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-main-shell-tests",
+            $"{Guid.NewGuid():N}.json");
+
+        var service = new FundContextService(storagePath);
+        await service.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-credit",
+            DisplayName: "Alpha Credit",
+            LegalEntityName: "Alpha Credit Master Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "governance",
+            DefaultLandingPageTag: "GovernanceShell",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            IsDefault: true));
+        await service.SelectFundProfileAsync("alpha-credit");
+        return service;
     }
 }

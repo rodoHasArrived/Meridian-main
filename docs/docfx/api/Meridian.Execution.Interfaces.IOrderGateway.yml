@@ -1,0 +1,833 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  id: IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  children:
+  - Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  - Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  - Meridian.Execution.Interfaces.IOrderGateway.Mode
+  - Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  - Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  - Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IOrderGateway
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Broker-agnostic abstraction for submitting, cancelling, and monitoring orders.
+
+    Implementations include <code>PaperTradingGateway</code> (simulated) and future live
+
+    broker adapters (Interactive Brokers, Alpaca). Enforced by ADR-015.
+  example: []
+  syntax:
+    content: 'public interface IOrderGateway : IAsyncDisposable'
+    content.vb: Public Interface IOrderGateway Inherits IAsyncDisposable
+  derivedClasses:
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  - Meridian.Execution.Adapters.PaperTradingGateway
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway
+  inheritedMembers:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  commentId: P:Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  id: BrokerName
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: BrokerName
+  nameWithType: IOrderGateway.BrokerName
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerName
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Human-readable name of the broker or simulator (e.g., "Paper", "Alpaca").
+  example: []
+  syntax:
+    content: string BrokerName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property BrokerName As String
+  overload: Meridian.Execution.Interfaces.IOrderGateway.BrokerName*
+- uid: Meridian.Execution.Interfaces.IOrderGateway.Mode
+  commentId: P:Meridian.Execution.Interfaces.IOrderGateway.Mode
+  id: Mode
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: Mode
+  nameWithType: IOrderGateway.Mode
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.Mode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mode
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Indicates whether this gateway routes paper or live orders.
+  example: []
+  syntax:
+    content: ExecutionMode Mode { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.ExecutionMode
+    content.vb: ReadOnly Property Mode As ExecutionMode
+  overload: Meridian.Execution.Interfaces.IOrderGateway.Mode*
+- uid: Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  commentId: P:Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  id: Capabilities
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: IOrderGateway.Capabilities
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Provider-independent capability matrix for this gateway. Provider-specific
+
+    nuances can be exposed via metadata without leaking provider types.
+  example: []
+  syntax:
+    content: OrderGatewayCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.OrderGatewayCapabilities
+    content.vb: ReadOnly Property Capabilities As OrderGatewayCapabilities
+  overload: Meridian.Execution.Interfaces.IOrderGateway.Capabilities*
+- uid: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: ValidateOrderAsync(OrderRequest, CancellationToken)
+  nameWithType: IOrderGateway.ValidateOrderAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateOrderAsync
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Validates a request against provider-independent constraints and any provider-specific
+
+    implementation rules published through <xref href="Meridian.Execution.Models.OrderGatewayCapabilities" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: Task<OrderValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderValidationResult}
+    content.vb: Function ValidateOrderAsync(request As OrderRequest, ct As CancellationToken = Nothing) As Task(Of OrderValidationResult)
+  overload: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync*
+- uid: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: SubmitAsync(OrderRequest, CancellationToken)
+  nameWithType: IOrderGateway.SubmitAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubmitAsync
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Submits an order to the gateway. Returns an acknowledgement immediately; fills
+
+    arrive asynchronously via <xref href="Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: Task<OrderAcknowledgement> SubmitAsync(OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderAcknowledgement}
+    content.vb: Function SubmitAsync(request As OrderRequest, ct As CancellationToken = Nothing) As Task(Of OrderAcknowledgement)
+  overload: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync*
+- uid: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+  id: CancelAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: CancelAsync(string, CancellationToken)
+  nameWithType: IOrderGateway.CancelAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelAsync
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Requests cancellation of a working order. Returns <code>true</code> if the cancellation
+
+    was accepted, <code>false</code> if the order was already terminal.
+  example: []
+  syntax:
+    content: Task<bool> CancelAsync(string orderId, CancellationToken ct = default)
+    parameters:
+    - id: orderId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function CancelAsync(orderId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync*
+  nameWithType.vb: IOrderGateway.CancelAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(String, System.Threading.CancellationToken)
+  name.vb: CancelAsync(String, CancellationToken)
+- uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  id: StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: StreamOrderUpdatesAsync(CancellationToken)
+  nameWithType: IOrderGateway.StreamOrderUpdatesAsync(CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IOrderGateway.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamOrderUpdatesAsync
+    path: ../../src/Meridian.Execution/Interfaces/IOrderGateway.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Streams all order lifecycle events (fills, partial fills, cancellations, rejections)
+
+    for this session. Callers should consume this stream on a dedicated background task.
+  example: []
+  syntax:
+    content: IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Execution.Models.OrderStatusUpdate}
+    content.vb: Function StreamOrderUpdatesAsync(ct As CancellationToken = Nothing) As IAsyncEnumerable(Of OrderStatusUpdate)
+  overload: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync*
+references:
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Interfaces.IOrderGateway.BrokerName*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_BrokerName
+  name: BrokerName
+  nameWithType: IOrderGateway.BrokerName
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Interfaces.IOrderGateway.Mode*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.Mode
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_Mode
+  name: Mode
+  nameWithType: IOrderGateway.Mode
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.Mode
+- uid: Meridian.Execution.Models.ExecutionMode
+  commentId: T:Meridian.Execution.Models.ExecutionMode
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionMode.html
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Models.ExecutionMode
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Interfaces.IOrderGateway.Capabilities*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_Capabilities
+  name: Capabilities
+  nameWithType: IOrderGateway.Capabilities
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities
+  commentId: T:Meridian.Execution.Models.OrderGatewayCapabilities
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html
+  name: OrderGatewayCapabilities
+  nameWithType: OrderGatewayCapabilities
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities
+- uid: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_ValidateOrderAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: ValidateOrderAsync
+  nameWithType: IOrderGateway.ValidateOrderAsync
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Models.OrderValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrderValidationResult>
+  nameWithType: Task<OrderValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Models.OrderValidationResult>
+  nameWithType.vb: Task(Of OrderValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Models.OrderValidationResult)
+  name.vb: Task(Of OrderValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderValidationResult
+    name: OrderValidationResult
+    href: Meridian.Execution.Models.OrderValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderValidationResult
+    name: OrderValidationResult
+    href: Meridian.Execution.Models.OrderValidationResult.html
+  - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  isExternal: true
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  name: StreamOrderUpdatesAsync(CancellationToken)
+  nameWithType: IOrderGateway.StreamOrderUpdatesAsync(CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+    name: StreamOrderUpdatesAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+    name: StreamOrderUpdatesAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_SubmitAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: SubmitAsync
+  nameWithType: IOrderGateway.SubmitAsync
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderAcknowledgement}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Models.OrderAcknowledgement}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrderAcknowledgement>
+  nameWithType: Task<OrderAcknowledgement>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Models.OrderAcknowledgement>
+  nameWithType.vb: Task(Of OrderAcknowledgement)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Models.OrderAcknowledgement)
+  name.vb: Task(Of OrderAcknowledgement)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderAcknowledgement
+    name: OrderAcknowledgement
+    href: Meridian.Execution.Models.OrderAcknowledgement.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderAcknowledgement
+    name: OrderAcknowledgement
+    href: Meridian.Execution.Models.OrderAcknowledgement.html
+  - name: )
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IOrderGateway.html
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+- uid: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.CancelAsync
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_CancelAsync_System_String_System_Threading_CancellationToken_
+  name: CancelAsync
+  nameWithType: IOrderGateway.CancelAsync
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync*
+  commentId: Overload:Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  name: StreamOrderUpdatesAsync
+  nameWithType: IOrderGateway.StreamOrderUpdatesAsync
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Execution.Models.OrderStatusUpdate}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Execution.Models.OrderStatusUpdate}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<OrderStatusUpdate>
+  nameWithType: IAsyncEnumerable<OrderStatusUpdate>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Execution.Models.OrderStatusUpdate>
+  nameWithType.vb: IAsyncEnumerable(Of OrderStatusUpdate)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Execution.Models.OrderStatusUpdate)
+  name.vb: IAsyncEnumerable(Of OrderStatusUpdate)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderStatusUpdate
+    name: OrderStatusUpdate
+    href: Meridian.Execution.Models.OrderStatusUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderStatusUpdate
+    name: OrderStatusUpdate
+    href: Meridian.Execution.Models.OrderStatusUpdate.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

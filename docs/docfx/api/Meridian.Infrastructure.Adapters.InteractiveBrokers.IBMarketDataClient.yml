@@ -1,0 +1,1723 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  id: IBMarketDataClient
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: IBMarketDataClient
+  nameWithType: IBMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBMarketDataClient
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Concrete Interactive Brokers market data client. Buildable out-of-the-box:
+
+    - Without IBAPI defined, delegates to IBSimulationClient (generates synthetic data for testing).
+
+    - With IBAPI defined, uses EnhancedIBConnectionManager + IBCallbackRouter for real TWS/Gateway.
+  example: []
+  syntax:
+    content: >-
+      [DataSource("ib", "Interactive Brokers", DataSourceType.Realtime, DataSourceCategory.Broker, Priority = 1, Description = "Interactive Brokers TWS/Gateway for real-time market data")]
+
+      [ImplementsAdr("ADR-001", "Interactive Brokers streaming data provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+
+      public sealed class IBMarketDataClient : IMarketDataClient, IProviderMetadata, IAsyncDisposable
+    content.vb: >-
+      <DataSource("ib", "Interactive Brokers", DataSourceType.Realtime, DataSourceCategory.Broker, Priority:=1, Description:="Interactive Brokers TWS/Gateway for real-time market data")>
+
+      <ImplementsAdr("ADR-001", "Interactive Brokers streaming data provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
+
+      Public NotInheritable Class IBMarketDataClient Implements IMarketDataClient, IProviderMetadata, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: ib
+    - type: System.String
+      value: Interactive Brokers
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 0
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 1
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 1
+    - name: Description
+      type: System.String
+      value: Interactive Brokers TWS/Gateway for real-time market data
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Interactive Brokers streaming data provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based provider discovery
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)
+  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)'
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IBMarketDataClient(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector?, OptionDataCollector?)
+  nameWithType: IBMarketDataClient.IBMarketDataClient(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector?, OptionDataCollector?)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IBMarketDataClient(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector?, Meridian.Domain.Collectors.OptionDataCollector?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public IBMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
+    parameters:
+    - id: publisher
+      type: Meridian.Domain.Events.IMarketEventPublisher
+    - id: tradeCollector
+      type: Meridian.Domain.Collectors.TradeDataCollector
+    - id: depthCollector
+      type: Meridian.Domain.Collectors.MarketDepthCollector
+    - id: quoteCollector
+      type: Meridian.Domain.Collectors.QuoteCollector
+    - id: optionCollector
+      type: Meridian.Domain.Collectors.OptionDataCollector
+    content.vb: Public Sub New(publisher As IMarketEventPublisher, tradeCollector As TradeDataCollector, depthCollector As MarketDepthCollector, quoteCollector As QuoteCollector = Nothing, optionCollector As OptionDataCollector = Nothing)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor*
+  nameWithType.vb: IBMarketDataClient.New(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector, OptionDataCollector)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.New(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Domain.Collectors.OptionDataCollector)
+  name.vb: New(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector, OptionDataCollector)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
+  id: IsSimulation
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsSimulation
+  nameWithType: IBMarketDataClient.IsSimulation
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSimulation
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: True when running without the IBAPI reference (simulation mode).
+  example: []
+  syntax:
+    content: public bool IsSimulation { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsSimulation As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: IBMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  example: []
+  syntax:
+    content: public bool IsEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsEnabled As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: IBMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: public string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: IBMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderDisplayName As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: IBMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: public string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderDescription As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: IBMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: public int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property ProviderPriority As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: IBMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: public ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields
+  id: ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCredentialFields
+  nameWithType: IBMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCredentialFields
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Credential fields required for this provider.
+
+    Override to specify API keys, tokens, or other authentication requirements.
+  example: []
+  syntax:
+    content: public ProviderCredentialField[] ProviderCredentialFields { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+    content.vb: Public ReadOnly Property ProviderCredentialFields As ProviderCredentialField()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes
+  id: ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderNotes
+  nameWithType: IBMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderNotes
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Informational notes about using this provider (displayed in UI).
+  example: []
+  syntax:
+    content: public string[] ProviderNotes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderNotes As String()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings
+  id: ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderWarnings
+  nameWithType: IBMarketDataClient.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderWarnings
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Warnings about limitations or issues with this provider (displayed in UI).
+  example: []
+  syntax:
+    content: public string[] ProviderWarnings { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderWarnings As String()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IBMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  example: []
+  syntax:
+    content: public Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IBMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IBMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Subscribe to market depth for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public int SubscribeMarketDepth(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeMarketDepth(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IBMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Unsubscribe a previously returned depth subscription id.
+  example: []
+  syntax:
+    content: public void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  nameWithType.vb: IBMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IBMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Subscribe to tick-by-tick trade prints for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: IBMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Unsubscribe a previously returned trade subscription id.
+  example: []
+  syntax:
+    content: public void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  nameWithType.vb: IBMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: IBMarketDataClient.DisposeAsync()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient__ctor_Meridian_Domain_Events_IMarketEventPublisher_Meridian_Domain_Collectors_TradeDataCollector_Meridian_Domain_Collectors_MarketDepthCollector_Meridian_Domain_Collectors_QuoteCollector_Meridian_Domain_Collectors_OptionDataCollector_
+  name: IBMarketDataClient
+  nameWithType: IBMarketDataClient.IBMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IBMarketDataClient
+  nameWithType.vb: IBMarketDataClient.New
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.New
+  name.vb: New
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Collectors.TradeDataCollector
+  commentId: T:Meridian.Domain.Collectors.TradeDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.TradeDataCollector.html
+  name: TradeDataCollector
+  nameWithType: TradeDataCollector
+  fullName: Meridian.Domain.Collectors.TradeDataCollector
+- uid: Meridian.Domain.Collectors.MarketDepthCollector
+  commentId: T:Meridian.Domain.Collectors.MarketDepthCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.MarketDepthCollector.html
+  name: MarketDepthCollector
+  nameWithType: MarketDepthCollector
+  fullName: Meridian.Domain.Collectors.MarketDepthCollector
+- uid: Meridian.Domain.Collectors.QuoteCollector
+  commentId: T:Meridian.Domain.Collectors.QuoteCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.QuoteCollector.html
+  name: QuoteCollector
+  nameWithType: QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector
+- uid: Meridian.Domain.Collectors.OptionDataCollector
+  commentId: T:Meridian.Domain.Collectors.OptionDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.OptionDataCollector.html
+  name: OptionDataCollector
+  nameWithType: OptionDataCollector
+  fullName: Meridian.Domain.Collectors.OptionDataCollector
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_IsSimulation
+  name: IsSimulation
+  nameWithType: IBMarketDataClient.IsSimulation
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_IsEnabled
+  name: IsEnabled
+  nameWithType: IBMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: IsEnabled
+  nameWithType: IMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderId
+  name: ProviderId
+  nameWithType: IBMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderId
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IBMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IBMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IBMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IBMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: IBMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: IProviderMetadata.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  name: ProviderCredentialField[]
+  nameWithType: ProviderCredentialField[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  nameWithType.vb: ProviderCredentialField()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField()
+  name.vb: ProviderCredentialField()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderNotes
+  name: ProviderNotes
+  nameWithType: IBMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderNotes
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderNotes
+  name: ProviderNotes
+  nameWithType: IProviderMetadata.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: IBMarketDataClient.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: IProviderMetadata.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: IBMarketDataClient.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: IBMarketDataClient.DisconnectAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: IBMarketDataClient.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: IBMarketDataClient.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: IBMarketDataClient.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.SubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: IBMarketDataClient.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.UnsubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeTrades(int)
+  nameWithType: IMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_DisposeAsync
+  name: DisposeAsync
+  nameWithType: IBMarketDataClient.DisposeAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

@@ -38,6 +38,9 @@ public sealed class AppConfigDto
     [JsonPropertyName("dataSources")]
     public DataSourcesConfigDto? DataSources { get; set; }
 
+    [JsonPropertyName("providerConnections")]
+    public ProviderConnectionsConfigDto? ProviderConnections { get; set; }
+
     [JsonPropertyName("symbolGroups")]
     public SymbolGroupsConfigDto? SymbolGroups { get; set; }
 

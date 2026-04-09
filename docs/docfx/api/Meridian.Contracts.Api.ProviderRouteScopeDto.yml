@@ -1,0 +1,630 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto
+  commentId: T:Meridian.Contracts.Api.ProviderRouteScopeDto
+  id: ProviderRouteScopeDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId
+  - Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId
+  - Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId
+  - Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId
+  - Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId
+  - Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace
+  langs:
+  - csharp
+  - vb
+  name: ProviderRouteScopeDto
+  nameWithType: ProviderRouteScopeDto
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRouteScopeDto
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Shared scope DTO used by provider routing APIs.
+  example: []
+  syntax:
+    content: public sealed class ProviderRouteScopeDto
+    content.vb: Public NotInheritable Class ProviderRouteScopeDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace
+  commentId: P:Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace
+  id: Workspace
+  parent: Meridian.Contracts.Api.ProviderRouteScopeDto
+  langs:
+  - csharp
+  - vb
+  name: Workspace
+  nameWithType: ProviderRouteScopeDto.Workspace
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Workspace
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("workspace")]
+
+      public string? Workspace { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("workspace")>
+
+      Public Property Workspace As String
+  overload: Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: workspace
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId
+  commentId: P:Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId
+  id: FundProfileId
+  parent: Meridian.Contracts.Api.ProviderRouteScopeDto
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: ProviderRouteScopeDto.FundProfileId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("fundProfileId")]
+
+      public string? FundProfileId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("fundProfileId")>
+
+      Public Property FundProfileId As String
+  overload: Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fundProfileId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId
+  commentId: P:Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.Api.ProviderRouteScopeDto
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: ProviderRouteScopeDto.EntityId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("entityId")]
+
+      public Guid? EntityId { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: >-
+      <JsonPropertyName("entityId")>
+
+      Public Property EntityId As Guid?
+  overload: Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: entityId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId
+  commentId: P:Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId
+  id: SleeveId
+  parent: Meridian.Contracts.Api.ProviderRouteScopeDto
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: ProviderRouteScopeDto.SleeveId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("sleeveId")]
+
+      public Guid? SleeveId { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: >-
+      <JsonPropertyName("sleeveId")>
+
+      Public Property SleeveId As Guid?
+  overload: Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sleeveId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId
+  commentId: P:Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId
+  id: VehicleId
+  parent: Meridian.Contracts.Api.ProviderRouteScopeDto
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: ProviderRouteScopeDto.VehicleId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("vehicleId")]
+
+      public Guid? VehicleId { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: >-
+      <JsonPropertyName("vehicleId")>
+
+      Public Property VehicleId As Guid?
+  overload: Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: vehicleId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId
+  commentId: P:Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.Api.ProviderRouteScopeDto
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: ProviderRouteScopeDto.AccountId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("accountId")]
+
+      public Guid? AccountId { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: >-
+      <JsonPropertyName("accountId")>
+
+      Public Property AccountId As Guid?
+  overload: Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: accountId
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace*
+  commentId: Overload:Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace
+  href: Meridian.Contracts.Api.ProviderRouteScopeDto.html#Meridian_Contracts_Api_ProviderRouteScopeDto_Workspace
+  name: Workspace
+  nameWithType: ProviderRouteScopeDto.Workspace
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.Workspace
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId
+  href: Meridian.Contracts.Api.ProviderRouteScopeDto.html#Meridian_Contracts_Api_ProviderRouteScopeDto_FundProfileId
+  name: FundProfileId
+  nameWithType: ProviderRouteScopeDto.FundProfileId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.FundProfileId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId
+  href: Meridian.Contracts.Api.ProviderRouteScopeDto.html#Meridian_Contracts_Api_ProviderRouteScopeDto_EntityId
+  name: EntityId
+  nameWithType: ProviderRouteScopeDto.EntityId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.EntityId
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId
+  href: Meridian.Contracts.Api.ProviderRouteScopeDto.html#Meridian_Contracts_Api_ProviderRouteScopeDto_SleeveId
+  name: SleeveId
+  nameWithType: ProviderRouteScopeDto.SleeveId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.SleeveId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId
+  href: Meridian.Contracts.Api.ProviderRouteScopeDto.html#Meridian_Contracts_Api_ProviderRouteScopeDto_VehicleId
+  name: VehicleId
+  nameWithType: ProviderRouteScopeDto.VehicleId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.VehicleId
+- uid: Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId
+  href: Meridian.Contracts.Api.ProviderRouteScopeDto.html#Meridian_Contracts_Api_ProviderRouteScopeDto_AccountId
+  name: AccountId
+  nameWithType: ProviderRouteScopeDto.AccountId
+  fullName: Meridian.Contracts.Api.ProviderRouteScopeDto.AccountId

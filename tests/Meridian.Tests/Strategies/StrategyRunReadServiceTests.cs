@@ -27,7 +27,9 @@ public sealed class StrategyRunReadServiceTests
             unrealizedPnl: 16_000m,
             fillCount: 2,
             sharpeRatio: 1.42,
-            maxDrawdown: 5_500m);
+            maxDrawdown: 5_500m,
+            fundProfileId: "alpha-credit",
+            fundDisplayName: "Alpha Credit");
 
         await store.RecordRunAsync(run);
 
@@ -44,6 +46,8 @@ public sealed class StrategyRunReadServiceTests
         detail.Summary.Status.Should().Be(StrategyRunStatus.Completed);
         detail.Summary.NetPnl.Should().Be(25_000m);
         detail.Summary.FinalEquity.Should().Be(125_000m);
+        detail.Summary.FundProfileId.Should().Be("alpha-credit");
+        detail.Summary.FundDisplayName.Should().Be("Alpha Credit");
         detail.Summary.AuditReference.Should().Be("run-a-audit");
         detail.Summary.Execution.Should().NotBeNull();
         detail.Summary.Execution!.TotalTrades.Should().Be(2);
@@ -60,7 +64,8 @@ public sealed class StrategyRunReadServiceTests
         detail.Governance.Should().NotBeNull();
         detail.Governance!.DatasetReference.Should().Be("dataset/us-equities/2026-q1");
         detail.Portfolio.Should().NotBeNull();
-        detail.Portfolio!.Cash.Should().Be(40_000m);
+        detail.Portfolio!.FundProfileId.Should().Be("alpha-credit");
+        detail.Portfolio.Cash.Should().Be(40_000m);
         detail.Portfolio.GrossExposure.Should().Be(85_000m);
         detail.Portfolio.NetExposure.Should().Be(75_000m);
         detail.Portfolio.RealizedPnl.Should().Be(9_000m);
@@ -69,7 +74,8 @@ public sealed class StrategyRunReadServiceTests
         detail.Portfolio.Financing.Should().Be(35m);
         detail.Portfolio.Positions.Should().ContainSingle(position => position.Symbol == "AAPL" && position.Quantity == 100);
         detail.Ledger.Should().NotBeNull();
-        detail.Ledger!.JournalEntryCount.Should().Be(2);
+        detail.Ledger!.FundProfileId.Should().Be("alpha-credit");
+        detail.Ledger.JournalEntryCount.Should().Be(2);
         detail.Ledger.LedgerEntryCount.Should().Be(6);
         detail.Ledger.AssetBalance.Should().Be(124_875m);
         detail.Ledger.RevenueBalance.Should().Be(25_000m);
@@ -465,7 +471,9 @@ public sealed class StrategyRunReadServiceTests
         decimal unrealizedPnl,
         int fillCount,
         double sharpeRatio,
-        decimal maxDrawdown)
+        decimal maxDrawdown,
+        string? fundProfileId = null,
+        string? fundDisplayName = null)
     {
         var startedAt = new DateTimeOffset(2026, 3, 21, 14, 30, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddHours(2);
@@ -600,7 +608,9 @@ public sealed class StrategyRunReadServiceTests
             {
                 ["lookback"] = "20",
                 ["threshold"] = "1.5"
-            });
+            },
+            FundProfileId: fundProfileId,
+            FundDisplayName: fundDisplayName);
     }
 
     private sealed class StubSecurityReferenceLookup : ISecurityReferenceLookup

@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using System.Globalization;
 using Meridian.Application.Composition;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
@@ -23,8 +25,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
+using AppBacktesting = global::Meridian.Application.Backtesting;
+using BacktestingEngine = global::Meridian.Backtesting.Engine;
+using BacktestingRuntime = global::Meridian.Backtesting;
 
 namespace Meridian;
 
@@ -59,11 +65,27 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="port">HTTP port to listen on.</param>
     public UiServer(string configPath, int port = 8080)
     {
-        var builder = WebApplication.CreateBuilder();
+        var contentRootPath = Directory.GetCurrentDirectory();
+        var webRootPath = StaticAssetPathResolver.ResolveWebRootPath(
+            existingWebRootPath: null,
+            contentRootPath,
+            AppContext.BaseDirectory);
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = contentRootPath,
+            WebRootPath = webRootPath
+        });
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
         builder.WebHost.UseUrls($"http://localhost:{port}");
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.TypeInfoResolverChain.Insert(
+                0,
+                global::Meridian.Application.Serialization.MarketDataJsonContext.Default);
+            options.SerializerOptions.TypeInfoResolverChain.Add(new DefaultJsonTypeInfoResolver());
+        });
 
         // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
         // This is required for minimal-API parameter binding (e.g. PackageRequest, ImportRequest).
@@ -89,18 +111,12 @@ public sealed class UiServer : IAsyncDisposable
             var configStore = sp.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>();
             return new Meridian.Ui.Shared.Services.BackfillCoordinator(configStore);
         });
-
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
-        {
-            var pipeline = sp.GetRequiredService<EventPipeline>();
-            var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
-
-            return new StatusEndpointHandlers(
+            new StatusEndpointHandlers(
                 Metrics.GetSnapshot,
-                pipeline.GetStatistics,
-                () => depthCollector.GetRecentIntegrityEvents(),
-                () => null);
-        });
+                () => GetPipelineStatistics(sp),
+                () => GetIntegrityEvents(sp),
+                () => null));
 
         // Register session-based authentication service
         builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
@@ -110,6 +126,14 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PortfolioReadService>();
         builder.Services.AddSingleton<LedgerReadService>();
         builder.Services.AddSingleton<StrategyRunReadService>();
+        builder.Services.AddSingleton<BacktestingEngine.BacktestEngine>(sp =>
+            new BacktestingEngine.BacktestEngine(
+                sp.GetRequiredService<ILogger<BacktestingEngine.BacktestEngine>>(),
+                sp.GetRequiredService<Storage.Services.StorageCatalogService>(),
+                sp.GetService<Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                sp.GetService<BacktestingRuntime.ICorporateActionAdjustmentService>()));
+        builder.Services.AddSingleton<AppBacktesting.IBacktestStudioEngine, BacktestingRuntime.MeridianNativeBacktestStudioEngine>();
+        builder.Services.AddSingleton<BacktestingRuntime.BacktestStudioRunOrchestrator>();
         builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
@@ -119,21 +143,22 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
 
-        // Execution layer — paper trading gateway wired for cockpit endpoints
-        builder.Services.AddSingleton<IOrderGateway>(sp =>
-            new Meridian.Execution.Adapters.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>()));
-        builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
-        builder.Services.AddSingleton<IOrderManager>(sp =>
+        // Execution layer — stable REST seam backed by configurable paper/live gateway selection.
+        builder.Services.AddSingleton(sp =>
         {
-            var gateway = sp.GetRequiredService<IExecutionGateway>();
-            var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-            var risk = sp.GetService<IRiskValidator>();
-            return new OrderManagementSystem(gateway, logger, risk);
+            var dataRoot = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load().DataRoot;
+            return new ExecutionAuditTrailOptions(Path.Combine(dataRoot, "execution", "audit"));
         });
-        builder.Services.AddSingleton<IExecutionGateway>(sp =>
-            new Meridian.Execution.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>()));
+        builder.Services.AddSingleton(sp =>
+        {
+            var dataRoot = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load().DataRoot;
+            return new ExecutionOperatorControlOptions(Path.Combine(dataRoot, "execution", "controls"));
+        });
+        builder.Services.AddSingleton<ExecutionAuditTrailService>();
+        builder.Services.AddSingleton<ExecutionOperatorControlService>();
+        builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
+        builder.Services.AddHostedBrokerageGateways();
+        builder.Services.AddBrokerageExecution(ApplyExecutionConfiguration);
 
         // Register OpenAPI/Swagger services
         builder.Services.AddEndpointsApiExplorer();
@@ -236,32 +261,17 @@ public sealed class UiServer : IAsyncDisposable
 
     private void ConfigureRoutes()
     {
-        // ==================== UNIQUE ENDPOINT MODULES ====================
-        // Endpoints not included in MapUiEndpoints and must be registered explicitly.
-
-        // Status API (requires StatusEndpointHandlers, not included in MapUiEndpoints).
-        // This registers all health/liveness/readiness probes (/health, /healthz, /ready,
-        // /readyz, /live, /livez) with proper handler logic (real readiness checks, full
-        // HealthCheckResponse). Do NOT register those routes inline above this call.
         var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
-        _app.MapStatusEndpoints(statusHandlers, s_jsonOptions);
 
-        // Data Packaging API (requires dataRoot, not included in MapUiEndpoints)
+        // Host-specific endpoint groups not covered by the shared UI endpoint aggregator.
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);
-
-        // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
-        // Canonicalization parity dashboard (not included in MapUiEndpoints)
-        _app.MapCanonicalizationEndpoints(s_jsonOptions);
-
-        // Dashboard root page (maps GET / → HTML, not included in MapUiEndpoints)
+        // Dashboard root page is host-specific and not included in MapUiEndpointsWithStatus.
         _app.MapDashboard();
 
-        // ==================== AGGREGATED ENDPOINT MODULES ====================
-        // All remaining API endpoints (config, backfill, storage, providers, etc.)
-        _app.MapUiEndpoints(s_jsonOptions);
+        _app.MapUiEndpointsWithStatus(statusHandlers);
     }
 
     public async Task StartAsync(CancellationToken ct = default)
@@ -279,5 +289,113 @@ public sealed class UiServer : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await _app.DisposeAsync();
+    }
+
+    private static PipelineStatistics GetPipelineStatistics(IServiceProvider services)
+    {
+        try
+        {
+            return services.GetService<EventPipeline>()?.GetStatistics()
+                ?? new PipelineStatistics(
+                    PublishedCount: 0,
+                    DroppedCount: 0,
+                    ConsumedCount: 0,
+                    CurrentQueueSize: 0,
+                    PeakQueueSize: 0,
+                    QueueCapacity: 0,
+                    QueueUtilization: 0,
+                    AverageProcessingTimeUs: 0,
+                    TimeSinceLastFlush: TimeSpan.Zero,
+                    Timestamp: DateTimeOffset.UtcNow);
+        }
+        catch
+        {
+            return new PipelineStatistics(
+                PublishedCount: 0,
+                DroppedCount: 0,
+                ConsumedCount: 0,
+                CurrentQueueSize: 0,
+                PeakQueueSize: 0,
+                QueueCapacity: 0,
+                QueueUtilization: 0,
+                AverageProcessingTimeUs: 0,
+                TimeSinceLastFlush: TimeSpan.Zero,
+                Timestamp: DateTimeOffset.UtcNow);
+        }
+    }
+
+    private static IReadOnlyList<DepthIntegrityEvent> GetIntegrityEvents(IServiceProvider services)
+    {
+        try
+        {
+            return services.GetService<MarketDepthCollector>()?.GetRecentIntegrityEvents()
+                ?? Array.Empty<DepthIntegrityEvent>();
+        }
+        catch
+        {
+            return Array.Empty<DepthIntegrityEvent>();
+        }
+    }
+
+    private static void ApplyExecutionConfiguration(BrokerageConfiguration config)
+    {
+        config.Gateway = GetEnvironmentValue(
+            "MERIDIAN_EXECUTION_GATEWAY",
+            "MERIDIAN__EXECUTION__GATEWAY")
+            ?? "paper";
+
+        config.LiveExecutionEnabled = GetEnvironmentBool(
+            "MERIDIAN_EXECUTION_LIVE_ENABLED",
+            "MERIDIAN__EXECUTION__LIVE_ENABLED")
+            ?? false;
+
+        config.MaxPositionSize = GetEnvironmentDecimal(
+            "MERIDIAN_EXECUTION_MAX_POSITION_SIZE",
+            "MERIDIAN__EXECUTION__MAX_POSITION_SIZE")
+            ?? 0m;
+
+        config.MaxOrderNotional = GetEnvironmentDecimal(
+            "MERIDIAN_EXECUTION_MAX_ORDER_NOTIONAL",
+            "MERIDIAN__EXECUTION__MAX_ORDER_NOTIONAL")
+            ?? 0m;
+
+        config.MaxOpenOrders = GetEnvironmentInt(
+            "MERIDIAN_EXECUTION_MAX_OPEN_ORDERS",
+            "MERIDIAN__EXECUTION__MAX_OPEN_ORDERS")
+            ?? 0;
+    }
+
+    private static string? GetEnvironmentValue(params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var value = Environment.GetEnvironmentVariable(name);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
+    }
+
+    private static bool? GetEnvironmentBool(params string[] names)
+    {
+        var raw = GetEnvironmentValue(names);
+        return bool.TryParse(raw, out var parsed) ? parsed : null;
+    }
+
+    private static decimal? GetEnvironmentDecimal(params string[] names)
+    {
+        var raw = GetEnvironmentValue(names);
+        return decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : null;
+    }
+
+    private static int? GetEnvironmentInt(params string[] names)
+    {
+        var raw = GetEnvironmentValue(names);
+        return int.TryParse(raw, out var parsed) ? parsed : null;
     }
 }

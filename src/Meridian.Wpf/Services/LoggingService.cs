@@ -22,5 +22,6 @@ public sealed class LoggingService : LoggingServiceBase
     protected override void WriteOutput(string formattedMessage)
     {
         Debug.WriteLine(formattedMessage);
+        Console.Error.WriteLine(formattedMessage);
     }
 }

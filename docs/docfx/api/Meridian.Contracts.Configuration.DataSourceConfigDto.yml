@@ -1,0 +1,936 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto
+  commentId: T:Meridian.Contracts.Configuration.DataSourceConfigDto
+  id: DataSourceConfigDto
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Description
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.IB
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Id
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Name
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Priority
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Provider
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Tags
+  - Meridian.Contracts.Configuration.DataSourceConfigDto.Type
+  langs:
+  - csharp
+  - vb
+  name: DataSourceConfigDto
+  nameWithType: DataSourceConfigDto
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceConfigDto
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Individual data source configuration.
+  example: []
+  syntax:
+    content: public sealed class DataSourceConfigDto
+    content.vb: Public NotInheritable Class DataSourceConfigDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Id
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Id
+  id: Id
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: DataSourceConfigDto.Id
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("id")]
+
+      public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("id")>
+
+      Public Property Id As String
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Id*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: id
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Name
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Name
+  id: Name
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: DataSourceConfigDto.Name
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("name")]
+
+      public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("name")>
+
+      Public Property Name As String
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Name*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: name
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Provider
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Provider
+  id: Provider
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: DataSourceConfigDto.Provider
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("provider")]
+
+      public string Provider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("provider")>
+
+      Public Property Provider As String
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Provider*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: provider
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled
+  id: Enabled
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: DataSourceConfigDto.Enabled
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("enabled")]
+
+      public bool Enabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("enabled")>
+
+      Public Property Enabled As Boolean
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: enabled
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Type
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Type
+  id: Type
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: DataSourceConfigDto.Type
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("type")]
+
+      public string Type { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("type")>
+
+      Public Property Type As String
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Type*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: type
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Priority
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Priority
+  id: Priority
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: DataSourceConfigDto.Priority
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("priority")]
+
+      public int Priority { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("priority")>
+
+      Public Property Priority As Integer
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Priority*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: priority
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Description
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Description
+  id: Description
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: DataSourceConfigDto.Description
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Tags
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Tags
+  id: Tags
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: DataSourceConfigDto.Tags
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 535
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("tags")]
+
+      public string[]? Tags { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("tags")>
+
+      Public Property Tags As String()
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Tags*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tags
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca
+  id: Alpaca
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: DataSourceConfigDto.Alpaca
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 538
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("alpaca")]
+
+      public AlpacaOptionsDto? Alpaca { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.AlpacaOptionsDto
+    content.vb: >-
+      <JsonPropertyName("alpaca")>
+
+      Public Property Alpaca As AlpacaOptionsDto
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: alpaca
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon
+  id: Polygon
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: DataSourceConfigDto.Polygon
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 541
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("polygon")]
+
+      public PolygonOptionsDto? Polygon { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.PolygonOptionsDto
+    content.vb: >-
+      <JsonPropertyName("polygon")>
+
+      Public Property Polygon As PolygonOptionsDto
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: polygon
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.IB
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.IB
+  id: IB
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: IB
+  nameWithType: DataSourceConfigDto.IB
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.IB
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IB
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 544
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("ib")]
+
+      public IBOptionsDto? IB { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.IBOptionsDto
+    content.vb: >-
+      <JsonPropertyName("ib")>
+
+      Public Property IB As IBOptionsDto
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.IB*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ib
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols
+  commentId: P:Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Configuration.DataSourceConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: DataSourceConfigDto.Symbols
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 547
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public string[]? Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As String()
+  overload: Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Id*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Id
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Id
+  name: Id
+  nameWithType: DataSourceConfigDto.Id
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Name*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Name
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Name
+  name: Name
+  nameWithType: DataSourceConfigDto.Name
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Name
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Provider*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Provider
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Provider
+  name: Provider
+  nameWithType: DataSourceConfigDto.Provider
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Provider
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Enabled
+  name: Enabled
+  nameWithType: DataSourceConfigDto.Enabled
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Type*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Type
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Type
+  name: Type
+  nameWithType: DataSourceConfigDto.Type
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Type
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Priority*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Priority
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Priority
+  name: Priority
+  nameWithType: DataSourceConfigDto.Priority
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Description*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Description
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Description
+  name: Description
+  nameWithType: DataSourceConfigDto.Description
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Description
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Tags*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Tags
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Tags
+  name: Tags
+  nameWithType: DataSourceConfigDto.Tags
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Tags
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Alpaca
+  name: Alpaca
+  nameWithType: DataSourceConfigDto.Alpaca
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Alpaca
+- uid: Meridian.Contracts.Configuration.AlpacaOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.AlpacaOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AlpacaOptionsDto.html
+  name: AlpacaOptionsDto
+  nameWithType: AlpacaOptionsDto
+  fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Polygon
+  name: Polygon
+  nameWithType: DataSourceConfigDto.Polygon
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Polygon
+- uid: Meridian.Contracts.Configuration.PolygonOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.PolygonOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.PolygonOptionsDto.html
+  name: PolygonOptionsDto
+  nameWithType: PolygonOptionsDto
+  fullName: Meridian.Contracts.Configuration.PolygonOptionsDto
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.IB*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.IB
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_IB
+  name: IB
+  nameWithType: DataSourceConfigDto.IB
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.IB
+- uid: Meridian.Contracts.Configuration.IBOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBOptionsDto.html
+  name: IBOptionsDto
+  nameWithType: IBOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBOptionsDto
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols*
+  commentId: Overload:Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html#Meridian_Contracts_Configuration_DataSourceConfigDto_Symbols
+  name: Symbols
+  nameWithType: DataSourceConfigDto.Symbols
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto.Symbols

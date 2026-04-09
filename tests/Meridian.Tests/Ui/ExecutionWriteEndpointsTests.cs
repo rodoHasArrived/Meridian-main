@@ -172,7 +172,7 @@ file sealed class EmptyPortfolioState : Meridian.Execution.Models.IPortfolioStat
     public decimal PortfolioValue => 100_000m;
     public decimal UnrealisedPnl => 0m;
     public decimal RealisedPnl => 0m;
-    public IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition> Positions =>
-        new Dictionary<string, Meridian.Execution.Models.ExecutionPosition>();
+    public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions =>
+        new Dictionary<string, Meridian.Execution.Sdk.IPosition>();
 }
 

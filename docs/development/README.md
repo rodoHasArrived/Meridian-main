@@ -8,7 +8,7 @@
 
 ## Purpose
 
-This directory contains guides for developers contributing to or extending the Meridian. It covers project conventions, tooling, CI/CD, testing, and how to add new capabilities.
+This directory contains guides for developers contributing to or extending Meridian. It covers project conventions, tooling, CI/CD, testing, documentation automation, and how to add new capabilities.
 
 ---
 
@@ -64,6 +64,7 @@ This directory contains guides for developers contributing to or extending the M
 |----------|-------------|
 | [GitHub Actions Summary](github-actions-summary.md) | CI/CD pipeline overview |
 | [Build Observability](build-observability.md) | Build metrics and diagnostics |
+| [OTLP Trace Visualization](otlp-trace-visualization.md) | Inspect local trace output and observability wiring |
 | [Git Hooks](git-hooks.md) | Local pre-commit quality checks (`dotnet format`) |
 | [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | Prioritized cleanup plan for repo automation |
 
@@ -73,6 +74,7 @@ This directory contains guides for developers contributing to or extending the M
 |----------|-------------|
 | [WPF Implementation Notes](wpf-implementation-notes.md) | WPF desktop app development |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | Offline development with mock data |
+| [Desktop Workflow Automation](desktop-workflow-automation.md) | Scripted desktop debug flows, screenshot capture, and manual generation |
 
 > **Desktop improvement evaluations** (executive summary, quick reference, implementation guide) have been moved to [`evaluations/`](../evaluations/README.md) where strategic assessments are maintained.
 
@@ -100,6 +102,7 @@ This directory contains guides for developers contributing to or extending the M
 
 - [Architecture Documentation](../architecture/README.md) — System design and ADRs
 - [Operations Documentation](../operations/README.md) — Deployment and maintenance guides
+- [Plans Overview](../plans/README.md) — Active implementation blueprints and roadmaps
 - [Evaluations](../evaluations/README.md) — Technology and architecture evaluations
 
 ---

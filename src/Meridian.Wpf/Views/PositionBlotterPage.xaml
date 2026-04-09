@@ -334,8 +334,7 @@
                                                     <!-- Group (symbol) -->
                                                     <TextBlock Grid.Column="2"
                                                                Text="{Binding Group}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5"
-                                                               Margin="20,0,4,0" />
+                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="20,0,4,0" />
 
                                                     <!-- Product Description -->
                                                     <TextBlock Grid.Column="3"

@@ -1,0 +1,54 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Engine
+  commentId: N:Meridian.Backtesting.Engine
+  id: Meridian.Backtesting.Engine
+  children:
+  - Meridian.Backtesting.Engine.BacktestEngine
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Backtesting.Engine
+  nameWithType: Meridian.Backtesting.Engine
+  fullName: Meridian.Backtesting.Engine
+  type: Namespace
+  assemblies:
+  - Meridian.Backtesting
+references:
+- uid: Meridian.Backtesting.Engine.BacktestEngine
+  commentId: T:Meridian.Backtesting.Engine.BacktestEngine
+  parent: Meridian.Backtesting.Engine
+  href: Meridian.Backtesting.Engine.BacktestEngine.html
+  name: BacktestEngine
+  nameWithType: BacktestEngine
+  fullName: Meridian.Backtesting.Engine.BacktestEngine
+- uid: Meridian.Backtesting.Engine
+  commentId: N:Meridian.Backtesting.Engine
+  href: Meridian.html
+  name: Meridian.Backtesting.Engine
+  nameWithType: Meridian.Backtesting.Engine
+  fullName: Meridian.Backtesting.Engine
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Engine
+    name: Engine
+    href: Meridian.Backtesting.Engine.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Engine
+    name: Engine
+    href: Meridian.Backtesting.Engine.html

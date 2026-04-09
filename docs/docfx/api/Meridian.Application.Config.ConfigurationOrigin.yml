@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigurationOrigin
+  commentId: T:Meridian.Application.Config.ConfigurationOrigin
+  id: ConfigurationOrigin
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigurationOrigin.AutoConfig
+  - Meridian.Application.Config.ConfigurationOrigin.Default
+  - Meridian.Application.Config.ConfigurationOrigin.File
+  - Meridian.Application.Config.ConfigurationOrigin.HotReload
+  - Meridian.Application.Config.ConfigurationOrigin.Programmatic
+  - Meridian.Application.Config.ConfigurationOrigin.Wizard
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationOrigin
+  nameWithType: ConfigurationOrigin
+  fullName: Meridian.Application.Config.ConfigurationOrigin
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationOrigin
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Indicates how the configuration was sourced/created.
+  example: []
+  syntax:
+    content: 'public enum ConfigurationOrigin : byte'
+    content.vb: Public Enum ConfigurationOrigin As Byte
+- uid: Meridian.Application.Config.ConfigurationOrigin.Default
+  commentId: F:Meridian.Application.Config.ConfigurationOrigin.Default
+  id: Default
+  parent: Meridian.Application.Config.ConfigurationOrigin
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: ConfigurationOrigin.Default
+  fullName: Meridian.Application.Config.ConfigurationOrigin.Default
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Default configuration (no file loaded).
+  example: []
+  syntax:
+    content: Default = 0
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+- uid: Meridian.Application.Config.ConfigurationOrigin.File
+  commentId: F:Meridian.Application.Config.ConfigurationOrigin.File
+  id: File
+  parent: Meridian.Application.Config.ConfigurationOrigin
+  langs:
+  - csharp
+  - vb
+  name: File
+  nameWithType: ConfigurationOrigin.File
+  fullName: Meridian.Application.Config.ConfigurationOrigin.File
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: File
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Loaded from a configuration file.
+  example: []
+  syntax:
+    content: File = 1
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+- uid: Meridian.Application.Config.ConfigurationOrigin.Wizard
+  commentId: F:Meridian.Application.Config.ConfigurationOrigin.Wizard
+  id: Wizard
+  parent: Meridian.Application.Config.ConfigurationOrigin
+  langs:
+  - csharp
+  - vb
+  name: Wizard
+  nameWithType: ConfigurationOrigin.Wizard
+  fullName: Meridian.Application.Config.ConfigurationOrigin.Wizard
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Wizard
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Created by the interactive wizard.
+  example: []
+  syntax:
+    content: Wizard = 2
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+- uid: Meridian.Application.Config.ConfigurationOrigin.AutoConfig
+  commentId: F:Meridian.Application.Config.ConfigurationOrigin.AutoConfig
+  id: AutoConfig
+  parent: Meridian.Application.Config.ConfigurationOrigin
+  langs:
+  - csharp
+  - vb
+  name: AutoConfig
+  nameWithType: ConfigurationOrigin.AutoConfig
+  fullName: Meridian.Application.Config.ConfigurationOrigin.AutoConfig
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoConfig
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Created by auto-configuration.
+  example: []
+  syntax:
+    content: AutoConfig = 3
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+- uid: Meridian.Application.Config.ConfigurationOrigin.HotReload
+  commentId: F:Meridian.Application.Config.ConfigurationOrigin.HotReload
+  id: HotReload
+  parent: Meridian.Application.Config.ConfigurationOrigin
+  langs:
+  - csharp
+  - vb
+  name: HotReload
+  nameWithType: ConfigurationOrigin.HotReload
+  fullName: Meridian.Application.Config.ConfigurationOrigin.HotReload
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotReload
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Updated via hot reload.
+  example: []
+  syntax:
+    content: HotReload = 4
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+- uid: Meridian.Application.Config.ConfigurationOrigin.Programmatic
+  commentId: F:Meridian.Application.Config.ConfigurationOrigin.Programmatic
+  id: Programmatic
+  parent: Meridian.Application.Config.ConfigurationOrigin
+  langs:
+  - csharp
+  - vb
+  name: Programmatic
+  nameWithType: ConfigurationOrigin.Programmatic
+  fullName: Meridian.Application.Config.ConfigurationOrigin.Programmatic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Programmatic
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Programmatically constructed.
+  example: []
+  syntax:
+    content: Programmatic = 5
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.ConfigurationOrigin
+  commentId: T:Meridian.Application.Config.ConfigurationOrigin
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationOrigin.html
+  name: ConfigurationOrigin
+  nameWithType: ConfigurationOrigin
+  fullName: Meridian.Application.Config.ConfigurationOrigin

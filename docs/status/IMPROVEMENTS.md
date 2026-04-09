@@ -1,6 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-04
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into a single source of truth for tracking. For phased execution timeline, see [`ROADMAP.md`](ROADMAP.md).
@@ -33,10 +33,10 @@ This document consolidates **functional improvements** (features, reliability, U
 
 | Status | Count | Items |
 |--------|-------|-------|
-| ✅ **Completed** | 35 | A1, A2, A3, A4, A5, A6, A7, B1, B2, B3, B4, B5, C1, C2, C3, C4, C5, C6, C7, D1, D2, D3, D4, D5, D6, D7, E1, E2, E3, F1, F2, F3, G1, G2, G3 |
-| 🔄 **Partially Complete** | 0 | None |
+| ✅ **Completed** | 37 | A1, A2, A3, A4, A5, A6, A7, B1, B2, B3, B4, B5, C1, C2, C3, C4, C5, C6, C7, D1, D2, D3, D4, D5, D6, D7, E1, E2, E3, F1, F2, F3, G1, G2, G3, K0, K2A |
+| 🔄 **Partially Complete** | 3 | K1, K2, K3 |
 | 📝 **Open** | 0 | None |
-| **Total** | 35 | All improvement items (core) |
+| **Total** | 40 | Core improvements (35) + Theme K (5) |
 
 ### By Theme
 
@@ -50,13 +50,15 @@ This document consolidates **functional improvements** (features, reliability, U
 | F: User Experience | 3 | 0 | 0 | 3 |
 | G: Operations & Monitoring | 3 | 0 | 0 | 3 |
 | J: Data Canonicalization | 8 | 0 | 0 | 8 |
+| K: Trading Workstation Migration | 2 | 3 | 0 | 5 |
 
 ### Portfolio Health Snapshot
 
-- **Completion ratio:** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
+- **Completion ratio:** 100% complete (35/35 core), 0% partial (0/35 core), 0% open (0/35 core).
 - **Core improvement themes A-G are closed** for the current platform baseline.
 - **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
-- **Recommended focus:** provider-confidence hardening, H2 multi-instance coordination design, Security Master productization, account/entity and trade-management productization, reconciliation/reporting productization, and Theme K workstation delivery on top of the now-shared run / portfolio / ledger baseline.
+- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization) are complete — Security Master now flows through WPF plus Research, Trading, Portfolio, Ledger, Reconciliation, and Governance surfaces as one authoritative instrument seam. K1, K2, and K3 remain active.
+- **Recommended focus:** provider-confidence hardening, paper-trading cockpit (Wave 2), WPF page-level MVVM extraction (K1 continuation), and governance/fund-operations foundations (K2).
 
 ### Backlog Inputs
 
@@ -84,6 +86,9 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 | 6 | C1/C2, H1, H4, I1 | Provider registration unified under DI; per-provider backfill rate limiting; degradation scoring; test harness | ✅ Done |
 | 7 | C3 remainder, B3 tranche 2 | NYSE shared-lifecycle bridge lands; IB + Alpaca provider tests expand | ✅ Done |
 | 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
+| 9 | K0, route/health reliability | WPF Fluent theme, SVG icons, LiveCharts2 charting, Synthetic provider default, workflow guide, CI screenshots, duplicate route/registration fixes | ✅ Done |
+| 10 | K1 page-level redesign, Wave 1 provider confidence | High-traffic WPF page redesign (Live Data, Provider, Backfill, Data Quality); Polygon/IB/NYSE/StockSharp replay and runtime validation | 🔄 Active |
+| 11 | Wave 2 paper cockpit, governance/reporting follow-ons | Web trading cockpit (positions, orders, fills, P&L, risk); governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 📝 Planned |
 
 ---
 
@@ -943,33 +948,35 @@ No clear contract for what each validates or when it runs.
 
 ---
 
-### G2. 🔄 Observability Tracing with OpenTelemetry (PARTIALLY COMPLETE)
+### G2. ✅ Observability Tracing with OpenTelemetry (COMPLETED)
 
-**Impact:** Medium | **Effort:** Medium | **Priority:** P2 | **Status:** 🔄 PARTIAL
+**Impact:** Medium | **Effort:** Medium | **Priority:** P2 | **Status:** ✅ DONE
 
 **Problem:** No distributed tracing for request flows across services. Hard to diagnose latency issues.
 
-**Solution Implemented (Partial):**
+**Solution Implemented:**
 - `TracedEventMetrics` decorator wraps `IEventMetrics` with `System.Diagnostics.Metrics` counters and histograms
 - Pipeline meter (`Meridian.Pipeline`) exports published/dropped/trade/depth/quote/integrity/historical counters via OTLP
 - Latency histogram (`meridian.pipeline.latency`) tracks event processing time in milliseconds
 - `OpenTelemetrySetup` updated to register pipeline meter alongside existing application meters
 - `CompositionOptions.EnableOpenTelemetry` flag gates decorator registration in DI
 - `MarketDataTracing` extended with `StartBatchConsumeActivity`, `StartBackfillActivity`, `StartWalRecoveryActivity`
+- Full trace context propagation from provider receive through pipeline to storage write (Sprint 8)
+- Correlation IDs added to structured log messages for cross-component tracing
+- `EventTraceContext` provides distributed trace context propagation across pipeline stages
 
-**Remaining Work:**
-- Wire trace context propagation from provider receive through pipeline to storage write
-- Add correlation IDs to structured log messages
-- Integrate distributed tracing for backfill worker service
-- Export traces to Jaeger/Zipkin for visualization
+**Remaining Work (lower priority):**
+- Export traces to Jaeger/Zipkin for visualization (operator-configurable endpoint not yet wired)
+- Backfill worker service distributed tracing integration
 
 **Files:**
 - `Application/Tracing/TracedEventMetrics.cs` (new)
 - `Application/Tracing/OpenTelemetrySetup.cs` (updated)
+- `Application/Tracing/EventTraceContext.cs` (trace context propagation)
 - `Application/Composition/ServiceCompositionRoot.cs` (updated)
 - `tests/Meridian.Tests/Application/Monitoring/TracedEventMetricsTests.cs` (new)
 
-**ROADMAP:** Sprint 4 (partial), Sprint 8 (full trace propagation)
+**ROADMAP:** Sprint 4 (partial), Sprint 8 (core pipeline trace propagation complete)
 
 ---
 
@@ -1185,9 +1192,10 @@ No clear contract for what each validates or when it runs.
 | Priority | Items | Description |
 |----------|-------|-------------|
 | **P0** | A1-A4 | Critical reliability fixes - ALL DONE ✅ |
-| **P1** | A3, A5, B1-B2, C1-C2, C4-C6, D4, G1 | High impact, low-medium effort - A3, B2 DONE ✅ |
-| **P2** | A6-A7, B3-B5, D5-D6, E1, F2-F3, G3 | Medium impact or higher effort - core work complete; remaining focus shifts to roadmap execution |
+| **P1** | A3, A5, B1-B2, C1-C2, C4-C6, D4, G1, K0 | High impact, low-medium effort - ALL DONE ✅ |
+| **P2** | A6-A7, B3-B5, D5-D6, E1, F2-F3, G2, G3 | Medium impact or higher effort - all complete (G2 OTel core pipeline done in Sprint 8) |
 | **P3** | D7, E3 | Lower priority or high effort - C7, F1 DONE ✅ |
+| **K-wave** | K1, K2, K2A, K3 | Active workstation and governance delivery tracks |
 
 ### Recommended Execution Order
 
@@ -1240,10 +1248,10 @@ No clear contract for what each validates or when it runs.
 
 | Metric | Current | Target | Phase |
 |--------|---------|--------|-------|
-| Completed Improvements | 35/35 | 35/35 | All |
-| Test Files | 219 | 250+ | Phase 1-3 |
-| Test Methods | ~3,444 | 4,000+ | Phase 1-3 |
-| Route Constants | 283 | 283 | Phase 3 |
+| Completed Improvements | 36/40 | 40/40 | All |
+| Test Files | 230+ | 250+ | Phase 1-3 |
+| Test Methods | ~4,756 | 5,000+ | Phase 1-3 |
+| Route Constants | 283 | 300+ | Phase 3 |
 | Provider Test Files | 12 | 15+ | Phase 3 |
 
 ### Risk Mitigation
@@ -1360,9 +1368,9 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-04-04
 **Maintainer:** Project Team
-**Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
+**Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K active (K0 complete, K1–K3 in progress/planned)
 **Next Review:** Weekly engineering sync (or immediately after any status change)
 
 
@@ -1370,22 +1378,59 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ## Theme K: Trading Workstation Migration
 
-### K1. 📝 Workflow-Centric Workspace Migration
+### K0. ✅ WPF Desktop Shell Modernization (COMPLETED)
+
+**Impact:** High | **Effort:** Medium | **Priority:** P1 | **Status:** ✅ DONE
+
+**Problem:** The WPF desktop shell used emoji/placeholder icons, a custom non-native theme, had no integrated charting, required API credentials to start (blocking developer and demo flows), had no workflow documentation with screenshots, and had duplicate DFA route registrations causing startup noise.
+
+**Solution Implemented:**
+- **Native Fluent theme** via `ThemeMode="System"` in `App.xaml` — adapts automatically to Windows system light/dark mode without any custom theme layers (PR #524)
+- **SVG icon set** — 47 SVG icons from a Segoe-style design language replacing emoji glyphs across all navigation rail entries and page headers (PR #512)
+- **LiveCharts2 candlestick charting** — `CartesianChart` with `CandlesticksSeries<FinancialPoint>` wired on the Charting page; bound via `CandleSeries`, `CandleXAxes`, and `CandleYAxes` on `ChartingPageViewModel` (PR #522)
+- **Zero-API-key startup** — Synthetic provider is now the default data source when no API credentials are present, enabling offline development, demos, and fixture-based testing without provider setup (PR #513)
+- **Workflow guide** — `docs/WORKFLOW_GUIDE.md` documenting key operator workflows with live UI screenshots checked into the repository (PR #511)
+- **CI: Refresh UI Screenshots** — GitHub Action workflow triggering weekly and on-push to keep `docs/screenshots/` in sync with the current dashboard state (PR #515)
+- **Route and health endpoint reliability** — duplicate DFA route definitions and duplicate health endpoint registrations resolved, eliminating startup warnings and routing ambiguity (PRs #521, #519)
+
+**Files:**
+- `src/Meridian.Wpf/App.xaml` (`ThemeMode="System"`)
+- `src/Meridian.Wpf/Assets/Icons/*.svg` (47 SVG icons)
+- `src/Meridian.Wpf/Views/ChartingPage.xaml` (LiveCharts2 CartesianChart)
+- `src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs` (`CandleSeries`/`CandleXAxes`/`CandleYAxes`)
+- `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` (Synthetic provider default)
+- `docs/WORKFLOW_GUIDE.md` (operator workflow guide with screenshots)
+- `docs/screenshots/` (live UI screenshots)
+- `.github/workflows/refresh-screenshots.yml` (CI screenshot refresh)
+- `src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs` (duplicate route fixes)
+- `src/Meridian.Ui.Shared/Endpoints/HealthEndpoints.cs` (duplicate health endpoint fixes)
+
+**Benefit:** Gives the WPF desktop app a polished, system-native appearance with integrated charting and a lower barrier to entry for developers and demo operators. Eliminates startup friction for non-credentialed environments. Workflow guide provides onboarding documentation previously missing.
+
+**ROADMAP:** Phase 11 (first completed slice)
+
+---
+
+### K1. 🔄 Workflow-Centric Workspace Migration
 
 **Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
 
-**Problem:** Meridian functionality is broad but still exposed through too many page-centric entry points. The vocabulary and workspace/session model now align on `Research`, `Trading`, `Data Operations`, and `Governance`, but the product still needs deeper workspace-native shells and quick-action flows.
+**Problem:** Meridian functionality is broad but still exposed through too many page-centric entry points. The vocabulary and workspace/session model now align on `Research`, `Trading`, `Data Operations`, and `Governance`, but the product still needs deeper workspace-native shells and quick-action flows, and high-traffic WPF pages still rely on code-behind orchestration.
 
-**Planned Solution:**
-- Consolidate top-level UX into `Research`, `Trading`, `Data Operations`, and `Governance` workspaces
-- Ensure all major capabilities are reachable from primary navigation and command palette
+**Completed (K0):**
+- WPF desktop shell modernization landed (see K0 above)
+- Four-workspace model is active in both the React dashboard and WPF navigation
+
+**Remaining scope:**
+- Redesign high-traffic WPF workflow pages: Live Data, Provider, Backfill, and Data Quality for clearer operator workflows
+- Continue MVVM extraction on pages still relying heavily on code-behind orchestration
 - Add workflow-level entry points instead of orphan feature pages
 
 **ROADMAP:** Phase 11
 
 ---
 
-### K2. 📝 Shared Run / Portfolio / Ledger Read Models
+### K2. 🔄 Shared Run / Portfolio / Ledger Read Models
 
 **Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
 
@@ -1413,25 +1458,30 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-### K2A. 📝 Security Master Productization
+### K2A. ✅ Security Master Productization
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** ✅ COMPLETE
 
-**Problem:** Security Master implementation now exists in contracts, services, storage, migrations, and F# domain models, but it is still underrepresented in the active product roadmap and not yet treated as a first-class platform capability for workstation workflows.
+**Problem solved:** Security Master no longer stops at contracts/services/storage. It is now treated as a first-class platform capability for workstation workflows.
 
-**Planned Solution:**
-- elevate Security Master into an explicit product/platform track
-- use Security Master as the authoritative instrument-definition layer for research, portfolio, ledger, and governance experiences
-- connect security identifiers, classifications, and economic definitions to downstream cash-flow and multi-ledger workflows
-- use Security Master metadata to improve reconciliation matching quality and reporting classification
+**Delivered:**
+- elevated Security Master into an explicit product/platform track in the active roadmap and status documents
+- hardened WPF activation so `SecurityMasterPage` resolves with real-or-null import/backfill services and degraded capability messaging when infrastructure is unavailable
+- expanded `WorkstationSecurityReference` into the canonical cross-workspace coverage/provenance contract
+- propagated Security Master identity, classification, subtype, currency, coverage state, and provenance into portfolio, ledger, reconciliation, Research, Trading, and Governance payloads
+- added governance drill-ins and deep links for detail/history/economic-definition review without duplicating CRUD surfaces in React
+
+**Follow-on scope:**
+- connect the delivered Security Master seam to broader cash-flow, report-pack, and multi-ledger governance workflows
+- add richer remediation/task-routing around unresolved mappings as operator workflow ownership matures
 
 **ROADMAP:** Phase 12A
 
 ---
 
-### K3. 📝 Backtest + Paper-Trading Experience Unification
+### K3. 🔄 Backtest + Paper-Trading Experience Unification
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 📝 PLANNED
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
 
 **Problem:** Native backtesting, Lean integration, and paper-trading infrastructure exist, but the user experience is still split across separate surfaces and does not yet feel like one strategy lifecycle on top of the new shared run model.
 
@@ -1439,5 +1489,15 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - Build a unified Backtest Studio with engine selection and run comparison
 - Promote paper-trading infrastructure into a real trading cockpit
 - Add explicit promotion flow from Backtest → Paper → Live with safety guardrails
+
+**Current baseline:**
+- Paper trading gateway, risk rules, order abstractions, and brokerage gateway framework are implemented
+- REST endpoints for account, orders, sessions, health, and promotion are wired
+- Brokerage gateway adapters for Alpaca, IB, and StockSharp are in place
+
+**Remaining scope (Wave 2):**
+- Web dashboard: live positions, open orders, fills, P&L, and risk state panels wired to brokerage gateways
+- `Backtest → Paper` promotion: explicit lifecycle step, audit trail, and safety gate
+- Paper session persistence and replay
 
 **ROADMAP:** Phase 13

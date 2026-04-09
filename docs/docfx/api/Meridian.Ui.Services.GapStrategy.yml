@@ -1,0 +1,228 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.GapStrategy
+  commentId: T:Meridian.Ui.Services.GapStrategy
+  id: GapStrategy
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.GapStrategy.BackwardFill
+  - Meridian.Ui.Services.GapStrategy.ForwardFill
+  - Meridian.Ui.Services.GapStrategy.LinearInterpolate
+  - Meridian.Ui.Services.GapStrategy.Null
+  - Meridian.Ui.Services.GapStrategy.Skip
+  - Meridian.Ui.Services.GapStrategy.Zero
+  langs:
+  - csharp
+  - vb
+  name: GapStrategy
+  nameWithType: GapStrategy
+  fullName: Meridian.Ui.Services.GapStrategy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapStrategy
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 454
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum GapStrategy : byte'
+    content.vb: Public Enum GapStrategy As Byte
+- uid: Meridian.Ui.Services.GapStrategy.ForwardFill
+  commentId: F:Meridian.Ui.Services.GapStrategy.ForwardFill
+  id: ForwardFill
+  parent: Meridian.Ui.Services.GapStrategy
+  langs:
+  - csharp
+  - vb
+  name: ForwardFill
+  nameWithType: GapStrategy.ForwardFill
+  fullName: Meridian.Ui.Services.GapStrategy.ForwardFill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForwardFill
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 456
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ForwardFill = 0
+    return:
+      type: Meridian.Ui.Services.GapStrategy
+- uid: Meridian.Ui.Services.GapStrategy.BackwardFill
+  commentId: F:Meridian.Ui.Services.GapStrategy.BackwardFill
+  id: BackwardFill
+  parent: Meridian.Ui.Services.GapStrategy
+  langs:
+  - csharp
+  - vb
+  name: BackwardFill
+  nameWithType: GapStrategy.BackwardFill
+  fullName: Meridian.Ui.Services.GapStrategy.BackwardFill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackwardFill
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 457
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: BackwardFill = 1
+    return:
+      type: Meridian.Ui.Services.GapStrategy
+- uid: Meridian.Ui.Services.GapStrategy.LinearInterpolate
+  commentId: F:Meridian.Ui.Services.GapStrategy.LinearInterpolate
+  id: LinearInterpolate
+  parent: Meridian.Ui.Services.GapStrategy
+  langs:
+  - csharp
+  - vb
+  name: LinearInterpolate
+  nameWithType: GapStrategy.LinearInterpolate
+  fullName: Meridian.Ui.Services.GapStrategy.LinearInterpolate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LinearInterpolate
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 458
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: LinearInterpolate = 2
+    return:
+      type: Meridian.Ui.Services.GapStrategy
+- uid: Meridian.Ui.Services.GapStrategy.Null
+  commentId: F:Meridian.Ui.Services.GapStrategy.Null
+  id: "Null"
+  parent: Meridian.Ui.Services.GapStrategy
+  langs:
+  - csharp
+  - vb
+  name: "Null"
+  nameWithType: GapStrategy.Null
+  fullName: Meridian.Ui.Services.GapStrategy.Null
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: "Null"
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 459
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Null = 3
+    return:
+      type: Meridian.Ui.Services.GapStrategy
+- uid: Meridian.Ui.Services.GapStrategy.Zero
+  commentId: F:Meridian.Ui.Services.GapStrategy.Zero
+  id: Zero
+  parent: Meridian.Ui.Services.GapStrategy
+  langs:
+  - csharp
+  - vb
+  name: Zero
+  nameWithType: GapStrategy.Zero
+  fullName: Meridian.Ui.Services.GapStrategy.Zero
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zero
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 460
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Zero = 4
+    return:
+      type: Meridian.Ui.Services.GapStrategy
+- uid: Meridian.Ui.Services.GapStrategy.Skip
+  commentId: F:Meridian.Ui.Services.GapStrategy.Skip
+  id: Skip
+  parent: Meridian.Ui.Services.GapStrategy
+  langs:
+  - csharp
+  - vb
+  name: Skip
+  nameWithType: GapStrategy.Skip
+  fullName: Meridian.Ui.Services.GapStrategy.Skip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skip
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 461
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Skip = 5
+    return:
+      type: Meridian.Ui.Services.GapStrategy
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.GapStrategy
+  commentId: T:Meridian.Ui.Services.GapStrategy
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.GapStrategy.html
+  name: GapStrategy
+  nameWithType: GapStrategy
+  fullName: Meridian.Ui.Services.GapStrategy

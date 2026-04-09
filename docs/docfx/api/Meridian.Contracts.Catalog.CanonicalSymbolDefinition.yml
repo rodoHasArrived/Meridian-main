@@ -1,0 +1,1003 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  commentId: T:Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  id: CanonicalSymbolDefinition
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin
+  - Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol
+  langs:
+  - csharp
+  - vb
+  name: CanonicalSymbolDefinition
+  nameWithType: CanonicalSymbolDefinition
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalSymbolDefinition
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Defines a canonical symbol with all known identifiers, aliases, and metadata.
+
+    This is the standardized representation used for symbol naming consistency.
+  example: []
+  syntax:
+    content: public sealed class CanonicalSymbolDefinition
+    content.vb: Public NotInheritable Class CanonicalSymbolDefinition
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical
+  id: Canonical
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Canonical
+  nameWithType: CanonicalSymbolDefinition.Canonical
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Canonical
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Internal canonical symbol name (e.g., "AAPL").
+
+    This is the primary key for the symbol across the system.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("canonical")]
+
+      public required string Canonical { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("canonical")>
+
+      Public Property Canonical As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: canonical
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: CanonicalSymbolDefinition.DisplayName
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Human-readable display name (e.g., "Apple Inc.").
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("displayName")]
+
+      public string? DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("displayName")>
+
+      Public Property DisplayName As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: displayName
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases
+  id: Aliases
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Aliases
+  nameWithType: CanonicalSymbolDefinition.Aliases
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aliases
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: >-
+    Known aliases for this symbol (e.g., "AAPL.US", "AAPL.O", "US0378331005").
+
+    Includes provider-specific tickers, exchange suffixes, and identifiers.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("aliases")]
+
+      public IReadOnlyList<string> Aliases { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: >-
+      <JsonPropertyName("aliases")>
+
+      Public Property Aliases As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: aliases
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: CanonicalSymbolDefinition.AssetClass
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: 'Asset class: equity, etf, option, future, forex, crypto, index.'
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("asset_class")]
+
+      public string AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("asset_class")>
+
+      Public Property AssetClass As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: asset_class
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange
+  id: Exchange
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: CanonicalSymbolDefinition.Exchange
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Primary exchange (e.g., "NASDAQ", "NYSE").
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("exchange")]
+
+      public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("exchange")>
+
+      Public Property Exchange As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: exchange
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency
+  id: Currency
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: CanonicalSymbolDefinition.Currency
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Trading currency (e.g., "USD").
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("currency")]
+
+      public string? Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("currency")>
+
+      Public Property Currency As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: currency
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol
+  id: Sedol
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Sedol
+  nameWithType: CanonicalSymbolDefinition.Sedol
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sedol
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: SEDOL identifier (Stock Exchange Daily Official List).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sedol")]
+
+      public string? Sedol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("sedol")>
+
+      Public Property Sedol As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sedol
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin
+  id: Isin
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Isin
+  nameWithType: CanonicalSymbolDefinition.Isin
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Isin
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: ISIN identifier (International Securities Identification Number).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isin")]
+
+      public string? Isin { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("isin")>
+
+      Public Property Isin As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isin
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi
+  id: Figi
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: CanonicalSymbolDefinition.Figi
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: FIGI identifier (Financial Instrument Global Identifier).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("figi")]
+
+      public string? Figi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("figi")>
+
+      Public Property Figi As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: figi
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi
+  id: CompositeFigi
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: CompositeFigi
+  nameWithType: CanonicalSymbolDefinition.CompositeFigi
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeFigi
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Composite FIGI (aggregate-level identifier).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compositeFigi")]
+
+      public string? CompositeFigi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("compositeFigi")>
+
+      Public Property CompositeFigi As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compositeFigi
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip
+  id: Cusip
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Cusip
+  nameWithType: CanonicalSymbolDefinition.Cusip
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cusip
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: CUSIP identifier (Committee on Uniform Securities Identification Procedures).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("cusip")]
+
+      public string? Cusip { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("cusip")>
+
+      Public Property Cusip As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: cusip
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country
+  commentId: P:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country
+  id: Country
+  parent: Meridian.Contracts.Catalog.CanonicalSymbolDefinition
+  langs:
+  - csharp
+  - vb
+  name: Country
+  nameWithType: CanonicalSymbolDefinition.Country
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Country
+    path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Country of listing (e.g., "US").
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("country")]
+
+      public string? Country { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("country")>
+
+      Public Property Country As String
+  overload: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: country
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Canonical
+  name: Canonical
+  nameWithType: CanonicalSymbolDefinition.Canonical
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Canonical
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_DisplayName
+  name: DisplayName
+  nameWithType: CanonicalSymbolDefinition.DisplayName
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.DisplayName
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Aliases
+  name: Aliases
+  nameWithType: CanonicalSymbolDefinition.Aliases
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Aliases
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_AssetClass
+  name: AssetClass
+  nameWithType: CanonicalSymbolDefinition.AssetClass
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.AssetClass
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Exchange
+  name: Exchange
+  nameWithType: CanonicalSymbolDefinition.Exchange
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Exchange
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Currency
+  name: Currency
+  nameWithType: CanonicalSymbolDefinition.Currency
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Currency
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Sedol
+  name: Sedol
+  nameWithType: CanonicalSymbolDefinition.Sedol
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Sedol
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Isin
+  name: Isin
+  nameWithType: CanonicalSymbolDefinition.Isin
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Isin
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Figi
+  name: Figi
+  nameWithType: CanonicalSymbolDefinition.Figi
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Figi
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_CompositeFigi
+  name: CompositeFigi
+  nameWithType: CanonicalSymbolDefinition.CompositeFigi
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.CompositeFigi
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Cusip
+  name: Cusip
+  nameWithType: CanonicalSymbolDefinition.Cusip
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Cusip
+- uid: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country*
+  commentId: Overload:Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country
+  href: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.html#Meridian_Contracts_Catalog_CanonicalSymbolDefinition_Country
+  name: Country
+  nameWithType: CanonicalSymbolDefinition.Country
+  fullName: Meridian.Contracts.Catalog.CanonicalSymbolDefinition.Country

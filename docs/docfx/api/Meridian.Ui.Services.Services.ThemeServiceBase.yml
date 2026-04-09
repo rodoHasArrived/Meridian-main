@@ -1,0 +1,647 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase
+  commentId: T:Meridian.Ui.Services.Services.ThemeServiceBase
+  id: ThemeServiceBase
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ThemeServiceBase.#ctor(Meridian.Ui.Services.Contracts.AppTheme)
+  - Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore(Meridian.Ui.Services.Contracts.AppTheme)
+  - Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme
+  - Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme
+  - Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged(Meridian.Ui.Services.Contracts.AppTheme,Meridian.Ui.Services.Contracts.AppTheme)
+  - Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  - Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme
+  langs:
+  - csharp
+  - vb
+  name: ThemeServiceBase
+  nameWithType: ThemeServiceBase
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThemeServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Abstract base class for theme management shared across desktop applications.
+
+    Provides shared theme state management, toggle logic, and delegates platform-specific
+
+    theme application and event raising to derived classes.
+
+    Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
+  example: []
+  syntax:
+    content: public abstract class ThemeServiceBase
+    content.vb: Public MustInherit Class ThemeServiceBase
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme
+  commentId: P:Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme
+  id: CurrentTheme
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CurrentTheme
+  nameWithType: ThemeServiceBase.CurrentTheme
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentTheme
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the current application theme.
+  example: []
+  syntax:
+    content: public AppTheme CurrentTheme { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Public ReadOnly Property CurrentTheme As AppTheme
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme*
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.#ctor(Meridian.Ui.Services.Contracts.AppTheme)
+  commentId: M:Meridian.Ui.Services.Services.ThemeServiceBase.#ctor(Meridian.Ui.Services.Contracts.AppTheme)
+  id: '#ctor(Meridian.Ui.Services.Contracts.AppTheme)'
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ThemeServiceBase(AppTheme)
+  nameWithType: ThemeServiceBase.ThemeServiceBase(AppTheme)
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.ThemeServiceBase(Meridian.Ui.Services.Contracts.AppTheme)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Initializes a new instance with the specified initial theme.
+  example: []
+  syntax:
+    content: protected ThemeServiceBase(AppTheme initialTheme = AppTheme.Light)
+    parameters:
+    - id: initialTheme
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Protected Sub New(initialTheme As AppTheme = AppTheme.Light)
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.#ctor*
+  nameWithType.vb: ThemeServiceBase.New(AppTheme)
+  fullName.vb: Meridian.Ui.Services.Services.ThemeServiceBase.New(Meridian.Ui.Services.Contracts.AppTheme)
+  name.vb: New(AppTheme)
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  commentId: M:Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  id: SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SetTheme(AppTheme)
+  nameWithType: ThemeServiceBase.SetTheme(AppTheme)
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme(Meridian.Ui.Services.Contracts.AppTheme)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetTheme
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Sets the application theme to the specified value.
+
+    No-ops if the theme is already set to the requested value.
+  example: []
+  syntax:
+    content: public void SetTheme(AppTheme theme)
+    parameters:
+    - id: theme
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Public Sub SetTheme(theme As AppTheme)
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme*
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme
+  commentId: M:Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme
+  id: ToggleTheme
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ToggleTheme()
+  nameWithType: ThemeServiceBase.ToggleTheme()
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToggleTheme
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Toggles between light and dark themes.
+  example: []
+  syntax:
+    content: public void ToggleTheme()
+    content.vb: Public Sub ToggleTheme()
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme*
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme
+  commentId: M:Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme
+  id: GetSystemTheme
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetSystemTheme()
+  nameWithType: ThemeServiceBase.GetSystemTheme()
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSystemTheme
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the system theme preference.
+  example: []
+  syntax:
+    content: public virtual AppTheme GetSystemTheme()
+    return:
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Public Overridable Function GetSystemTheme() As AppTheme
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme*
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore(Meridian.Ui.Services.Contracts.AppTheme)
+  commentId: M:Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore(Meridian.Ui.Services.Contracts.AppTheme)
+  id: ApplyThemeCore(Meridian.Ui.Services.Contracts.AppTheme)
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ApplyThemeCore(AppTheme)
+  nameWithType: ThemeServiceBase.ApplyThemeCore(AppTheme)
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore(Meridian.Ui.Services.Contracts.AppTheme)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyThemeCore
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    When overridden, applies the theme to the platform-specific UI framework
+
+    (e.g., WPF ResourceDictionary theme tokens).
+  example: []
+  syntax:
+    content: protected abstract void ApplyThemeCore(AppTheme theme)
+    parameters:
+    - id: theme
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Protected MustOverride Sub ApplyThemeCore(theme As AppTheme)
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore*
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged(Meridian.Ui.Services.Contracts.AppTheme,Meridian.Ui.Services.Contracts.AppTheme)
+  commentId: M:Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged(Meridian.Ui.Services.Contracts.AppTheme,Meridian.Ui.Services.Contracts.AppTheme)
+  id: OnThemeChanged(Meridian.Ui.Services.Contracts.AppTheme,Meridian.Ui.Services.Contracts.AppTheme)
+  parent: Meridian.Ui.Services.Services.ThemeServiceBase
+  langs:
+  - csharp
+  - vb
+  name: OnThemeChanged(AppTheme, AppTheme)
+  nameWithType: ThemeServiceBase.OnThemeChanged(AppTheme, AppTheme)
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged(Meridian.Ui.Services.Contracts.AppTheme, Meridian.Ui.Services.Contracts.AppTheme)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnThemeChanged
+    path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    When overridden, raises platform-specific theme changed events.
+
+    Called after the theme state has been updated and ApplyThemeCore has been called.
+  example: []
+  syntax:
+    content: protected abstract void OnThemeChanged(AppTheme previousTheme, AppTheme newTheme)
+    parameters:
+    - id: previousTheme
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    - id: newTheme
+      type: Meridian.Ui.Services.Contracts.AppTheme
+    content.vb: Protected MustOverride Sub OnThemeChanged(previousTheme As AppTheme, newTheme As AppTheme)
+  overload: Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase_CurrentTheme
+  name: CurrentTheme
+  nameWithType: ThemeServiceBase.CurrentTheme
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.CurrentTheme
+- uid: Meridian.Ui.Services.Contracts.AppTheme
+  commentId: T:Meridian.Ui.Services.Contracts.AppTheme
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.AppTheme.html
+  name: AppTheme
+  nameWithType: AppTheme
+  fullName: Meridian.Ui.Services.Contracts.AppTheme
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.#ctor
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase__ctor_Meridian_Ui_Services_Contracts_AppTheme_
+  name: ThemeServiceBase
+  nameWithType: ThemeServiceBase.ThemeServiceBase
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.ThemeServiceBase
+  nameWithType.vb: ThemeServiceBase.New
+  fullName.vb: Meridian.Ui.Services.Services.ThemeServiceBase.New
+  name.vb: New
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase_SetTheme_Meridian_Ui_Services_Contracts_AppTheme_
+  name: SetTheme
+  nameWithType: ThemeServiceBase.SetTheme
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.SetTheme
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase_ToggleTheme
+  name: ToggleTheme
+  nameWithType: ThemeServiceBase.ToggleTheme
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.ToggleTheme
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase_GetSystemTheme
+  name: GetSystemTheme
+  nameWithType: ThemeServiceBase.GetSystemTheme
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.GetSystemTheme
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase_ApplyThemeCore_Meridian_Ui_Services_Contracts_AppTheme_
+  name: ApplyThemeCore
+  nameWithType: ThemeServiceBase.ApplyThemeCore
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.ApplyThemeCore
+- uid: Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged*
+  commentId: Overload:Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged
+  href: Meridian.Ui.Services.Services.ThemeServiceBase.html#Meridian_Ui_Services_Services_ThemeServiceBase_OnThemeChanged_Meridian_Ui_Services_Contracts_AppTheme_Meridian_Ui_Services_Contracts_AppTheme_
+  name: OnThemeChanged
+  nameWithType: ThemeServiceBase.OnThemeChanged
+  fullName: Meridian.Ui.Services.Services.ThemeServiceBase.OnThemeChanged

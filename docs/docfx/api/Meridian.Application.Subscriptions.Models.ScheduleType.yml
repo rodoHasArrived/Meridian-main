@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.ScheduleType
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleType
+  id: ScheduleType
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.ScheduleType.Custom
+  - Meridian.Application.Subscriptions.Models.ScheduleType.Daily
+  - Meridian.Application.Subscriptions.Models.ScheduleType.OneTime
+  - Meridian.Application.Subscriptions.Models.ScheduleType.Weekly
+  langs:
+  - csharp
+  - vb
+  name: ScheduleType
+  nameWithType: ScheduleType
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleType
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Type of schedule frequency.
+  example: []
+  syntax:
+    content: 'public enum ScheduleType : byte'
+    content.vb: Public Enum ScheduleType As Byte
+- uid: Meridian.Application.Subscriptions.Models.ScheduleType.OneTime
+  commentId: F:Meridian.Application.Subscriptions.Models.ScheduleType.OneTime
+  id: OneTime
+  parent: Meridian.Application.Subscriptions.Models.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: OneTime
+  nameWithType: ScheduleType.OneTime
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleType.OneTime
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OneTime
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: OneTime = 0
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleType
+- uid: Meridian.Application.Subscriptions.Models.ScheduleType.Daily
+  commentId: F:Meridian.Application.Subscriptions.Models.ScheduleType.Daily
+  id: Daily
+  parent: Meridian.Application.Subscriptions.Models.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: ScheduleType.Daily
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleType.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Daily = 1
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleType
+- uid: Meridian.Application.Subscriptions.Models.ScheduleType.Weekly
+  commentId: F:Meridian.Application.Subscriptions.Models.ScheduleType.Weekly
+  id: Weekly
+  parent: Meridian.Application.Subscriptions.Models.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Weekly
+  nameWithType: ScheduleType.Weekly
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleType.Weekly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekly
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Weekly = 2
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleType
+- uid: Meridian.Application.Subscriptions.Models.ScheduleType.Custom
+  commentId: F:Meridian.Application.Subscriptions.Models.ScheduleType.Custom
+  id: Custom
+  parent: Meridian.Application.Subscriptions.Models.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: ScheduleType.Custom
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleType.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Custom = 3
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleType
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Models.ScheduleType
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleType
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ScheduleType.html
+  name: ScheduleType
+  nameWithType: ScheduleType
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleType

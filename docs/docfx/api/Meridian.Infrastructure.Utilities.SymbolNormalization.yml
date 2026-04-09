@@ -1,0 +1,860 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization
+  commentId: T:Meridian.Infrastructure.Utilities.SymbolNormalization
+  id: SymbolNormalization
+  parent: Meridian.Infrastructure.Utilities
+  children:
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol(System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize(System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink(System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi(System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq(System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo(System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo(System.String,System.String)
+  - Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany(System.Collections.Generic.IEnumerable{System.String})
+  langs:
+  - csharp
+  - vb
+  name: SymbolNormalization
+  nameWithType: SymbolNormalization
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolNormalization
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Centralized symbol normalization utilities to eliminate duplicate implementations
+
+    across providers. Each provider was implementing NormalizeSymbol() separately.
+  example: []
+  syntax:
+    content: public static class SymbolNormalization
+    content.vb: Public Module SymbolNormalization
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize(System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize(System.String)
+  id: Normalize(System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: Normalize(string)
+  nameWithType: SymbolNormalization.Normalize(string)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normalize
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Standard symbol normalization: uppercase and trim whitespace.
+
+    Used by: Alpaca, Polygon, Finnhub, Alpha Vantage, Yahoo Finance, Stooq, Nasdaq Data Link
+  example: []
+  syntax:
+    content: public static string Normalize(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function Normalize(symbol As String) As String
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize*
+  nameWithType.vb: SymbolNormalization.Normalize(String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize(String)
+  name.vb: Normalize(String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo(System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo(System.String)
+  id: NormalizeForTiingo(System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: NormalizeForTiingo(string)
+  nameWithType: SymbolNormalization.NormalizeForTiingo(string)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeForTiingo
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Tiingo-specific normalization: replaces dots with dashes.
+
+    Tiingo uses dashes instead of dots for class shares (e.g., BRK-A instead of BRK.A)
+  example: []
+  syntax:
+    content: public static string NormalizeForTiingo(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function NormalizeForTiingo(symbol As String) As String
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo*
+  nameWithType.vb: SymbolNormalization.NormalizeForTiingo(String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo(String)
+  name.vb: NormalizeForTiingo(String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo(System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo(System.String,System.String)
+  id: NormalizeForYahoo(System.String,System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: NormalizeForYahoo(string, string?)
+  nameWithType: SymbolNormalization.NormalizeForYahoo(string, string?)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeForYahoo
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Yahoo Finance-specific normalization for international symbols.
+
+    Adds exchange suffix if not present (e.g., .L for London, .T for Tokyo)
+  example: []
+  syntax:
+    content: public static string NormalizeForYahoo(string symbol, string? exchangeSuffix = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: exchangeSuffix
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function NormalizeForYahoo(symbol As String, exchangeSuffix As String = Nothing) As String
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo*
+  nameWithType.vb: SymbolNormalization.NormalizeForYahoo(String, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo(String, String)
+  name.vb: NormalizeForYahoo(String, String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq(System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq(System.String)
+  id: NormalizeForStooq(System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: NormalizeForStooq(string)
+  nameWithType: SymbolNormalization.NormalizeForStooq(string)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeForStooq
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Stooq-specific normalization for Polish market symbols.
+
+    Stooq uses lowercase symbols, replaces dots with dashes, and specific market suffixes.
+  example: []
+  syntax:
+    content: public static string NormalizeForStooq(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function NormalizeForStooq(symbol As String) As String
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq*
+  nameWithType.vb: SymbolNormalization.NormalizeForStooq(String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq(String)
+  name.vb: NormalizeForStooq(String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink(System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink(System.String)
+  id: NormalizeForNasdaqDataLink(System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: NormalizeForNasdaqDataLink(string)
+  nameWithType: SymbolNormalization.NormalizeForNasdaqDataLink(string)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeForNasdaqDataLink
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Nasdaq Data Link (Quandl) specific normalization.
+
+    Nasdaq Data Link expects uppercase symbols with dots replaced by underscores.
+  example: []
+  syntax:
+    content: public static string NormalizeForNasdaqDataLink(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function NormalizeForNasdaqDataLink(symbol As String) As String
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink*
+  nameWithType.vb: SymbolNormalization.NormalizeForNasdaqDataLink(String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink(String)
+  name.vb: NormalizeForNasdaqDataLink(String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi(System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi(System.String)
+  id: NormalizeForOpenFigi(System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: NormalizeForOpenFigi(string)
+  nameWithType: SymbolNormalization.NormalizeForOpenFigi(string)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeForOpenFigi
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    OpenFIGI-specific normalization.
+
+    OpenFIGI expects uppercase symbols without special characters.
+  example: []
+  syntax:
+    content: public static string NormalizeForOpenFigi(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function NormalizeForOpenFigi(symbol As String) As String
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi*
+  nameWithType.vb: SymbolNormalization.NormalizeForOpenFigi(String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi(String)
+  name.vb: NormalizeForOpenFigi(String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol(System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol(System.String)
+  id: IsValidSymbol(System.String)
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: IsValidSymbol(string?)
+  nameWithType: SymbolNormalization.IsValidSymbol(string?)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValidSymbol
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Validates that a symbol meets basic requirements.
+  example: []
+  syntax:
+    content: public static bool IsValidSymbol(string? symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function IsValidSymbol(symbol As String) As Boolean
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol*
+  nameWithType.vb: SymbolNormalization.IsValidSymbol(String)
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol(String)
+  name.vb: IsValidSymbol(String)
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany(System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany(System.Collections.Generic.IEnumerable{System.String})
+  id: NormalizeMany(System.Collections.Generic.IEnumerable{System.String})
+  parent: Meridian.Infrastructure.Utilities.SymbolNormalization
+  langs:
+  - csharp
+  - vb
+  name: NormalizeMany(IEnumerable<string>)
+  nameWithType: SymbolNormalization.NormalizeMany(IEnumerable<string>)
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany(System.Collections.Generic.IEnumerable<string>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeMany
+    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Batch normalize multiple symbols.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<string> NormalizeMany(IEnumerable<string> symbols)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Shared Function NormalizeMany(symbols As IEnumerable(Of String)) As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany*
+  nameWithType.vb: SymbolNormalization.NormalizeMany(IEnumerable(Of String))
+  fullName.vb: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany(System.Collections.Generic.IEnumerable(Of String))
+  name.vb: NormalizeMany(IEnumerable(Of String))
+references:
+- uid: Meridian.Infrastructure.Utilities
+  commentId: N:Meridian.Infrastructure.Utilities
+  href: Meridian.html
+  name: Meridian.Infrastructure.Utilities
+  nameWithType: Meridian.Infrastructure.Utilities
+  fullName: Meridian.Infrastructure.Utilities
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_Normalize_System_String_
+  name: Normalize
+  nameWithType: SymbolNormalization.Normalize
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.Normalize
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_NormalizeForTiingo_System_String_
+  name: NormalizeForTiingo
+  nameWithType: SymbolNormalization.NormalizeForTiingo
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForTiingo
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_NormalizeForYahoo_System_String_System_String_
+  name: NormalizeForYahoo
+  nameWithType: SymbolNormalization.NormalizeForYahoo
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForYahoo
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_NormalizeForStooq_System_String_
+  name: NormalizeForStooq
+  nameWithType: SymbolNormalization.NormalizeForStooq
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForStooq
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_NormalizeForNasdaqDataLink_System_String_
+  name: NormalizeForNasdaqDataLink
+  nameWithType: SymbolNormalization.NormalizeForNasdaqDataLink
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForNasdaqDataLink
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_NormalizeForOpenFigi_System_String_
+  name: NormalizeForOpenFigi
+  nameWithType: SymbolNormalization.NormalizeForOpenFigi
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeForOpenFigi
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_IsValidSymbol_System_String_
+  name: IsValidSymbol
+  nameWithType: SymbolNormalization.IsValidSymbol
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.IsValidSymbol
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany*
+  commentId: Overload:Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany
+  href: Meridian.Infrastructure.Utilities.SymbolNormalization.html#Meridian_Infrastructure_Utilities_SymbolNormalization_NormalizeMany_System_Collections_Generic_IEnumerable_System_String__
+  name: NormalizeMany
+  nameWithType: SymbolNormalization.NormalizeMany
+  fullName: Meridian.Infrastructure.Utilities.SymbolNormalization.NormalizeMany
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
