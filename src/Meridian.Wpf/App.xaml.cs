@@ -481,6 +481,8 @@ public partial class App : System.Windows.Application
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, SecurityMasterService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+                (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
@@ -510,6 +512,8 @@ public partial class App : System.Windows.Application
         else
         {
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+                (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
             services.AddSingleton<NullSecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp =>
                 sp.GetRequiredService<NullSecurityMasterQueryService>());

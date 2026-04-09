@@ -604,4 +604,29 @@ internal static class SecurityMasterMapping
             _ => throw new InvalidOperationException($"Unsupported equity classification '{raw}'.")
         };
     }
+
+    public static JsonElement BuildConvertibleEquityTermsPatch(SecurityProjectionRecord current, AmendConvertibleEquityTermsRequest request)
+    {
+        if (!string.Equals(current.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Security '{current.SecurityId}' is not an equity and cannot accept convertible term amendments.");
+
+        var assetSpecificNode = JsonNode.Parse(current.AssetSpecificTerms.GetRawText()) as JsonObject
+            ?? throw new InvalidOperationException("Current asset-specific terms payload is not a JSON object.");
+        var classification = assetSpecificNode["classification"]?.GetValue<string>();
+
+        if (classification is not ("Convertible" or "ConvertiblePreferred"))
+            throw new InvalidOperationException($"Security '{current.SecurityId}' does not currently have convertible-equity terms.");
+
+        var convertibleTermsNode = new JsonObject
+        {
+            ["underlyingSecurityId"] = request.UnderlyingSecurityId,
+            ["conversionRatio"] = JsonValue.Create(request.ConversionRatio),
+            ["conversionPrice"] = JsonValue.Create(request.ConversionPrice),
+            ["conversionStartDate"] = JsonValue.Create(request.ConversionStartDate),
+            ["conversionEndDate"] = JsonValue.Create(request.ConversionEndDate)
+        };
+
+        assetSpecificNode["convertibleTerms"] = convertibleTermsNode;
+        return JsonSerializer.SerializeToElement(assetSpecificNode);
+    }
 }

@@ -100,6 +100,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterProjectionService>();
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
+            services.AddSingleton<ISecurityMasterAmender>(sp => (ISecurityMasterAmender)sp.GetRequiredService<ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
@@ -122,6 +123,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+        services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();

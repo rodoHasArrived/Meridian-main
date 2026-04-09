@@ -11,6 +11,7 @@ using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -372,14 +373,9 @@ public static class WorkstationEndpoints
             string? query,
             int? take,
             bool activeOnly,
-            HttpContext context) =>
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             if (string.IsNullOrWhiteSpace(query))
             {
                 return Results.BadRequest(new { error = "Query is required." });
@@ -389,48 +385,38 @@ public static class WorkstationEndpoints
                 Query: query.Trim(),
                 Take: Math.Clamp(take ?? 25, 1, 100),
                 ActiveOnly: activeOnly);
-            var results = await queryService.SearchAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results.Select(MapToWorkstationSecurity).ToArray(), jsonOptions);
         })
         .WithName("SearchSecurityMasterWorkstation")
         .Produces<IReadOnlyList<SecurityMasterWorkstationDto>>(200)
-        .Produces(400)
-        .Produces(501);
+        .Produces(400);
 
-        group.MapGet("/security-master/securities/{securityId:guid}", async (Guid securityId, HttpContext context) =>
+        group.MapGet("/security-master/securities/{securityId:guid}", async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(MapToWorkstationSecurity(detail), jsonOptions);
         })
         .WithName("GetSecurityMasterWorkstationSecurity")
         .Produces<SecurityMasterWorkstationDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
         group.MapGet("/security-master/securities/{securityId:guid}/history", async (
             Guid securityId,
             int? take,
-            HttpContext context) =>
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             var history = await queryService.GetHistoryAsync(
                     new SecurityHistoryRequest(
                         SecurityId: securityId,
                         Take: Math.Clamp(take ?? 50, 1, 500)),
-                    context.RequestAborted)
+                    ct)
                 .ConfigureAwait(false);
 
             return history.Count == 0
@@ -439,44 +425,35 @@ public static class WorkstationEndpoints
         })
         .WithName("GetSecurityMasterWorkstationSecurityHistory")
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (Guid securityId, HttpContext context) =>
+        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(MapToIdentityDrillIn(detail), jsonOptions);
         })
         .WithName("GetSecurityMasterWorkstationIdentityDrillIn")
         .Produces<SecurityIdentityDrillInDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (Guid securityId, HttpContext context) =>
+        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, ct).ConfigureAwait(false);
             return record is null
                 ? Results.NotFound()
                 : Results.Json(MapToEconomicDefinitionSummary(record), jsonOptions);
         })
         .WithName("GetSecurityMasterWorkstationEconomicDefinition")
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
         // --- Multi-run comparison and diff ---
 
