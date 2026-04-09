@@ -1030,6 +1030,192 @@ internal static class MarketScenarioBuilder
 
 ---
 
+## Provider Wire-Format Catalog
+
+**Always use authentic wire-format messages when writing provider-level tests.** Before writing any
+test that exercises a streaming or historical provider's parsing path, read that provider's official
+API documentation and locate any existing recorded-session fixtures under
+`tests/Meridian.Tests/Infrastructure/Providers/Fixtures/`.
+
+### Fixture Files (use before synthesising your own data)
+
+```
+tests/Meridian.Tests/Infrastructure/Providers/Fixtures/
+├── InteractiveBrokers/        (8 IB order JSON fixtures)
+└── Polygon/                   (7 Polygon recorded WebSocket session fixtures)
+```
+
+Each Polygon fixture contains a `messages` array of raw WebSocket frames. Replay them into the
+client under test and assert on the events published to `TestMarketEventPublisher`.
+
+### Official API Documentation URLs
+
+| Provider | Type | Docs |
+|----------|------|------|
+| Alpaca | Streaming | https://docs.alpaca.markets/reference/stockstrades · https://docs.alpaca.markets/reference/stocksquotes |
+| Alpaca | Historical | https://docs.alpaca.markets/reference/stockbars |
+| Polygon | Streaming | https://polygon.io/docs/stocks/ws_stocks_t · https://polygon.io/docs/stocks/ws_stocks_q |
+| Polygon | Historical | https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to |
+| Finnhub | Historical | https://finnhub.io/docs/api/stock-candles |
+| Alpha Vantage | Historical | https://www.alphavantage.co/documentation/#time-series-daily |
+| Tiingo | Historical | https://www.tiingo.com/documentation/end-of-day |
+| Twelve Data | Historical | https://twelvedata.com/docs#time-series |
+| Nasdaq Data Link | Historical | https://docs.data.nasdaq.com/docs/time-series |
+| Interactive Brokers | Streaming + Historical | https://interactivebrokers.github.io/tws-api/ |
+| FRED | Historical | https://fred.stlouisfed.org/docs/api/fred/series_observations.html |
+
+### Alpaca Streaming Wire Format
+
+```json
+// Connection status
+[{"T":"success","msg":"connected"}]
+[{"T":"success","msg":"authenticated"}]
+// Trade — nanosecond ISO 8601 timestamp; exchange as string; conditions as string array
+[{"T":"t","S":"AAPL","p":213.45,"s":100,"t":"2025-06-02T13:30:00.123456789Z","i":"71620539","x":"V","c":["@"],"z":"C"}]
+// BBO quote
+[{"T":"q","S":"AAPL","bx":"V","bp":213.44,"bs":300,"ax":"V","ap":213.46,"as":200,"t":"2025-06-02T13:30:00.456Z","z":"C"}]
+// Minute bar
+[{"T":"b","S":"AAPL","o":213.10,"h":213.50,"l":213.00,"c":213.45,"v":58000,"t":"2025-06-02T13:30:00Z","vw":213.28,"n":900}]
+```
+
+Key differences from Polygon: lowercase `"T"` discriminator, string exchange codes, nanosecond ISO 8601.
+
+### Polygon Streaming Wire Format
+
+```json
+// Connection status
+[{"ev":"status","status":"connected","message":"Connected Successfully"}]
+[{"ev":"status","status":"auth_success","message":"authenticated"}]
+// Trade — millisecond epoch; integer exchange code; integer condition array
+[{"ev":"T","sym":"AAPL","p":213.45,"s":100,"t":1748871000123,"i":"71620539","x":4,"c":[12,37]}]
+// BBO quote
+[{"ev":"Q","sym":"AAPL","bp":213.44,"bs":300,"ap":213.46,"as":200,"t":1748871000456,"x":4}]
+// Second aggregate
+[{"ev":"A","sym":"AAPL","o":213.40,"h":213.47,"l":213.39,"c":213.45,"v":1200,"vw":213.43,"s":1748871000000,"e":1748871001000,"n":25}]
+// Minute aggregate
+[{"ev":"AM","sym":"AAPL","o":213.10,"h":213.50,"l":213.00,"c":213.45,"v":58000,"vw":213.28,"s":1748870940000,"e":1748871000000,"n":900}]
+```
+
+Key differences from Alpaca: uppercase `"ev"` discriminator, `"sym"` not `"S"`, millisecond epoch,
+integer exchange codes, `"s"`/`"e"` window boundaries on aggregates.
+
+### Alpaca Historical (REST)
+
+```json
+{
+  "bars": [
+    {"t":"2025-06-02T13:30:00Z","o":213.10,"h":213.50,"l":213.00,"c":213.45,"v":58000,"vw":213.28,"n":900,"S":"AAPL"}
+  ],
+  "symbol": "AAPL",
+  "next_page_token": null
+}
+```
+
+### Polygon Historical (REST)
+
+```json
+{
+  "ticker": "AAPL",
+  "adjusted": true,
+  "results": [
+    {"v":58000,"vw":213.28,"o":213.10,"c":213.45,"h":213.50,"l":213.00,"t":1748871000000,"n":25000}
+  ],
+  "status": "OK",
+  "count": 1
+}
+```
+
+### Finnhub Historical (REST)
+
+```json
+{
+  "c": [213.45, 214.20],
+  "h": [213.50, 214.30],
+  "l": [213.00, 213.90],
+  "o": [213.10, 213.70],
+  "s": "ok",
+  "t": [1748871000, 1748957400],
+  "v": [58000, 47500]
+}
+```
+
+Parallel arrays; `t` is Unix epoch **seconds** (not milliseconds).
+
+### Alpha Vantage Historical (REST)
+
+```json
+{
+  "Meta Data": {
+    "1. Information": "Daily Adjusted Prices",
+    "2. Symbol": "AAPL",
+    "3. Last Refreshed": "2025-06-02"
+  },
+  "Time Series (Daily)": {
+    "2025-06-02": {
+      "1. open": "213.10",
+      "2. high": "213.50",
+      "3. low": "213.00",
+      "4. close": "213.45",
+      "5. adjusted close": "213.45",
+      "6. volume": "58000",
+      "7. dividend amount": "0.0000",
+      "8. split coefficient": "1.0"
+    }
+  }
+}
+```
+
+All numeric values are **strings** with numbered key prefixes.
+
+### Tiingo Historical (REST)
+
+```json
+[
+  {
+    "date": "2025-06-02T00:00:00+00:00",
+    "open": 213.10,
+    "high": 213.50,
+    "low": 213.00,
+    "close": 213.45,
+    "volume": 58000,
+    "adjClose": 213.45,
+    "adjHigh": 213.50,
+    "adjLow": 213.00,
+    "adjOpen": 213.10,
+    "adjVolume": 58000,
+    "divCash": 0.0,
+    "splitFactor": 1.0
+  }
+]
+```
+
+### Twelve Data Historical (REST)
+
+```json
+{
+  "meta": {"symbol":"AAPL","interval":"1day","currency":"USD","type":"Common Stock"},
+  "values": [
+    {"datetime":"2025-06-02","open":"213.10000","high":"213.50000","low":"213.00000","close":"213.45000","volume":"58000"}
+  ],
+  "status": "ok"
+}
+```
+
+All numeric fields in `values[]` are **strings**.
+
+### Nasdaq Data Link Historical (REST)
+
+```json
+{
+  "dataset_data": {
+    "column_names": ["Date","Open","High","Low","Close","Volume","Ex-Dividend","Split Ratio","Adj. Open","Adj. High","Adj. Low","Adj. Close","Adj. Volume"],
+    "data": [["2025-06-02",213.10,213.50,213.00,213.45,58000,0.0,1.0,213.10,213.50,213.00,213.45,58000]]
+  }
+}
+```
+
+---
+
 ## Test File Placement
 
 | Component Type | Test Project | Subdirectory |

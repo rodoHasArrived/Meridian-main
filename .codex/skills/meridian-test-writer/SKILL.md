@@ -38,12 +38,15 @@ name the new scenario before proceeding.
 ## Workflow
 
 1. Identify the **named market scenario** from the Scenario Catalog.
-2. Trace the **full code path** from the scenario trigger to the observable outcome.
-3. Choose the correct test project and subdirectory.
-4. Use `MarketScenarioBuilder` to build realistic event sequences (never magic-constant prices).
-5. Cover happy path, error path, cancellation path, and disposal or cleanup where relevant.
-6. Use the mock library already used by the target project (Moq for `Meridian.Tests`; NSubstitute for `Meridian.Ui.Tests`).
-7. Run the narrowest relevant `dotnet test` command and report it.
+2. **For provider tests:** study the provider's wire format using the Provider Wire-Format Catalog in
+   `references/test-patterns.md` and any existing recorded-session fixtures under
+   `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/` before constructing test inputs.
+3. Trace the **full code path** from the scenario trigger to the observable outcome.
+4. Choose the correct test project and subdirectory.
+5. Use `MarketScenarioBuilder` to build realistic event sequences (never magic-constant prices).
+6. Cover happy path, error path, cancellation path, and disposal or cleanup where relevant.
+7. Use the mock library already used by the target project (Moq for `Meridian.Tests`; NSubstitute for `Meridian.Ui.Tests`).
+8. Run the narrowest relevant `dotnet test` command and report it.
 
 ---
 
@@ -75,6 +78,14 @@ name the new scenario before proceeding.
 ## Meridian-Specific Guidance
 
 - Providers belong in the infrastructure/provider-oriented test areas.
+- **For streaming providers (Pattern B):** study the provider's official API docs and use the exact
+  wire-format field names/types when constructing test inputs. See the Provider Wire-Format Catalog
+  in `references/test-patterns.md`. Never invent plausible-looking JSON — field names, timestamp
+  formats, and condition-code types differ significantly between providers (e.g., Alpaca uses
+  nanosecond ISO 8601 and string exchange codes; Polygon uses millisecond epoch integers).
+- **For historical providers (Pattern A):** check the recorded-session fixtures in
+  `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/` and the official provider docs in the
+  Provider Wire-Format Catalog before constructing mock HTTP responses.
 - Storage, WAL, and pipeline code need stronger cleanup and flush assertions.
 - WPF and shared UI services should respect the existing test project's mocking style.
 - F# interop tests should focus on the boundary contract, not re-implementing the F# logic in C#.

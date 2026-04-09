@@ -103,6 +103,223 @@ recognizable market event rather than an API boundary. If you can describe what 
 
 ---
 
+## Step 0.5: Study Provider API Documentation (Required for Provider Tests)
+
+Before writing any test that involves data arriving **from a specific external provider**, you must
+study that provider's official API documentation so the test feeds the system authentic wire-format
+data — not invented payloads that happen to parse.
+
+### Why This Matters
+
+Each provider has a unique on-the-wire message schema: field names, types, timestamp encodings, and
+condition-code mappings differ significantly. A test that feeds `{"price":100,"size":50}` to an
+Alpaca parser will not catch the bug that fires when Alpaca sends `{"T":"t","S":"AAPL","p":100,"s":50,"t":"2025-06-02T13:30:00.123456789Z","i":"71620539","c":["@"],"x":"V","z":"C"}`.
+The fixture-based recorded sessions in `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/`
+are the canonical source of truth for each provider's wire format.
+
+### Pre-Test Checklist for Provider Tests
+
+Before writing a test for any named provider, complete this checklist:
+
+1. **Locate the recorded-session fixture** in
+   `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/` for that provider (if one exists).
+2. **Read the provider source file** in `src/Meridian.Infrastructure/Adapters/` to identify all
+   `JsonPropertyName` annotations, DTOs, and parsing logic.
+3. **Cross-reference the official docs** (table below) for the canonical field names, timestamp
+   formats, condition-code enumerations, and exchange codes.
+4. **Construct wire-format messages** using the exact field names and formats from step 2–3 —
+   never invent plausible-looking JSON.
+
+### Provider API Documentation Catalog
+
+| Provider | Type | Official Docs URL | Key Wire-Format Notes |
+|----------|------|------------------|-----------------------|
+| **Alpaca** | Streaming | https://docs.alpaca.markets/reference/stockstrades https://docs.alpaca.markets/reference/stocksquotes | WebSocket; type discriminator `"T"` (lowercase); ISO 8601 nanosecond timestamps (`"t"`); exchange code in `"x"` (string); conditions in `"c"` (string array); trade ID in `"i"` (string) |
+| **Alpaca** | Historical | https://docs.alpaca.markets/reference/stockbars | REST; response wraps bars in `{"bars":[...],"symbol":"AAPL","next_page_token":null}`; timestamps are ISO 8601 |
+| **Polygon** | Streaming | https://polygon.io/docs/stocks/ws_stocks_t https://polygon.io/docs/stocks/ws_stocks_q | WebSocket; type discriminator `"ev"` (uppercase event); millisecond epoch in `"t"`; exchange code in `"x"` (integer); conditions in `"c"` (integer array); symbol in `"sym"` |
+| **Polygon** | Historical | https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to | REST; bars in `results[].{v,vw,o,c,h,l,t,n}`; timestamps are millisecond epoch |
+| **Interactive Brokers** | Streaming + Historical | https://interactivebrokers.github.io/tws-api/ https://interactivebrokers.github.io/tws-api/historical_bars.html | TWS proprietary protocol (not JSON/REST); use the IB SDK adapter and its simulation fixtures in `Fixtures/InteractiveBrokers/`; bar sizes expressed as TWS duration strings |
+| **NYSE** | Streaming | Internal TAQ feed; no public REST docs | Meridian's `NyseNationalTradesCsvParser` is the canonical wire format reference; see `src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs` |
+| **Finnhub** | Historical | https://finnhub.io/docs/api/stock-candles | REST; returns parallel arrays `{"c":[...],"h":[...],"l":[...],"o":[...],"t":[...],"v":[...],"s":"ok"}`; `t` is Unix epoch seconds |
+| **Alpha Vantage** | Historical | https://www.alphavantage.co/documentation/#time-series-daily | REST; numbered string keys: `"1. open"`, `"2. high"`, `"3. low"`, `"4. close"`, `"5. adjusted close"`, `"6. volume"`; dates as keys in `"Time Series (Daily)"` |
+| **Tiingo** | Historical | https://www.tiingo.com/documentation/end-of-day | REST; returns an array of objects with `date`, `open`, `high`, `low`, `close`, `volume`, `adjClose`, `splitFactor`, `divCash` |
+| **Twelve Data** | Historical | https://twelvedata.com/docs#time-series | REST; `{"meta":{...},"values":[{"datetime":"2025-06-02","open":"...","high":"...","low":"...","close":"...","volume":"..."}],"status":"ok"}`; all numeric fields are strings |
+| **Nasdaq Data Link** | Historical | https://docs.data.nasdaq.com/docs/time-series | REST; bars in `dataset_data.data[][]` with column names in `dataset_data.column_names`; classic Quandl format |
+| **FRED** | Historical | https://fred.stlouisfed.org/docs/api/fred/series_observations.html | REST; `{"observations":[{"date":"2025-06-02","value":"5.33"},...]}` |
+| **Yahoo Finance** | Historical | Unofficial — see `YahooFinanceHistoricalDataProvider.cs` | Unofficial; endpoint `https://query1.finance.yahoo.com/v8/finance/chart/{symbol}`; response `chart.result[0].indicators.quote[0].{open,high,low,close,volume}` + parallel `timestamps` array |
+| **Stooq** | Historical | Unofficial CSV — see `StooqHistoricalDataProvider.cs` | Unofficial; returns CSV with columns `Date,Open,High,Low,Close,Volume`; date format `YYYY-MM-DD` |
+| **StockSharp** | Streaming + Historical | https://stocksharp.com/doc/ | SDK-based (not wire JSON); use `StockSharpConnectorFactory` and the converter types under `Adapters/StockSharp/Converters/` |
+| **Robinhood** | All | Unofficial — see `RobinhoodMarketDataClient.cs` | Unofficial API; requires `ROBINHOOD_ACCESS_TOKEN`; REST polling for BBO quotes |
+
+### Provider Wire-Format Quick Reference
+
+Use these exact JSON shapes when constructing test inputs for each streaming provider.
+
+#### Alpaca Streaming (WebSocket)
+
+```json
+// Status: connection established
+[{"T":"success","msg":"connected"}]
+// Status: authenticated
+[{"T":"success","msg":"authenticated"}]
+// Trade
+[{"T":"t","S":"AAPL","p":213.45,"s":100,"t":"2025-06-02T13:30:00.123456789Z","i":"71620539","x":"V","c":["@"],"z":"C"}]
+// Quote (BBO)
+[{"T":"q","S":"AAPL","bx":"V","bp":213.44,"bs":300,"ax":"V","ap":213.46,"as":200,"t":"2025-06-02T13:30:00.456Z","z":"C"}]
+// Minute bar
+[{"T":"b","S":"AAPL","o":213.10,"h":213.50,"l":213.00,"c":213.45,"v":58000,"t":"2025-06-02T13:30:00Z","vw":213.28,"n":900}]
+```
+
+#### Polygon Streaming (WebSocket)
+
+```json
+// Status: connected
+[{"ev":"status","status":"connected","message":"Connected Successfully"}]
+// Status: authenticated
+[{"ev":"status","status":"auth_success","message":"authenticated"}]
+// Trade
+[{"ev":"T","sym":"AAPL","p":213.45,"s":100,"t":1748871000123,"i":"71620539","x":4,"c":[12,37]}]
+// Quote
+[{"ev":"Q","sym":"AAPL","bp":213.44,"bs":300,"ap":213.46,"as":200,"t":1748871000456,"x":4}]
+// Second aggregate
+[{"ev":"A","sym":"AAPL","o":213.40,"h":213.47,"l":213.39,"c":213.45,"v":1200,"vw":213.43,"s":1748871000000,"e":1748871001000,"n":25}]
+// Minute aggregate
+[{"ev":"AM","sym":"AAPL","o":213.10,"h":213.50,"l":213.00,"c":213.45,"v":58000,"vw":213.28,"s":1748870940000,"e":1748871000000,"n":900}]
+```
+
+#### Finnhub Historical (REST)
+
+```json
+{
+  "c": [213.45, 214.20],
+  "h": [213.50, 214.30],
+  "l": [213.00, 213.90],
+  "o": [213.10, 213.70],
+  "s": "ok",
+  "t": [1748871000, 1748957400],
+  "v": [58000, 47500]
+}
+```
+
+#### Alpha Vantage Historical (REST)
+
+```json
+{
+  "Meta Data": {
+    "1. Information": "Daily Adjusted Prices",
+    "2. Symbol": "AAPL",
+    "3. Last Refreshed": "2025-06-02"
+  },
+  "Time Series (Daily)": {
+    "2025-06-02": {
+      "1. open": "213.10",
+      "2. high": "213.50",
+      "3. low": "213.00",
+      "4. close": "213.45",
+      "5. adjusted close": "213.45",
+      "6. volume": "58000",
+      "7. dividend amount": "0.0000",
+      "8. split coefficient": "1.0"
+    }
+  }
+}
+```
+
+#### Tiingo Historical (REST)
+
+```json
+[
+  {
+    "date": "2025-06-02T00:00:00+00:00",
+    "open": 213.10,
+    "high": 213.50,
+    "low": 213.00,
+    "close": 213.45,
+    "volume": 58000,
+    "adjClose": 213.45,
+    "adjHigh": 213.50,
+    "adjLow": 213.00,
+    "adjOpen": 213.10,
+    "adjVolume": 58000,
+    "divCash": 0.0,
+    "splitFactor": 1.0
+  }
+]
+```
+
+#### Twelve Data Historical (REST)
+
+```json
+{
+  "meta": {"symbol": "AAPL", "interval": "1day", "currency": "USD", "type": "Common Stock"},
+  "values": [
+    {"datetime": "2025-06-02", "open": "213.10000", "high": "213.50000", "low": "213.00000", "close": "213.45000", "volume": "58000"}
+  ],
+  "status": "ok"
+}
+```
+
+#### Nasdaq Data Link Historical (REST)
+
+```json
+{
+  "dataset_data": {
+    "column_names": ["Date","Open","High","Low","Close","Volume","Ex-Dividend","Split Ratio","Adj. Open","Adj. High","Adj. Low","Adj. Close","Adj. Volume"],
+    "data": [["2025-06-02", 213.10, 213.50, 213.00, 213.45, 58000, 0.0, 1.0, 213.10, 213.50, 213.00, 213.45, 58000]]
+  }
+}
+```
+
+#### Polygon Historical (REST)
+
+```json
+{
+  "ticker": "AAPL",
+  "adjusted": true,
+  "results": [
+    {"v": 58000, "vw": 213.28, "o": 213.10, "c": 213.45, "h": 213.50, "l": 213.00, "t": 1748871000000, "n": 25000}
+  ],
+  "status": "OK",
+  "count": 1
+}
+```
+
+#### Alpaca Historical (REST)
+
+```json
+{
+  "bars": [
+    {"t": "2025-06-02T13:30:00Z", "o": 213.10, "h": 213.50, "l": 213.00, "c": 213.45, "v": 58000, "vw": 213.28, "n": 900, "S": "AAPL"}
+  ],
+  "symbol": "AAPL",
+  "next_page_token": null
+}
+```
+
+### Recorded Session Fixtures
+
+For Polygon and IB, recorded session JSON fixtures already exist in the repo. **Use them as the
+primary source of test data** before synthesizing your own:
+
+```
+tests/Meridian.Tests/Infrastructure/Providers/Fixtures/
+├── InteractiveBrokers/
+│   ├── ib_order_limit_buy_day.json
+│   ├── ib_order_limit_sell_fok.json
+│   └── ... (6 additional IB order-type fixtures covering LOC, market, MOC, stop, stop-limit, trailing-stop)
+└── Polygon/
+    ├── polygon-recorded-session-aapl.json
+    ├── polygon-recorded-session-spy-etf.json
+    └── ... (5 additional Polygon session fixtures covering auth-failure/rate-limit, GLD CBOE sell, MSFT edge, NVDA multi-batch, TSLA opening-cross)
+```
+
+Each Polygon fixture is a JSON object with a `messages` array of raw WebSocket frames, a
+`description`, `subscriptions`, and `expected` assertion hints. Load these with
+`JsonDocument`/`JsonSerializer` in provider tests, replay the frames into the client under test,
+and assert on the events published to a `TestMarketEventPublisher`.
+
+---
+
 ## Step 1: Apply Universal Quality Rules
 
 These 7 rules apply to **every** test, regardless of component type:
@@ -442,6 +659,7 @@ Run through this checklist before finalizing any test file:
 - [ ] Storage tests clean up temp directories in `Dispose()`
 - [ ] At least one test for the cancellation path
 - [ ] At least one test for the error/exception path
+- [ ] **[Pattern A/B — provider tests]** Official docs and/or recorded-session fixtures consulted; test inputs use exact wire-format field names and types
 - [ ] **[Pattern I only]** Test has an XML doc `<summary>` naming the scenario and layers exercised
 - [ ] **[Pattern I only]** Test uses `MarketScenarioBuilder` (or equivalent) with realistic prices
 - [ ] **[Pattern I only]** Assertion captures a business-observable outcome, not just internal state

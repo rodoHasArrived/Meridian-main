@@ -131,6 +131,27 @@ the system should [observable outcome]", use Pattern I.
 
 ---
 
+## Step 0.5: Study Provider API Documentation (Required for Provider Tests)
+
+Before writing any test that exercises a streaming or historical provider's parsing path, complete
+this checklist:
+
+1. **Locate the recorded-session fixture** in
+   `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/` for that provider (if one exists).
+2. **Read the provider source file** in `src/Meridian.Infrastructure/Adapters/` to identify all
+   `JsonPropertyName` annotations, DTOs, and parsing logic.
+3. **Cross-reference the official docs** (see Provider Wire-Format Catalog in
+   `references/test-patterns.md`) for canonical field names, timestamp formats, condition-code
+   enumerations, and exchange codes.
+4. **Construct wire-format messages** using the exact field names and formats found in steps 2–3 —
+   never invent plausible-looking JSON.
+
+Feeding a provider parser with authentic wire-format data catches real bugs such as timestamp
+format mismatches, integer vs. string exchange codes, and off-by-one epoch conversions that hand-
+crafted magic-constant JSON will silently miss.
+
+---
+
 ## Step 1: Apply Universal Quality Rules
 
 These 7 rules apply to **every** test, regardless of component type:
