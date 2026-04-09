@@ -210,7 +210,7 @@
 
                             <TextBlock Text="Min Yield Spread (decimal, e.g. 0.005 = 50 bps)"
                                        Style="{StaticResource LabelStyle}" />
-                            <TextBox Text="{Binding MinYieldSpreadBps}" Margin="0,0,0,8"
+                            <TextBox Text="{Binding MinYieldSpread}" Margin="0,0,0,8"
                                      ToolTip="Assets with (assetYield − riskFreeRate) below this value are excluded in YieldSpread mode." />
 
                             <TextBlock Text="Risk-Free Rate" Style="{StaticResource LabelStyle}" />

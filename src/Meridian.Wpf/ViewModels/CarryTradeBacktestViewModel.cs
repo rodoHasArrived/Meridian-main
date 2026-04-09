@@ -84,7 +84,7 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
     /// Only applied in <see cref="YieldCarryMode.YieldSpread"/> mode.
     /// </summary>
     private double _minYieldSpreadBps = 0.0;
-    public double MinYieldSpreadBps
+    public double MinYieldSpread
     {
         get => _minYieldSpreadBps;
         set => SetProperty(ref _minYieldSpreadBps, value);
@@ -370,7 +370,7 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             yieldCarryMode:         YieldCarryMode,
             rebalanceFrequencyDays: RebalanceFrequencyDays,
             explicitYields:         explicitYields,
-            minYieldSpreadToLong:   MinYieldSpreadBps);
+            minYieldSpreadToLong:   MinYieldSpread);
 
         var progress = new Progress<BacktestProgressEvent>(OnProgress);
         var result = await _backtestService.RunAsync(request, strategy, progress);
@@ -564,5 +564,5 @@ public sealed class SymbolYieldVm(string symbol, double yield) : BindableBase
     public double Yield { get => _yield; set => SetProperty(ref _yield, value); }
 
     /// <summary>Display-friendly percentage string.</summary>
-    public string YieldDisplay => $"{_yield:P2}";
+    public string YieldDisplay => $"{Yield:P2}";
 }

@@ -20,13 +20,18 @@ namespace Meridian.Backtesting.Sdk.Strategies.AdvancedCarry;
 /// </summary>
 public sealed class CarryTradeBacktestStrategy : IBacktestStrategy
 {
-    private const int    RollingWindowDays  = 63;          // ~3 months
-    private const int    YieldMaWindowDays  = 20;          // MA for rotation signal
-    private const double FallbackVol        = 0.20;
-    private const double FallbackReturn     = 0.08;
-    private const double DefaultAdv         = 1_000_000.0;
-    private const double DefaultBidAskBps   = 10.0;
-    private const double DefaultProxyYield  = 0.03;
+    private const int    RollingWindowDays       = 63;     // ~3 months
+    private const int    YieldMaWindowDays        = 20;     // MA for rotation signal
+    private const double FallbackVol              = 0.20;
+    private const double FallbackReturn           = 0.08;
+    private const double DefaultAdv              = 1_000_000.0;
+    private const double DefaultBidAskBps        = 10.0;
+    private const double DefaultProxyYield        = 0.03;
+    private const double YieldProxyMultiplier     = 0.40;   // fraction of ann. return used as proxy yield
+    private const double MaxProxyYield            = 0.20;   // cap proxy yield at 20 %
+    private const double YieldMaThreshold         = 0.001;  // 10 bps: min rise above MA to trigger tilt
+    private const double YieldMomentumMultiplier  = 2.0;    // scale factor for yield-rise tilt
+    private const double MaxYieldMomentumContrib  = 0.05;   // cap tilt contribution at 5 %
 
     private readonly AdvancedCarryDecisionEngine             _engine;
     private readonly AdvancedCarryConfiguration              _configuration;
