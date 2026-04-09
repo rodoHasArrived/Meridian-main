@@ -5,29 +5,57 @@ description: >
   needs to write new xUnit tests, expand coverage for existing components, or validate that
   test quality meets the project's standards. Triggers on: "write tests for", "add unit tests",
   "increase test coverage", "write a test for this class", "how do I test X", "the tests are
-  missing for", or when reviewing code that lacks corresponding test coverage. Also triggers
-  when a code review (meridian-code-review) has identified test gaps. This skill produces
-  idiomatic xUnit + FluentAssertions tests with correct async patterns, isolation, naming
-  conventions, and mock setup for all major Meridian component types: providers, storage sinks,
-  pipeline components, WPF services, and F# interop boundaries.
+  missing for", "simulate market scenario", "how would the system handle", or when reviewing code
+  that lacks corresponding test coverage. Also triggers when a code review (meridian-code-review)
+  has identified test gaps. This skill produces idiomatic xUnit + FluentAssertions tests grounded
+  in real-world market scenarios that exercise complete code paths — from provider ingestion
+  through pipeline, storage, backtesting, and execution — rather than just arbitrarily exercising
+  individual methods.
 license: See repository LICENSE
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Reads repository files plus
   the bundled test pattern reference; no special runtime beyond standard markdown/resource loading.
 metadata:
   owner: meridian-ai
-  version: "1.1"
+  version: "1.2"
   spec: open-agent-skills-v1
 ---
 # Meridian — Test Writer Skill
 
-Generate high-quality, idiomatic xUnit tests for any Meridian component. Every test
-produced by this skill must pass the `meridian-code-review` Lens 4 (Test Code Quality) checks without
-warnings.
+Generate high-quality, idiomatic xUnit tests for any Meridian component, anchored in real-world
+market scenarios. Every test produced by this skill must pass the `meridian-code-review` Lens 4
+(Test Code Quality) checks without warnings.
 
 > **Shared project context:** [`../_shared/project-context.md`](../_shared/project-context.md)
 > **Test patterns reference:** [`references/test-patterns.md`](references/test-patterns.md)
 > **Code review skill:** [`../meridian-code-review/SKILL.md`](../meridian-code-review/SKILL.md)
+
+---
+
+## Core Philosophy: Scenario-First Testing
+
+**Tests must simulate what the system will actually experience in production, not just call
+individual methods.**
+
+**Wrong approach:** "I need to cover `TradeDataCollector.OnTrade`. I will call it with valid
+inputs, invalid inputs, and a cancelled token."
+
+**Right approach:** "During a session open, a burst of sequential trades arrives with aggressive
+buy-side imbalance. Let me write a test that feeds that scenario through the real collector,
+pipeline, and storage — and assert on what an operator would see in the dashboard."
+
+### Scenario-First Rules
+
+1. **Name the market event first** — identify a specific, named real-world market phenomenon
+   before writing a single line of code (see `references/test-patterns.md` Scenario Catalog).
+2. **Trace the full code path** — every Pattern I scenario test must exercise at least two
+   architectural layers end-to-end.
+3. **Use realistic data shapes** — use `MarketScenarioBuilder` with plausible prices, volumes,
+   tick sizes, and timestamps. Avoid magic constants like `price = 1m` unless testing a boundary.
+4. **Encode the observable outcome** — the assertion must capture what an operator would see, not
+   just "the method returned without throwing."
+5. **Add regression notes** — XML doc `<summary>` on each scenario class naming the market failure
+   mode the test guards against.
 
 ---
 
@@ -38,16 +66,19 @@ Every test-writing task follows this 4-step workflow:
 ### 1 — GATHER CONTEXT (MCP)
 - Fetch the GitHub issue, PR, or code review output that identified the test gap
 - Read the source file(s) under test to understand the component's contract and dependencies
+- **Identify the market scenario** the code must correctly handle (see Scenario Catalog)
 - Check the target test project's `.csproj` to confirm which mock library is in use (Moq vs. NSubstitute)
 
 ### 2 — ANALYZE & PLAN (Agents)
 - Detect the component type using the Step 0 decision tree
-- Select the correct pattern (A–H) and target test project
+- Select the correct pattern (A–I) and target test project
+- **For Pattern I:** trace the complete code path from the scenario trigger to the observable outcome
 - Plan the minimum required test cases: happy path, error path, cancellation path, boundary, disposal
 
 ### 3 — EXECUTE (Skills + Manual)
 - Apply all 7 universal quality rules and the selected pattern
 - Write the complete, compilable test file with `CreateSut()`, proper `await using`, and timeout tokens
+- **For Pattern I:** use `MarketScenarioBuilder` and include realistic market data values
 - Run through the Lens 4 validation checklist before finalizing
 
 ### 4 — COMPLETE (MCP)
@@ -78,27 +109,9 @@ Before writing any code, identify the component type using the decision tree in
 
 1. Which test project to target
 2. Which subdirectory to use
-3. Which pattern (A–H) to follow
+3. Which pattern (A–I) to follow
 4. Whether to use Moq or NSubstitute
 5. Whether `IDisposable` / `IAsyncDisposable` cleanup is needed
-
----
-
-## Step 1: Apply Universal Quality Rules
-
-These 7 rules apply to **every** test, regardless of component type:
-
-1. **Never `async void`** — always `async Task`
-2. **CancellationToken with timeout** — `new CancellationTokenSource(TimeSpan.FromSeconds(5))`
-3. **`await using` for `IAsyncDisposable`** — never `using` for async-disposable types
-4. **No `Task.Delay` for synchronization** — use `TaskCompletionSource` or `SemaphoreSlim`
-5. **Naming: `MethodUnderTest_Scenario_ExpectedBehavior`**
-6. **No shared static mutable state** — each test method creates its own SUT
-7. **File isolation for storage tests** — temp directory, `Dispose()` cleans it up
-
----
-
-## Step 2: Select the Right Pattern
 
 | Component | Pattern | Key Concerns |
 |-----------|---------|-------------|
@@ -110,6 +123,30 @@ These 7 rules apply to **every** test, regardless of component type:
 | WPF / Ui.Services | F | API mock (Moq or NSubstitute), null on error |
 | F# modules | G | F# test module style, `Result` type assertions |
 | Endpoint integration | H | `WebApplicationFactory`, JSON contract snapshots |
+| **Market scenario (multi-layer)** | **I** | **Named scenario, ≥2 layers, realistic data** |
+
+**When to use Pattern I:** Prefer Pattern I whenever the behaviour under test is driven by a
+recognisable market event. If you can describe what you are testing as "during a [scenario name],
+the system should [observable outcome]", use Pattern I.
+
+---
+
+## Step 1: Apply Universal Quality Rules
+
+These 7 rules apply to **every** test, regardless of component type:
+
+1. **Never `async void`** — always `async Task`
+2. **CancellationToken with timeout** — `new CancellationTokenSource(TimeSpan.FromSeconds(5))`
+3. **`await using` for `IAsyncDisposable`** — never `using` for async-disposable types
+4. **No `Task.Delay` for synchronization** — use `TaskCompletionSource` or `SemaphoreSlim`
+5. **Naming: `MethodUnderTest_Scenario_ExpectedBehavior`** (Pattern A–H) or
+   `Scenario_MarketCondition_SystemBehavior` (Pattern I)
+6. **No shared static mutable state** — each test method creates its own SUT
+7. **File isolation for storage tests** — temp directory, `Dispose()` cleans it up
+
+---
+
+## Step 2: Select the Right Pattern
 
 Full scaffolding for each pattern is in `references/test-patterns.md`.
 
@@ -133,6 +170,11 @@ For storage sinks additionally:
 For streaming providers additionally:
 - **Reconnection** — a disconnect triggers reconnect, not silent data loss
 
+For market scenario tests (Pattern I) additionally:
+- **Full code path** — at least two architectural layers exercised
+- **Realistic data** — `MarketScenarioBuilder` with plausible market values
+- **Observable outcome** — assertion captures the business-level result
+
 ### Test Output Format
 
 Produce a complete, compilable test file with:
@@ -153,12 +195,15 @@ Run through the `meridian-code-review` Lens 4 checklist mentally before finalizi
 - [ ] No `async void` test methods
 - [ ] No shared static mutable state
 - [ ] No `Task.Delay` for timing
-- [ ] All names follow `MethodUnderTest_Scenario_ExpectedBehavior`
+- [ ] All names follow `MethodUnderTest_Scenario_ExpectedBehavior` or `Scenario_MarketCondition_SystemBehavior`
 - [ ] Every `IAsyncDisposable` test subject uses `await using`
 - [ ] Every async test has a `CancellationToken` with a timeout
 - [ ] Storage tests clean up temp directories in `Dispose()`
 - [ ] At least one test for the cancellation path
 - [ ] At least one test for the error/exception path
+- [ ] **[Pattern I only]** XML doc `<summary>` names the scenario and layers exercised
+- [ ] **[Pattern I only]** `MarketScenarioBuilder` used with realistic prices and volumes
+- [ ] **[Pattern I only]** Assertion captures a business-observable outcome
 
 ---
 
@@ -257,3 +302,6 @@ sub.DidNotReceive().FlushAsync(Arg.Any<CancellationToken>());
 | `using var sink = new JsonlStorageSink(...)` | File handles leaked | `await using var sink = ...` |
 | No temp dir cleanup | CI disk fills up; cross-test pollution | Implement `IDisposable` with `Directory.Delete` |
 | Copy-paste test names | `Test1`, `Test2` — unintelligible | Follow `Method_Scenario_Expected` convention |
+| **Arbitrary method calling** | Tests pass but do not validate real system behaviour | Ground every test in a named market scenario |
+| **Magic-constant prices** | `price = 1m` reveals no intent; misses realistic edge cases | Use `MarketScenarioBuilder` with realistic values |
+| **Single-layer tests for cross-cutting behaviour** | Provider test mocks HTTP but skips pipeline; misses integration regressions | Use Pattern I for cross-layer scenarios |

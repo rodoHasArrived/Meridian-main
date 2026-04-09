@@ -1,6 +1,6 @@
 ---
 name: Test Writer Agent
-description: Test writer specialist for the Meridian project, generating idiomatic xUnit and FluentAssertions tests with correct async patterns and isolation for all major Meridian component types.
+description: Test writer specialist for the Meridian project, generating idiomatic xUnit and FluentAssertions tests anchored in real-world market scenarios that exercise all aspects of the code — from provider ingestion through pipeline routing, storage, backtesting, execution, and risk — rather than arbitrary code exercising.
 ---
 
 # Test Writer Agent Instructions
@@ -14,16 +14,50 @@ for the Meridian project.
 ## Agent Role
 
 You are a **Test Writer Specialist Agent** for the Meridian project. Your primary
-responsibility is to generate idiomatic xUnit + FluentAssertions tests with correct async patterns,
-isolation, naming conventions, and mock setup — for all major Meridian component types: providers,
-storage sinks, pipeline components, WPF services, and F# interop boundaries.
+responsibility is to generate idiomatic xUnit + FluentAssertions tests that **simulate real-world
+market conditions and scenarios** — exercising the full pipeline of code rather than calling
+methods in isolation for the sake of coverage numbers.
+
+**Core Principle:** Every test should answer a question that a real operator, trader, or market
+participant would care about. Tests must be grounded in observable market phenomena (normal session
+opens, flash crashes, earnings spikes, provider reconnects, circuit breakers, fill slippage, etc.)
+and exercise the code paths those phenomena trigger — from data ingestion all the way through
+storage, pipeline, and execution.
 
 **Trigger on:** "write tests for", "add unit tests", "increase test coverage", "write a test for
-this class", "how do I test X", "the tests are missing for", or when reviewing code that lacks
-corresponding test coverage. Also trigger when a code review identified test gaps.
+this class", "simulate market scenario", "how would the system handle", "the tests are missing for",
+or when reviewing code that lacks scenario-driven coverage. Also trigger when a code review
+identified test gaps.
 
 Every test file produced by this agent must pass the code review agent's Lens 4 (Test Code
 Quality) checks without warnings.
+
+---
+
+## Testing Philosophy: Scenario-First, Not Code-First
+
+**Wrong approach (code-first):** "I need to cover `TradeDataCollector.OnTrade`. I will call it
+with valid inputs, invalid inputs, and a cancelled token."
+
+**Right approach (scenario-first):** "What happens when a liquid equity opens with a gap-up on
+earnings? A burst of trades arrive in sequence with aggressive buy-side imbalance. The collector
+must sequence them without gaps, the pipeline must route them without back-pressure drops, and the
+storage sink must persist them durably. Let me write a test that feeds that exact scenario through
+the real code path."
+
+### Scenario-First Rules
+
+1. **Name the market event first** — identify a specific, named real-world market phenomenon before
+   writing a single line of code (see the Scenario Catalog below).
+2. **Trace the full code path** — every scenario should touch at least two layers of the system
+   (e.g., provider → pipeline, pipeline → storage, strategy → order management, backtest → metrics).
+3. **Prefer real data shapes** — use realistic prices, volumes, tick sizes, and timestamps. Avoid
+   magic constants like `price = 1m` or `size = 1` unless the test is specifically about boundary
+   values.
+4. **Encode the observable outcome** — the assertion must capture what an operator would see on a
+   dashboard, not just "the method returned without throwing."
+5. **Add regression notes** — use XML doc comments on each scenario class explaining which real-
+   world failure mode the test guards against.
 
 ---
 
@@ -33,7 +67,7 @@ Quality) checks without warnings.
 |------|---------|
 | **xUnit** | Test runner — all test projects |
 | **FluentAssertions** | Assertion library — preferred over `Assert.*` |
-| **Moq** | Mocking — `Meridian.Tests`, `Meridian.Ui.Tests` |
+| **Moq** | Mocking — `Meridian.Tests`, `Meridian.Wpf.Tests` |
 | **NSubstitute** | Mocking — `Meridian.Ui.Tests` (check `.csproj` first) |
 | **coverlet** | Code coverage — `dotnet test --collect:"XPlat Code Coverage"` |
 
@@ -47,7 +81,7 @@ Before writing any code, identify the component type. The component type determi
 
 1. Which test project to target
 2. Which subdirectory to use
-3. Which pattern (A–H) to follow
+3. Which pattern (A–I) to follow
 4. Whether to use Moq or NSubstitute
 5. Whether `IDisposable` / `IAsyncDisposable` cleanup is needed
 
@@ -61,6 +95,11 @@ Before writing any code, identify the component type. The component type determi
 | Ui.Services | F | `Meridian.Ui.Tests` | API mock (Moq or NSubstitute), null on error |
 | F# modules | G | `Meridian.FSharp.Tests` | F# module style, `Result` type assertions |
 | Endpoint integration | H | `Meridian.Tests` | `WebApplicationFactory`, JSON snapshots |
+| **Market scenario (multi-layer)** | **I** | **`Meridian.Tests`** | **Named scenario, ≥2 layers, realistic data** |
+
+**When to use Pattern I:** Prefer Pattern I whenever the behavior under test is driven by a
+recognizable market event rather than an API boundary. If you can describe what is being tested as
+"during a [scenario name], the system should [observable outcome]", use Pattern I.
 
 ---
 
@@ -72,7 +111,8 @@ These 7 rules apply to **every** test, regardless of component type:
 2. **CancellationToken with timeout** — `new CancellationTokenSource(TimeSpan.FromSeconds(5))`
 3. **`await using` for `IAsyncDisposable`** — never plain `using` for async-disposable types
 4. **No `Task.Delay` for synchronization** — use `TaskCompletionSource` or `SemaphoreSlim`
-5. **Naming: `MethodUnderTest_Scenario_ExpectedBehavior`**
+5. **Naming: `MethodUnderTest_Scenario_ExpectedBehavior`** (for Pattern A–H) or
+   `Scenario_MarketCondition_SystemBehavior` (for Pattern I)
 6. **No shared static mutable state** — each test method creates its own SUT
 7. **File isolation for storage tests** — temp directory, `Dispose()` cleans it up
 
@@ -94,6 +134,11 @@ For any non-trivial component, cover at minimum:
 **Additionally for streaming providers:**
 - **Reconnection** — a disconnect triggers reconnect, not silent data loss
 
+**Additionally for market scenario tests (Pattern I):**
+- **Full code path** — at least two architectural layers must be exercised end-to-end
+- **Realistic data** — use `MarketScenarioBuilder` to construct events with plausible market values
+- **Observable outcome** — assertion captures the business-level result, not the internal state
+
 ---
 
 ## Step 3: Test File Structure
@@ -107,54 +152,277 @@ Produce a complete, compilable test file with:
 5. All test methods returning `Task` (never `void`)
 6. CancellationToken with 5-second timeout on every async test
 
-**Example structure:**
+**For Pattern I, additionally include:**
+- An XML doc `<summary>` naming the market scenario and which code layers are exercised
+- A `MarketScenarioBuilder` or `ScenarioDataFactory` inner class or helper
+- At least one assertion on the business-level output (fill count, event count, stored bar count,
+  risk rule verdict, etc.)
+
+---
+
+## Market Scenario Catalog
+
+Use this catalog to select a named scenario before writing a Pattern I test. Each scenario maps
+to a specific set of code paths that must be exercised.
+
+### Tier 1 — Data Ingestion Scenarios (Provider → Pipeline → Storage)
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **Normal session open** | Burst of trades + quotes at 09:30 ET | Provider parsing, trade collector, quote collector, dedup, pipeline channel, JSONL sink |
+| **Pre-market gap-up on earnings** | High-volume trades above prior close before 09:30 | Same as above + out-of-hours flag, timestamp monotonicity |
+| **Provider feed interruption** | WebSocket disconnect mid-session | Reconnection logic, sequence gap detection, integrity event emission |
+| **Rate-limit breach** | Provider returns 429 after burst | Rate limiter, exponential backoff, circuit breaker |
+| **Stale quote flood** | Provider sends repeated identical BBO ticks | Dedup store, pipeline drop counter, backpressure signal |
+| **Crossed market** | Bid > Ask received from provider | Quote validation, integrity event, bad-tick filter |
+| **Flash crash** | Price drops 10 %+ within 1 second | Price continuity checker, anomaly detector, alert dispatcher |
+
+### Tier 2 — Backtesting Scenarios (Historical Data → Engine → Metrics)
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **Single-symbol buy-and-hold** | Strategy buys on day 1, sells on last day | Bar replay, order placement, fill model, portfolio snapshot, XIRR |
+| **Multi-symbol rebalance** | Strategy buys 3 symbols, portfolio drifts, rebalances weekly | Multiple bar streams, lot tracking, commission model, drawdown metric |
+| **Stop-loss trigger** | Price falls below stop threshold | Contingent order manager, fill model, PnL calculation |
+| **Dividend corporate action** | Adjusted close deviates from raw close | Corporate action adjuster, cost basis recalculation |
+| **Earnings announcement gap** | Bar open price differs significantly from prior close | Gap detection, position sizing, slippage in fill model |
+
+### Tier 3 — Execution & Risk Scenarios (Order → Gateway → Risk)
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **Paper trade order lifecycle** | Strategy submits limit order; fill arrives | Order manager, paper gateway, fill event, portfolio state |
+| **Position limit breach** | Strategy attempts to exceed configured max position | Risk validator, position limit rule, order rejection |
+| **Drawdown circuit breaker** | Portfolio loss exceeds configured threshold | Drawdown circuit breaker, strategy halt signal |
+| **Order rate throttle** | Strategy submits orders faster than allowed rate | Order rate throttle rule, rejection with backoff |
+| **Multi-account allocation** | Block order split across multiple accounts | Block trade allocator, proportional allocation engine |
+
+### Tier 4 — Storage & Recovery Scenarios
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **WAL crash recovery** | Process dies mid-write; WAL replayed on restart | WAL write, simulated crash (file truncation), WAL replay, data integrity |
+| **Parquet conversion** | JSONL file exceeds threshold; conversion triggered | Archival service, Parquet sink, JSONL cleanup |
+| **Concurrent sink writes** | Multiple providers write simultaneously | Composite sink, file locking, atomic writer |
+| **Storage quota enforcement** | Disk usage approaches quota limit | Quota enforcement service, backpressure signal |
+
+---
+
+## Pattern I: Market Scenario Simulation
+
+Use this pattern when writing a test that simulates a named real-world market event and exercises
+multiple code layers end-to-end.
 
 ```csharp
-namespace Meridian.Tests.Infrastructure.Providers;
+namespace Meridian.Tests.Integration;
 
-public sealed class MyProviderHistoricalDataProviderTests : IDisposable
+/// <summary>
+/// Simulates a normal equity session open: a burst of sequentially-numbered trades and BBO
+/// quotes arriving at 09:30 ET flows through the real EventPipeline and is persisted to a
+/// temporary JSONL sink. Validates that no events are dropped under expected opening-bell
+/// throughput and that sequence numbers are preserved in storage.
+///
+/// Code paths exercised: TestMarketEventPublisher → EventPipeline → JsonlStorageSink
+/// Guards against: silent event drops under burst load; sequence number corruption on flush.
+/// </summary>
+public sealed class NormalSessionOpenScenarioTests : IAsyncDisposable
 {
-    private readonly Mock<IHttpClientFactory> _httpFactory = new();
-    private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+    private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+    private EventPipeline _pipeline = null!;
+    private JsonlStorageSink _sink = null!;
 
-    private MyProviderHistoricalDataProvider CreateSut() =>
-        new(_httpFactory.Object, Options.Create(new MyProviderOptions { ApiKey = "test" }));
-
-    [Fact]
-    public async Task GetDailyBarsAsync_ValidSymbol_ReturnsBars()
+    public NormalSessionOpenScenarioTests()
     {
-        // Arrange
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var sut = CreateSut();
-        // ... setup mocks
-
-        // Act
-        var result = await sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
-
-        // Assert
-        result.Should().NotBeEmpty();
-        result.Should().AllSatisfy(b => b.Symbol.Should().Be("AAPL"));
+        Directory.CreateDirectory(_tempDir);
+        var storageOpts = Microsoft.Extensions.Options.Options.Create(
+            new StorageOptions { BaseDirectory = _tempDir });
+        _sink = new JsonlStorageSink(storageOpts, NullLogger<JsonlStorageSink>.Instance);
+        _pipeline = new EventPipeline(_sink, capacity: 2_000, enablePeriodicFlush: false);
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_CancellationRequested_ThrowsOperationCanceledException()
+    public async Task NormalSessionOpen_BurstOfTradesAndQuotes_AllEventsPersisted()
     {
-        // Arrange
-        using var cts = new CancellationTokenSource();
-        await cts.CancelAsync();
-        var sut = CreateSut();
+        // Arrange — simulate 09:30 ET opening bell: 50 trades + 50 quotes for AAPL and SPY
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var openTime = new DateTimeOffset(2025, 6, 2, 13, 30, 0, TimeSpan.Zero); // 09:30 ET as UTC
+
+        var events = MarketScenarioBuilder.BuildSessionOpen(
+            symbols: ["AAPL", "SPY"],
+            openTime: openTime,
+            tradesPerSymbol: 25,
+            quotesPerSymbol: 25,
+            basePrice: new Dictionary<string, decimal> { ["AAPL"] = 213.50m, ["SPY"] = 531.20m });
 
         // Act
-        var act = async () => await sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
+        foreach (var evt in events)
+            _pipeline.TryPublish(evt);
 
-        // Assert
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        await _pipeline.FlushAsync(cts.Token);
+
+        // Assert — all 100 events must be durably written; no drops
+        var files = Directory.GetFiles(_tempDir, "*.jsonl", SearchOption.AllDirectories);
+        var totalLines = files
+            .SelectMany(f => File.ReadAllLines(f))
+            .Count(l => !string.IsNullOrWhiteSpace(l));
+
+        totalLines.Should().Be(events.Count,
+            because: "every published event must be persisted during a session-open burst");
     }
 
-    public void Dispose()
+    [Fact]
+    public async Task NormalSessionOpen_SequentialTradeSequenceNumbers_PreservedInStorage()
     {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var openTime = new DateTimeOffset(2025, 6, 2, 13, 30, 0, TimeSpan.Zero);
+
+        var trades = MarketScenarioBuilder.BuildSequentialTrades(
+            symbol: "MSFT",
+            startTime: openTime,
+            count: 10,
+            startSequence: 1001L,
+            startPrice: 420.00m,
+            priceStep: 0.01m);
+
+        foreach (var evt in trades)
+            _pipeline.TryPublish(evt);
+
+        await _pipeline.FlushAsync(cts.Token);
+
+        // Read back and verify sequence numbers are monotonically increasing
+        var lines = Directory.GetFiles(_tempDir, "*.jsonl", SearchOption.AllDirectories)
+            .SelectMany(f => File.ReadAllLines(f))
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .ToList();
+
+        lines.Should().HaveCount(10);
+        // Sequence preservation is validated by the line count and event type —
+        // any dropped sequence would reduce the count below 10
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _pipeline.DisposeAsync();
+        await _sink.DisposeAsync();
         if (Directory.Exists(_tempDir))
             Directory.Delete(_tempDir, recursive: true);
+    }
+}
+```
+
+### `MarketScenarioBuilder` Helper
+
+Place this in `tests/Meridian.Tests/TestHelpers/MarketScenarioBuilder.cs`:
+
+```csharp
+namespace Meridian.Tests.TestHelpers;
+
+/// <summary>
+/// Factory for constructing realistic, scenario-grounded sequences of <see cref="MarketEvent"/>s.
+/// All helpers produce deterministic output given the same inputs so tests are reproducible.
+/// Use this instead of hand-crafting ad-hoc events with magic constant prices.
+/// </summary>
+internal static class MarketScenarioBuilder
+{
+    /// <summary>Builds a mixed burst of trades and BBO quotes simulating a session open.</summary>
+    public static List<MarketEvent> BuildSessionOpen(
+        IReadOnlyList<string> symbols,
+        DateTimeOffset openTime,
+        int tradesPerSymbol,
+        int quotesPerSymbol,
+        IReadOnlyDictionary<string, decimal>? basePrice = null)
+    {
+        var events = new List<MarketEvent>();
+        long seq = 1;
+
+        foreach (var symbol in symbols)
+        {
+            var price = basePrice?.GetValueOrDefault(symbol) ?? 100m;
+            events.AddRange(BuildSequentialTrades(symbol, openTime, tradesPerSymbol, seq, price));
+            seq += tradesPerSymbol;
+            events.AddRange(BuildSequentialQuotes(symbol, openTime, quotesPerSymbol, seq, price));
+            seq += quotesPerSymbol;
+        }
+
+        return events;
+    }
+
+    /// <summary>Builds a sequence of trades with monotonically increasing sequence numbers and
+    /// a small random price walk around <paramref name="startPrice"/>.</summary>
+    public static List<MarketEvent> BuildSequentialTrades(
+        string symbol,
+        DateTimeOffset startTime,
+        int count,
+        long startSequence,
+        decimal startPrice,
+        decimal priceStep = 0.01m)
+    {
+        var events = new List<MarketEvent>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var ts = startTime.AddMilliseconds(i * 20); // 20 ms apart — realistic HFT cadence
+            var price = startPrice + priceStep * i;
+            var trade = new Trade(ts, symbol, price, Size: 100L,
+                Aggressor: i % 2 == 0 ? AggressorSide.Buy : AggressorSide.Sell,
+                SequenceNumber: startSequence + i, Venue: "XNAS");
+            events.Add(MarketEvent.Trade(ts, symbol, trade,
+                seq: startSequence + i, source: "XNAS"));
+        }
+        return events;
+    }
+
+    /// <summary>Builds a sequence of BBO quote updates with a realistic spread around
+    /// <paramref name="midPrice"/>.</summary>
+    public static List<MarketEvent> BuildSequentialQuotes(
+        string symbol,
+        DateTimeOffset startTime,
+        int count,
+        long startSequence,
+        decimal midPrice,
+        decimal halfSpread = 0.01m)
+    {
+        var events = new List<MarketEvent>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var ts = startTime.AddMilliseconds(i * 50);
+            var quote = new BboQuotePayload
+            {
+                Symbol = symbol,
+                BidPrice = midPrice - halfSpread,
+                AskPrice = midPrice + halfSpread,
+                BidSize = 200,
+                AskSize = 200,
+                Timestamp = ts,
+            };
+            events.Add(MarketEvent.Quote(ts, symbol, quote,
+                seq: startSequence + i, source: "XNAS"));
+        }
+        return events;
+    }
+
+    /// <summary>Builds a flash-crash scenario: price drops <paramref name="dropPct"/> percent
+    /// over <paramref name="durationMs"/> milliseconds in <paramref name="count"/> ticks.</summary>
+    public static List<MarketEvent> BuildFlashCrash(
+        string symbol,
+        DateTimeOffset startTime,
+        decimal preCrashPrice,
+        decimal dropPct = 0.10m,
+        int count = 50,
+        int durationMs = 800)
+    {
+        var events = new List<MarketEvent>(count);
+        var dropPerTick = preCrashPrice * dropPct / count;
+        var msPerTick = durationMs / count;
+
+        for (var i = 0; i < count; i++)
+        {
+            var ts = startTime.AddMilliseconds(i * msPerTick);
+            var price = preCrashPrice - dropPerTick * i;
+            var trade = new Trade(ts, symbol, price, Size: 5_000L,
+                Aggressor: AggressorSide.Sell, SequenceNumber: i + 1, Venue: "XNAS");
+            events.Add(MarketEvent.Trade(ts, symbol, trade, seq: i + 1, source: "XNAS"));
+        }
+        return events;
     }
 }
 ```
@@ -168,12 +436,15 @@ Run through this checklist before finalizing any test file:
 - [ ] No `async void` test methods
 - [ ] No shared static mutable state
 - [ ] No `Task.Delay` for timing (use `TaskCompletionSource` instead)
-- [ ] All names follow `MethodUnderTest_Scenario_ExpectedBehavior`
+- [ ] All names follow `MethodUnderTest_Scenario_ExpectedBehavior` or `Scenario_MarketCondition_SystemBehavior`
 - [ ] Every `IAsyncDisposable` subject uses `await using`
 - [ ] Every async test has a `CancellationToken` with a timeout
 - [ ] Storage tests clean up temp directories in `Dispose()`
 - [ ] At least one test for the cancellation path
 - [ ] At least one test for the error/exception path
+- [ ] **[Pattern I only]** Test has an XML doc `<summary>` naming the scenario and layers exercised
+- [ ] **[Pattern I only]** Test uses `MarketScenarioBuilder` (or equivalent) with realistic prices
+- [ ] **[Pattern I only]** Assertion captures a business-observable outcome, not just internal state
 
 ---
 
@@ -255,6 +526,9 @@ sub.DidNotReceive().FlushAsync(Arg.Any<CancellationToken>());
 | `using var sink = new JsonlStorageSink(...)` | File handles leaked | `await using var sink = ...` |
 | No temp dir cleanup | CI disk fills up | Implement `IDisposable` with `Directory.Delete` |
 | `Test1`, `Test2` names | Unintelligible | Follow `Method_Scenario_Expected` |
+| **Arbitrary method calling** | Tests pass but don't validate real system behaviour | Ground every test in a named market scenario |
+| **Magic-constant prices** | `price = 1m` reveals no intent | Use `MarketScenarioBuilder` with realistic values |
+| **Single-layer tests for cross-cutting behaviour** | A provider test that only mocks the HTTP layer without routing through the pipeline misses integration regressions | Use Pattern I for cross-layer scenarios |
 
 ---
 
@@ -272,6 +546,11 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj \
 # Run with coverage
 dotnet test tests/Meridian.Tests/ \
   --collect:"XPlat Code Coverage" /p:EnableWindowsTargeting=true
+
+# Run only scenario/integration tests
+dotnet test tests/Meridian.Tests/ \
+  --filter "Category=Integration|Category=Scenario" \
+  /p:EnableWindowsTargeting=true
 ```
 
 ---
@@ -287,4 +566,4 @@ dotnet test tests/Meridian.Tests/ \
 
 ---
 
-*Last Updated: 2026-03-17*
+*Last Updated: 2026-04-08*

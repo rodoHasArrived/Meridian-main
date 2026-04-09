@@ -698,6 +698,338 @@ internal static class TestDataBuilder
 
 ---
 
+## Pattern I: Market Scenario Simulation
+
+**Use this pattern when:** the behavior under test is driven by a recognizable real-world market
+event and must exercise two or more architectural layers end-to-end (e.g., provider → pipeline,
+pipeline → storage, strategy → order management, backtest engine → metrics).
+
+**Naming convention:** `Scenario_MarketCondition_SystemBehavior`
+(e.g., `FlashCrash_PriceDrops10Pct_PriceContinuityCheckerFiresAlert`)
+
+### Market Scenario Catalog
+
+Select a scenario from this catalog before writing any code. Each scenario specifies which code
+paths must be exercised end-to-end.
+
+#### Tier 1 — Data Ingestion (Provider → Pipeline → Storage)
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **Normal session open** | Burst of trades + BBO quotes at 09:30 ET | Provider parsing → trade/quote collector → dedup → pipeline channel → JSONL sink |
+| **Pre-market gap-up on earnings** | High-volume trades above prior close before 09:30 | Same as above + out-of-hours flag + timestamp monotonicity checker |
+| **Provider feed interruption** | WebSocket disconnect mid-session | Reconnection logic → sequence gap detection → integrity event emission |
+| **Rate-limit breach** | Provider returns 429 after burst | Rate limiter → exponential backoff → circuit breaker |
+| **Stale quote flood** | Provider sends repeated identical BBO ticks | Dedup store → pipeline drop counter → backpressure signal |
+| **Crossed market** | Bid > Ask received from provider | Quote validation → integrity event → bad-tick filter |
+| **Flash crash** | Price drops 10 %+ within 1 second | Price continuity checker → anomaly detector → alert dispatcher |
+
+#### Tier 2 — Backtesting (Historical Data → Engine → Metrics)
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **Single-symbol buy-and-hold** | Strategy buys on day 1, sells on last day | Bar replay → order placement → fill model → portfolio snapshot → XIRR |
+| **Multi-symbol rebalance** | Strategy buys 3 symbols, portfolio drifts, rebalances weekly | Multiple bar streams → lot tracking → commission model → drawdown metric |
+| **Stop-loss trigger** | Price falls below stop threshold | Contingent order manager → fill model → PnL calculation |
+| **Dividend corporate action** | Adjusted close deviates from raw close | Corporate action adjuster → cost basis recalculation |
+| **Earnings announcement gap** | Bar open price differs significantly from prior close | Gap detection → position sizing → slippage in fill model |
+
+#### Tier 3 — Execution & Risk (Order → Gateway → Risk)
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **Paper trade order lifecycle** | Strategy submits limit order; fill arrives | Order manager → paper gateway → fill event → portfolio state update |
+| **Position limit breach** | Strategy attempts to exceed configured max position | Risk validator → position limit rule → order rejection |
+| **Drawdown circuit breaker** | Portfolio loss exceeds configured threshold | Drawdown circuit breaker → strategy halt signal |
+| **Order rate throttle** | Strategy submits orders faster than allowed rate | Order rate throttle rule → rejection with backoff |
+| **Multi-account allocation** | Block order split across multiple accounts | Block trade allocator → proportional allocation engine |
+
+#### Tier 4 — Storage & Recovery
+
+| Scenario | Trigger Conditions | Code Paths Exercised |
+|----------|-------------------|---------------------|
+| **WAL crash recovery** | Process dies mid-write; WAL replayed on restart | WAL write → simulated truncation → WAL replay → data integrity check |
+| **Parquet conversion** | JSONL file exceeds threshold; conversion triggered | Archival service → Parquet sink → JSONL cleanup |
+| **Concurrent sink writes** | Multiple providers write simultaneously | Composite sink → file locking → atomic writer |
+| **Storage quota enforcement** | Disk usage approaches quota limit | Quota enforcement service → backpressure signal |
+
+---
+
+### Pattern I Test Scaffold
+
+```csharp
+namespace Meridian.Tests.Integration;
+
+/// <summary>
+/// Simulates a normal equity session open: a burst of sequentially-numbered trades and BBO
+/// quotes arriving at 09:30 ET flows through the real EventPipeline and is persisted to a
+/// temporary JSONL sink. Validates that no events are dropped under expected opening-bell
+/// throughput and that sequence numbers are preserved in storage.
+///
+/// Code paths exercised: MarketScenarioBuilder → EventPipeline → JsonlStorageSink
+/// Guards against: silent event drops under burst load; sequence number corruption on flush.
+/// </summary>
+public sealed class NormalSessionOpenScenarioTests : IAsyncDisposable
+{
+    private readonly string _tempDir =
+        Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+    private EventPipeline _pipeline = null!;
+    private JsonlStorageSink _sink = null!;
+
+    public NormalSessionOpenScenarioTests()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var storageOpts = Microsoft.Extensions.Options.Options.Create(
+            new StorageOptions { BaseDirectory = _tempDir });
+        _sink = new JsonlStorageSink(storageOpts, NullLogger<JsonlStorageSink>.Instance);
+        _pipeline = new EventPipeline(_sink, capacity: 2_000, enablePeriodicFlush: false);
+    }
+
+    [Fact]
+    public async Task NormalSessionOpen_BurstOfTradesAndQuotes_AllEventsPersisted()
+    {
+        // Arrange — simulate 09:30 ET opening bell: 50 trades + 50 quotes for AAPL and SPY
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var openTime = new DateTimeOffset(2025, 6, 2, 13, 30, 0, TimeSpan.Zero);
+
+        var events = MarketScenarioBuilder.BuildSessionOpen(
+            symbols: ["AAPL", "SPY"],
+            openTime: openTime,
+            tradesPerSymbol: 25,
+            quotesPerSymbol: 25,
+            basePrice: new Dictionary<string, decimal>
+            {
+                ["AAPL"] = 213.50m,
+                ["SPY"] = 531.20m,
+            });
+
+        // Act
+        foreach (var evt in events)
+            _pipeline.TryPublish(evt);
+
+        await _pipeline.FlushAsync(cts.Token);
+
+        // Assert — all 100 events must be durably written with no drops
+        var files = Directory.GetFiles(_tempDir, "*.jsonl", SearchOption.AllDirectories);
+        var totalLines = files
+            .SelectMany(f => File.ReadAllLines(f))
+            .Count(l => !string.IsNullOrWhiteSpace(l));
+
+        totalLines.Should().Be(events.Count,
+            because: "every published event must be persisted during a session-open burst");
+    }
+
+    [Fact]
+    public async Task NormalSessionOpen_SequentialTrades_SequenceNumbersAreMonotonic()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var openTime = new DateTimeOffset(2025, 6, 2, 13, 30, 0, TimeSpan.Zero);
+
+        var trades = MarketScenarioBuilder.BuildSequentialTrades(
+            symbol: "MSFT",
+            startTime: openTime,
+            count: 10,
+            startSequence: 1001L,
+            startPrice: 420.00m,
+            priceStep: 0.01m);
+
+        // Act
+        foreach (var evt in trades)
+            _pipeline.TryPublish(evt);
+
+        await _pipeline.FlushAsync(cts.Token);
+
+        // Assert — all 10 events persisted (any drop would reduce the count below 10)
+        var lines = Directory
+            .GetFiles(_tempDir, "*.jsonl", SearchOption.AllDirectories)
+            .SelectMany(f => File.ReadAllLines(f))
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .ToList();
+
+        lines.Should().HaveCount(10,
+            because: "all 10 sequential trades must survive the pipeline flush without gaps");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _pipeline.DisposeAsync();
+        await _sink.DisposeAsync();
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
+    }
+}
+```
+
+---
+
+### `MarketScenarioBuilder` Helper
+
+Place this file at `tests/Meridian.Tests/TestHelpers/MarketScenarioBuilder.cs`.
+It provides deterministic, realistic event sequences for Pattern I tests.
+
+```csharp
+// File: tests/Meridian.Tests/TestHelpers/MarketScenarioBuilder.cs
+namespace Meridian.Tests.TestHelpers;
+
+/// <summary>
+/// Factory for constructing realistic, scenario-grounded sequences of <see cref="MarketEvent"/>s.
+/// All methods produce deterministic output given the same inputs so tests are reproducible.
+/// Use this instead of hand-crafting events with magic-constant prices.
+/// </summary>
+internal static class MarketScenarioBuilder
+{
+    /// <summary>
+    /// Builds a mixed burst of trades and BBO quotes simulating a session open for
+    /// the given <paramref name="symbols"/> at <paramref name="openTime"/>.
+    /// </summary>
+    public static List<MarketEvent> BuildSessionOpen(
+        IReadOnlyList<string> symbols,
+        DateTimeOffset openTime,
+        int tradesPerSymbol,
+        int quotesPerSymbol,
+        IReadOnlyDictionary<string, decimal>? basePrice = null)
+    {
+        var events = new List<MarketEvent>();
+        long seq = 1;
+
+        foreach (var symbol in symbols)
+        {
+            var price = basePrice?.GetValueOrDefault(symbol) ?? 100m;
+            events.AddRange(BuildSequentialTrades(symbol, openTime, tradesPerSymbol, seq, price));
+            seq += tradesPerSymbol;
+            events.AddRange(BuildSequentialQuotes(symbol, openTime, quotesPerSymbol, seq, price));
+            seq += quotesPerSymbol;
+        }
+
+        return events;
+    }
+
+    /// <summary>
+    /// Builds a sequence of trades with monotonically increasing sequence numbers and
+    /// a small price walk up from <paramref name="startPrice"/> by
+    /// <paramref name="priceStep"/> per tick.
+    /// </summary>
+    public static List<MarketEvent> BuildSequentialTrades(
+        string symbol,
+        DateTimeOffset startTime,
+        int count,
+        long startSequence,
+        decimal startPrice,
+        decimal priceStep = 0.01m)
+    {
+        var events = new List<MarketEvent>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var ts = startTime.AddMilliseconds(i * 20); // 20 ms — realistic HFT cadence
+            var price = startPrice + priceStep * i;
+            var trade = new Trade(
+                Timestamp: ts,
+                Symbol: symbol,
+                Price: price,
+                Size: 100L,
+                Aggressor: i % 2 == 0 ? AggressorSide.Buy : AggressorSide.Sell,
+                SequenceNumber: startSequence + i,
+                Venue: "XNAS");
+            events.Add(MarketEvent.Trade(ts, symbol, trade,
+                seq: startSequence + i, source: "XNAS"));
+        }
+        return events;
+    }
+
+    /// <summary>
+    /// Builds a sequence of BBO quote updates with a realistic spread around
+    /// <paramref name="midPrice"/> (default half-spread = 0.01).
+    /// </summary>
+    public static List<MarketEvent> BuildSequentialQuotes(
+        string symbol,
+        DateTimeOffset startTime,
+        int count,
+        long startSequence,
+        decimal midPrice,
+        decimal halfSpread = 0.01m)
+    {
+        var events = new List<MarketEvent>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var ts = startTime.AddMilliseconds(i * 50);
+            var quote = new BboQuotePayload
+            {
+                Symbol = symbol,
+                BidPrice = midPrice - halfSpread,
+                AskPrice = midPrice + halfSpread,
+                BidSize = 200,
+                AskSize = 200,
+                Timestamp = ts,
+            };
+            events.Add(MarketEvent.Quote(ts, symbol, quote,
+                seq: startSequence + i, source: "XNAS"));
+        }
+        return events;
+    }
+
+    /// <summary>
+    /// Builds a flash-crash scenario: price drops <paramref name="dropPct"/> percent
+    /// of <paramref name="preCrashPrice"/> over <paramref name="durationMs"/> milliseconds
+    /// in <paramref name="count"/> equal-sized ticks.
+    /// Default: 10 % drop over 800 ms in 50 ticks (aggressive sell-side imbalance).
+    /// </summary>
+    public static List<MarketEvent> BuildFlashCrash(
+        string symbol,
+        DateTimeOffset startTime,
+        decimal preCrashPrice,
+        decimal dropPct = 0.10m,
+        int count = 50,
+        int durationMs = 800)
+    {
+        var events = new List<MarketEvent>(count);
+        var dropPerTick = preCrashPrice * dropPct / count;
+        var msPerTick = durationMs / count;
+
+        for (var i = 0; i < count; i++)
+        {
+            var ts = startTime.AddMilliseconds(i * msPerTick);
+            var price = preCrashPrice - dropPerTick * i;
+            var trade = new Trade(
+                Timestamp: ts,
+                Symbol: symbol,
+                Price: price,
+                Size: 5_000L,
+                Aggressor: AggressorSide.Sell,
+                SequenceNumber: i + 1L,
+                Venue: "XNAS");
+            events.Add(MarketEvent.Trade(ts, symbol, trade, seq: i + 1L, source: "XNAS"));
+        }
+        return events;
+    }
+
+    /// <summary>
+    /// Builds a provider-reconnect scenario: trades are emitted, then a sequence gap
+    /// is injected (simulating missed events during a disconnect), then trades resume.
+    /// The gap triggers an <see cref="IntegrityEvent"/> in the pipeline.
+    /// </summary>
+    public static (List<MarketEvent> BeforeGap, List<MarketEvent> AfterGap) BuildFeedInterruption(
+        string symbol,
+        DateTimeOffset startTime,
+        int tradesBeforeGap = 5,
+        int gapSize = 10,
+        int tradesAfterGap = 5)
+    {
+        var before = BuildSequentialTrades(symbol, startTime, tradesBeforeGap,
+            startSequence: 1L, startPrice: 100m);
+
+        var resumeSeq = 1L + tradesBeforeGap + gapSize; // intentional sequence gap
+        var after = BuildSequentialTrades(symbol,
+            startTime.AddSeconds(1), tradesAfterGap,
+            startSequence: resumeSeq, startPrice: 100m);
+
+        return (before, after);
+    }
+}
+```
+
+---
+
 ## Test File Placement
 
 | Component Type | Test Project | Subdirectory |
@@ -711,3 +1043,4 @@ internal static class TestDataBuilder
 | Ui.Services classes | `Meridian.Ui.Tests` | `Services/` |
 | F# modules | `Meridian.FSharp.Tests` | (root) |
 | Endpoint integration | `Meridian.Tests` | `Integration/EndpointTests/` |
+| **Market scenario (multi-layer)** | **`Meridian.Tests`** | **`Integration/`** |

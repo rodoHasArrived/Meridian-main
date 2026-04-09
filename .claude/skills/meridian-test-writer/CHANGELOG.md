@@ -1,5 +1,39 @@
 # meridian-test-writer — Changelog
 
+## v1.2.0 (2026-04-08)
+
+### Changed — Scenario-First Testing Philosophy
+
+- **Renamed and reframed core philosophy** from "generate tests for methods" to
+  "simulate real-world market scenarios that run through all aspects of the code."
+- Updated skill `description` to call out scenario-grounded testing explicitly.
+- Added **Scenario-First Rules** section: name the market event first, trace the full
+  code path, use realistic data, encode the observable outcome, add regression notes.
+- Added **Pattern I: Market Scenario Simulation** — a new pattern for multi-layer,
+  scenario-driven tests that exercise ≥2 architectural layers end-to-end.
+- Updated **Step 0 decision table** to include Pattern I (Market scenario) with key
+  concerns: named scenario, ≥2 layers, realistic data.
+- Updated **Step 1 naming convention** — Pattern I tests use
+  `Scenario_MarketCondition_SystemBehavior` instead of `MethodUnderTest_Scenario_ExpectedBehavior`.
+- Updated **Minimum Test Coverage Requirements** — Pattern I now requires: full code
+  path (≥2 layers), realistic data via `MarketScenarioBuilder`, business-observable assertion.
+- Updated **Step 4 checklist** with three new Pattern I checkboxes.
+- Extended **Anti-Patterns to Avoid** table with three new entries: Arbitrary method
+  calling, Magic-constant prices, Single-layer tests for cross-cutting behaviour.
+
+### Added
+
+- **Market Scenario Catalog** in `references/test-patterns.md` — 16 named real-world
+  scenarios across 4 tiers (Data Ingestion, Backtesting, Execution & Risk, Storage &
+  Recovery), each specifying which code paths must be exercised end-to-end.
+- **Pattern I scaffold** in `references/test-patterns.md` — full compilable
+  `NormalSessionOpenScenarioTests` example demonstrating the scenario-simulation pattern.
+- **`MarketScenarioBuilder` helper** in `references/test-patterns.md` — a static factory
+  class (placed at `tests/Meridian.Tests/TestHelpers/MarketScenarioBuilder.cs`) with
+  `BuildSessionOpen`, `BuildSequentialTrades`, `BuildSequentialQuotes`, `BuildFlashCrash`,
+  and `BuildFeedInterruption` methods that produce deterministic, realistic event sequences.
+- Updated **Test File Placement** table with a Pattern I row pointing to `Integration/`.
+
 ## v1.0.0 (2026-03-16)
 
 ### Added
