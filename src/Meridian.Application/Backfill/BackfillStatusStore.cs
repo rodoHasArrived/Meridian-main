@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Meridian.Application.Config;
 using Meridian.Storage.Archival;
 
@@ -15,13 +14,6 @@ public sealed class BackfillStatusStore
     private readonly string _path;
     private readonly string _symbolCheckpointsPath;
     private readonly string _symbolBarCountsPath;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
 
     public BackfillStatusStore(string dataRoot)
     {
@@ -40,7 +32,7 @@ public sealed class BackfillStatusStore
 
     public async Task WriteAsync(BackfillResult result, CancellationToken ct = default)
     {
-        var json = JsonSerializer.Serialize(result, JsonOptions);
+        var json = JsonSerializer.Serialize(result, BackfillStatusStoreJsonContext.Default.BackfillResult);
         await AtomicFileWriter.WriteAsync(_path, json, ct);
     }
 
@@ -51,7 +43,7 @@ public sealed class BackfillStatusStore
             if (!File.Exists(_path))
                 return null;
             var json = File.ReadAllText(_path);
-            return JsonSerializer.Deserialize<BackfillResult>(json, JsonOptions);
+            return JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.BackfillResult);
         }
         catch (Exception ex) when (ex is JsonException or IOException)
         {
@@ -95,7 +87,9 @@ public sealed class BackfillStatusStore
                 kv => kv.Value.ToString("yyyy-MM-dd"),
                 StringComparer.OrdinalIgnoreCase);
 
-            var checkpointJson = JsonSerializer.Serialize(serializable, JsonOptions);
+            var checkpointJson = JsonSerializer.Serialize(
+                serializable,
+                BackfillStatusStoreJsonContext.Default.DictionaryStringString);
             await AtomicFileWriter.WriteAsync(_symbolCheckpointsPath, checkpointJson, ct);
 
             // ---- bar-count sidecar ----
@@ -103,7 +97,9 @@ public sealed class BackfillStatusStore
             {
                 var barCounts = TryReadSymbolBarCountsAsMutable() ?? new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
                 barCounts[symbol] = barsWritten;
-                var barCountJson = JsonSerializer.Serialize(barCounts, JsonOptions);
+                var barCountJson = JsonSerializer.Serialize(
+                    barCounts,
+                    BackfillStatusStoreJsonContext.Default.DictionaryStringInt64);
                 await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, barCountJson, ct);
             }
         }
@@ -137,7 +133,9 @@ public sealed class BackfillStatusStore
                 return null;
 
             var json = File.ReadAllText(_symbolCheckpointsPath);
-            var raw = JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonOptions);
+            var raw = JsonSerializer.Deserialize(
+                json,
+                BackfillStatusStoreJsonContext.Default.DictionaryStringString);
             if (raw is null)
                 return null;
 
@@ -164,7 +162,9 @@ public sealed class BackfillStatusStore
                 return null;
 
             var json = File.ReadAllText(_symbolBarCountsPath);
-            return JsonSerializer.Deserialize<Dictionary<string, long>>(json, JsonOptions)
+            return JsonSerializer.Deserialize(
+                       json,
+                       BackfillStatusStoreJsonContext.Default.DictionaryStringInt64)
                    ?? new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         }
         catch (Exception ex) when (ex is JsonException or IOException)

@@ -107,21 +107,24 @@ public sealed class SubscriptionOrchestrator
                     {
                         try
                         { _ib.UnsubscribeMarketDepth(depthId); }
-                        catch (Exception ex) { _log.Debug(ex, "Error unsubscribing market depth for {Symbol}", existing); }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        { _log.Debug(ex, "Error unsubscribing market depth for {Symbol}", existing); }
                     }
                     await ReleaseOwnershipAsync("depth", existing, ct).ConfigureAwait(false);
                     if (_tradeSubs.TryRemove(existing, out var tradeId) && tradeId > 0)
                     {
                         try
                         { _ib.UnsubscribeTrades(tradeId); }
-                        catch (Exception ex) { _log.Debug(ex, "Error unsubscribing trades for {Symbol}", existing); }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        { _log.Debug(ex, "Error unsubscribing trades for {Symbol}", existing); }
                     }
                     await ReleaseOwnershipAsync("trades", existing, ct).ConfigureAwait(false);
                     if (_optionSubs.TryRemove(existing, out var optionId) && optionId > 0)
                     {
                         try
                         { _ib.UnsubscribeTrades(optionId); }
-                        catch (Exception ex) { _log.Debug(ex, "Error unsubscribing option trades for {Symbol}", existing); }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        { _log.Debug(ex, "Error unsubscribing option trades for {Symbol}", existing); }
                     }
                     await ReleaseOwnershipAsync("options", existing, ct).ConfigureAwait(false);
                     _depthCollector.UnregisterSubscription(existing);
@@ -232,7 +235,8 @@ public sealed class SubscriptionOrchestrator
                     {
                         try
                         { _ib.UnsubscribeMarketDepth(subId); }
-                        catch (Exception ex) { _log.Debug(ex, "Error unsubscribing market depth for {Symbol}", symbol); }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        { _log.Debug(ex, "Error unsubscribing market depth for {Symbol}", symbol); }
                     }
                     await ReleaseOwnershipAsync("depth", symbol, ct).ConfigureAwait(false);
                 }
@@ -266,7 +270,8 @@ public sealed class SubscriptionOrchestrator
                     {
                         try
                         { _ib.UnsubscribeTrades(tradeId); }
-                        catch (Exception ex) { _log.Debug(ex, "Error unsubscribing trades for {Symbol}", symbol); }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        { _log.Debug(ex, "Error unsubscribing trades for {Symbol}", symbol); }
                     }
                     await ReleaseOwnershipAsync("trades", symbol, ct).ConfigureAwait(false);
                 }

@@ -157,6 +157,10 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
+                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Absolute)
+            });
+            dictionaries.Add(new ResourceDictionary
+            {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
@@ -169,16 +173,17 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Absolute)
-            });
-            dictionaries.Add(new ResourceDictionary
-            {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/IconResources.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
             {
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/Animations.xaml", UriKind.Absolute)
             });
+
+            if (!System.Windows.Application.Current.Resources.Contains("GhostButtonStyle"))
+            {
+                System.Windows.Application.Current.Resources["GhostButtonStyle"] = new Style(typeof(Button));
+            }
 
             System.Windows.Application.Current.Resources["CommandBarBackground"] = new SolidColorBrush(Color.FromRgb(24, 28, 34));
             System.Windows.Application.Current.Resources["CommandBarBorderBrush"] = new SolidColorBrush(Color.FromRgb(52, 58, 68));

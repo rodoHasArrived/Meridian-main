@@ -8,6 +8,7 @@ global using ContractsIntegrityEvent = Meridian.Contracts.Domain.Models.Integrit
 global using ContractsLOBSnapshot = Meridian.Contracts.Domain.Models.LOBSnapshot;
 global using ContractsOrderBookLevel = Meridian.Contracts.Domain.Models.OrderBookLevel;
 global using ContractsOrderFlowStatistics = Meridian.Contracts.Domain.Models.OrderFlowStatistics;
+global using Meridian.Infrastructure.Contracts;
 // Backwards compatibility aliases
 global using ContractsTrade = Meridian.Contracts.Domain.Models.Trade;
 // Type aliases - Domain.Events.MarketEvent is the primary type

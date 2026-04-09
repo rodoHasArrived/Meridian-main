@@ -2,17 +2,19 @@
 
 This document provides instructions for setting up the Interactive Brokers API (IBApi) with the Meridian project.
 
-Use this guide together with [Provider Confidence Baseline](provider-confidence-baseline.md). Meridian currently validates three distinct IB modes, and operators should treat them differently:
+Use this guide together with [Provider Confidence Baseline](provider-confidence-baseline.md) and [`docs/status/provider-validation-matrix.md`](../status/provider-validation-matrix.md). Meridian validates three distinct IB modes, and operators should treat them differently:
 
-| Mode | What the repo validates | What it does **not** prove |
-|---|---|---|
-| Non-`IBAPI` simulation/runtime-guidance | `IBRuntimeGuidanceTests` confirm the provider metadata and exceptions point back to this guide and to the smoke-build path | Real TWS/Gateway connectivity, entitlements, or vendor DLL compatibility |
-| `EnableIbApiSmoke=true` compile-only smoke | `scripts/dev/build-ibapi-smoke.ps1` keeps the gated infrastructure code path buildable in automation | Real market-data flow or runtime compatibility with the official vendor surface |
-| Official `IBAPI` vendor path | Build-time path documented here for local/manual use | CI coverage in the default repo build; this still requires local TWS/Gateway and entitlements |
+| Mode | What the repo validates | Runtime evidence path | What it does **not** prove |
+|---|---|---|---|
+| Non-`IBAPI` simulation/runtime-guidance | `IBRuntimeGuidanceTests` confirm the provider metadata and exceptions point back to this guide and to the smoke-build path | `artifacts/provider-validation/interactive-brokers/2026-04-09/bootstrap/summary.md` | Real TWS/Gateway connectivity, entitlements, or vendor DLL compatibility |
+| `EnableIbApiSmoke=true` compile-only smoke | `scripts/dev/build-ibapi-smoke.ps1` keeps the gated infrastructure code path buildable in automation | `artifacts/provider-validation/interactive-brokers/2026-04-09/bootstrap/summary.md` | Real market-data flow or runtime compatibility with the official vendor surface |
+| Official `IBAPI` vendor path | Build-time path documented here for local/manual use plus repo-side version bounds in `IBApiVersionValidatorTests` | `artifacts/provider-validation/interactive-brokers/2026-04-09/server-version/summary.md`, `artifacts/provider-validation/interactive-brokers/2026-04-09/market-data-entitlements/summary.md`, `artifacts/provider-validation/interactive-brokers/2026-04-09/disconnect-reconnect/summary.md` | CI coverage in the default repo build; this still requires local TWS/Gateway and entitlements |
 
 ## Overview
 
-The Interactive Brokers API is **not available as a standard NuGet package** and must be installed manually. The Meridian uses conditional compilation (`#if IBAPI`) to allow the project to build with or without IB API support.
+The Interactive Brokers API is **not available as a standard NuGet package** and must be installed manually. Meridian uses conditional compilation (`#if IBAPI`) to allow the project to build with or without IB API support.
+
+Wave 1 does not collapse the three modes above into one readiness claim. If you capture a local vendor-runtime session, store the sanitized note in the matching scenario folder under `artifacts/provider-validation/interactive-brokers/<yyyy-mm-dd>/`.
 
 ## Installation Options
 

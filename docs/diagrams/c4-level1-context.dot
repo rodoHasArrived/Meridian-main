@@ -1,6 +1,6 @@
 // C4 Level 1: System Context Diagram
 // Meridian v1.7.2
-// Last Updated: 2026-03-26
+// Last Updated: 2026-04-09
 //
 // This diagram shows the Meridian in context with its users
 // and external systems. It answers: "What is the system and who uses it?"
@@ -122,7 +122,7 @@ digraph C4_Context {
   }
 
   // Relationships - Users to System
-  Operator -> Meridian [label="Configures via\nWPF/Web/CLI"];
+  Operator -> Meridian [label="Configures via\nWPF/local API/CLI"];
   Quant -> Meridian [label="Backtests strategies,\nmonitors portfolio"];
   DevOps -> PROM [label="Monitors\ninfrastructure"];
 

@@ -1,13 +1,13 @@
-# Desktop & UI Layer Architecture
+# Desktop & Local API Layer Architecture
 
 ## Overview
 
-Meridian now uses a **dual UI surface**:
+Meridian now uses a desktop-first operator surface plus a local API companion:
 
 1. **WPF Desktop (`Meridian.Wpf`)** for rich Windows-first operator workflows.
-2. **Web Dashboard (`Meridian.Ui`)** for browser-based monitoring/configuration.
+2. **Desktop-local API host (`src/Meridian`)** for localhost-only workstation APIs, Swagger, and supporting background services.
 
-Both surfaces share contracts and application logic through shared libraries, with clear boundaries between platform host code and reusable UI functionality.
+These surfaces share contracts and application logic through shared libraries, with clear boundaries between the desktop shell, the local host, and reusable UI functionality.
 
 ## Layer Diagram
 
@@ -15,18 +15,18 @@ Both surfaces share contracts and application logic through shared libraries, wi
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                          UI Host Layer                                    │
 │  ┌────────────────────────────┐     ┌──────────────────────────────────┐  │
-│  │ Meridian.Wpf    │     │ Meridian.Ui           │  │
-│  │ (Windows desktop host)     │     │ (ASP.NET Core web host)          │  │
-│  │ - XAML views/viewmodels    │     │ - Thin Program.cs host           │  │
-│  │ - WPF-only services        │     │ - Serves dashboard/static assets │  │
+│  │ Meridian.Wpf               │     │ src/Meridian                    │  │
+│  │ (Windows desktop host)     │     │ (desktop-local API host)        │  │
+│  │ - XAML views/viewmodels    │     │ - Thin Program.cs host          │  │
+│  │ - WPF-only services        │     │ - localhost APIs + Swagger      │  │
 │  └──────────────┬─────────────┘     └──────────────────┬───────────────┘  │
 └─────────────────┼────────────────────────────────────────┼──────────────────┘
                   │                                        │
                   │                                        ▼
                   │                    ┌──────────────────────────────────┐
-                  │                    │ Meridian.Ui.Shared    │
+                  │                    │ Meridian.Ui.Shared              │
                   │                    │ - Endpoint mapping               │
-                  │                    │ - Shared web UI services         │
+                  │                    │ - Desktop-local API services     │
                   │                    │ - Host composition helpers       │
                   │                    └──────────────────┬───────────────┘
                   │                                        │
@@ -56,7 +56,7 @@ Both surfaces share contracts and application logic through shared libraries, wi
 - Owns XAML views, viewmodels, and WPF shell/navigation.
 - Registers DI container and composes page/service graph.
 - Contains truly platform-specific implementations (theme, keyboard shortcuts, windowing, etc.).
-- References `Meridian.Ui.Services` for shared UI/domain helpers.
+- References `Meridian.Ui.Services` for shared UI/domain helpers and desktop-local API clients.
 
 #### WPF shell MVVM boundary
 
@@ -97,7 +97,7 @@ Both surfaces share contracts and application logic through shared libraries, wi
 
 1. **Ui.Services → WPF host types** (no dependency back into desktop UI shell)
 2. **Ui.Shared → WPF-only APIs** (must stay host-agnostic)
-3. **Host-to-host references** (`Wpf` ↔ `Ui`)
+3. **WPF host → Ui.Shared endpoint mapping directly** (desktop UI should consume the local API seam or shared services, not re-host endpoint code)
 4. **Contracts → UI or application hosts**
 
 ## Communication Flow
@@ -111,11 +111,11 @@ View/Page (WPF)
    → Backend API / Application service endpoints
 ```
 
-### Web path
+### Desktop-local API path
 
 ```
 HTTP Request
-   → Ui host (Program.cs)
+   → local host (`src/Meridian`)
    → Ui.Shared endpoint/service mapping
    → Application services
    → Contracts DTO response
@@ -124,10 +124,10 @@ HTTP Request
 ## Why this layering
 
 - Keeps each host thin and focused on platform concerns.
-- Avoids duplicating endpoint/configuration wiring between web surfaces.
+- Keeps the desktop-local API host aligned with the desktop shell without reviving a standalone browser product.
 - Preserves reusable business-facing UI logic in shared libraries.
-- Supports future host additions (another desktop/web shell) with minimal coupling.
+- Supports local tooling and automation against the same APIs without coupling them to WPF code.
 
 ---
 
-*Last Updated: 2026-03-31*
+*Last Updated: 2026-04-09*

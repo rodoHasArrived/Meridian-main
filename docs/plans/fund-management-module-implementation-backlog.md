@@ -2,8 +2,10 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, engineering, and delivery leads
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-04-09
 **Status:** Active implementation backlog
+
+> **Retirement note (2026-04-09):** Any references here to the browser workstation, `src/Meridian.Ui`, or browser-first run detail flows describe the retired standalone dashboard. Keep the product intent, but re-scope future implementation to WPF and the retained desktop-local API surface.
 
 ## Purpose
 

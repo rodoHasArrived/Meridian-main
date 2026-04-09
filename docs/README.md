@@ -1,6 +1,6 @@
 # Meridian Documentation
 
-**Last Reviewed:** 2026-04-05
+**Last Reviewed:** 2026-04-09
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
 This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: a shared platform that now spans research, trading, data operations, governance, provider readiness, and a Windows WPF workstation backed by desktop-local APIs.
@@ -81,7 +81,14 @@ Meridian's current solution includes:
 
 ## Current Planning Source Of Truth
 
-Use these documents together when planning implementation:
+Use these documents together when planning implementation. The active core operator-readiness path is:
+
+- Wave 1: provider confidence and checkpoint evidence
+- Wave 2: paper-trading cockpit hardening
+- Wave 3: shared run / portfolio / ledger continuity
+- Wave 4: governance and fund-operations productization on top of the delivered Security Master baseline
+
+Use the documents below to manage that path:
 
 1. [status/ROADMAP_COMBINED.md](status/ROADMAP_COMBINED.md) for the shortest complete roadmap snapshot
 2. [status/ROADMAP.md](status/ROADMAP.md) for the full wave-structured delivery plan
@@ -89,13 +96,14 @@ Use these documents together when planning implementation:
 4. [status/TARGET_END_PRODUCT.md](status/TARGET_END_PRODUCT.md) for the intended finished product narrative
 5. [plans/README.md](plans/README.md) for the active blueprint and roadmap catalog
 6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
-7. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for workstation structure and migration phases
-8. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for governance, Security Master, reconciliation, and reporting direction
-9. [plans/backtest-studio-unification-blueprint.md](plans/backtest-studio-unification-blueprint.md) for the Wave 4 backtesting unification target
-10. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
-11. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
-12. [status/production-status.md](status/production-status.md) for current readiness caveats
-13. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
+8. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for Wave 2 cockpit hardening and Wave 3 shared-model migration shape
+9. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, Security Master, reconciliation, and reporting direction
+10. [plans/backtest-studio-unification-blueprint.md](plans/backtest-studio-unification-blueprint.md) for the Wave 5 backtesting unification follow-on
+11. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
+12. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
+13. [status/production-status.md](status/production-status.md) for current readiness caveats
+14. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 ## Verified Build And Run References
 

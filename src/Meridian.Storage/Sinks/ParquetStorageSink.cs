@@ -357,8 +357,8 @@ public sealed class ParquetStorageSink : IStorageSink
             var symbols = new string[count];
             var bidCounts = new int[count];
             var askCounts = new int[count];
-            var bestBids = new decimal?[count];
-            var bestAsks = new decimal?[count];
+            var bestBids = new decimal[count];
+            var bestAsks = new decimal[count];
             var spreads = new decimal?[count];
             var seqNums = new long[count];
             var sources = new string[count];

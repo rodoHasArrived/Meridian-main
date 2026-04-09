@@ -25,6 +25,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private string? _originalDisableRateLimit;
 
     public HttpClient Client { get; private set; } = null!;
+    public string DataRoot { get; private set; } = null!;
+    public IServiceProvider Services => _app!.Services;
 
     /// <summary>
     /// Creates an <see cref="HttpClient"/> backed by the in-memory TestServer that does NOT
@@ -48,6 +50,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
 
         _tempConfigDir = Path.Combine(Path.GetTempPath(), $"mdc-endpoint-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempConfigDir);
+        DataRoot = Path.Combine(_tempConfigDir, "data");
 
         var configPath = Path.Combine(_tempConfigDir, "appsettings.json");
         File.WriteAllText(configPath, GetMinimalConfig());
@@ -65,9 +68,10 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         builder.Services.AddUiSharedServices(statusHandlers, configPath);
 
         _app = builder.Build();
+        _app.UseApiKeyAuthentication();
         _app.UseLoginSessionAuthentication();
 
-        var config = _app.Services.GetRequiredService<ConfigStore>().Load();
+        var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);
         _app.MapArchiveMaintenanceEndpoints();
         _app.MapUiEndpointsWithStatus(statusHandlers);

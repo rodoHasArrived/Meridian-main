@@ -1,6 +1,6 @@
 // CLI Commands Reference Diagram
 // Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Last Updated: 2026-04-09
 //
 // This diagram shows all available CLI commands and flags,
 // organized by category with usage examples.
@@ -76,10 +76,10 @@ digraph CLICommands {
     bgcolor="#f0fff4";
 
     UI_MODE [fillcolor="#68d391",
-             label="--ui\n\nEnable web dashboard\nHTTP endpoints active\nReal-time monitoring"];
+             label="--mode <desktop|headless>\n\nChoose runtime surface\ndesktop starts local API host\nheadless disables HTTP"];
 
     HTTP_PORT [fillcolor="#9ae6b4",
-               label="--http-port <port>\n\nCustom HTTP port\nDefault: 8080\nUsed with --ui"];
+               label="--http-port <port>\n\nCustom HTTP port\nDefault: 8080\nUsed with --mode desktop"];
 
     BACKFILL [fillcolor="#68d391",
               label="--backfill\n\nRun historical backfill\nRequires provider config\nNo streaming"];
@@ -156,7 +156,7 @@ digraph CLICommands {
     bgcolor="#f7fafc";
 
     WF_NEW [shape=note, fillcolor="#edf2f7",
-            label="New Installation:\n\n1. dotnet run -- --wizard\n2. dotnet run -- --validate-credentials\n3. dotnet run -- --dry-run\n4. dotnet run -- --ui"];
+            label="New Installation:\n\n1. dotnet run -- --wizard\n2. dotnet run -- --validate-credentials\n3. dotnet run -- --dry-run\n4. dotnet run -- --mode desktop"];
 
     WF_CI [shape=note, fillcolor="#edf2f7",
            label="CI/CD Setup:\n\n1. Set environment variables\n2. dotnet run -- --auto-config\n3. dotnet run -- --validate-config\n4. dotnet run"];

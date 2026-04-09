@@ -288,6 +288,19 @@ public static class StockSharpConnectorCapabilities
     };
 
     /// <summary>
+    /// The StockSharp adapter set Meridian treats as Wave 1 validated.
+    /// Other recognized connectors remain available as optional/example paths,
+    /// but they are not part of the provider-confidence gate.
+    /// </summary>
+    public static IReadOnlyList<string> Wave1ValidatedConnectorTypes { get; } = new[]
+    {
+        "Rithmic",
+        "IQFeed",
+        "CQG",
+        "InteractiveBrokers"
+    };
+
+    /// <summary>
     /// Get all connectors that support historical data.
     /// </summary>
     public static IReadOnlyList<ConnectorCapabilities> GetConnectorsWithHistoricalSupport()
@@ -295,6 +308,27 @@ public static class StockSharpConnectorCapabilities
         return KnownConnectorTypes
             .Select(GetCapabilities)
             .Where(c => c.SupportsHistorical)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Get the connector capabilities that are part of Meridian's Wave 1 provider-confidence gate.
+    /// </summary>
+    public static IReadOnlyList<ConnectorCapabilities> GetWave1ValidatedConnectors()
+    {
+        return Wave1ValidatedConnectorTypes
+            .Select(GetCapabilities)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Get recognized named connectors that remain optional/example paths outside the Wave 1 gate.
+    /// </summary>
+    public static IReadOnlyList<ConnectorCapabilities> GetOptionalExampleConnectors()
+    {
+        return KnownConnectorTypes
+            .Except(Wave1ValidatedConnectorTypes, StringComparer.OrdinalIgnoreCase)
+            .Select(GetCapabilities)
             .ToList();
     }
 

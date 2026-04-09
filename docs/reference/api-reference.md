@@ -105,13 +105,12 @@ Use this map as a starting point before diving into generated type/member pages.
 
 ## REST API Endpoints
 
-The application exposes a REST API when running with `--ui` or `--mode web`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
+The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
 
 ### Authentication
 
 Set the `MDC_API_KEY` environment variable to enable authentication. Pass the key via:
 - `X-Api-Key` header (recommended)
-- `api_key` query parameter
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
 

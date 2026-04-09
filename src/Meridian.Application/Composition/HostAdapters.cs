@@ -110,15 +110,6 @@ public sealed class DesktopHostAdapter : IHostAdapter
 
         app.MapGet("/healthz", () => Results.Ok("healthy"));
 
-        // Dashboard for embedded browser
-        app.MapGet("/", (ConfigStore store) =>
-        {
-            var html = HtmlTemplateManager.Index(
-                store.ConfigPath,
-                store.GetStatusPath(),
-                store.GetBackfillStatusPath());
-            return Results.Content(html, "text/html");
-        });
     }
 }
 

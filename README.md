@@ -122,10 +122,14 @@ See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference
 
 Use these documents together when planning or implementing new work:
 
-- [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for delivery waves and target product direction
+- [docs/status/ROADMAP_COMBINED.md](docs/status/ROADMAP_COMBINED.md) for the shortest roadmap and target-state summary
+- [docs/status/ROADMAP.md](docs/status/ROADMAP.md) for the canonical wave order: Wave 1 provider confidence and checkpoint evidence, Wave 2 paper-trading cockpit hardening, Wave 3 shared run / portfolio / ledger continuity, and Wave 4 governance and fund-operations productization on top of the delivered Security Master baseline
+- [docs/plans/meridian-6-week-roadmap.md](docs/plans/meridian-6-week-roadmap.md) for the current time-boxed Waves 1-4 execution slice
+- [docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md](docs/plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 provider-confidence and checkpoint-evidence gate
+- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the Wave 2-3 workstation and shared-model delivery shape
+- [docs/plans/governance-fund-ops-blueprint.md](docs/plans/governance-fund-ops-blueprint.md) for Wave 4 governance and fund-operations depth on top of the delivered Security Master baseline
 - [docs/status/FEATURE_INVENTORY.md](docs/status/FEATURE_INVENTORY.md) for current-vs-target capability status
 - [docs/status/IMPROVEMENTS.md](docs/status/IMPROVEMENTS.md) for tracked implementation themes
-- [docs/plans/trading-workstation-migration-blueprint.md](docs/plans/trading-workstation-migration-blueprint.md) for the workstation migration shape
 <!-- readme-tree start -->
 ```
 .

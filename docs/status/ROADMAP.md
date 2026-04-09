@@ -70,8 +70,8 @@ These are conservative "in code and materially usable" claims as of 2026-04-08:
 
 These areas are real in code but not yet complete enough to treat as fully closed operator workflows:
 
-- Provider confidence remains uneven. Polygon, Interactive Brokers, StockSharp, and NYSE each have stronger replay, contract, and pipeline evidence than earlier snapshots, but the validation matrix still includes partial or missing runtime proof.
-- Backfill reliability is broadly implemented but still needs longer-run checkpoint evidence and clearer operator confidence signals across providers and date ranges.
+- Provider confidence remains uneven. Polygon, Robinhood, Interactive Brokers, StockSharp, and NYSE now have a stricter evidence gate, but several runtime scenarios are still explicitly bounded by vendor sessions, entitlements, or package/runtime dependencies.
+- Backfill reliability and Parquet L2 flush behavior now have repo-backed proof, but the docs and automation need to stay synchronized with the validation matrix.
 - The web workstation is no longer just a shell, but the paper-trading cockpit still needs hardening around real-vendor validation, richer audit depth, and clearer daily-use acceptance criteria.
 - Shared run coverage spans backtest, paper, and live-aware models in contracts and UI, but portfolio, ledger, cash-flow, and reconciliation continuity are not yet equally deep in every mode.
 - Governance workflows now build on a delivered Security Master baseline, but account/entity structure, multi-ledger, cash-flow modeling, report-pack generation, and broader exception handling are still early product layers rather than finished experiences.
@@ -137,9 +137,9 @@ These remain valuable, but they are not on the shortest path to Meridian's core 
 
 ### Wave 1: Provider confidence and checkpoint evidence
 
-- close replay, runtime, auth, and checkpoint evidence gaps so data trust is explicit rather than inferred from architecture
-- validate backfill checkpoints, data-gap handling, and Parquet L2 flush behavior across representative providers and date ranges
-- keep provider-confidence docs and the validation matrix synchronized with executable evidence rather than summary language
+- close the remaining replay, runtime, auth, and rate-limit gaps so data trust is explicit rather than inferred from architecture
+- keep checkpoint reliability and Parquet L2 flush proof on the executable gate instead of drifting back into documentation-only claims
+- keep provider-confidence docs, runtime artifact folders, and `run-wave1-provider-validation.ps1` synchronized with executable evidence rather than summary language
 
 ### Wave 2: Paper-trading cockpit hardening
 
@@ -187,7 +187,7 @@ The priority order below is the same order used in `What Remains`, `Recommended 
 
 ### 1. Wave 1: Close provider-confidence and checkpoint-evidence gaps first
 
-**Gap:** Provider breadth is strong, but operator trust still depends on uneven replay, runtime, auth, and checkpoint evidence.
+**Gap:** Provider breadth is strong, but operator trust still depends on uneven replay, runtime, auth, and rate-limit evidence even after the checkpoint and Parquet proof gaps closed.
 
 **Value:** This directly affects confidence in research, paper sessions, promotion decisions, and any future live-readiness claims.
 
@@ -277,14 +277,14 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 **Focus:**
 
-- expand Polygon replay coverage across feeds and edge cases
+- expand Polygon replay coverage across feeds and edge cases and keep live reconnect/throttling explicitly bounded until a transcript exists
 - validate Interactive Brokers runtime and bootstrap behavior against real vendor surfaces without conflating smoke builds, simulations, and vendor-runtime modes
 - deepen NYSE shared-lifecycle and transport coverage while keeping auth, rate-limit, and cancellation behavior explicit
 - keep StockSharp connector guidance aligned with the validated adapter set Meridian is prepared to recommend
-- validate backfill checkpoint reliability, gap detection, and Parquet L2 flush behavior across representative providers and windows
-- keep provider-confidence docs and the validation matrix synchronized with executable evidence
+- keep checkpoint reliability and Parquet L2 flush behavior on the passing suite list inside `run-wave1-provider-validation.ps1`
+- keep provider-confidence docs, runtime artifact folders, and the validation matrix synchronized with executable evidence
 
-**Exit signal:** Major providers have documented replay or runtime evidence, each supported validation suite passes, and remaining runtime gaps are explicitly bounded instead of implied away.
+**Exit signal:** The Wave 1 matrix has no unexplained `❌` rows, checkpoint/L2 rows are closed in repo tests, each supported validation suite passes, and remaining provider gaps are explicitly bounded instead of implied away.
 
 ### Wave 2: Paper-trading cockpit hardening
 
@@ -378,7 +378,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, and backfill checkpoints plus gap handling are validated across representative providers and date ranges.
+1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, checkpoint reliability plus Parquet L2 flush behavior are closed in repo tests, and `run-wave1-provider-validation.ps1` reproduces the offline gate.
 2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.

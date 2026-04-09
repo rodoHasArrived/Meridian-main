@@ -124,7 +124,9 @@ credentials.json
 # and logs that are generated during application execution. They can be large
 # and are specific to each deployment environment. They should not be in VCS.
 
-artifacts/
+artifacts/*
+!artifacts/provider-validation/
+!artifacts/provider-validation/**
 data/
 logs/
 _logs/

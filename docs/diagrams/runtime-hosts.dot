@@ -1,6 +1,6 @@
 // Runtime Hosts and Startup Modes Diagram
 // Meridian v1.8.x
-// Last Updated: 2026-04-07
+// Last Updated: 2026-04-09
 //
 // This diagram shows the repo's runnable hosts and how src/Meridian selects
 // startup modes through SharedStartupBootstrapper and StartupOrchestrator.
@@ -22,8 +22,8 @@ digraph RuntimeHosts {
 
     OPERATOR [shape=oval, fillcolor="#08427b", fontcolor="white",
               label="Operator\n[Person]"];
-    BROWSER [shape=oval, fillcolor="#08427b", fontcolor="white",
-             label="Browser User\n[Person]"];
+    LOCAL_CLIENT [shape=oval, fillcolor="#08427b", fontcolor="white",
+                  label="Local API Client\n[WPF / Swagger / scripts]"];
     MCP_HOST [shape=oval, fillcolor="#08427b", fontcolor="white",
               label="MCP Host\n[Claude / Cursor / Copilot]"];
   }
@@ -36,8 +36,6 @@ digraph RuntimeHosts {
 
     MAIN_APP [fillcolor="#438dd5", fontcolor="white",
               label="src/Meridian\nCLI / composite host\nProgram.cs"];
-    WEB_APP [fillcolor="#805ad5", fontcolor="white",
-             label="src/Meridian.Ui\nThin web host\nBuildUiHost() only"];
     WPF_APP [fillcolor="#805ad5", fontcolor="white",
              label="src/Meridian.Wpf\nWindows workstation shell\nApp.xaml.cs DI composition"];
     MCP_REPO [fillcolor="#2c7a7b", fontcolor="white",
@@ -55,14 +53,12 @@ digraph RuntimeHosts {
     BOOTSTRAPPER [fillcolor="#bfdbfe",
                   label="SharedStartupBootstrapper\nResolve config path\nLoad minimal config\nResolve deployment"];
     ORCHESTRATOR [fillcolor="#93c5fd",
-                  label="StartupOrchestrator\n1. command dispatch\n2. web mode\n3. validation\n4. runtime selection"];
+                  label="StartupOrchestrator\n1. command dispatch\n2. mode validation\n3. runtime selection"];
 
     COMMAND_MODE [fillcolor="#feebc8",
                   label="CommandModeRunner\nhelp, config, symbols,\nvalidation, packaging"];
-    WEB_MODE [fillcolor="#ddd6fe",
-              label="WebModeRunner\nDeploymentMode.Web\nHTTP-only dashboard"];
     DESKTOP_MODE [fillcolor="#ddd6fe",
-                  label="DesktopModeRunner\nDeploymentMode.Desktop\nUI server + collector/backfill"];
+                  label="DesktopModeRunner\nDeploymentMode.Desktop\nUiServer + collector/backfill"];
     COLLECTOR_MODE [fillcolor="#bfdbfe",
                     label="CollectorModeRunner\nDefault/headless streaming\nprovider connect + subscriptions"];
     BACKFILL_MODE [fillcolor="#bfdbfe",
@@ -76,9 +72,9 @@ digraph RuntimeHosts {
     bgcolor="#f0fff4";
 
     DASHBOARD_BRIDGE [fillcolor="#c4b5fd",
-                      label="DashboardServerBridge\nEmbedded ASP.NET server\nlocalhost dashboard"];
+                      label="UiServer\nEmbedded ASP.NET host\nlocalhost API + Swagger"];
     UI_SHARED [fillcolor="#ddd6fe",
-               label="Meridian.Ui.Shared\nBuildUiHost()\nshared endpoints, auth,\nworkstation APIs"];
+               label="Meridian.Ui.Shared\nshared endpoints, auth,\nworkstation APIs"];
     HOST_FACTORY [fillcolor="#a7f3d0",
                   label="HostStartupFactory\nproviders, storage,\npipeline, monitoring"];
     PIPELINE [fillcolor="#d1fae5",
@@ -93,23 +89,19 @@ digraph RuntimeHosts {
 
   OPERATOR -> MAIN_APP [label="CLI / make targets"];
   OPERATOR -> WPF_APP [label="Windows desktop app"];
-  BROWSER -> WEB_APP [label="standalone web host"];
-  BROWSER -> DASHBOARD_BRIDGE [label="embedded dashboard"];
+  LOCAL_CLIENT -> DASHBOARD_BRIDGE [label="localhost API / Swagger"];
   MCP_HOST -> MCP_REPO [label="repo tools"];
   MCP_HOST -> MCP_MARKET [label="provider tools"];
 
   MAIN_APP -> BOOTSTRAPPER;
   BOOTSTRAPPER -> ORCHESTRATOR;
   ORCHESTRATOR -> COMMAND_MODE [label="phase 1"];
-  ORCHESTRATOR -> WEB_MODE [label="DeploymentMode.Web"];
   ORCHESTRATOR -> DESKTOP_MODE [label="DeploymentMode.Desktop"];
   ORCHESTRATOR -> COLLECTOR_MODE [label="default/headless"];
   ORCHESTRATOR -> BACKFILL_MODE [label="--backfill or config"];
 
-  WEB_MODE -> DASHBOARD_BRIDGE [label="start UI server"];
-  DESKTOP_MODE -> DASHBOARD_BRIDGE [label="start UI server"];
-  DASHBOARD_BRIDGE -> UI_SHARED [label="shared web surface"];
-  WEB_APP -> UI_SHARED [label="same endpoint module"];
+  DESKTOP_MODE -> DASHBOARD_BRIDGE [label="start local API host"];
+  DASHBOARD_BRIDGE -> UI_SHARED [label="map shared endpoints"];
 
   DESKTOP_MODE -> COLLECTOR_MODE [label="normal desktop"];
   DESKTOP_MODE -> BACKFILL_MODE [label="desktop backfill"];
@@ -138,7 +130,7 @@ digraph RuntimeHosts {
     LEG_PERSON [shape=oval, fillcolor="#08427b", fontcolor="white", label="User / client"];
     LEG_HOST [fillcolor="#438dd5", fontcolor="white", label="Runnable host"];
     LEG_MODE [fillcolor="#bfdbfe", label="Startup mode / service"];
-    LEG_UI [fillcolor="#ddd6fe", label="Shared UI host"];
+    LEG_UI [fillcolor="#ddd6fe", label="Local API / shared endpoint layer"];
     LEG_STORE [shape=cylinder, fillcolor="#fecaca", label="Persistent state"];
   }
 }

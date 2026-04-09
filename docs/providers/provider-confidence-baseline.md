@@ -1,112 +1,167 @@
 # Provider Confidence Baseline
 
-**Last Updated:** 2026-04-07
-**Scope:** Wave 1 provider-confidence evidence for Polygon, Robinhood, NYSE, Interactive Brokers, and StockSharp
+**Last Updated:** 2026-04-09  
+**Scope:** Wave 1 provider confidence and evidence discipline for Polygon, Robinhood, NYSE, Interactive Brokers, and StockSharp
 
-This document is the repo-grounded baseline for provider confidence. It separates what Meridian validates in offline or CI-friendly paths from what still requires local vendor software, credentials, entitlements, or manual runtime checks.
+Wave 1 is a trust-and-evidence program. This document separates executable repo evidence from manual/runtime evidence and keeps every bounded scenario tied to a concrete artifact folder or test suite.
 
-Offline or CI evidence is the minimum required confidence bar for this slice. Live-vendor checks are useful follow-on verification, but they are not the baseline release gate for these providers.
+Use this with:
 
-Robinhood is now part of this baseline because the repo exposes brokerage, quote-polling, historical-bar, and symbol-search seams through one execution-adjacent adapter set. Historical-only and Security Master support providers such as FRED and EDGAR remain tracked in `docs/status/FEATURE_INVENTORY.md` rather than this execution-oriented Wave 1 confidence gate.
+- `docs/status/provider-validation-matrix.md`
+- `artifacts/provider-validation/`
+- `scripts/dev/run-wave1-provider-validation.ps1`
 
-## Validation Matrix
+## Baseline Rules
 
-| Provider | Required offline / CI evidence | Optional live / vendor evidence | Known gated or unsupported paths |
-|---|---|---|---|
-| Polygon | `PolygonRecordedSessionReplayTests`, `PolygonMessageParsingTests`, `PolygonSubscriptionTests`, committed replay fixtures under `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/Polygon/` | Real websocket connectivity with valid Polygon credentials and feed entitlements; plan-tier validation for production rates and delayed vs real-time access | No Level 2 depth; runtime quality still depends on Polygon plan/tier and credentials |
-| Robinhood | `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam`, `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests` | Live broker-session credential validation, quote-polling cadence, cancellation behavior, and reconnect notes captured from a real Robinhood session | Unofficial broker API; no public websocket feed in this adapter set; explicit provider-level rate-limit fixtures and live reconnect transcripts are still missing |
-| NYSE | `NyseSharedLifecycleTests`, `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, `NyseNationalTradesCsvParserTests` | NYSE credential validation, websocket auth/connectivity, entitlement checks for premium depth, REST historical checks | Premium or Professional tier is required for Level 2 depth; live behavior depends on NYSE credentials and feed entitlements |
-| Interactive Brokers | `IBRuntimeGuidanceTests`, `IBOrderSampleTests`, compile-only smoke build via `scripts/dev/build-ibapi-smoke.ps1` | Official vendor `IBApi` DLL/project path, TWS/Gateway connectivity, server-version validation, market-data entitlement checks | Three modes must not be conflated: non-`IBAPI` simulation/runtime-guidance, `EnableIbApiSmoke=true` compile-only smoke, and official `IBAPI` vendor path for real connectivity |
-| StockSharp | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` and connector capability assertions for named connectors | Real connector runtime checks for installed packages and locally running vendor software such as IQFeed, CQG, Rithmic, or TWS/Gateway | Default CI builds do not enable `STOCKSHARP`; crypto connectors may require additional packages or crowdfunding access beyond the package surfaces Meridian references today |
+- Offline/CI evidence is mandatory for every Wave 1 row.
+- Manual/runtime evidence must use the committed artifact layout under `artifacts/provider-validation/<provider>/<yyyy-mm-dd>/`.
+- Remaining gaps are allowed only as explicit `bounded` scenarios tied to a concrete vendor, entitlement, package, or session requirement.
+- Do not broaden live-readiness language from this document.
 
-## Provider Details
+## Polygon
 
-### Polygon
+**Offline / CI evidence**
 
-**Baseline evidence**
-- Replay fixtures in `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/Polygon/` are committed sample sessions that pass through `PolygonMarketDataClient.ProcessTestMessage`.
-- `PolygonRecordedSessionReplayTests` lock expected trade, quote, aggregate, and order-flow output while ensuring malformed or ignored frames do not leak unexpected event types.
-- Parsing and subscription seams are additionally covered by `PolygonMessageParsingTests`, `PolygonMarketDataClientTests`, and `PolygonSubscriptionTests`.
+- `PolygonRecordedSessionReplayTests`
+- `PolygonMessageParsingTests`
+- `PolygonSubscriptionTests`
+- `PolygonMarketDataClientTests`
+- committed replay fixtures under `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/Polygon/`
 
-**Suggested commands**
-```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PolygonRecordedSessionReplayTests"
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PolygonMessageParsingTests|FullyQualifiedName~PolygonSubscriptionTests"
-```
+**Manual / runtime evidence**
 
-**Manual follow-on verification**
-- Connect with a real Polygon API key and confirm the intended feed (`stocks`, `options`, `forex`, or `crypto`).
-- Validate any production assumptions about rate limits, delayed data, or plan-tier entitlements outside CI.
+- None required for the replay baseline.
+- Live reconnect and websocket throttling remain bounded follow-on work until a sanitized transcript is captured.
 
-### Robinhood
+**Wave 1 posture**
 
-**Baseline evidence**
-- `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` proves the stable `/api/execution/*` seam can submit through the concrete Robinhood brokerage gateway with stubbed broker responses.
-- `RobinhoodBrokerageGatewayTests` cover authentication, order submission, account reads, and broker-response translation.
-- `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, and `RobinhoodSymbolSearchProviderTests` preserve quote polling, historical daily bars, and instrument lookup behavior across the current unofficial API surface.
+- Replay confidence is strong and executable.
+- Remaining runtime gaps are bounded to live websocket reconnect/throttling behavior.
 
-**Suggested commands**
-```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~RobinhoodBrokerageGatewayTests|FullyQualifiedName~RobinhoodMarketDataClientTests|FullyQualifiedName~RobinhoodHistoricalDataProviderTests|FullyQualifiedName~RobinhoodSymbolSearchProviderTests|FullyQualifiedName~RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam"
-```
+## Robinhood
 
-**Manual follow-on verification**
-- Validate a real Robinhood access token and broker session against account, order, and quote-polling paths.
-- Capture reconnect, cancellation, and throttling notes from a real broker session because the adapter does not have a public websocket replay seam to lean on.
+**Offline / CI evidence**
 
-### NYSE
+- `RobinhoodBrokerageGatewayTests`
+- `RobinhoodMarketDataClientTests`
+- `RobinhoodHistoricalDataProviderTests`
+- `RobinhoodSymbolSearchProviderTests`
+- `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam`
 
-**Baseline evidence**
-- `NyseSharedLifecycleTests` cover multi-symbol lifecycle, companion quote subscriptions, mixed trade/depth behavior, malformed or unknown messages, and unsubscribe/resubscribe flows.
-- `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, and `NyseNationalTradesCsvParserTests` cover the adapter and parser surfaces around `NyseMarketDataClient` and `NYSEDataSource`.
+**Manual / runtime evidence**
 
-**Suggested commands**
-```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~NyseSharedLifecycleTests"
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~NyseMarketDataClientTests|FullyQualifiedName~NYSEMessageParsingTests|FullyQualifiedName~NyseNationalTradesCsvParserTests"
-```
+- `artifacts/provider-validation/robinhood/2026-04-09/auth-session/summary.md`
+- `artifacts/provider-validation/robinhood/2026-04-09/quote-polling/summary.md`
+- `artifacts/provider-validation/robinhood/2026-04-09/order-submit-cancel/summary.md`
+- `artifacts/provider-validation/robinhood/2026-04-09/throttling-reconnect/summary.md`
 
-**Manual follow-on verification**
-- Validate NYSE REST/websocket auth using real credentials.
-- Confirm whether the deployment has entitlement for depth beyond the baseline L1/L2 assumptions.
+**Wave 1 posture**
 
-### Interactive Brokers
+- One supported Robinhood surface is in code across brokerage submit, quote polling, historical daily bars, and symbol search.
+- Runtime confidence remains bounded by the unofficial broker API and the need for a real session outside CI.
+- Quote confidence is polling-path confidence, not websocket confidence.
 
-**Baseline evidence**
-- `IBRuntimeGuidanceTests` lock the operator-facing messages for the simulation/runtime-guidance path and the compile-only smoke path.
-- `IBOrderSampleTests` preserve committed sample order shapes under `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/InteractiveBrokers/`.
-- `scripts/dev/build-ibapi-smoke.ps1` keeps the gated infrastructure build path compilable without claiming live TWS/Gateway compatibility.
+## NYSE
 
-**Suggested commands**
+**Offline / CI evidence**
+
+- `NyseSharedLifecycleTests`
+- `NyseMarketDataClientTests`
+- `NYSECredentialAndRateLimitTests`
+- `NYSEMessageParsingTests`
+- `NyseTaqCollectorIntegrationTests`
+
+**Manual / runtime evidence**
+
+- `artifacts/provider-validation/nyse/2026-04-09/auth-connectivity/summary.md`
+- `artifacts/provider-validation/nyse/2026-04-09/l1-streaming-reconnect/summary.md`
+- `artifacts/provider-validation/nyse/2026-04-09/rate-limit/summary.md`
+- `artifacts/provider-validation/nyse/2026-04-09/premium-depth/summary.md`
+
+**Wave 1 posture**
+
+- The L1/shared-lifecycle gate is driven by repo evidence.
+- Auth/connectivity and rate-limit behavior are explicitly bounded to real credentialed runtime.
+- `premium-depth` is optional-but-bounded by entitlement and does not block Wave 1 closure.
+
+## Interactive Brokers
+
+**Offline / CI evidence**
+
+- `IBRuntimeGuidanceTests`
+- `IBOrderSampleTests`
+- `IBApiVersionValidatorTests`
+- `IBSimulationClientContractTests`
+- `scripts/dev/build-ibapi-smoke.ps1`
+
+**Manual / runtime evidence**
+
+- `artifacts/provider-validation/interactive-brokers/2026-04-09/bootstrap/summary.md`
+- `artifacts/provider-validation/interactive-brokers/2026-04-09/server-version/summary.md`
+- `artifacts/provider-validation/interactive-brokers/2026-04-09/market-data-entitlements/summary.md`
+- `artifacts/provider-validation/interactive-brokers/2026-04-09/disconnect-reconnect/summary.md`
+
+**Wave 1 posture**
+
+- Meridian keeps three IB modes separate:
+  - non-`IBAPI` simulation/runtime-guidance
+  - `EnableIbApiSmoke=true` compile-only smoke
+  - official vendor runtime via the real `IBApi` surface
+- Repo evidence now proves the version bounds and smoke-build path.
+- Runtime confidence remains bounded by vendor DLL availability, TWS/Gateway setup, and entitlements.
+
+## StockSharp
+
+**Offline / CI evidence**
+
+- `StockSharpSubscriptionTests`
+- `StockSharpMessageConversionTests`
+- `StockSharpConnectorFactoryTests`
+- `StockSharpConnectorCapabilities.GetWave1ValidatedConnectors()`
+
+**Wave 1 validated adapters**
+
+- `Rithmic`
+- `IQFeed`
+- `CQG`
+- `InteractiveBrokers`
+
+**Optional/example adapters outside the Wave 1 gate**
+
+- `Binance`
+- `Coinbase`
+- `Kraken`
+
+**Manual / runtime evidence**
+
+- `artifacts/provider-validation/stocksharp/2026-04-09/rithmic-bootstrap/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/rithmic-streaming/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/rithmic-historical/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/iqfeed-bootstrap/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/iqfeed-streaming/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/iqfeed-historical/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/cqg-bootstrap/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/cqg-streaming/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/cqg-historical/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/interactive-brokers-bootstrap/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/interactive-brokers-streaming/summary.md`
+- `artifacts/provider-validation/stocksharp/2026-04-09/interactive-brokers-historical/summary.md`
+
+**Wave 1 posture**
+
+- Meridian still recognizes more named connectors than it validates in Wave 1.
+- The Wave 1 gate is intentionally limited to the four adapters above.
+- Every runtime scenario remains explicitly bounded by package surfaces, vendor software, and credentials until a sanitized local capture exists.
+
+## Cross-Cutting Wave 1 Closures
+
+These are not provider-runtime artifacts, but they are part of the same trust gate:
+
+- Checkpoint reliability: `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests`
+- Parquet L2 flush behavior: `ParquetStorageSinkTests`, `ParquetConversionServiceTests`
+
+## Primary Command
+
 ```powershell
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBOrderSampleTests"
-./scripts/dev/build-ibapi-smoke.ps1
+./scripts/dev/run-wave1-provider-validation.ps1
 ```
-
-**Manual follow-on verification**
-- Use the official vendor `IBApi` DLL or project reference and build with `-p:DefineConstants=IBAPI`.
-- Validate TWS/Gateway connectivity, server-version compatibility, and entitlements locally.
-
-### StockSharp
-
-**Baseline evidence**
-- `StockSharpSubscriptionTests` verify the non-`STOCKSHARP` guidance path and generic subscription/runtime expectations.
-- `StockSharpMessageConversionTests` preserve domain-model output and connector capability metadata for representative connectors including Rithmic, IQFeed, Interactive Brokers, and Kraken.
-- `StockSharpConnectorFactoryTests` and the stub factory tests ensure unsupported-package guidance points back to `docs/providers/stocksharp-connectors.md`.
-
-**Suggested commands**
-```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StockSharpSubscriptionTests|FullyQualifiedName~StockSharpMessageConversionTests|FullyQualifiedName~StockSharpConnectorFactoryTests"
-```
-
-**Manual follow-on verification**
-- Build with `EnableStockSharp=true` and install the required connector package surfaces.
-- Validate each connector against the local vendor runtime it depends on, such as IQFeed client, CQG demo/live access, Rithmic certificates, or TWS/Gateway.
-
-## Guidance Rules
-
-- Treat offline/CI evidence as the mandatory baseline.
-- Treat live-vendor evidence as explicit manual verification, not something implied by the default build.
-- Keep Robinhood's unofficial API and polling-only quote surface explicit; do not overstate it as websocket-validated live-market-data readiness.
-- Do not claim live readiness, entitlement coverage, or package availability unless the repo has a code path and a documented validation mode that supports that claim.
-- When provider setup or runtime messages change, update this file and the linked provider/setup docs in the same change.

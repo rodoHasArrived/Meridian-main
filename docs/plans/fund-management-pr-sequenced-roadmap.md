@@ -2,8 +2,10 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-09
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
+
+> **Retirement note (2026-04-09):** Browser workstation references in this roadmap, including any WPF/web alignment language carried over from earlier planning, are historical only. Current implementation should stay desktop-first and use the retained desktop-local API seams where needed.
 
 ## Purpose
 

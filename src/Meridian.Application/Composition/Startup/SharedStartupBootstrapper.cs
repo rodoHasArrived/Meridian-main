@@ -54,7 +54,7 @@ public static class SharedStartupBootstrapper
             Console.Error.WriteLine(deploymentContext.ModeResolutionError);
             log.Error("Invalid deployment mode request: {ModeResolutionError}", deploymentContext.ModeResolutionError);
             LoggingSetup.CloseAndFlush();
-            return 1;
+            return Task.FromResult(1);
         }
 
         log.Debug("Deployment context: {Mode}, Command: {Command}, Docker: {IsDocker}",

@@ -1,6 +1,6 @@
 // C4 Level 2: Container Diagram
 // Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Last Updated: 2026-04-09
 //
 // This diagram shows the major deployable units within the system.
 // It answers: "What are the major technology choices?"
@@ -63,10 +63,10 @@ digraph C4_Containers {
            label="WPF Desktop App\n[.NET 9 / WPF]\n\n40+ pages: Dashboard, Config,\nBackfill, Export, Monitoring\nNative Windows experience"];
 
       WEB_UI [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-              label="Web Dashboard\n[ASP.NET / HTML]\n\nBrowser-based monitoring\nReal-time status updates\n/status endpoint"];
+              label="Desktop-local API host\n[ASP.NET Core / Minimal APIs]\n\nlocalhost workstation API\nSwagger + health endpoints\nused by desktop and tooling"];
 
       CLI [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-           label="CLI Interface\n[.NET Console]\n\nCommand-line operation\n24+ flags: --wizard, --auto-config\n--backfill, --ui, --dry-run"];
+           label="CLI Interface\n[.NET Console]\n\nCommand-line operation\n24+ flags: --wizard, --auto-config\n--backfill, --mode desktop, --dry-run"];
     }
 
     // Onboarding & Diagnostics Layer
@@ -129,7 +129,7 @@ digraph C4_Containers {
 
     // HTTP Monitoring Server
     HTTP [shape=box, style="rounded,filled", fillcolor="#ed8936", fontcolor="white",
-          label="Status HTTP Server\n[HttpListener]\n\n/status - JSON metrics\n/metrics - Prometheus\n/health, /ready, /live"];
+          label="Local HTTP Endpoints\n[ASP.NET Core]\n\n/swagger + workstation APIs\n/metrics - Prometheus\n/healthz, /readyz, /livez"];
   }
 
   // Message Bus
@@ -180,13 +180,13 @@ digraph C4_Containers {
 
   // Relationships - Users
   Operator -> WPF [label="Configures"];
-  Operator -> WEB_UI [label="Monitors"];
+  Operator -> WEB_UI [label="Inspects / automates"];
   Operator -> CLI [label="Operates"];
   Quant -> PARQUET [label="Analyzes\ndata"];
 
   // Relationships - Presentation to Core
-  WPF -> CORE [label="HTTP/Status API"];
-  WEB_UI -> HTTP [label="Status polling"];
+  WPF -> CORE [label="Local API"];
+  WEB_UI -> HTTP [label="Swagger / status"];
   CLI -> CORE [label="In-process"];
 
   // Relationships - CLI to Onboarding

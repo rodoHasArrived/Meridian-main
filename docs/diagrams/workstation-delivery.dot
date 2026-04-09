@@ -1,9 +1,9 @@
 // Workstation Delivery Diagram
 // Meridian v1.8.x
-// Last Updated: 2026-04-07
+// Last Updated: 2026-04-09
 //
-// This diagram shows how the WPF workstation and the React workstation shell
-// converge on shared run, portfolio, ledger, and security-reference services.
+// This diagram shows how the WPF workstation and the retained desktop-local API
+// seams converge on shared run, portfolio, ledger, and security-reference services.
 
 digraph WorkstationDelivery {
   rankdir=LR;
@@ -12,7 +12,7 @@ digraph WorkstationDelivery {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Workstation Delivery\nShared read models across WPF and web workstation surfaces | v1.8.x";
+  label="Meridian - Workstation Delivery\nShared read models across WPF and desktop-local API surfaces | v1.8.x";
 
   subgraph cluster_surfaces {
     label="Operator Surfaces";
@@ -23,9 +23,9 @@ digraph WorkstationDelivery {
     WPF_SURFACES [fillcolor="#805ad5", fontcolor="white",
                   label="Meridian.Wpf\nResearchWorkspaceShellPage\nTradingWorkspaceShellPage\nGovernanceWorkspaceShellPage"];
     WEB_SHELL [fillcolor="#805ad5", fontcolor="white",
-               label="React workstation shell\n/workstation\nbootstrap + drill-in screens"];
+               label="Desktop-local API host\nlocalhost-only /api/*\nSwagger + retained workstation routes"];
     API_SURFACE [fillcolor="#c4b5fd",
-                 label="Workstation + portfolio routes\n/api/workstation/*\n/api/portfolio/*\n/api/strategies/*"];
+                 label="Retained workstation + portfolio routes\n/api/workstation/*\n/api/portfolio/*\n/api/strategies/*"];
   }
 
   subgraph cluster_delivery {
@@ -37,7 +37,7 @@ digraph WorkstationDelivery {
     WPF_WORKSPACE [fillcolor="#bfdbfe",
                    label="StrategyRunWorkspaceService\nactive run context\nrun browser + promotion handoff"];
     WORKSTATION_ENDPOINTS [fillcolor="#93c5fd",
-                           label="WorkstationEndpoints\nsession / research / trading\nledger / fills / attribution\nsecurity master / reconciliation"];
+                           label="WorkstationEndpoints\nruns / ledger / cash-flow\nsecurity master / reconciliation\nretained workstation APIs"];
     RUN_READ [fillcolor="#bfdbfe",
               label="StrategyRunReadService\nsummary, detail, equity curve,\nfills, attribution"];
     PORTFOLIO_READ [fillcolor="#dbeafe",
@@ -67,7 +67,7 @@ digraph WorkstationDelivery {
   }
 
   WPF_SURFACES -> WPF_WORKSPACE [label="desktop pages"];
-  WEB_SHELL -> API_SURFACE [label="XHR / fetch"];
+  WEB_SHELL -> API_SURFACE [label="localhost requests"];
   API_SURFACE -> WORKSTATION_ENDPOINTS [label="route groups"];
 
   WPF_WORKSPACE -> RUN_READ [label="desktop drill-ins"];

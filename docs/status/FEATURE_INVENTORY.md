@@ -45,23 +45,23 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 |----------|--------|----------------|
 | **Alpaca** | ✅ | Credential validation, automatic resubscription on reconnect, quote routing |
 | **Interactive Brokers** | 🔑 | Real runtime requires `-p:DefineConstants=IBAPI` plus the official `IBApi` surface; non-`IBAPI` builds expose simulation/setup guidance instead of broker connectivity |
-| **Polygon** | ⚠️ | Real connection when API key present; stub mode (synthetic heartbeat/trades) without key. WebSocket parsing now has committed recorded-session replay coverage, but broader live-feed coverage is still limited |
-| **Robinhood** | 🔑 | Unofficial broker-backed quote polling plus brokerage reads/orders, options chains, and historical daily bars when `ROBINHOOD_ACCESS_TOKEN` is present; no public WebSocket feed, so reconnect/rate-limit runtime proof is still partial |
-| **NYSE** | 🔑 | Requires NYSE Connect credentials; provider implementation complete |
-| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Unsupported connector / missing-package paths now return recovery-oriented guidance pointing to `EnableStockSharp=true`, connector package requirements, and the StockSharp connector guide |
+| **Polygon** | ⚠️ | Real connection when API key present; committed replay fixtures close the parser path, while live reconnect/websocket throttling remain explicitly runtime-bounded |
+| **Robinhood** | 🔑 | Unofficial broker-backed quote polling plus brokerage reads/orders, options chains, and historical daily bars when `ROBINHOOD_ACCESS_TOKEN` is present; runtime bounds are tracked under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| **NYSE** | 🔑 | Requires NYSE Connect credentials; L1/shared-lifecycle evidence is strong, with auth/rate-limit/depth bounds tracked under `artifacts/provider-validation/nyse/2026-04-09/` |
+| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Wave 1 validates `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers`; crypto connectors remain optional/example paths |
 | **Failover-Aware Client** | ✅ | `FailoverAwareMarketDataClient` with `ProviderDegradationScorer`, per-provider health |
 | **Streaming Failover Service** | ✅ | `StreamingFailoverService` + `StreamingFailoverRegistry`; runtime failover orchestration with configurable rules and health evaluation |
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |
 | **NoOp Client** | ✅ | `NoOpMarketDataClient` for dry-run / test harness scenarios |
 
-Provider validation matrix and evidence links now live in `docs/status/provider-validation-matrix.md` and are referenced by `production-status.md` for pass/fail readiness gating.
+Provider validation matrix and evidence links now live in `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, and `artifacts/provider-validation/`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner.
 
 ### Remaining work to reach full provider coverage
 
 - **Polygon**: Validate WebSocket message parsing against Polygon v2 feed schema (trades, quotes, aggregates, status messages). Add round-trip integration test with a recorded WebSocket session replay.
-- **Robinhood**: Quote polling, historical bars, symbol search, options chains, and brokerage paths are in code; remaining work is explicit reconnect/rate-limit/runtime validation against live broker sessions and cockpit-facing acceptance criteria.
-- **StockSharp**: Runtime connector guidance and unsupported-path recovery messaging are now aligned; remaining work is expanding connector coverage/examples as more adapters are validated.
-- **IB**: Scripted setup instructions and a compile-only smoke-build path now exist; remaining work is keeping the live vendor-DLL path validated against real IB API releases.
+- **Robinhood**: Quote polling, historical bars, symbol search, options chains, and brokerage paths are in code; remaining work is explicit runtime evidence for the bounded scenarios under `artifacts/provider-validation/robinhood/2026-04-09/`.
+- **StockSharp**: Runtime connector guidance and unsupported-path recovery messaging are now aligned; remaining work is moving the validated adapter set from bounded to captured runtime evidence without broadening the Wave 1 set.
+- **IB**: Scripted setup instructions, version-bound tests, and a compile-only smoke-build path now exist; remaining work is keeping the vendor-runtime path validated against real IB API releases and entitlements.
 
 ---
 
@@ -82,7 +82,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | Interactive Brokers | 🔑 | Full implementation behind `IBAPI`; smoke builds remain compile-only and are not operator-ready historical access |
 | StockSharp | ✅ | Via StockSharp connectors; runtime/historical coverage depends on connector setup, package surface, and entitlement |
 | **Composite Provider** | ✅ | Priority-based fallback chain, rate-limit tracking, per-provider health |
-| **Gap Backfill Service** | ✅ | `GapBackfillService` triggered on reconnect; uses `WebSocketReconnectionHelper` gap window |
+| **Gap Backfill Service** | ✅ | `GapBackfillService` triggered on reconnect; uses `WebSocketReconnectionHelper` gap window with Wave 1 repo-backed proof in `GapBackfillServiceTests` |
 | **Backfill Rate Limiting** | ✅ | `ProviderRateLimitTracker` per provider; exponential backoff with `Retry-After` parsing |
 | **Backfill Scheduling** | ✅ | Cron-based `ScheduledBackfillService`; `BackfillScheduleManager` with CRUD API |
 | **Backfill Progress Reporting** | ✅ | `BackfillProgressTracker`, per-symbol %, exposed at `/api/backfill/progress` |
@@ -136,7 +136,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | Feature | Status | Notes |
 |---------|--------|-------|
 | JSONL storage sink | ✅ | Append-only, gzip-compressed, configurable naming conventions |
-| Parquet storage sink | ✅ | Columnar, compressed; enabled via `EnableParquetSink` config |
+| Parquet storage sink | ✅ | Columnar, compressed; enabled via `EnableParquetSink` config. Wave 1 repo-backed tests now cover L2 snapshot flush, final dispose flush, and atomic temp-file cleanup |
 | Tiered storage (hot/warm/cold) | ✅ | `TierMigrationService` with configurable retention per tier |
 | Scheduled archive maintenance | ✅ | `ScheduledArchiveMaintenanceService`; tasks: integrity, orphan cleanup, index rebuild, compression |
 | Portable data packaging | ✅ | `PortableDataPackager`; ZIP/tar.gz with manifest, checksums, SQL loaders |

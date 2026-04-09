@@ -9,6 +9,23 @@ Use this guide together with [Provider Confidence Baseline](provider-confidence-
 - Offline / CI baseline: connector metadata, stub guidance, and representative conversion contracts.
 - Manual runtime verification: installed connector packages plus the local vendor software or credentials that each connector needs.
 
+Wave 1 intentionally validates only this adapter set:
+
+| Adapter | Wave 1 role |
+|---|---|
+| `Rithmic` | validated adapter |
+| `IQFeed` | validated adapter |
+| `CQG` | validated adapter |
+| `InteractiveBrokers` / `IB` | validated adapter |
+
+The following connectors remain recognized in code, but they are optional/example paths outside the Wave 1 confidence gate:
+
+| Adapter | Wave 1 role |
+|---|---|
+| `Binance` | optional/example connector |
+| `Coinbase` | optional/example connector |
+| `Kraken` | optional/example connector |
+
 The runtime wiring is implemented in:
 
 - `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpConnectorFactory.cs`
@@ -19,7 +36,7 @@ The runtime wiring is implemented in:
 
 Meridian's StockSharp integration is an optional connector-runtime path. It is best used when you need a broker/feed that does not fit Meridian's native WebSocket-style providers.
 
-Supported named connector types in the current code:
+Recognized named connector types in the current code:
 
 | Connector | `ConnectorType` | Streaming | Historical | Trades | Quotes | Depth | Notes |
 |---|---|---:|---:|---:|---:|---:|---|
@@ -32,7 +49,7 @@ Supported named connector types in the current code:
 | Kraken | `Kraken` | Yes | Yes | Yes | Yes | Yes | Configurable order book depth |
 | Custom adapter | custom `ConnectorType` + `AdapterType` | Depends | Depends | Depends | Depends | Depends | Use when loading a StockSharp adapter by type name |
 
-The table above describes the named connector types Meridian recognizes in code. It is not a claim that every connector is available in the default build. The current repo baseline validates representative capability metadata and stub guidance for these connectors; actual runtime availability still depends on `EnableStockSharp=true` plus the required package surfaces.
+The table above describes the named connector types Meridian recognizes in code. It is not a claim that every connector is part of the Wave 1 gate or available in the default build. The current Wave 1 baseline validates the `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers` adapters; the crypto connectors remain optional/example paths until they receive the same evidence treatment.
 
 ## Common Settings
 

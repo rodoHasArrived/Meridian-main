@@ -69,8 +69,8 @@ public static class ContractFactory
             if (cfg.Strike is decimal strike)
                 c.Strike = (double)strike;
 
-            if (cfg.Right is Contracts.Domain.Enums.OptionRight right)
-                c.Right = right == Contracts.Domain.Enums.OptionRight.Call ? "C" : "P";
+            if (cfg.Right is OptionRight right)
+                c.Right = right == OptionRight.Call ? "C" : "P";
 
             if (!string.IsNullOrWhiteSpace(cfg.LastTradeDateOrContractMonth))
                 c.LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth;
@@ -99,7 +99,7 @@ public static class ContractFactory
     /// </summary>
     /// <remarks>
     /// For US Treasuries and government bonds, set <c>cfg.SecurityType = "GOVT"</c> explicitly
-    /// — <see cref="Contracts.Domain.Enums.InstrumentType.Bond"/> maps to <c>"BOND"</c>
+    /// — <see cref="InstrumentType.Bond"/> maps to <c>"BOND"</c>
     /// (corporate bonds) which uses a different IB routing desk.
     /// </remarks>
     private static string ResolveSecType(SymbolConfig cfg)
@@ -111,19 +111,19 @@ public static class ContractFactory
         // Otherwise derive from the strongly-typed InstrumentType enum.
         return cfg.InstrumentType switch
         {
-            Contracts.Domain.Enums.InstrumentType.Equity           => "STK",
-            Contracts.Domain.Enums.InstrumentType.EquityOption     => "OPT",
-            Contracts.Domain.Enums.InstrumentType.IndexOption      => "OPT",
-            Contracts.Domain.Enums.InstrumentType.Future           => "FUT",
-            Contracts.Domain.Enums.InstrumentType.SingleStockFuture=> "SSF",
-            Contracts.Domain.Enums.InstrumentType.Forex            => "CASH",
-            Contracts.Domain.Enums.InstrumentType.Commodity        => "CMDTY",
-            Contracts.Domain.Enums.InstrumentType.Crypto           => "CRYPTO",
-            Contracts.Domain.Enums.InstrumentType.Bond             => "BOND",
-            Contracts.Domain.Enums.InstrumentType.FuturesOption    => "FOP",
-            Contracts.Domain.Enums.InstrumentType.Index            => "IND",
-            Contracts.Domain.Enums.InstrumentType.CFD              => "CFD",
-            Contracts.Domain.Enums.InstrumentType.Warrant          => "WAR",
+            InstrumentType.Equity            => "STK",
+            InstrumentType.EquityOption      => "OPT",
+            InstrumentType.IndexOption       => "OPT",
+            InstrumentType.Future            => "FUT",
+            InstrumentType.SingleStockFuture => "SSF",
+            InstrumentType.Forex             => "CASH",
+            InstrumentType.Commodity         => "CMDTY",
+            InstrumentType.Crypto            => "CRYPTO",
+            InstrumentType.Bond              => "BOND",
+            InstrumentType.FuturesOption     => "FOP",
+            InstrumentType.Index             => "IND",
+            InstrumentType.CFD               => "CFD",
+            InstrumentType.Warrant           => "WAR",
             _                                                       => cfg.SecurityType
         };
     }

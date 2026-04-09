@@ -21,6 +21,7 @@ public sealed partial class ArchiveHealthPage : Page
     private readonly WpfServices.SchemaService _schemaService;
     private readonly ObservableCollection<IssueDisplayItem> _issues;
     private readonly ObservableCollection<string> _recommendations;
+    private bool _healthEventsSubscribed;
 
     public ArchiveHealthPage(
         WpfServices.ArchiveHealthService healthService,
@@ -37,15 +38,39 @@ public sealed partial class ArchiveHealthPage : Page
         RecommendationsList.ItemsSource = _recommendations;
 
         Loaded += Page_Loaded;
-
-        _healthService.HealthStatusUpdated += OnHealthStatusUpdated;
-        _healthService.VerificationCompleted += OnVerificationCompleted;
+        Unloaded += Page_Unloaded;
+        SubscribeToHealthEvents();
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
+        SubscribeToHealthEvents();
         await LoadHealthStatusAsync();
         await LoadDictionaryStatusAsync();
+    }
+
+    private void Page_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (!_healthEventsSubscribed)
+        {
+            return;
+        }
+
+        _healthService.HealthStatusUpdated -= OnHealthStatusUpdated;
+        _healthService.VerificationCompleted -= OnVerificationCompleted;
+        _healthEventsSubscribed = false;
+    }
+
+    private void SubscribeToHealthEvents()
+    {
+        if (_healthEventsSubscribed)
+        {
+            return;
+        }
+
+        _healthService.HealthStatusUpdated += OnHealthStatusUpdated;
+        _healthService.VerificationCompleted += OnVerificationCompleted;
+        _healthEventsSubscribed = true;
     }
 
     private async Task LoadHealthStatusAsync(CancellationToken ct = default)

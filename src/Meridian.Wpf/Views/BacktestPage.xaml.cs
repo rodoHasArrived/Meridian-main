@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,21 +12,27 @@ namespace Meridian.Wpf.Views;
 public partial class BacktestPage : Page
 {
     private readonly BacktestViewModel _viewModel;
+    private readonly NotifyCollectionChangedEventHandler _equityCurvePointsChangedHandler;
 
     public BacktestPage(BacktestViewModel viewModel)
     {
         _viewModel = viewModel;
+        _equityCurvePointsChangedHandler = (_, _) => RenderEquityCurve();
         InitializeComponent();
         DataContext = _viewModel;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _viewModel.EquityCurvePoints.CollectionChanged += (_, _) => RenderEquityCurve();
+        _viewModel.EquityCurvePoints.CollectionChanged += _equityCurvePointsChangedHandler;
         Loaded -= OnPageLoaded;
     }
 
-    private void OnPageUnloaded(object sender, RoutedEventArgs e) => _viewModel.Dispose();
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        _viewModel.EquityCurvePoints.CollectionChanged -= _equityCurvePointsChangedHandler;
+        _viewModel.Dispose();
+    }
 
     /// <summary>
     /// Re-renders the equity curve Polyline from the current EquityCurvePoints collection.

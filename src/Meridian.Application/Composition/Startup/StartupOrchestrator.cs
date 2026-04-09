@@ -19,10 +19,12 @@ namespace Meridian.Application.Composition.Startup;
 public sealed class StartupOrchestrator
 {
     private readonly ILogger _log;
+    private readonly DashboardServerFactory _dashboardServerFactory;
 
     public StartupOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory)
     {
         _log = log;
+        _dashboardServerFactory = dashboardServerFactory;
     }
 
     /// <summary>

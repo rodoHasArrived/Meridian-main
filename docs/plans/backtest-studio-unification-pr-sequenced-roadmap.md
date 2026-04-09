@@ -2,8 +2,10 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-09
 **Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
+
+> **Retirement note (2026-04-09):** References in this roadmap to `src/Meridian.Ui/dashboard` or "web workstation" slices are historical remnants of the retired browser dashboard. Re-scope those slices to WPF or the retained desktop-local API surface before implementation.
 
 ## Purpose
 

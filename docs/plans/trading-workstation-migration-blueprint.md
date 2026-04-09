@@ -2,14 +2,14 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-04-09
 **Status:** Active blueprint — documentation-aligned, implementation pending
 
 ---
 
 ## 1. Purpose
 
-This blueprint defines the migration from Meridian's current feature-rich but page-centric desktop and web UX to a **workflow-centric trading workstation**.
+This blueprint defines the migration from Meridian's current feature-rich but page-centric desktop UX to a **workflow-centric trading workstation**.
 
 The desired end state is a product where **research, backtesting, paper trading, future live trading, portfolio analysis, and ledger auditability** are experienced as one continuous workflow rather than several adjacent tools.
 
@@ -173,7 +173,7 @@ StrategyRun
 - AuditReference
 ```
 
-This model should be queryable from both desktop and web surfaces.
+This model should be queryable from both WPF and the retained desktop-local API surfaces.
 
 ## 5.2 Shared portfolio model
 
@@ -251,14 +251,13 @@ These services should sit above raw engine/service primitives and below UI view 
 - P&L Attribution
 - Audit Trail
 
-## 6.4 Web dashboard direction
+## 6.4 Desktop-local API direction
 
-The web dashboard remains lighter weight than WPF, but should graduate from pure monitoring toward:
+The standalone web dashboard has been retired. The remaining supporting surface should stay local and API-first so the desktop workstation, Swagger, and automation can share the same read models without reintroducing a browser product:
 
-- run browser
-- portfolio summary
-- strategy state and paper-trading visibility
-- quick audit / ledger inspection
+- run browser and strategy-state queries through retained workstation APIs
+- portfolio summary and cash / ledger inspection through localhost routes
+- lightweight diagnostics and audit access for desktop tooling
 
 ---
 

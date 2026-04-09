@@ -1,0 +1,122 @@
+[
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "rithmic-bootstrap",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Requires StockSharp packages and Rithmic credentials." },
+    "result": "bounded",
+    "boundedBy": "Rithmic runtime access depends on local certificates, package surfaces, and vendor credentials.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "rithmic-streaming",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Streaming proof remains external to the repo." },
+    "result": "bounded",
+    "boundedBy": "No sanitized Rithmic streaming capture is committed yet.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs", "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "rithmic-historical",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Historical proof depends on installed vendor runtime." },
+    "result": "bounded",
+    "boundedBy": "Historical access remains package- and credential-dependent.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "iqfeed-bootstrap",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Requires local IQFeed client and connector package." },
+    "result": "bounded",
+    "boundedBy": "IQFeed runtime proof requires the locally running client software.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "iqfeed-streaming",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Streaming proof remains manual." },
+    "result": "bounded",
+    "boundedBy": "No sanitized IQFeed streaming runtime capture is committed yet.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs", "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "iqfeed-historical",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Historical proof depends on the local IQFeed runtime." },
+    "result": "bounded",
+    "boundedBy": "Historical access remains external to the default repo build.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "cqg-bootstrap",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Requires CQG package surfaces and credentials." },
+    "result": "bounded",
+    "boundedBy": "CQG runtime access is external to CI and depends on vendor credentials.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "cqg-streaming",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Streaming proof remains manual." },
+    "result": "bounded",
+    "boundedBy": "No sanitized CQG streaming capture is committed yet.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs", "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "cqg-historical",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Historical proof depends on CQG runtime access." },
+    "result": "bounded",
+    "boundedBy": "Historical coverage is documented but still requires a local vendor session.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "interactive-brokers-bootstrap",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Requires StockSharp plus TWS/Gateway." },
+    "result": "bounded",
+    "boundedBy": "The StockSharp IB adapter still depends on local TWS/Gateway setup and packages.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "interactive-brokers-streaming",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Streaming proof remains manual." },
+    "result": "bounded",
+    "boundedBy": "No sanitized StockSharp-via-IB streaming capture is committed yet.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs", "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs" ],
+    "externalReferences": []
+  },
+  {
+    "provider": "StockSharp",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "interactive-brokers-historical",
+    "environment": { "mode": "manual-runtime-bounded", "host": "developer workstation", "notes": "Historical proof depends on local TWS/Gateway and package availability." },
+    "result": "bounded",
+    "boundedBy": "Historical access remains external to the default repo build.",
+    "repoEvidence": [ "tests/Meridian.Tests/Infrastructure/Providers/StockSharpMessageConversionTests.cs", "docs/providers/stocksharp-connectors.md" ],
+    "externalReferences": []
+  }
+]

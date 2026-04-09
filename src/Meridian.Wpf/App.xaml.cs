@@ -26,6 +26,7 @@ using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;

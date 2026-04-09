@@ -29,7 +29,7 @@ public sealed class CliModeResolverTests
         var result = CliModeResolver.TranslateLegacyFlags(args);
 
         // Assert
-        result.Should().Be("web");
+        result.Should().Be("desktop");
     }
 
     [Theory]

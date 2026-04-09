@@ -127,7 +127,6 @@ digraph ProjectDependencies {
 
         UiShared [label="Ui.Shared\n(300 REST endpoints, auth\nDI wiring, endpoint helpers)", fillcolor="#EDE7F6"];
         UiServices [label="Ui.Services\n(desktop services, API clients\ncharts, export wizard)", fillcolor="#EDE7F6", style="rounded,filled,dashed"];
-        Ui [label="Ui\n(React/Vite web dashboard\nworkstation screens)", fillcolor="#EDE7F6"];
         Wpf [label="Wpf\n(WPF desktop app\n80+ Views, 60+ ViewModels)", fillcolor="#EDE7F6", style="rounded,filled,dashed"];
         McpServer [label="McpServer\n(Model Context Protocol server\ntools, resources, prompts)", fillcolor="#EDE7F6"];
         Mcp [label="Mcp\n(MCP tools for code review\nADR & convention resources)", fillcolor="#EDE7F6"];
@@ -140,7 +139,7 @@ digraph ProjectDependencies {
         color="#aaaaaa";
         fontsize=11;
 
-        MainApp [label="Meridian\n(CLI entry point, startup orchestration\nmode runners: collector/backfill/web/desktop)", fillcolor="#FFEBEE"];
+        MainApp [label="Meridian\n(CLI entry point, startup orchestration\nmode runners: collector/backfill/desktop)", fillcolor="#FFEBEE"];
     }
 
     // ==================== Test Projects ====================
@@ -254,8 +253,6 @@ digraph ProjectDependencies {
     UiShared -> CppTrader;
     UiShared -> Storage;
     UiShared -> Strategies;
-
-    Ui -> UiShared;
 
     UiServices -> Contracts [style=dashed, label="source\nlink"];
 

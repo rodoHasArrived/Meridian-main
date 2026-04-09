@@ -1,4 +1,5 @@
 using System.Net;
+using System.Reflection;
 using FluentAssertions;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -143,6 +144,31 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
         await act.Should().NotThrowAsync();
     }
 
+    [Fact]
+    public async Task PollBatchAsync_WhenRateLimited_DoesNotPublishQuotes()
+    {
+        var sut = CreateSut(
+            new StubHttpHandler(HttpStatusCode.TooManyRequests, new StringContent("{\"detail\":\"rate limited\"}")),
+            out var publisher);
+
+        var act = () => InvokePollBatchAsync(sut, ["AAPL"]);
+
+        await act.Should().NotThrowAsync();
+        publisher.Published.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PollBatchAsync_WhenCancelled_PropagatesOperationCanceledException()
+    {
+        var sut = CreateSut(new CancelledHttpHandler(), out _);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var act = () => InvokePollBatchAsync(sut, ["AAPL"], cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
     // ── Stub infrastructure ──────────────────────────────────────────────
 
     private sealed class StubHttpHandler : HttpMessageHandler
@@ -173,6 +199,15 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
             new HttpClient(_handler, disposeHandler: false) { BaseAddress = new Uri("https://api.robinhood.com/") };
     }
 
+    private sealed class CancelledHttpHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromCanceled<HttpResponseMessage>(ct);
+        }
+    }
+
     private sealed class CapturingPublisher : IMarketEventPublisher
     {
         public List<MarketEvent> Published { get; } = new();
@@ -182,5 +217,18 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
             Published.Add(evt);
             return true;
         }
+    }
+
+    private static Task InvokePollBatchAsync(
+        RobinhoodMarketDataClient sut,
+        IReadOnlyList<string> symbols,
+        CancellationToken cancellationToken = default)
+    {
+        var method = typeof(RobinhoodMarketDataClient).GetMethod(
+            "PollBatchAsync",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        method.Should().NotBeNull("Wave 1 provider hardening exercises the actual Robinhood polling seam");
+        return (Task)method!.Invoke(sut, [symbols, cancellationToken])!;
     }
 }

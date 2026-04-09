@@ -2,8 +2,10 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, UI, API, and Platform contributors
-**Last Updated:** 2026-03-24
-**Status:** Active blueprint
+**Last Updated:** 2026-04-09
+**Status:** Historical blueprint — pre desktop-only transition
+
+> **Historical note (2026-04-09):** This blueprint describes the retired standalone browser workstation (`src/Meridian.Ui`, React `/workstation`, and browser bootstrap routes). Keep it for sequencing/history only; any remaining workstation delivery work should be re-scoped to WPF and the retained desktop-local API surface.
 
 ---
 

@@ -27,7 +27,7 @@ Meridian already has working ingestion, storage, replay, backtesting, provider o
 | Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
 | Web and WPF workstation shells | Partial | Both surfaces expose meaningful workspace flows; workflow hardening and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
-| Provider confidence | Partial | Evidence-backed matrix exists, but key providers still have open replay/runtime/checkpoint gaps |
+| Provider confidence | Partial | Evidence-backed matrix, committed bounded-runtime artifacts, checkpoint proof, and Parquet L2 proof are now in repo; remaining gaps are vendor-runtime and entitlement bounded |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
 
 ---
@@ -49,9 +49,9 @@ Meridian already has working ingestion, storage, replay, backtesting, provider o
 
 ### Wave 1: Provider confidence and checkpoint evidence
 
-- Polygon, Interactive Brokers, StockSharp, and NYSE still need stronger replay, runtime, auth, rate-limit, or checkpoint evidence in at least one meaningful scenario
-- backfill checkpoint and gap-handling confidence is not yet explicit enough across representative providers and windows
-- provider-confidence language must stay tied to executable evidence instead of architecture intent
+- Polygon, Robinhood, Interactive Brokers, StockSharp, and NYSE still have at least one runtime-bounded scenario that depends on credentials, entitlements, packages, or vendor sessions
+- backfill checkpoint reliability and Parquet L2 flush behavior now have repo-backed proof and should be treated as closed Wave 1 sub-gates unless those tests regress
+- provider-confidence language must stay tied to `provider-validation-matrix.md`, `artifacts/provider-validation/`, and `run-wave1-provider-validation.ps1` instead of architecture intent
 
 ### Wave 2: Paper-trading cockpit hardening
 
@@ -82,11 +82,11 @@ Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the prim
 | Provider | Posture | Notes |
 |---|---|---|
 | Alpaca | Complete | The checked-in execution path is validated end to end through the stable `/api/execution/*` seam |
-| Polygon | Partial | Recorded-session replay is strong; reconnect and live throttling/runtime evidence remain partial |
-| Robinhood | Partial | Brokerage and polling-path evidence exist; reconnect/rate-limit confidence is still incomplete |
-| Interactive Brokers | Partial | Runtime guidance and smoke-build path are validated; full vendor runtime remains partially proven |
-| StockSharp | Partial | Connector guidance and conversion/subscription tests are present; broader end-to-end runtime proof remains open |
-| NYSE | Partial | Parsing and reconnect behavior have evidence; auth and rate-limit proof remain incomplete |
+| Polygon | Partial | Recorded-session replay is strong; remaining gaps are bounded to live reconnect and websocket throttling transcripts |
+| Robinhood | Partial | Brokerage and polling-path evidence exist; remaining runtime scenarios are tracked under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| Interactive Brokers | Partial | Guidance, smoke-build, and version-bound tests are in repo; vendor runtime remains tracked under `artifacts/provider-validation/interactive-brokers/2026-04-09/` |
+| StockSharp | Partial | Wave 1 validated adapters are narrowed to Rithmic, IQFeed, CQG, and Interactive Brokers, with runtime bounds tracked under `artifacts/provider-validation/stocksharp/2026-04-09/` |
+| NYSE | Partial | L1/shared-lifecycle evidence is strong; remaining auth/rate-limit/depth bounds are tracked under `artifacts/provider-validation/nyse/2026-04-09/` |
 
 ---
 
@@ -94,7 +94,7 @@ Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the prim
 
 Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, and backfill checkpoints plus gap handling are validated across representative providers and date ranges.
+1. **Wave 1 gates:** the matrix in `provider-validation-matrix.md` points to executable suites or committed artifact folders for every row, and `run-wave1-provider-validation.ps1` can reproduce the offline gate.
 2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
@@ -106,7 +106,8 @@ Waves 5 and 6 deepen the product and widen later claims, but they are not prereq
 ## Immediate Readiness Checklist
 
 - [ ] Keep provider claims synchronized with executable evidence in [`provider-validation-matrix.md`](provider-validation-matrix.md)
-- [ ] Close Wave 1 provider-confidence gaps for Polygon, IB, StockSharp, NYSE, and checkpoint validation
+- [ ] Close the remaining vendor-runtime-bounded Wave 1 scenarios for Polygon, Robinhood, IB, StockSharp, and NYSE
+- [ ] Keep `artifacts/provider-validation/` and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
 - [ ] Harden the paper-trading cockpit against realistic operator scenarios before widening live-readiness language
 - [ ] Keep `Backtest -> Paper` explicit, auditable, and operator-visible through the workstation
 - [ ] Extend shared run / portfolio / ledger / reconciliation continuity across `Research`, `Trading`, and `Governance`

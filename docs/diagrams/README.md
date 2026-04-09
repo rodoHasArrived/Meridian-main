@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-04-07
+**Reviewed:** 2026-04-09
 
 This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. It is the single home for all visual assets:
 
@@ -28,7 +28,7 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 | **CLI Commands** | All CLI flags and commands reference | `cli-commands.dot` |
 | **Project Dependencies** | Project layer dependencies and test coverage | `project-dependencies.dot` |
 | **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | `runtime-hosts.dot` |
-| **Workstation Delivery** | How WPF and the web workstation shell converge on shared run, portfolio, ledger, and security-reference services | `workstation-delivery.dot` |
+| **Workstation Delivery** | How WPF and the retained desktop-local API seams converge on shared run, portfolio, ledger, and security-reference services | `workstation-delivery.dot` |
 | **Security Master Lifecycle** | Import, event storage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
 | **Fund Ops & Reconciliation** | Governance workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
@@ -62,7 +62,7 @@ Shows the Meridian in context with:
 
 Shows the major deployable units:
 
-- **Presentation Layer**: Web Dashboard, WPF Desktop App, CLI Interface
+- **Presentation Layer**: Desktop-local API host, WPF Desktop App, CLI Interface
 - **Onboarding & Diagnostics Layer**: Configuration Wizard, Auto-Configuration, Diagnostic Services, Error Formatter
 - **Core Collector Service** (.NET 9 console with 100K bounded channel policy)
 - **F# Domain Library** (Type-safe validation, discriminated unions)
@@ -210,7 +210,7 @@ Shows the currently runnable Meridian hosts and the shared startup path behind `
 
 - **Runnable projects**: `src/Meridian`, `src/Meridian.Wpf`, `src/Meridian.Mcp`, `src/Meridian.McpServer`
 - **Startup orchestration**: `SharedStartupBootstrapper` → `StartupOrchestrator` → `CommandModeRunner`, `DesktopModeRunner`, `CollectorModeRunner`, `BackfillModeRunner`
-- **Shared runtime**: `DashboardServerBridge`, `Meridian.Ui.Shared`, `HostStartupFactory`, `EventPipeline`, `StatusWriter`
+- **Shared runtime**: `UiServer`, `Meridian.Ui.Shared`, `HostStartupFactory`, `EventPipeline`, `StatusWriter`
 - **Purpose**: clarifies which entry point owns which experience and where `--mode desktop`, headless streaming, and backfill actually branch
 
 ### Workstation Delivery
@@ -523,4 +523,4 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 _Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
 
-_Last Updated: 2026-03-24_
+_Last Updated: 2026-04-09_

@@ -995,6 +995,23 @@ public sealed class StockSharpMessageConversionTests
     }
 
     [Fact]
+    public void ConnectorCapabilities_Wave1ValidatedSet_MatchesProviderConfidenceGate()
+    {
+        var connectors = StockSharpConnectorCapabilities.GetWave1ValidatedConnectors();
+
+        connectors.Select(c => c.ConnectorType).Should().BeEquivalentTo(
+            ["Rithmic", "IQFeed", "CQG", "InteractiveBrokers"]);
+    }
+
+    [Fact]
+    public void ConnectorCapabilities_OptionalExampleConnectors_ExcludeWave1ValidatedSet()
+    {
+        var connectors = StockSharpConnectorCapabilities.GetOptionalExampleConnectors();
+
+        connectors.Select(c => c.ConnectorType).Should().BeEquivalentTo(["Binance", "Coinbase", "Kraken"]);
+    }
+
+    [Fact]
     public void ConnectorCapabilities_GetConnectorsWithOrderLogSupport_IncludesRithmicAndIQFeed()
     {
         var connectors = StockSharpConnectorCapabilities.GetConnectorsWithOrderLogSupport();

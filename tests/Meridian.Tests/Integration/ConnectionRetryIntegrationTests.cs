@@ -205,7 +205,7 @@ public class ExponentialBackoffTests
                 BackoffType = DelayBackoffType.Exponential,
                 UseJitter = false,
                 MaxDelay = TimeSpan.FromSeconds(10),
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                ShouldHandle = new PredicateBuilder().Handle<InvalidOperationException>(),
                 OnRetry = args =>
                 {
                     retryDelays.Add(args.RetryDelay);
@@ -215,20 +215,15 @@ public class ExponentialBackoffTests
             .Build();
 
         // Act
-        try
-        {
-            await pipeline.ExecuteAsync(async ct =>
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            pipeline.ExecuteAsync(async ct =>
             {
                 await Task.CompletedTask;
-                throw new Exception("Force retry");
-            });
-        }
-        catch
-        {
-            // Expected
-        }
+                throw new InvalidOperationException("Force retry");
+            }).AsTask());
 
         // Assert - delays should increase exponentially (10ms, 20ms, 40ms)
+        exception.Message.Should().Be("Force retry");
         retryDelays.Should().HaveCount(3);
         retryDelays[0].Should().BeCloseTo(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(10));
         retryDelays[1].Should().BeGreaterThan(retryDelays[0]);
@@ -248,7 +243,7 @@ public class ExponentialBackoffTests
                 BackoffType = DelayBackoffType.Exponential,
                 UseJitter = true,
                 MaxDelay = TimeSpan.FromSeconds(10),
-                ShouldHandle = new PredicateBuilder().Handle<Exception>(),
+                ShouldHandle = new PredicateBuilder().Handle<InvalidOperationException>(),
                 OnRetry = args =>
                 {
                     retryDelays.Add(args.RetryDelay);
@@ -258,20 +253,15 @@ public class ExponentialBackoffTests
             .Build();
 
         // Act
-        try
-        {
-            await pipeline.ExecuteAsync(async ct =>
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            pipeline.ExecuteAsync(async ct =>
             {
                 await Task.CompletedTask;
-                throw new Exception("Force retry");
-            });
-        }
-        catch
-        {
-            // Expected
-        }
+                throw new InvalidOperationException("Force retry");
+            }).AsTask());
 
         // Assert - with jitter, delays should still generally increase but with variation
+        exception.Message.Should().Be("Force retry");
         retryDelays.Should().HaveCount(5);
         // Jitter means exact values are unpredictable, but general trend should be increasing
         retryDelays.Average(d => d.TotalMilliseconds).Should().BeGreaterThan(10);

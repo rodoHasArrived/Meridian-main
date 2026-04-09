@@ -60,7 +60,7 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_DesktopModeCancellation_StopsDashboardServerGracefully()
+    public async Task RunAsync_DesktopModeCancellation_StillStopsDashboardServerGracefully()
     {
         var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
         var cliArgs = CliArguments.Parse([]);
@@ -77,9 +77,9 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
                 return server;
             });
 
-        var exitCode = await orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment, cts.Token);
+        Func<Task> act = () => orchestrator.RunAsync(cliArgs, cfg, "test.json", configService, deployment, cts.Token);
 
-        exitCode.Should().Be(0);
+        await act.Should().ThrowAsync<TaskCanceledException>();
         server.Should().NotBeNull();
         server!.ConfigPath.Should().Be("test.json");
         server.Port.Should().Be(4321);

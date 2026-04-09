@@ -1,6 +1,6 @@
 # C4 And System Diagrams
 
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-09
 
 This page is the quickest way to review the current Meridian visual model. The editable source of truth remains the DOT files in [`docs/diagrams/`](../diagrams/README.md); this page curates the most useful rendered views for architecture work.
 
@@ -10,7 +10,7 @@ This page is the quickest way to review the current Meridian visual model. The e
 
 ![C4 Level 1 Context](../diagrams/c4-level1-context.svg)
 
-Shows Meridian in context with operators, desktop and web surfaces, external data providers, and storage/analytics edges.
+Shows Meridian in context with operators, the desktop shell, local API seams, external data providers, and storage/analytics edges.
 
 ### Level 2 — Containers
 
@@ -32,13 +32,13 @@ These diagrams sit next to the C4 set and fill in the parts of the repo that are
 
 ![Runtime Hosts And Startup Modes](../diagrams/runtime-hosts.svg)
 
-Shows the runnable projects in the repo and the verified `SharedStartupBootstrapper` / `StartupOrchestrator` flow behind `src/Meridian`, including how web, desktop, collector, and backfill modes branch.
+Shows the runnable projects in the repo and the verified `SharedStartupBootstrapper` / `StartupOrchestrator` flow behind `src/Meridian`, including how desktop, headless, and backfill paths branch.
 
 ### Workstation Delivery
 
 ![Workstation Delivery](../diagrams/workstation-delivery.svg)
 
-Shows how WPF pages and the React workstation shell converge on shared run, portfolio, ledger, cash-flow, and security-reference services.
+Shows how WPF pages and the retained desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, and security-reference services.
 
 ### Security Master Lifecycle
 

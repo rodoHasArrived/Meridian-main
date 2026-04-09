@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Meridian.Application.Serialization;
+using System.Text.Json.Serialization;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 
 namespace Meridian.Storage.Services;
@@ -13,6 +14,7 @@ public sealed class SourceRegistry : ISourceRegistry
     private readonly ConcurrentDictionary<string, SourceInfo> _sources = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SymbolInfo> _symbols = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, string> _aliases = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
     private readonly string? _persistencePath;
 
     public SourceRegistry(string? persistencePath = null)
@@ -162,7 +164,7 @@ public sealed class SourceRegistry : ISourceRegistry
                 return;
 
             var json = File.ReadAllText(_persistencePath);
-            var data = JsonSerializer.Deserialize<RegistryData>(json);
+            var data = JsonSerializer.Deserialize(json, SourceRegistryJsonContext.Default.RegistryData);
 
             if (data?.Sources != null)
             {
@@ -183,7 +185,22 @@ public sealed class SourceRegistry : ISourceRegistry
                 }
             }
         }
-        catch
+        catch (IOException)
+        {
+            // If loading fails, use defaults
+            InitializeDefaults();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // If loading fails, use defaults
+            InitializeDefaults();
+        }
+        catch (JsonException)
+        {
+            // If loading fails, use defaults
+            InitializeDefaults();
+        }
+        catch (NotSupportedException)
         {
             // If loading fails, use defaults
             InitializeDefaults();
@@ -203,8 +220,11 @@ public sealed class SourceRegistry : ISourceRegistry
         if (string.IsNullOrEmpty(_persistencePath))
             return;
 
+        await _saveGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            ct.ThrowIfCancellationRequested();
+
             var data = new RegistryData
             {
                 Sources = _sources.Values.ToList(),
@@ -215,18 +235,40 @@ public sealed class SourceRegistry : ISourceRegistry
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
 
-            var json = JsonSerializer.Serialize(data, MarketDataJsonContext.PrettyPrintOptions);
-            await File.WriteAllTextAsync(_persistencePath, json);
+            var json = JsonSerializer.Serialize(data, SourceRegistryJsonContext.Default.RegistryData);
+            await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
         }
-        catch
+        catch (IOException)
         {
             // Silently fail on save errors
         }
+        catch (UnauthorizedAccessException)
+        {
+            // Silently fail on save errors
+        }
+        catch (JsonException)
+        {
+            // Silently fail on save errors
+        }
+        catch (NotSupportedException)
+        {
+            // Silently fail on save errors
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
     }
 
-    private sealed class RegistryData
+    internal sealed class RegistryData
     {
         public List<SourceInfo>? Sources { get; set; }
         public List<SymbolInfo>? Symbols { get; set; }
     }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(SourceRegistry.RegistryData))]
+internal sealed partial class SourceRegistryJsonContext : JsonSerializerContext
+{
 }

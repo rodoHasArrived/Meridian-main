@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Domain;
+using Meridian.Storage.Archival;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Logging;
 
@@ -48,16 +49,12 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         EnsureDirectory(path);
 
         var json = JsonSerializer.Serialize(snapshot, SnapshotJsonContext.Default.AccountSnapshotRecord);
-        var line = json + Environment.NewLine;
 
         var fileLock = _fileLocks.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
         await fileLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Append-only write: each snapshot is a new line.
-            // File.AppendAllTextAsync is atomic enough on modern Linux/Windows for single-writer
-            // scenarios because we serialise writes via the per-file lock above.
-            await File.AppendAllTextAsync(path, line, Encoding.UTF8, ct).ConfigureAwait(false);
+            await AtomicFileWriter.AppendLinesAsync(path, [json], ct).ConfigureAwait(false);
 
             _logger.LogDebug("Saved position snapshot for run={RunId} account={AccountId} to {Path}",
                 snapshot.RunId, snapshot.AccountId, path);

@@ -59,6 +59,46 @@ public sealed class BackfillStatusStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task WriteAsync_RoundTripsSkippedSymbolsAndValidationSignals()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var from = new DateOnly(2024, 1, 1);
+        var to = new DateOnly(2024, 1, 31);
+        var result = new BackfillResult(
+            Success: false,
+            Provider: "polygon",
+            Symbols: ["SPY", "AAPL"],
+            From: from,
+            To: to,
+            BarsWritten: 2,
+            StartedUtc: DateTimeOffset.UtcNow.AddMinutes(-2),
+            CompletedUtc: DateTimeOffset.UtcNow,
+            Error: "rate limited",
+            SkippedSymbols: ["SPY"],
+            SymbolValidationSignals:
+            [
+                SymbolValidationSignal.PassSkipped("SPY", checkpointBarsWritten: 10, coveredThrough: new DateOnly(2024, 1, 15)),
+                SymbolValidationSignal.Fail("AAPL", from, to, "429 Too Many Requests")
+            ]);
+
+        await store.WriteAsync(result);
+
+        var readBack = store.TryRead();
+
+        readBack.Should().NotBeNull();
+        readBack!.SkippedSymbols.Should().Equal("SPY");
+        readBack.SymbolValidationSignals.Should().HaveCount(2);
+        readBack.SymbolValidationSignals.Should().Contain(signal =>
+            signal.Symbol == "SPY"
+            && signal.Status == "Pass"
+            && signal.CheckpointBarsWritten == 10);
+        readBack.SymbolValidationSignals.Should().Contain(signal =>
+            signal.Symbol == "AAPL"
+            && signal.Status == "Fail"
+            && signal.Reason == "429 Too Many Requests");
+    }
+
+    [Fact]
     public void TryRead_WhenNoFile_ReturnsNull()
     {
         var store = new BackfillStatusStore(_testRoot);
@@ -239,6 +279,26 @@ public sealed class BackfillStatusStoreTests : IDisposable
         var checkpoints = store.TryReadSymbolCheckpoints();
 
         checkpoints!["SPY"].Should().Be(later);
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_OlderDate_DoesNotOverwriteBarCountSidecar()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var later = new DateOnly(2024, 12, 31);
+        var earlier = new DateOnly(2024, 6, 30);
+
+        await store.WriteSymbolCheckpointAsync("SPY", later, barsWritten: 25);
+        await store.WriteSymbolCheckpointAsync("SPY", earlier, barsWritten: 5);
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+        var barCounts = store.TryReadSymbolBarCounts();
+
+        checkpoints.Should().NotBeNull();
+        barCounts.Should().NotBeNull();
+        checkpoints!["SPY"].Should().Be(later);
+        barCounts!["SPY"].Should().Be(25,
+            "older overlapping windows must not regress the sidecar count once a later checkpoint is recorded");
     }
 
     [Fact]
