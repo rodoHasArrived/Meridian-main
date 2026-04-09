@@ -24,42 +24,33 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
-        <Grid>
+        <!-- Header: blue left-border title -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-
-            <StackPanel Orientation="Horizontal">
-                <Border Width="44" Height="44" CornerRadius="14"
-                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                        BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                    <TextBlock Text="{StaticResource IconList}"
-                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="24"
-                               Foreground="{StaticResource InfoColorBrush}"
-                               VerticalAlignment="Center" HorizontalAlignment="Center" />
-                </Border>
-                <StackPanel Margin="12,0,0,0">
+            <Rectangle Grid.Column="0" Fill="{StaticResource InfoColorBrush}" RadiusX="2" RadiusY="2" />
+            <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Symbol Subscriptions"
                                Style="{StaticResource PageTitleStyle}" />
-                    <TextBlock Text="Manage monitored symbols, bulk subscription actions, and exchange-level feed coverage."
-                               Style="{StaticResource CardDescriptionStyle}" />
+                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                            CornerRadius="999"
+                            Padding="8,3"
+                            VerticalAlignment="Center"
+                            Margin="12,0,0,0">
+                        <TextBlock x:Name="SymbolCountText"
+                                   Text="{Binding SymbolCountText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12" />
+                    </Border>
                 </StackPanel>
-                <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                        CornerRadius="999"
-                        Padding="8,4"
-                        VerticalAlignment="Center"
-                        Margin="12,0,0,0">
-                    <TextBlock x:Name="SymbolCountText" Text="0 symbols"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="12" />
-                </Border>
+                <TextBlock Text="Manage monitored symbols, bulk subscription actions, and exchange-level feed coverage."
+                           Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
             </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Style="{StaticResource SecondaryButtonStyle}"
                         Click="ImportCsv_Click"
                         Margin="0,0,8,0">
@@ -83,7 +74,6 @@
                 </Button>
             </StackPanel>
         </Grid>
-        </Border>
 
         <!-- Search and Filters Bar -->
         <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,16" Padding="16">
@@ -168,9 +158,9 @@
                     </Grid.RowDefinitions>
 
                     <!-- Bulk Actions Bar -->
-                    <Border Grid.Row="0" Background="{StaticResource PremiumPanelBrush}"
+                    <Border Grid.Row="0" Background="{StaticResource ConsoleBackgroundMediumBrush}"
                             BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1"
-                            CornerRadius="12" Padding="12" Margin="0,0,0,12">
+                            CornerRadius="8" Padding="12" Margin="0,0,0,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -214,8 +204,12 @@
                         </Grid>
                     </Border>
 
-                    <!-- List Header -->
-                    <Grid Grid.Row="1" Margin="0,0,0,4">
+                    <!-- List Header with ↕ sort indicators -->
+                    <Border Grid.Row="1"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Margin="0,0,0,0" Padding="0,0,0,8">
+                    <Grid Margin="0,0,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="40" />
                             <ColumnDefinition Width="100" />
@@ -227,21 +221,43 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="1" Text="Symbol" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                        <TextBlock Grid.Column="2" Text="Trades" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                        <TextBlock Grid.Column="3" Text="Depth" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                        <TextBlock Grid.Column="4" Text="Levels" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                        <TextBlock Grid.Column="5" Text="Exchange" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                        <TextBlock Grid.Column="6" Text="Status" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                        <TextBlock Grid.Column="7" Text="Local Symbol" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Text="Symbol" FontWeight="SemiBold"
+                                       Foreground="{StaticResource AccentCyanBrush}" FontSize="11" />
+                            <TextBlock Text=" ↑" FontSize="9" Foreground="{StaticResource AccentCyanBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <TextBlock Text="Trades" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            <TextBlock Text=" ↕" FontSize="9" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                            <TextBlock Text="Depth" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            <TextBlock Text=" ↕" FontSize="9" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="4" Orientation="Horizontal">
+                            <TextBlock Text="Levels" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            <TextBlock Text=" ↕" FontSize="9" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="5" Orientation="Horizontal">
+                            <TextBlock Text="Exchange" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            <TextBlock Text=" ↕" FontSize="9" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="6" Orientation="Horizontal">
+                            <TextBlock Text="Status" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            <TextBlock Text=" ↕" FontSize="9" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="7" Orientation="Horizontal">
+                            <TextBlock Text="Local Symbol" FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
+                            <TextBlock Text=" ↕" FontSize="9" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Grid>
+                    </Border>
 
                     <ListView x:Name="SymbolsListView"
                               Grid.Row="2"
