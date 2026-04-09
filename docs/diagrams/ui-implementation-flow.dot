@@ -18,7 +18,7 @@ digraph UiImplementationFlow {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 395fce2b0cf5\nTransient pages in App.xaml.cs: 109\nNavigation tags: 77"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: eed5520255e6\nTransient pages in App.xaml.cs: 111\nNavigation tags: 78"];
   app [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="App.xaml.cs\nHost + DI composition"];
   window [shape=component, fillcolor="#2563eb", color="#93c5fd", label="MainWindow.xaml(.cs)\nRoot frame + global shortcuts"];
   page [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="MainPage.xaml(.cs)\nSidebar shell + command palette"];
@@ -140,12 +140,14 @@ digraph UiImplementationFlow {
     label="Analytics & Visualization pages";
     color="#334155";
     style="rounded";
-    section_6 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Analytics & Visualization pages\n6 page classes\n6 transient registrations"];
+    section_6 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Analytics & Visualization pages\n7 page classes\n7 transient registrations"];
     views -> section_6;
     section_6_AdvancedAnalyticsPage [label="Advanced Analytics\nAdvancedAnalyticsPage\nDI transient", fillcolor="#111827"];
     section_6 -> section_6_AdvancedAnalyticsPage;
     section_6_ChartingPage [label="Charting\nChartingPage\nDI transient", fillcolor="#111827"];
     section_6 -> section_6_ChartingPage;
+    section_6_ScatterAnalysisPage [label="Scatter Analysis\nScatterAnalysisPage\nDI transient", fillcolor="#111827"];
+    section_6 -> section_6_ScatterAnalysisPage;
     section_6_OrderBookPage [label="Order Book\nOrderBookPage\nDI transient", fillcolor="#111827"];
     section_6 -> section_6_OrderBookPage;
     section_6_DataCalendarPage [label="Data Calendar\nDataCalendarPage\nDI transient", fillcolor="#111827"];
