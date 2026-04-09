@@ -36,6 +36,9 @@ public sealed record BacktestMetrics(
     double Xirr,                    // cash-weighted IRR over all cash flows
     IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution);
 
+/// <summary>Metadata about the engine that produced a backtest result.</summary>
+public sealed record BacktestEngineMetadata(string EngineId);
+
 /// <summary>Complete result of a finished backtest run.</summary>
 public sealed record BacktestResult(
     BacktestRequest Request,
@@ -48,4 +51,5 @@ public sealed record BacktestResult(
     TimeSpan ElapsedTime,
     long TotalEventsProcessed,
     IReadOnlyList<TradeTicket>? TradeTickets = null,
-    TcaReport? TcaReport = null);
+    TcaReport? TcaReport = null,
+    BacktestEngineMetadata? EngineMetadata = null);

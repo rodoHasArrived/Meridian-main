@@ -74,7 +74,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
                     CancellationToken.None)
                 .ConfigureAwait(false);
 
-            registration.Complete(result);
+            registration.Complete(result with { EngineMetadata = new BacktestEngineMetadata("MeridianNative") });
         }
         catch (OperationCanceledException)
         {
