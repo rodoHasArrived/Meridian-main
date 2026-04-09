@@ -107,6 +107,17 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     private string _universe = "-";
     public string Universe { get => _universe; set => SetProperty(ref _universe, value); }
 
+    // ── Explorer row-count display ────────────────────────────────────────────
+
+    private string _attributionCountText = "0 symbols";
+    public string AttributionCountText { get => _attributionCountText; set => SetProperty(ref _attributionCountText, value); }
+
+    private string _fillsCountText = "0 trades";
+    public string FillsCountText { get => _fillsCountText; set => SetProperty(ref _fillsCountText, value); }
+
+    private string _cashFlowsCountText = "0 entries";
+    public string CashFlowsCountText { get => _cashFlowsCountText; set => SetProperty(ref _cashFlowsCountText, value); }
+
     private string? _latestRecordedRunId;
     public string? LatestRecordedRunId
     {
@@ -261,6 +272,10 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
         foreach (var (symbol, attr) in result.Metrics.SymbolAttribution)
             Attribution.Add(new SymbolAttributionVm(attr));
+
+        AttributionCountText = $"{Attribution.Count} symbol{(Attribution.Count == 1 ? "" : "s")}";
+        FillsCountText = $"{Fills.Count} trade{(Fills.Count == 1 ? "" : "s")}";
+        CashFlowsCountText = $"{CashFlows.Count} entr{(CashFlows.Count == 1 ? "y" : "ies")}";
     }
 
     private void OpenRunSurface(string pageTag)
@@ -305,7 +320,8 @@ public sealed record CashFlowVm(CashFlowEntry CashFlow)
         DividendCashFlow => "Dividend",
         _ => "Other"
     };
-    public string Amount => $"{CashFlow.Amount:C2}";
+    public string Amount => $"{CashFlow.Amount:+$#,##0.00;-$#,##0.00;$0.00}";
+    public bool IsAmountPositive => CashFlow.Amount >= 0;
     public string Time => CashFlow.Timestamp.ToString("yyyy-MM-dd");
     public string Symbol => CashFlow switch
     {
@@ -321,8 +337,12 @@ public sealed record CashFlowVm(CashFlowEntry CashFlow)
 public sealed record SymbolAttributionVm(SymbolAttribution Attr)
 {
     public string Symbol => Attr.Symbol;
-    public string RealizedPnl => $"{Attr.RealizedPnl:C2}";
-    public string UnrealizedPnl => $"{Attr.UnrealizedPnl:C2}";
+    public string RealizedPnl => $"{Attr.RealizedPnl:+$#,##0.00;-$#,##0.00;$0.00}";
+    public bool IsRealizedPnlPositive => Attr.RealizedPnl >= 0;
+    public string UnrealizedPnl => $"{Attr.UnrealizedPnl:+$#,##0.00;-$#,##0.00;$0.00}";
+    public bool IsUnrealizedPnlPositive => Attr.UnrealizedPnl >= 0;
+    public string TotalPnl => $"{Attr.RealizedPnl + Attr.UnrealizedPnl:+$#,##0.00;-$#,##0.00;$0.00}";
+    public bool IsTotalPnlPositive => Attr.RealizedPnl + Attr.UnrealizedPnl >= 0;
     public string Trades => $"{Attr.TradeCount:N0}";
     public string Commissions => $"{Attr.Commissions:C2}";
 }
