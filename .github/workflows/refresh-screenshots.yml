@@ -180,75 +180,67 @@ jobs:
             { name: 'symbols',         path: 'docs/screenshots/09-symbols.png',
               url: `${BASE}/`, fullPage: false,
               stableSelector: '#symbols, body',     waitMs: 0, clipSelector: '#symbols' },
-            { name: 'status',          path: 'docs/screenshots/10-status.png',
+            { name: 'status',          path: 'docs/screenshots/10-status-section.png',
               url: `${BASE}/`, fullPage: false,
               stableSelector: '#status, body',      waitMs: 0, clipSelector: '#status' },
 
             // ── Login ─────────────────────────────────────────────────────────
             { name: 'login',           path: 'docs/screenshots/11-login.png',
               url: `${BASE}/login`, fullPage: true,
-              stableSelector: 'form, body', waitMs: 150 },
+              stableSelector: '.login-card', waitMs: 150 },
 
             // ── Swagger ───────────────────────────────────────────────────────
             { name: 'swagger',         path: 'docs/screenshots/03-swagger.png',
               url: `${BASE}/swagger/index.html`, fullPage: true,
               stableSelector: '#swagger-ui, body', waitMs: 150 },
 
-            // ── Workstation shell (both shots share the same page load) ────────
-            { name: 'workstation',           path: 'docs/screenshots/02-workstation.png',
-              url: `${BASE}/workstation/`, fullPage: true,
-              stableSelector: '[data-testid="workspace-root"], main, body', waitMs: 500 },
-            { name: 'workstation-research',  path: 'docs/screenshots/12-workstation-research.png',
-              url: `${BASE}/workstation/`, fullPage: true,
-              stableSelector: 'main, body', waitMs: 500 },
-
             // ── Workstation deep-links ────────────────────────────────────────
             { name: 'workstation-trading',
-              path: 'docs/screenshots/13-workstation-trading.png',
+              path: 'docs/screenshots/12-workstation-trading.png',
               url: `${BASE}/workstation/trading`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-data-operations',
-              path: 'docs/screenshots/14-workstation-data-operations.png',
+              path: 'docs/screenshots/13-workstation-data-operations.png',
               url: `${BASE}/workstation/data-operations`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-governance',
-              path: 'docs/screenshots/15-workstation-governance.png',
+              path: 'docs/screenshots/14-workstation-governance.png',
               url: `${BASE}/workstation/governance`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-trading-orders',
-              path: 'docs/screenshots/14-workstation-trading-orders.png',
+              path: 'docs/screenshots/15-workstation-trading-orders.png',
               url: `${BASE}/workstation/trading/orders`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-trading-positions',
-              path: 'docs/screenshots/15-workstation-trading-positions.png',
+              path: 'docs/screenshots/16-workstation-trading-positions.png',
               url: `${BASE}/workstation/trading/positions`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-trading-risk',
-              path: 'docs/screenshots/16-workstation-trading-risk.png',
+              path: 'docs/screenshots/17-workstation-trading-risk.png',
               url: `${BASE}/workstation/trading/risk`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-data-operations-providers',
-              path: 'docs/screenshots/17-workstation-data-operations-providers.png',
+              path: 'docs/screenshots/18-workstation-data-operations-providers.png',
               url: `${BASE}/workstation/data-operations/providers`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-data-operations-backfills',
-              path: 'docs/screenshots/18-workstation-data-operations-backfills.png',
+              path: 'docs/screenshots/19-workstation-data-operations-backfills.png',
               url: `${BASE}/workstation/data-operations/backfills`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-data-operations-exports',
-              path: 'docs/screenshots/19-workstation-data-operations-exports.png',
+              path: 'docs/screenshots/20-workstation-data-operations-exports.png',
               url: `${BASE}/workstation/data-operations/exports`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-governance-ledger',
-              path: 'docs/screenshots/20-workstation-governance-ledger.png',
+              path: 'docs/screenshots/21-workstation-governance-ledger.png',
               url: `${BASE}/workstation/governance/ledger`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-governance-reconciliation',
-              path: 'docs/screenshots/21-workstation-governance-reconciliation.png',
+              path: 'docs/screenshots/22-workstation-governance-reconciliation.png',
               url: `${BASE}/workstation/governance/reconciliation`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
             { name: 'workstation-governance-security-master',
-              path: 'docs/screenshots/22-workstation-governance-security-master.png',
+              path: 'docs/screenshots/23-workstation-governance-security-master.png',
               url: `${BASE}/workstation/governance/security-master`,
               fullPage: true, stableSelector: 'main, body', waitMs: 500 },
           ];
@@ -360,25 +352,20 @@ jobs:
             echo "| Historical Backfill | \`docs/screenshots/07-backfill.png\` |"
             echo "| Derivatives Tracking | \`docs/screenshots/08-derivatives.png\` |"
             echo "| Subscribed Symbols | \`docs/screenshots/09-symbols.png\` |"
-            echo "| System Status Panel | \`docs/screenshots/10-status.png\` |"
+            echo "| Status & Activity Log | \`docs/screenshots/10-status-section.png\` |"
             echo "| Login Page | \`docs/screenshots/11-login.png\` |"
-            echo "| Workstation – Research | \`docs/screenshots/12-workstation-research.png\` |"
-            echo "| Workstation – Trading | \`docs/screenshots/13-workstation-trading.png\` |"
-            echo "| Workstation – Data Operations | \`docs/screenshots/14-workstation-data-operations.png\` |"
-            echo "| Workstation – Governance | \`docs/screenshots/15-workstation-governance.png\` |"
-            echo "| Workstation – Research | \`docs/screenshots/10-workstation-research.png\` |"
-            echo "| Workstation – Trading | \`docs/screenshots/11-workstation-trading.png\` |"
-            echo "| Workstation – Data Operations | \`docs/screenshots/12-workstation-data-operations.png\` |"
-            echo "| Workstation – Governance | \`docs/screenshots/13-workstation-governance.png\` |"
-            echo "| Workstation – Trading: Orders | \`docs/screenshots/14-workstation-trading-orders.png\` |"
-            echo "| Workstation – Trading: Positions | \`docs/screenshots/15-workstation-trading-positions.png\` |"
-            echo "| Workstation – Trading: Risk | \`docs/screenshots/16-workstation-trading-risk.png\` |"
-            echo "| Workstation – Data Operations: Providers | \`docs/screenshots/17-workstation-data-operations-providers.png\` |"
-            echo "| Workstation – Data Operations: Backfills | \`docs/screenshots/18-workstation-data-operations-backfills.png\` |"
-            echo "| Workstation – Data Operations: Exports | \`docs/screenshots/19-workstation-data-operations-exports.png\` |"
-            echo "| Workstation – Governance: Ledger | \`docs/screenshots/20-workstation-governance-ledger.png\` |"
-            echo "| Workstation – Governance: Reconciliation | \`docs/screenshots/21-workstation-governance-reconciliation.png\` |"
-            echo "| Workstation – Governance: Security Master | \`docs/screenshots/22-workstation-governance-security-master.png\` |"
+            echo "| Workstation – Trading | \`docs/screenshots/12-workstation-trading.png\` |"
+            echo "| Workstation – Data Operations | \`docs/screenshots/13-workstation-data-operations.png\` |"
+            echo "| Workstation – Governance | \`docs/screenshots/14-workstation-governance.png\` |"
+            echo "| Workstation – Trading: Orders | \`docs/screenshots/15-workstation-trading-orders.png\` |"
+            echo "| Workstation – Trading: Positions | \`docs/screenshots/16-workstation-trading-positions.png\` |"
+            echo "| Workstation – Trading: Risk | \`docs/screenshots/17-workstation-trading-risk.png\` |"
+            echo "| Workstation – Data Operations: Providers | \`docs/screenshots/18-workstation-data-operations-providers.png\` |"
+            echo "| Workstation – Data Operations: Backfills | \`docs/screenshots/19-workstation-data-operations-backfills.png\` |"
+            echo "| Workstation – Data Operations: Exports | \`docs/screenshots/20-workstation-data-operations-exports.png\` |"
+            echo "| Workstation – Governance: Ledger | \`docs/screenshots/21-workstation-governance-ledger.png\` |"
+            echo "| Workstation – Governance: Reconciliation | \`docs/screenshots/22-workstation-governance-reconciliation.png\` |"
+            echo "| Workstation – Governance: Security Master | \`docs/screenshots/23-workstation-governance-security-master.png\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
