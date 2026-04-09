@@ -111,6 +111,12 @@
                                 <Button Style="{StaticResource ChipButtonStyle}"
                                         Content="ETFs" Command="{Binding AddPresetEtfsCommand}" />
                                 <Button Style="{StaticResource ChipButtonStyle}"
+                                        Content="Div ETFs" Command="{Binding AddPresetDividendEtfsCommand}"
+                                        ToolTip="High-yield dividend ETFs (VYM, SCHD, HDV, DVY, JEPI)" />
+                                <Button Style="{StaticResource ChipButtonStyle}"
+                                        Content="Bond Carry" Command="{Binding AddPresetBondCarryCommand}"
+                                        ToolTip="Bond carry pairs (TLT, HYG, LQD, EMB, SHY)" />
+                                <Button Style="{StaticResource ChipButtonStyle}"
                                         Content="Clear" Command="{Binding ClearSymbolsCommand}" />
                             </WrapPanel>
 
@@ -169,10 +175,115 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Carry parameters -->
+                    <!-- Yield carry mode -->
+                    <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="YIELD CARRY MODE" Style="{StaticResource SectionHeaderStyle}" />
+
+                            <TextBlock Text="Carry Signal Mode" Style="{StaticResource LabelStyle}" />
+                            <ComboBox ItemsSource="{Binding YieldCarryModes}"
+                                      SelectedItem="{Binding YieldCarryMode}"
+                                      Margin="0,0,0,4" />
+                            <!-- Mode descriptions -->
+                            <TextBlock FontSize="10" Opacity="0.65" TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       Margin="0,0,0,8">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text"
+                                                Value="Classic carry: price-momentum + assumed yield." />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding YieldCarryMode}"
+                                                         Value="YieldSpread">
+                                                <Setter Property="Text"
+                                                        Value="Yield spread: long assets where yield − risk-free rate ≥ threshold." />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding YieldCarryMode}"
+                                                         Value="YieldRotation">
+                                                <Setter Property="Text"
+                                                        Value="Yield rotation: rotate into top-50 % yielders; tilt when yield rises above 20-day MA." />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <TextBlock Text="Min Yield Spread (decimal, e.g. 0.005 = 50 bps)"
+                                       Style="{StaticResource LabelStyle}" />
+                            <TextBox Text="{Binding MinYieldSpreadBps}" Margin="0,0,0,8"
+                                     ToolTip="Assets with (assetYield − riskFreeRate) below this value are excluded in YieldSpread mode." />
+
+                            <TextBlock Text="Risk-Free Rate" Style="{StaticResource LabelStyle}" />
+                            <TextBox Text="{Binding RiskFreeRate}" Margin="0,0,0,0"
+                                     ToolTip="Annual risk-free rate used to compute yield spread (e.g. 0.04 for 4 %)." />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Per-symbol yield overrides -->
+                    <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="YIELD OVERRIDES" Style="{StaticResource SectionHeaderStyle}" />
+                            <TextBlock FontSize="10" Opacity="0.65" TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       Margin="0,0,0,8"
+                                       Text="Optional: enter known annual yields (dividend yield, bond coupon, FX carry). Leave blank to estimate from price history." />
+
+                            <!-- Add override row -->
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding NewYieldSymbol, UpdateSourceTrigger=PropertyChanged}"
+                                         Tag="TICKER" Padding="8,6" />
+                                <TextBox Grid.Column="2" Text="{Binding NewYieldValue, UpdateSourceTrigger=PropertyChanged}"
+                                         Tag="0.035" Padding="8,6"
+                                         ToolTip="Annual yield as decimal (e.g. 0.035 = 3.5 %)" />
+                                <Button Grid.Column="4" Content="Add"
+                                        Padding="10,6"
+                                        Command="{Binding AddYieldOverrideCommand}" />
+                            </Grid>
+
+                            <!-- Yield table -->
+                            <ItemsControl ItemsSource="{Binding SymbolYields}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="80" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Symbol}"
+                                                       FontWeight="SemiBold" FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding YieldDisplay}"
+                                                       FontSize="11"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource ConsoleAccentGreenBrush}" />
+                                            <Button Grid.Column="2"
+                                                    Content="×" FontSize="11" Padding="4,0"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Command="{Binding DataContext.RemoveYieldOverrideCommand,
+                                                        RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Carry optimisation parameters -->
                     <Border Style="{StaticResource SectionCardStyle}">
                         <StackPanel>
-                            <TextBlock Text="CARRY PARAMETERS" Style="{StaticResource SectionHeaderStyle}" />
+                            <TextBlock Text="OPTIMISATION PARAMETERS" Style="{StaticResource SectionHeaderStyle}" />
 
                             <TextBlock Text="Optimisation Method" Style="{StaticResource LabelStyle}" />
                             <ComboBox ItemsSource="{Binding OptimizationMethods}"
@@ -181,9 +292,6 @@
 
                             <TextBlock Text="Risk Aversion (λ)" Style="{StaticResource LabelStyle}" />
                             <TextBox Text="{Binding RiskAversion}" Margin="0,0,0,8" />
-
-                            <TextBlock Text="Risk-Free Rate" Style="{StaticResource LabelStyle}" />
-                            <TextBox Text="{Binding RiskFreeRate}" Margin="0,0,0,8" />
 
                             <TextBlock Text="Max Single Position" Style="{StaticResource LabelStyle}" />
                             <TextBox Text="{Binding MaxSinglePosition}" Margin="0,0,0,8" />

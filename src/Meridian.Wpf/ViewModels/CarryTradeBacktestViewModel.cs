@@ -48,6 +48,12 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
 
     // ── Carry strategy parameters ───────────────────────────────────────────
 
+    private YieldCarryMode _yieldCarryMode = YieldCarryMode.YieldSpread;
+    /// <summary>Carry signal mode: YieldSpread, YieldRotation, or ClassicCarry.</summary>
+    public YieldCarryMode YieldCarryMode { get => _yieldCarryMode; set => SetProperty(ref _yieldCarryMode, value); }
+
+    public IReadOnlyList<YieldCarryMode> YieldCarryModes { get; } = Enum.GetValues<YieldCarryMode>();
+
     private CarryOptimizationMethod _optimizationMethod = CarryOptimizationMethod.MeanVariance;
     public CarryOptimizationMethod OptimizationMethod { get => _optimizationMethod; set => SetProperty(ref _optimizationMethod, value); }
 
@@ -71,6 +77,33 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
 
     private int _rebalanceFrequencyDays = 5;
     public int RebalanceFrequencyDays { get => _rebalanceFrequencyDays; set => SetProperty(ref _rebalanceFrequencyDays, value); }
+
+    /// <summary>
+    /// Minimum net yield spread (assetYield − riskFreeRate) an asset must have to be
+    /// included in the portfolio.  E.g. 0.005 = 50 bps minimum above the risk-free rate.
+    /// Only applied in <see cref="YieldCarryMode.YieldSpread"/> mode.
+    /// </summary>
+    private double _minYieldSpreadBps = 0.0;
+    public double MinYieldSpreadBps
+    {
+        get => _minYieldSpreadBps;
+        set => SetProperty(ref _minYieldSpreadBps, value);
+    }
+
+    // ── Per-symbol yield overrides ──────────────────────────────────────────
+
+    /// <summary>
+    /// Optional per-symbol annual yield overrides.  The user can enter the known
+    /// dividend yield, bond coupon rate, or FX carry rate for each security.
+    /// When left blank the strategy estimates yield from price history.
+    /// </summary>
+    public ObservableCollection<SymbolYieldVm> SymbolYields { get; } = [];
+
+    private string _newYieldSymbol = string.Empty;
+    public string NewYieldSymbol { get => _newYieldSymbol; set => SetProperty(ref _newYieldSymbol, value); }
+
+    private double _newYieldValue = 0.03;
+    public double NewYieldValue { get => _newYieldValue; set => SetProperty(ref _newYieldValue, value); }
 
     // ── Run status ──────────────────────────────────────────────────────────
 
@@ -176,7 +209,13 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
     public IRelayCommand AddPresetFaangCommand { get; }
     public IRelayCommand AddPresetMagnificentSevenCommand { get; }
     public IRelayCommand AddPresetEtfsCommand { get; }
+    /// <summary>Preset for high-yield dividend ETFs (VYM, SCHD, HDV, DVY, JEPI).</summary>
+    public IRelayCommand AddPresetDividendEtfsCommand { get; }
+    /// <summary>Preset for bond carry pairs (TLT, HYG, LQD, EMB, SHY).</summary>
+    public IRelayCommand AddPresetBondCarryCommand { get; }
     public IRelayCommand ClearSymbolsCommand { get; }
+    public IRelayCommand AddYieldOverrideCommand { get; }
+    public IRelayCommand<SymbolYieldVm> RemoveYieldOverrideCommand { get; }
     public IRelayCommand OpenRunBrowserCommand { get; }
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenRunPortfolioCommand { get; }
@@ -200,12 +239,43 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
         AddPresetFaangCommand = new RelayCommand(() => ApplyPreset(["META", "AAPL", "AMZN", "NFLX", "GOOGL"]));
         AddPresetMagnificentSevenCommand = new RelayCommand(() => ApplyPreset(["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"]));
         AddPresetEtfsCommand = new RelayCommand(() => ApplyPreset(["SPY", "QQQ", "IWM", "GLD", "TLT"]));
+        AddPresetDividendEtfsCommand = new RelayCommand(() =>
+        {
+            ApplyPreset(["VYM", "SCHD", "HDV", "DVY", "JEPI"]);
+            // Pre-populate known dividend yields for these ETFs
+            ApplyYieldPreset(new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["VYM"]  = 0.031,
+                ["SCHD"] = 0.035,
+                ["HDV"]  = 0.040,
+                ["DVY"]  = 0.043,
+                ["JEPI"] = 0.073
+            });
+        });
+        AddPresetBondCarryCommand = new RelayCommand(() =>
+        {
+            ApplyPreset(["TLT", "HYG", "LQD", "EMB", "SHY"]);
+            ApplyYieldPreset(new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["TLT"] = 0.042,
+                ["HYG"] = 0.062,
+                ["LQD"] = 0.051,
+                ["EMB"] = 0.055,
+                ["SHY"] = 0.050
+            });
+        });
         ClearSymbolsCommand = new RelayCommand(SelectedSymbols.Clear);
+        AddYieldOverrideCommand = new RelayCommand(AddYieldOverride,
+            () => !string.IsNullOrWhiteSpace(NewYieldSymbol) && NewYieldValue is >= 0 and <= 1);
+        RemoveYieldOverrideCommand = new RelayCommand<SymbolYieldVm>(vy =>
+        {
+            if (vy is not null) SymbolYields.Remove(vy);
+        });
         OpenRunBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(() => OpenRunSurface("RunDetail"), () => HasLatestRecordedRun);
         OpenRunPortfolioCommand = new RelayCommand(() => OpenRunSurface("RunPortfolio"), () => HasLatestRecordedRun);
 
-        // Start with a sensible default set of symbols.
+        // Start with yield-focused preset
         ApplyPreset(["SPY", "QQQ", "GLD", "TLT", "IWM"]);
     }
 
@@ -235,6 +305,33 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             SelectedSymbols.Add(s.ToUpperInvariant());
     }
 
+    private void ApplyYieldPreset(IDictionary<string, double> yields)
+    {
+        foreach (var kv in yields)
+        {
+            var sym = kv.Key.ToUpperInvariant();
+            var existing = SymbolYields.FirstOrDefault(y =>
+                string.Equals(y.Symbol, sym, StringComparison.OrdinalIgnoreCase));
+            if (existing is not null)
+                existing.Yield = kv.Value;
+            else
+                SymbolYields.Add(new SymbolYieldVm(sym, kv.Value));
+        }
+    }
+
+    private void AddYieldOverride()
+    {
+        var sym = NewYieldSymbol.Trim().ToUpperInvariant();
+        if (string.IsNullOrEmpty(sym)) return;
+        var existing = SymbolYields.FirstOrDefault(y =>
+            string.Equals(y.Symbol, sym, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+            existing.Yield = NewYieldValue;
+        else
+            SymbolYields.Add(new SymbolYieldVm(sym, NewYieldValue));
+        NewYieldSymbol = string.Empty;
+    }
+
     // ── Run logic ───────────────────────────────────────────────────────────
 
     private async Task RunBacktestAsync(CancellationToken ct = default)
@@ -261,7 +358,19 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
             RiskFreeRate: RiskFreeRate);
 
         var config = BuildCarryConfiguration();
-        var strategy = new CarryTradeBacktestStrategy(config, RebalanceFrequencyDays);
+
+        // Build explicit yield overrides from the table
+        var explicitYields = SymbolYields.Count > 0
+            ? (IReadOnlyDictionary<string, double>)SymbolYields
+                .ToDictionary(y => y.Symbol, y => y.Yield, StringComparer.OrdinalIgnoreCase)
+            : null;
+
+        var strategy = new CarryTradeBacktestStrategy(
+            configuration:          config,
+            yieldCarryMode:         YieldCarryMode,
+            rebalanceFrequencyDays: RebalanceFrequencyDays,
+            explicitYields:         explicitYields,
+            minYieldSpreadToLong:   MinYieldSpreadBps);
 
         var progress = new Progress<BacktestProgressEvent>(OnProgress);
         var result = await _backtestService.RunAsync(request, strategy, progress);
@@ -441,4 +550,19 @@ public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
         _backtestService.BacktestCompleted -= OnBacktestCompleted;
         _backtestService.BacktestCancelled -= OnBacktestCancelled;
     }
+}
+
+/// <summary>
+/// View model row for a per-symbol annual yield override in the carry trade configuration panel.
+/// </summary>
+public sealed class SymbolYieldVm(string symbol, double yield) : BindableBase
+{
+    public string Symbol { get; } = symbol;
+
+    private double _yield = yield;
+    /// <summary>Annual yield as a decimal (e.g. 0.035 = 3.5 %).</summary>
+    public double Yield { get => _yield; set => SetProperty(ref _yield, value); }
+
+    /// <summary>Display-friendly percentage string.</summary>
+    public string YieldDisplay => $"{_yield:P2}";
 }
