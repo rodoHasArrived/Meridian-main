@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Meridian.Application.SecurityMaster;
 using Meridian.Execution.Interfaces;
+using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
@@ -83,7 +84,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (def.InitialCash < 0)
                 throw new ArgumentOutOfRangeException(nameof(accounts), $"Account '{def.AccountId}' initial cash must be non-negative.");
 
-            _accounts[def.AccountId] = new AccountState(def.AccountId, def.DisplayName, def.Kind, def.InitialCash);
+        _accounts[def.AccountId] = new AccountState(
+            def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
+            def.MarginType, def.MarginModel);
 
             if (ledger is not null && def.InitialCash > 0)
             {
@@ -104,6 +107,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public decimal Cash
     {
         get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash); } }
+    }
+
+    /// <summary>Total margin borrowed across all accounts (0 for all-cash portfolios).</summary>
+    public decimal MarginBalance
+    {
+        get { lock (_lock) { return _accounts.Values.Sum(static a => a.MarginBalance); } }
     }
 
     /// <inheritdoc />
@@ -403,7 +412,20 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         var newQty = pos.Quantity + qty;
         pos.CostBasis = newQty == 0m ? 0m : (pos.CostBasis * pos.Quantity + notional) / newQty;
         pos.Quantity = newQty;
-        account.Cash -= notional + commission;
+
+        if (account.MarginModel is RegTMarginModel regt)
+        {
+            // Reg T: the trader funds only the initial margin (50 %); the broker loans the rest.
+            var cashRequired = notional * regt.LongInitialRate;
+            var borrowed = notional - cashRequired;
+            account.Cash -= cashRequired + commission;
+            pos.MarginBorrowed += borrowed;
+        }
+        else
+        {
+            // Cash account: full notional is deducted from cash.
+            account.Cash -= notional + commission;
+        }
 
         _ledger?.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
         [
@@ -450,10 +472,20 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         var proceeds = closeQty * price;
         var realised = proceeds - costBasisRemoved;
 
+        // For margin positions, proportionally repay the broker loan before crediting cash.
+        var loanRepaid = 0m;
+        if (pos.MarginBorrowed > 0m && pos.Quantity > 0m)
+        {
+            var closingRatio = closeQty / pos.Quantity;
+            loanRepaid = pos.MarginBorrowed * closingRatio;
+            pos.MarginBorrowed -= loanRepaid;
+        }
+
         pos.Quantity -= closeQty;
         if (pos.Quantity == 0m) pos.CostBasis = 0m;
 
-        account.Cash += proceeds - commission;
+        // The trader receives proceeds minus the loan repayment.
+        account.Cash += proceeds - loanRepaid - commission;
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
@@ -557,12 +589,27 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 /// <param name="DisplayName">Human-readable name.</param>
 /// <param name="Kind">Brokerage or Bank.</param>
 /// <param name="InitialCash">Opening cash balance.</param>
+/// <param name="MarginType">
+///   Margin regime for this account.
+///   Defaults to <see cref="MarginAccountType.Cash"/> (no borrowing).
+/// </param>
+/// <param name="MarginModel">
+///   Optional explicit margin model. When <see langword="null"/> a default model is
+///   created automatically for <see cref="MarginAccountType.RegT"/> and
+///   <see cref="MarginAccountType.PortfolioMargin"/> accounts.
+/// </param>
 public sealed record AccountDefinition(
     string AccountId,
     string DisplayName,
     AccountKind Kind,
-    decimal InitialCash);
+    decimal InitialCash,
+    MarginAccountType MarginType = MarginAccountType.Cash,
+    IMarginModel? MarginModel = null);
 
+/// <summary>
+/// Mutable per-account state maintained by <see cref="PaperTradingPortfolio"/>.
+/// Also implements <see cref="IAccountPortfolio"/> for the read-only public surface.
+/// </summary>
 /// <summary>
 /// Mutable per-account state maintained by <see cref="PaperTradingPortfolio"/>.
 /// Also implements <see cref="IAccountPortfolio"/> for the read-only public surface.
@@ -573,16 +620,33 @@ internal sealed class AccountState : IAccountPortfolio
     public string DisplayName { get; }
     public AccountKind Kind { get; }
     public decimal Cash { get; set; }
-    public decimal MarginBalance { get; set; }
     public decimal RealisedPnl { get; set; }
+    public MarginAccountType MarginType { get; }
+
+    /// <summary>Active margin model; <see langword="null"/> for cash accounts.</summary>
+    public IMarginModel? MarginModel { get; }
+
     public Dictionary<string, PaperPosition> Positions { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-    public AccountState(string accountId, string displayName, AccountKind kind, decimal cash)
+    public AccountState(
+        string accountId,
+        string displayName,
+        AccountKind kind,
+        decimal cash,
+        MarginAccountType marginType = MarginAccountType.Cash,
+        IMarginModel? marginModel = null)
     {
         AccountId = accountId;
         DisplayName = displayName;
         Kind = kind;
         Cash = cash;
+        MarginType = marginType;
+        MarginModel = marginModel ?? marginType switch
+        {
+            MarginAccountType.RegT => new RegTMarginModel(),
+            MarginAccountType.PortfolioMargin => new PortfolioMarginModel(),
+            _ => null,
+        };
     }
 
     // IAccountPortfolio explicit implementation (read-only projection)
@@ -591,6 +655,12 @@ internal sealed class AccountState : IAccountPortfolio
             static kv => kv.Key,
             static kv => (IPosition)kv.Value.ToExecutionPosition(),
             StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Total amount borrowed from the broker across all open positions.
+    /// Zero for cash accounts.
+    /// </summary>
+    public decimal MarginBalance => Positions.Values.Sum(static p => p.MarginBorrowed);
 
     public decimal UnrealisedPnl => Positions.Values.Sum(static p => p.UnrealisedPnl);
 
@@ -601,6 +671,19 @@ internal sealed class AccountState : IAccountPortfolio
     public decimal ShortMarketValue => Positions.Values
         .Where(static p => p.Quantity < 0)
         .Sum(static p => p.MarketValue);
+
+    /// <summary>
+    /// Available buying power based on the margin regime.
+    /// <list type="bullet">
+    ///   <item>Cash account: equals <see cref="Cash"/>.</item>
+    ///   <item>Reg T: up to 2× cash equity (50 % initial margin rate).</item>
+    ///   <item>Portfolio margin: model-specific; defaults to <see cref="Cash"/>.</item>
+    /// </list>
+    /// </summary>
+    public decimal BuyingPower =>
+        MarginModel is RegTMarginModel regt && regt.LongInitialRate > 0m
+            ? Cash / regt.LongInitialRate
+            : Cash;
 
     public ExecutionAccountDetailSnapshot TakeSnapshot()
     {
@@ -624,7 +707,9 @@ internal sealed class AccountState : IAccountPortfolio
             UnrealisedPnl: UnrealisedPnl,
             RealisedPnl: RealisedPnl,
             Positions: positionList,
-            AsOf: DateTimeOffset.UtcNow);
+            AsOf: DateTimeOffset.UtcNow,
+            MarginType: MarginType,
+            BuyingPower: BuyingPower);
     }
 }
 
@@ -637,6 +722,12 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
     public decimal MarketPrice { get; set; } = marketPrice;
+
+    /// <summary>
+    /// Amount borrowed from the broker to fund this position.
+    /// Non-zero only for margin accounts; zero for cash accounts and short positions.
+    /// </summary>
+    public decimal MarginBorrowed { get; set; }
 
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
