@@ -302,6 +302,37 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
+        /// Replaces the convertible-equity term definition for a security while preserving any non-convertible equity metadata already attached to the security.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for missing securities or equities without convertible terms.</para>
+        /// <para>This route updates the current convertible term snapshot only.</para>
+        /// </remarks>
+        group.MapPatch(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
+            Guid securityId,
+            AmendConvertibleEquityTermsRequest request,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (currentTerms is null)
+            {
+                return Results.NotFound();
+            }
+
+            var detail = await service
+                .AmendConvertibleEquityTermsAsync(securityId, request, ct)
+                .ConfigureAwait(false);
+
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("AmendSecurityMasterConvertibleEquityTerms")
+        .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
         /// Retrieves all corporate action events for a security, sorted by ex-date (dividend, split, merger, etc.).
         /// </summary>
         /// <remarks>

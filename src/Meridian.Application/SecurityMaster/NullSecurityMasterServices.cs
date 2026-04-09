@@ -93,7 +93,7 @@ public sealed class NullSecurityMasterQueryService
 // Command service — throws when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService
+public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
 {
     private static Task<T> NotConfigured<T>() =>
         Task.FromException<T>(new InvalidOperationException(
@@ -106,6 +106,9 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
         => NotConfigured<SecurityDetailDto>();
 
     public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
+    public Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
 
     public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
