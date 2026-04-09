@@ -109,10 +109,16 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash); } }
     }
 
-    /// <summary>Total margin borrowed across all accounts (0 for all-cash portfolios).</summary>
+    /// <summary>Total margin borrowed (long positions) across all accounts (0 for all-cash portfolios).</summary>
     public decimal MarginBalance
     {
         get { lock (_lock) { return _accounts.Values.Sum(static a => a.MarginBalance); } }
+    }
+
+    /// <summary>Total short margin collateral held across all accounts.</summary>
+    public decimal ShortMarginCollateral
+    {
+        get { lock (_lock) { return _accounts.Values.Sum(static a => a.ShortMarginCollateral); } }
     }
 
     /// <inheritdoc />
@@ -227,6 +233,117 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         lock (_lock)
         {
             return _accounts.Values.Select(static a => a.TakeSnapshot()).ToArray();
+        }
+    }
+
+    // ─── Margin maintenance / status ─────────────────────────────────────────
+
+    /// <summary>
+    /// Evaluates the current maintenance-margin health of one account given a set of
+    /// current market prices, and returns a <see cref="MarginCallStatus"/> indicating
+    /// whether a margin call is in effect.
+    /// </summary>
+    /// <param name="accountId">Account to evaluate.</param>
+    /// <param name="prices">
+    ///     Current market prices keyed by symbol (case-insensitive).
+    ///     Positions without a corresponding price entry are skipped.
+    /// </param>
+    /// <returns>
+    ///     A <see cref="MarginCallStatus"/> for the account.
+    ///     Returns <see cref="MarginCallStatus.NoMarginRequired"/> for cash accounts or
+    ///     accounts with no open positions.
+    /// </returns>
+    public MarginCallStatus CheckMarginStatus(
+        string accountId,
+        IReadOnlyDictionary<string, decimal> prices)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentNullException.ThrowIfNull(prices);
+
+        lock (_lock)
+        {
+            if (!_accounts.TryGetValue(accountId, out var account))
+                return MarginCallStatus.NoMarginRequired(accountId);
+
+            if (account.MarginModel is null || account.Positions.Count == 0)
+                return MarginCallStatus.NoMarginRequired(accountId);
+
+            var equity = account.Cash + account.LongMarketValue;
+            var posRequirements = new List<MarginRequirement>();
+
+            foreach (var (symbol, pos) in account.Positions)
+            {
+                if (!prices.TryGetValue(symbol, out var px)) continue;
+
+                var req = account.MarginModel.CalculateForPosition(
+                    pos.ToExecutionPosition(), px, equity);
+                posRequirements.Add(req);
+            }
+
+            var portfolioReq = account.MarginModel.CalculatePortfolioRequirement(
+                account.Positions.ToDictionary(
+                    kv => kv.Key,
+                    kv => kv.Value.ToExecutionPosition(),
+                    StringComparer.OrdinalIgnoreCase),
+                prices,
+                account.Cash);
+
+            var isCall = portfolioReq.IsMarginCall;
+            var deficiency = isCall ? Math.Abs(portfolioReq.ExcessLiquidity) : 0m;
+
+            return new MarginCallStatus(accountId, portfolioReq, posRequirements, isCall, deficiency);
+        }
+    }
+
+    /// <summary>
+    /// Returns the portfolio-level <see cref="MarginRequirement"/> for the specified account.
+    /// Returns a zeroed requirement for cash accounts or accounts with no margin model.
+    /// </summary>
+    public MarginRequirement GetMarginRequirement(
+        string accountId,
+        IReadOnlyDictionary<string, decimal> prices)
+        => CheckMarginStatus(accountId, prices).PortfolioRequirement;
+
+    /// <summary>
+    /// Accrues interest on any outstanding margin loans in all margin accounts.
+    /// </summary>
+    /// <remarks>
+    /// Call this once per interest period (e.g. daily).  The charge is deducted from the
+    /// account's <c>Cash</c> balance and added to <c>MarginBorrowed</c> on each affected
+    /// position so that equity (and therefore buying power) is reduced accordingly.
+    /// </remarks>
+    /// <param name="annualRate">Annual interest rate expressed as a decimal (e.g. 0.065 = 6.5 %).</param>
+    /// <param name="days">Number of days to accrue interest for. Defaults to 1 (daily).</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when <paramref name="annualRate"/> is negative or <paramref name="days"/> is less than 1.
+    /// </exception>
+    public void AccrueMarginInterest(decimal annualRate, int days = 1)
+    {
+        if (annualRate < 0m)
+            throw new ArgumentOutOfRangeException(nameof(annualRate), "Annual rate must be non-negative.");
+        if (days < 1)
+            throw new ArgumentOutOfRangeException(nameof(days), "Days must be at least 1.");
+
+        if (annualRate == 0m) return;
+
+        var dailyRate = annualRate / 365m;
+        var periodRate = dailyRate * days;
+
+        lock (_lock)
+        {
+            foreach (var account in _accounts.Values)
+            {
+                if (account.MarginModel is null) continue; // cash account
+
+                foreach (var pos in account.Positions.Values)
+                {
+                    if (pos.MarginBorrowed <= 0m) continue;
+
+                    var interest = pos.MarginBorrowed * periodRate;
+                    pos.MarginBorrowed += interest; // outstanding loan grows
+                    account.Cash -= interest;       // deducted from cash / equity
+                }
+            }
         }
     }
 
@@ -421,6 +538,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash -= cashRequired + commission;
             pos.MarginBorrowed += borrowed;
         }
+        else if (account.MarginModel is PortfolioMarginModel)
+        {
+            // Portfolio margin: full notional deducted from cash (stress-test margining
+            // is evaluated separately via CheckMarginStatus).
+            account.Cash -= notional + commission;
+        }
         else
         {
             // Cash account: full notional is deducted from cash.
@@ -448,10 +571,21 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         var coverCost = coverQty * price;
         var realised = proceedsRemoved - coverCost;
 
+        // Release proportional short margin collateral back to cash.
+        var marginReleased = 0m;
+        if (pos.MarginBorrowed < 0m && pos.Quantity < 0m)
+        {
+            var closingRatio = coverQty / Math.Abs(pos.Quantity);
+            marginReleased = Math.Abs(pos.MarginBorrowed) * closingRatio;
+            pos.MarginBorrowed += marginReleased; // reduce the held collateral (stored as negative)
+        }
+
         pos.Quantity += coverQty;
         if (pos.Quantity == 0m) pos.CostBasis = 0m;
 
+        // Cash: buy-to-cover cost minus the extra margin collateral released.
         account.Cash -= coverCost + commission;
+        account.Cash += marginReleased;
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
@@ -507,7 +641,23 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             ? 0m
             : (pos.CostBasis * Math.Abs(pos.Quantity) + proceeds) / Math.Abs(newQty);
         pos.Quantity = newQty;
-        account.Cash += proceeds - commission;
+
+        if (account.MarginModel is RegTMarginModel regt)
+        {
+            // Reg T: broker retains the short proceeds; trader must post the additional
+            // margin (ShortInitialRate - 1) × notional on top.
+            // e.g. 150 % total collateral: broker keeps 100 % proceeds + trader posts 50 %.
+            var additionalMargin = proceeds * (regt.ShortInitialRate - 1m);
+            account.Cash -= additionalMargin + commission;
+
+            // Track total collateral held as a negative MarginBorrowed (broker holds it).
+            pos.MarginBorrowed -= proceeds * regt.ShortInitialRate;
+        }
+        else
+        {
+            // Cash account: proceeds credited immediately; short position is funded by proceeds.
+            account.Cash += proceeds - commission;
+        }
 
         _ledger?.PostLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
         [
@@ -657,10 +807,20 @@ internal sealed class AccountState : IAccountPortfolio
             StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Total amount borrowed from the broker across all open positions.
-    /// Zero for cash accounts.
+    /// Total amount borrowed from the broker to fund long positions.
+    /// Zero for cash accounts and for accounts with no margin longs.
     /// </summary>
-    public decimal MarginBalance => Positions.Values.Sum(static p => p.MarginBorrowed);
+    public decimal MarginBalance => Positions.Values
+        .Where(static p => p.MarginBorrowed > 0m)
+        .Sum(static p => p.MarginBorrowed);
+
+    /// <summary>
+    /// Total collateral held by the broker against short positions.
+    /// Zero for cash accounts and accounts with no open shorts.
+    /// </summary>
+    public decimal ShortMarginCollateral => Positions.Values
+        .Where(static p => p.MarginBorrowed < 0m)
+        .Sum(static p => Math.Abs(p.MarginBorrowed));
 
     public decimal UnrealisedPnl => Positions.Values.Sum(static p => p.UnrealisedPnl);
 
@@ -709,7 +869,8 @@ internal sealed class AccountState : IAccountPortfolio
             Positions: positionList,
             AsOf: DateTimeOffset.UtcNow,
             MarginType: MarginType,
-            BuyingPower: BuyingPower);
+            BuyingPower: BuyingPower,
+            ShortMarginCollateral: ShortMarginCollateral);
     }
 }
 
