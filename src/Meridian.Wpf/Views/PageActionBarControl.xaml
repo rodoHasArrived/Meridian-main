@@ -85,29 +85,6 @@
                                 <TextBlock Text="{Binding Label}"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
-
-                            <!-- Trigger style change for primary actions -->
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPrimary}" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenDimBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}"/>
-                                            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}"/>
-                                        </DataTrigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderHoverBrush}"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
                         </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
