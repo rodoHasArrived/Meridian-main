@@ -338,5 +338,24 @@ public static class SecurityMasterEndpoints
         })
         .WithName("SecurityMasterIngestStatus")
         .Produces(StatusCodes.Status200OK);
+
+        // PATCH /api/security-master/equities/{securityId}/preferred-terms
+        group.MapMethods($"/equities/{{securityId:guid}}/preferred-terms", [HttpMethods.Patch], async (
+            Guid securityId,
+            AmendPreferredEquityTermsRequest request,
+            ISecurityMasterQueryService queryService,
+            ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (existing is null)
+                return Results.NotFound();
+
+            var detail = await service.AmendPreferredEquityTermsAsync(securityId, request, ct).ConfigureAwait(false);
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("PatchSecurityPreferredTerms")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
     }
 }

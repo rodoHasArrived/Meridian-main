@@ -54,3 +54,23 @@ public sealed record UpsertSecurityAliasRequest(
     DateTimeOffset ValidFrom,
     DateTimeOffset? ValidTo,
     string? Reason);
+
+/// <summary>
+/// Request to amend the preferred-equity-specific terms for an existing security.
+/// </summary>
+public sealed record AmendPreferredEquityTermsRequest(
+    long ExpectedVersion,
+    decimal? DividendRate,
+    string? DividendType,
+    decimal? RedemptionPrice,
+    DateOnly? RedemptionDate,
+    DateOnly? CallableDate,
+    bool? ParticipatesInCommonDividends,
+    decimal? AdditionalDividendThreshold,
+    string? LiquidationPreferenceKind,
+    decimal? LiquidationPreferenceMultiple,
+    DateTimeOffset EffectiveFrom,
+    string SourceSystem,
+    string UpdatedBy,
+    string? SourceRecordId,
+    string? Reason);

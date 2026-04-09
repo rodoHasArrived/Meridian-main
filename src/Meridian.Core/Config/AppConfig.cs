@@ -33,6 +33,7 @@ namespace Meridian.Application.Config;
 /// <param name="OfflineFirstMode">When true, enables air-gapped offline-first mode: backfill requests are queued and deferred until connectivity is restored. Default is false.</param>
 /// <param name="PluginsPath">Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.</param>
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
+/// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
@@ -54,7 +55,8 @@ public sealed record AppConfig(
     ValidationPipelineConfig? Validation = null,
     bool OfflineFirstMode = false,
     string? PluginsPath = null,
-    bool CoLocationProfile = false
+    bool CoLocationProfile = false,
+    ProviderConnectionsConfig? ProviderConnections = null
 );
 
 /// <summary>

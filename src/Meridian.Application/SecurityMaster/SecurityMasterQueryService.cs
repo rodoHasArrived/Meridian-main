@@ -79,4 +79,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
 
     public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
         => _eventStore.LoadCorporateActionsAsync(securityId, ct);
+
+    public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+        => Task.FromResult<PreferredEquityTermsDto?>(null);
 }

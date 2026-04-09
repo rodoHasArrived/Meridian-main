@@ -1646,5 +1646,8 @@ public sealed class WorkstationEndpointsTests
 
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
     }
 }

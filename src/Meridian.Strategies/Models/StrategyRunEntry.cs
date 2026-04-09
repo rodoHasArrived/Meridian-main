@@ -45,6 +45,31 @@ public sealed record StrategyRunEntry(
                 _ => "Unknown"
             });
 
+    /// <summary>Creates a new run entry with an explicit run ID and optional metadata fields.</summary>
+    public static StrategyRunEntry Start(
+        string strategyId,
+        string strategyName,
+        RunType runType,
+        string runId,
+        string? datasetReference = null,
+        string? feedReference = null,
+        string? engine = null,
+        IReadOnlyDictionary<string, string>? parameterSet = null) =>
+        new(
+            RunId: runId,
+            StrategyId: strategyId,
+            StrategyName: strategyName,
+            RunType: runType,
+            StartedAt: DateTimeOffset.UtcNow,
+            EndedAt: null,
+            Metrics: null,
+            DatasetReference: datasetReference,
+            FeedReference: feedReference,
+            PortfolioId: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
+            LedgerReference: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
+            Engine: engine,
+            ParameterSet: parameterSet);
+
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics) =>
         this with { EndedAt = DateTimeOffset.UtcNow, Metrics = metrics };

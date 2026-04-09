@@ -32,6 +32,10 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(ExecutionPosition))]
 [JsonSerializable(typeof(List<ExecutionPosition>))]
 [JsonSerializable(typeof(AccountKind))]
+// Operator control and audit trail types
+[JsonSerializable(typeof(ExecutionControlSnapshot))]
+[JsonSerializable(typeof(ExecutionAuditEntry))]
+[JsonSerializable(typeof(List<ExecutionAuditEntry>))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }

@@ -221,5 +221,7 @@ public sealed class PaperTradingGatewayTests
             => throw new NotImplementedException();
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
             => throw new NotImplementedException();
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
     }
 }

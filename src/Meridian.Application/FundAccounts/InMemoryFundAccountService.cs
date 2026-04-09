@@ -335,9 +335,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService
                 return Task.FromResult<IReadOnlyList<BankStatementLineDto>>([]);
 
             var results = stored.BankLines
-                .Where(l => (fromDate == null || l.StatementDate >= fromDate)
-                         && (toDate   == null || l.StatementDate <= toDate))
-                .OrderByDescending(l => l.StatementDate)
+                .Where(l => (fromDate == null || l.TransactionDate >= fromDate)
+                         && (toDate   == null || l.TransactionDate <= toDate))
+                .OrderByDescending(l => l.TransactionDate)
                 .ToList();
 
             return Task.FromResult<IReadOnlyList<BankStatementLineDto>>(results);

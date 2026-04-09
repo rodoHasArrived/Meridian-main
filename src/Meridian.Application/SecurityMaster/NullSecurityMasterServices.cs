@@ -67,6 +67,11 @@ internal sealed class NullSecurityMasterQueryService
         Guid securityId,
         CancellationToken ct = default)
         => Task.FromResult(_emptyActions);
+
+    public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(
+        Guid securityId,
+        CancellationToken ct = default)
+        => Task.FromResult<PreferredEquityTermsDto?>(null);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -93,6 +98,9 @@ internal sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMas
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityAliasDto>();
+
+    public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

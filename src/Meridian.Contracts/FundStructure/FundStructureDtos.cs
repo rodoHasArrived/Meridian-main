@@ -124,7 +124,9 @@ public sealed record AccountSummaryDto(
     string? PortfolioId,
     string? LedgerReference,
     string? StrategyId,
-    string? RunId);
+    string? RunId,
+    CustodianAccountDetailsDto? CustodianDetails = null,
+    BankAccountDetailsDto? BankDetails = null);
 
 public sealed record OwnershipLinkDto(
     Guid OwnershipLinkId,

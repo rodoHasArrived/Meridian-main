@@ -142,6 +142,39 @@ public sealed class SecurityMasterService : ISecurityMasterService
         return UpsertAliasAsyncCore(alias, ct);
     }
 
+    public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+    {
+        // Delegate to AmendTermsAsync with a patch that updates preferred-equity-specific fields.
+        var patch = new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: request.ExpectedVersion,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: System.Text.Json.JsonSerializer.SerializeToElement(new
+            {
+                dividendRate = request.DividendRate,
+                dividendType = request.DividendType,
+                isCumulative = request.DividendType != null
+                    ? string.Equals(request.DividendType, "Cumulative", StringComparison.OrdinalIgnoreCase)
+                    : (bool?)null,
+                redemptionPrice = request.RedemptionPrice,
+                redemptionDate = request.RedemptionDate,
+                callableDate = request.CallableDate,
+                participatesInCommonDividends = request.ParticipatesInCommonDividends,
+                additionalDividendThreshold = request.AdditionalDividendThreshold,
+                liquidationPreferenceKind = request.LiquidationPreferenceKind,
+                liquidationPreferenceMultiple = request.LiquidationPreferenceMultiple
+            }),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: request.EffectiveFrom,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: request.SourceRecordId,
+            Reason: request.Reason);
+
+        return AmendTermsAsync(patch, ct);
+    }
+
     private async Task<SecurityDetailDto> ExecuteCreateAsync(CreateSecurityRequest request, CancellationToken ct)
     {
         var result = SecurityMasterCommandFacade.Create(SecurityMasterMapping.ToCreateCommand(request));

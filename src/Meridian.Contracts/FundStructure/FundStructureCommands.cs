@@ -41,20 +41,6 @@ public sealed record CreateLegalEntityRequest(
     string CreatedBy,
     string? Description = null);
 
-public sealed record CreateAccountRequest(
-    Guid AccountId,
-    AccountTypeDto AccountType,
-    string AccountCode,
-    string DisplayName,
-    string BaseCurrency,
-    DateTimeOffset EffectiveFrom,
-    string CreatedBy,
-    Guid? EntityId = null,
-    Guid? FundId = null,
-    Guid? SleeveId = null,
-    Guid? VehicleId = null,
-    string? Institution = null);
-
 public sealed record LinkFundStructureNodesRequest(
     Guid OwnershipLinkId,
     Guid ParentNodeId,
