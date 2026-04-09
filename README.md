@@ -4378,25 +4378,34 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 07-backfill.png
 │   │   ├── 08-derivatives.png
 │   │   ├── 09-symbols.png
+│   │   ├── 10-status-section.png
 │   │   ├── 10-status.png
-│   │   ├── 10-workstation-research.png
 │   │   ├── 11-login.png
-│   │   ├── 11-workstation-trading.png
-│   │   ├── 12-workstation-data-operations.png
 │   │   ├── 12-workstation-research.png
-│   │   ├── 13-workstation-governance.png
+│   │   ├── 12-workstation-trading.png
+│   │   ├── 13-workstation-data-operations.png
 │   │   ├── 13-workstation-trading.png
 │   │   ├── 14-workstation-data-operations.png
+│   │   ├── 14-workstation-governance.png
 │   │   ├── 14-workstation-trading-orders.png
 │   │   ├── 15-workstation-governance.png
+│   │   ├── 15-workstation-trading-orders.png
 │   │   ├── 15-workstation-trading-positions.png
+│   │   ├── 16-workstation-trading-positions.png
 │   │   ├── 16-workstation-trading-risk.png
 │   │   ├── 17-workstation-data-operations-providers.png
+│   │   ├── 17-workstation-trading-risk.png
 │   │   ├── 18-workstation-data-operations-backfills.png
+│   │   ├── 18-workstation-data-operations-providers.png
+│   │   ├── 19-workstation-data-operations-backfills.png
 │   │   ├── 19-workstation-data-operations-exports.png
+│   │   ├── 20-workstation-data-operations-exports.png
 │   │   ├── 20-workstation-governance-ledger.png
+│   │   ├── 21-workstation-governance-ledger.png
 │   │   ├── 21-workstation-governance-reconciliation.png
+│   │   ├── 22-workstation-governance-reconciliation.png
 │   │   ├── 22-workstation-governance-security-master.png
+│   │   ├── 23-workstation-governance-security-master.png
 │   │   ├── README.md
 │   │   └── desktop
 │   │       ├── wpf-backfill.png
@@ -7124,6 +7133,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 6494 files
+491 directories, 6503 files
 ```
 <!-- readme-tree end -->
