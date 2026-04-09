@@ -28,6 +28,10 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// - Supports market, limit, stop, stop-limit orders
 /// - Supports fractional shares
 /// - Supports extended hours trading
+/// - Supports US equities and fixed income (US Treasuries, corporate bonds)
+/// - Fixed income orders may use notional sizing: set Metadata["notional"] = "true" on the OrderRequest
+///   and pass the dollar amount as Quantity. Optionally set Metadata["asset_class"] = "us_treasury"
+///   to route treasury orders explicitly.
 /// - Rate limit: 200 req/min
 /// </remarks>
 [DataSource("alpaca-brokerage", "Alpaca Brokerage", DataSourceType.Realtime, DataSourceCategory.Broker,
@@ -78,7 +82,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
 
     /// <inheritdoc />
     public BrokerageCapabilities BrokerageCapabilities { get; } =
-        BrokerageCapabilities.UsEquity(
+        BrokerageCapabilities.UsEquityAndFixedIncome(
             modification: true,
             partialFills: true,
             shortSelling: true,
@@ -123,16 +127,24 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             "Alpaca submitting order: {Side} {Quantity} {Symbol} @ {Type}",
             request.Side, request.Quantity, request.Symbol, request.Type);
 
+        var isNotional = request.Metadata?.TryGetValue("notional", out var notionalFlag) == true
+            && string.Equals(notionalFlag, "true", StringComparison.OrdinalIgnoreCase);
+
+        string? assetClass = request.Metadata is not null
+            && request.Metadata.TryGetValue("asset_class", out var ac) ? ac : null;
+
         var payload = new AlpacaOrderPayload
         {
             Symbol = request.Symbol,
-            Qty = request.Quantity.ToString("G"),
+            Qty = isNotional ? null : request.Quantity.ToString("G"),
+            Notional = isNotional ? request.Quantity.ToString("G") : null,
             Side = request.Side == OrderSide.Buy ? "buy" : "sell",
             Type = MapOrderType(request.Type),
             TimeInForce = MapTimeInForce(request.TimeInForce),
             LimitPrice = request.LimitPrice?.ToString("G"),
             StopPrice = request.StopPrice?.ToString("G"),
             ClientOrderId = request.ClientOrderId,
+            AssetClass = assetClass,
         };
 
         using var client = CreateHttpClient();
@@ -318,6 +330,9 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             MarketValue = ParseDecimal(p.MarketValue),
             UnrealizedPnl = ParseDecimal(p.UnrealizedPl),
             AssetClass = p.AssetClass ?? "equity",
+            AccruedInterest = string.IsNullOrEmpty(p.AccruedInterest)
+                ? null
+                : ParseDecimal(p.AccruedInterest),
         }).ToList().AsReadOnly();
     }
 
@@ -447,12 +462,16 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     {
         [JsonPropertyName("symbol")] public string? Symbol { get; set; }
         [JsonPropertyName("qty")] public string? Qty { get; set; }
+        /// <summary>Dollar-amount order size used for fixed income instruments.</summary>
+        [JsonPropertyName("notional")] public string? Notional { get; set; }
         [JsonPropertyName("side")] public string? Side { get; set; }
         [JsonPropertyName("type")] public string? Type { get; set; }
         [JsonPropertyName("time_in_force")] public string? TimeInForce { get; set; }
         [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
         [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
         [JsonPropertyName("client_order_id")] public string? ClientOrderId { get; set; }
+        /// <summary>Explicit asset class hint used for treasury/bond routing (e.g., "us_treasury").</summary>
+        [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
     }
 
     internal sealed class AlpacaOrderModifyPayload
@@ -496,6 +515,8 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         [JsonPropertyName("market_value")] public string? MarketValue { get; set; }
         [JsonPropertyName("unrealized_pl")] public string? UnrealizedPl { get; set; }
         [JsonPropertyName("asset_class")] public string? AssetClass { get; set; }
+        /// <summary>Accrued interest for fixed income positions (bonds, treasuries).</summary>
+        [JsonPropertyName("accrued_interest")] public string? AccruedInterest { get; set; }
     }
 }
 

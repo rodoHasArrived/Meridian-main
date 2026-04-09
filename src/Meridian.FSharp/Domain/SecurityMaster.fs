@@ -51,7 +51,80 @@ module CommonTerms =
                 PrimaryListingMic = terms.PrimaryListingMic |> Option.map (fun m -> m.Trim().ToUpperInvariant())
         }
 
-type EquityTerms = { ShareClass: string option }
+[<RequireQualifiedAccess>]
+type DividendType =
+    | Fixed
+    | Floating
+    | Cumulative
+
+[<RequireQualifiedAccess>]
+module DividendType =
+    let asString dividendType =
+        match dividendType with
+        | DividendType.Fixed -> "Fixed"
+        | DividendType.Floating -> "Floating"
+        | DividendType.Cumulative -> "Cumulative"
+
+type ParticipationTerms = {
+    ParticipatesInCommonDividends: bool
+    AdditionalDividendThreshold: decimal option
+}
+
+[<RequireQualifiedAccess>]
+type LiquidationPreference =
+    | Pari
+    | Senior of multiple: decimal
+    | Subordinated
+
+[<RequireQualifiedAccess>]
+module LiquidationPreference =
+    let asString preference =
+        match preference with
+        | LiquidationPreference.Pari -> "Pari"
+        | LiquidationPreference.Senior _ -> "Senior"
+        | LiquidationPreference.Subordinated -> "Subordinated"
+
+type PreferredTerms = {
+    DividendRate: decimal option
+    DividendType: DividendType
+    RedemptionPrice: decimal option
+    RedemptionDate: DateOnly option
+    CallableDate: DateOnly option
+    ParticipationTerms: ParticipationTerms option
+    LiquidationPreference: LiquidationPreference
+}
+
+type ConvertibleTerms = {
+    UnderlyingSecurityId: SecurityId
+    ConversionRatio: decimal
+    ConversionPrice: decimal option
+    ConversionStartDate: DateOnly option
+    ConversionEndDate: DateOnly option
+}
+
+[<RequireQualifiedAccess>]
+type EquityClassification =
+    | Common
+    | Preferred of PreferredTerms
+    | Convertible of ConvertibleTerms
+    | ConvertiblePreferred of PreferredTerms * ConvertibleTerms
+    | Other of string
+
+[<RequireQualifiedAccess>]
+module EquityClassification =
+    let asString classification =
+        match classification with
+        | EquityClassification.Common -> "Common"
+        | EquityClassification.Preferred _ -> "Preferred"
+        | EquityClassification.Convertible _ -> "Convertible"
+        | EquityClassification.ConvertiblePreferred _ -> "ConvertiblePreferred"
+        | EquityClassification.Other s -> s
+
+type EquityTerms = {
+    ShareClass: string option
+    VotingRightsCat: VotingRightsCat option
+    Classification: EquityClassification option
+}
 
 /// Exercise style for options and warrants.
 [<RequireQualifiedAccess>]

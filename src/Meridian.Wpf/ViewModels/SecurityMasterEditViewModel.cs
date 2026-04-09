@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ui.Services;
 using WpfServices = Meridian.Wpf.Services;
@@ -14,12 +13,13 @@ namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
 /// ViewModel for creating or editing a security in the Security Master.
-/// Supports both create (POST /api/security-master/create) and amend (POST /api/security-master/{id}/amend).
+/// Uses <see cref="ISecurityMasterService"/> directly for in-process create and amend operations.
 /// </summary>
 public sealed partial class SecurityMasterEditViewModel : BindableBase
 {
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly ISecurityMasterService _service;
 
     // Static asset class and identifier kind lists
     private static readonly string[] AssetClassesArray =
@@ -68,10 +68,12 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterEditViewModel(
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        ISecurityMasterService service)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
+        _service = service;
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
     }
@@ -79,9 +81,10 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
     // ── Initialization ──────────────────────────────────────────────────────
     public static SecurityMasterEditViewModel CreateNew(
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        ISecurityMasterService service)
     {
-        return new SecurityMasterEditViewModel(loggingService, notificationService)
+        return new SecurityMasterEditViewModel(loggingService, notificationService, service)
         {
             IsEditMode = false,
             Currency = "USD",
@@ -176,17 +179,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             SourceRecordId: null,
             Reason: "Created via WPF UI");
 
-        var response = await ApiClientService.Instance
-            .PostWithResponseAsync<SecurityDetailDto>("/api/security-master/create", request, ct)
-            .ConfigureAwait(false);
-
-        if (!response.Success)
-        {
-            HandleError(response);
-            return null;
-        }
-
-        return response.Data;
+        return await _service.CreateAsync(request, ct).ConfigureAwait(false);
     }
 
     private async Task<SecurityDetailDto?> AmendSecurityAsync(CancellationToken ct)
@@ -204,55 +197,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             SourceRecordId: null,
             Reason: "Amended via WPF UI");
 
-        var response = await ApiClientService.Instance
-            .PostWithResponseAsync<SecurityDetailDto>(
-                $"/api/security-master/amend",
-                request,
-                ct)
-            .ConfigureAwait(false);
-
-        if (!response.Success)
-        {
-            HandleError(response);
-            return null;
-        }
-
-        return response.Data;
-    }
-
-    private void HandleError(ApiResponse<SecurityDetailDto> response)
-    {
-        if (response.StatusCode == 422)
-        {
-            // Try to parse validation errors
-            try
-            {
-                var options = DesktopJsonOptions.Api;
-                if (JsonSerializer.Deserialize<ValidationProblemDetails>(
-                    response.ErrorMessage ?? "{}",
-                    options) is { Errors: not null } details)
-                {
-                    foreach (var error in details.Errors.Values.SelectMany(v => v))
-                    {
-                        ValidationErrors.Add(error);
-                    }
-                    RaisePropertyChanged(nameof(HasErrors));
-                    StatusText = $"{ValidationErrors.Count} validation error(s).";
-                    return;
-                }
-            }
-            catch { }
-        }
-
-        if (!string.IsNullOrEmpty(response.ErrorMessage))
-        {
-            ValidationErrors.Add(response.ErrorMessage);
-        }
-        else
-        {
-            ValidationErrors.Add($"HTTP {response.StatusCode}: Request failed.");
-        }
-        RaisePropertyChanged(nameof(HasErrors));
+        return await _service.AmendTermsAsync(request, ct).ConfigureAwait(false);
     }
 
     private static SecurityIdentifierKind ConvertIdentifierKind(string displayName) => displayName switch
@@ -265,9 +210,3 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         _ => SecurityIdentifierKind.Ticker
     };
 }
-
-// ── Contracts for validation errors ──────────────────────────────────────
-
-public sealed record ValidationProblemDetails(
-    [property: System.Text.Json.Serialization.JsonPropertyName("errors")]
-    Dictionary<string, string[]>? Errors);

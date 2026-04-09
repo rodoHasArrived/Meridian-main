@@ -454,10 +454,12 @@ public partial class App : System.Windows.Application
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, SecurityMasterService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+                (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
-            services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
 
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
@@ -471,6 +473,23 @@ public partial class App : System.Windows.Application
             services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
         }
+        else
+        {
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+                (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
+            services.AddSingleton<NullSecurityMasterQueryService>();
+            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterRuntimeStatus>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
+            services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
+        }
+
+        services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
 
         // Wire optional Security Master collaborators into the BacktestService singleton when available.
         services.AddSingleton(sp =>

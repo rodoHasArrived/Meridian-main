@@ -83,7 +83,7 @@ internal sealed class NullSecurityMasterQueryService
 // Command service — throws when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-internal sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService
+public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
 {
     private static Task<T> NotConfigured<T>() =>
         Task.FromException<T>(new InvalidOperationException(
@@ -96,6 +96,12 @@ internal sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMas
     public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
 
+    public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
+    public Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
     public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
         => Task.FromException(new InvalidOperationException(
             "Security Master is not configured. " +
@@ -103,9 +109,6 @@ internal sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMas
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityAliasDto>();
-
-    public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
-        => NotConfigured<SecurityDetailDto>();
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

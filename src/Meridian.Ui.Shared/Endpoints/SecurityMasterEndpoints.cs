@@ -228,6 +228,110 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
+        /// Retrieves the current preferred-equity term definition for a security when its classification includes preferred terms.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for non-equity securities or equities without preferred terms.</para>
+        /// <para>This is the current term snapshot only; dividend schedules, yield projections, and execution history are separate follow-on APIs.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterPreferredEquityTerms, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var terms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            return terms is null
+                ? Results.NotFound()
+                : Results.Json(terms, jsonOptions);
+        })
+        .WithName("GetSecurityMasterPreferredEquityTerms")
+        .Produces<PreferredEquityTermsDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Replaces the preferred-equity term definition for a security while preserving any non-preferred equity metadata already attached to the security.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for missing securities or equities without preferred terms.</para>
+        /// <para>This route updates the current preferred term snapshot only; dividend schedule and yield projections remain separate follow-on APIs.</para>
+        /// </remarks>
+        group.MapPatch(UiApiRoutes.SecurityMasterPreferredEquityTerms, async (
+            Guid securityId,
+            AmendPreferredEquityTermsRequest request,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var currentTerms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (currentTerms is null)
+            {
+                return Results.NotFound();
+            }
+
+            var detail = await service
+                .AmendPreferredEquityTermsAsync(securityId, request, ct)
+                .ConfigureAwait(false);
+
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("AmendSecurityMasterPreferredEquityTerms")
+        .Accepts<AmendPreferredEquityTermsRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Retrieves the current convertible-equity term definition for a security when its classification includes conversion terms.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for non-equity securities or equities without convertible terms.</para>
+        /// <para>This returns the stored conversion terms snapshot; price-derived parity and in-the-money calculations remain separate follow-on APIs.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var terms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            return terms is null
+                ? Results.NotFound()
+                : Results.Json(terms, jsonOptions);
+        })
+        .WithName("GetSecurityMasterConvertibleEquityTerms")
+        .Produces<ConvertibleEquityTermsDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Replaces the convertible-equity term definition for a security while preserving any non-convertible equity metadata already attached to the security.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for missing securities or equities without convertible terms.</para>
+        /// <para>This route updates the current convertible term snapshot only.</para>
+        /// </remarks>
+        group.MapPatch(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
+            Guid securityId,
+            AmendConvertibleEquityTermsRequest request,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (currentTerms is null)
+            {
+                return Results.NotFound();
+            }
+
+            var detail = await service
+                .AmendConvertibleEquityTermsAsync(securityId, request, ct)
+                .ConfigureAwait(false);
+
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("AmendSecurityMasterConvertibleEquityTerms")
+        .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
         /// Retrieves all corporate action events for a security, sorted by ex-date (dividend, split, merger, etc.).
         /// </summary>
         /// <remarks>

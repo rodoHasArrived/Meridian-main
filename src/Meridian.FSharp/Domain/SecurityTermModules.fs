@@ -113,11 +113,23 @@ type IssuerRef = {
 /// Voting rights category for equity instruments.
 [<RequireQualifiedAccess>]
 type VotingRightsCat =
-    | Full          // one share one vote
-    | Restricted    // limited voting rights
+    | FullVoting
+    | LimitedVoting
     | NonVoting
-    | SuperVoting   // multiple votes per share (e.g. Class B dual-class structure)
-    | OtherVoting of string
+    | DualClass
+    | SuperVoting
+    | OtherVotingRights of string
+
+[<RequireQualifiedAccess>]
+module VotingRightsCat =
+    let asString cat =
+        match cat with
+        | VotingRightsCat.FullVoting -> "FullVoting"
+        | VotingRightsCat.LimitedVoting -> "LimitedVoting"
+        | VotingRightsCat.NonVoting -> "NonVoting"
+        | VotingRightsCat.DualClass -> "DualClass"
+        | VotingRightsCat.SuperVoting -> "SuperVoting"
+        | VotingRightsCat.OtherVotingRights v -> v
 
 type EquityBehaviorTerms = {
     ShareClass: string option

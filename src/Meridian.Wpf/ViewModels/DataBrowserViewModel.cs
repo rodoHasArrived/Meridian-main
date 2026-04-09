@@ -23,6 +23,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     private string _validationSummary = string.Empty;
     private string _sortField = "TimestampDesc";
     private string _filteredCountText = "0 records";
+    private bool _allRowsSelected;
 
     public DataBrowserViewModel()
     {
@@ -52,6 +53,36 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         private set => SetProperty(ref _filteredCountText, value);
     }
 
+    /// <summary>Number of active non-default filters (DataType, Venue, date range).</summary>
+    public int ActiveFilterCount
+    {
+        get
+        {
+            var count = 0;
+            if (!string.Equals(SelectedDataType, "All", StringComparison.OrdinalIgnoreCase)) count++;
+            if (!string.Equals(SelectedVenue, "All", StringComparison.OrdinalIgnoreCase)) count++;
+            if (FromDate.HasValue) count++;
+            if (ToDate.HasValue) count++;
+            return count;
+        }
+    }
+
+    /// <summary>Select/deselect all visible rows.</summary>
+    public bool AllRowsSelected
+    {
+        get => _allRowsSelected;
+        set
+        {
+            if (SetProperty(ref _allRowsSelected, value))
+            {
+                foreach (var record in _pagedRecords)
+                {
+                    record.IsSelected = value;
+                }
+            }
+        }
+    }
+
     public string SymbolFilter
     {
         get => _symbolFilter;
@@ -61,13 +92,21 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
     public string SelectedDataType
     {
         get => _selectedDataType;
-        set => SetProperty(ref _selectedDataType, value);
+        set
+        {
+            if (SetProperty(ref _selectedDataType, value))
+                RaisePropertyChanged(nameof(ActiveFilterCount));
+        }
     }
 
     public string SelectedVenue
     {
         get => _selectedVenue;
-        set => SetProperty(ref _selectedVenue, value);
+        set
+        {
+            if (SetProperty(ref _selectedVenue, value))
+                RaisePropertyChanged(nameof(ActiveFilterCount));
+        }
     }
 
     public DateTime? FromDate
@@ -78,6 +117,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             if (SetProperty(ref _fromDate, value))
             {
                 UpdateValidationSummary();
+                RaisePropertyChanged(nameof(ActiveFilterCount));
             }
         }
     }
@@ -90,6 +130,7 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             if (SetProperty(ref _toDate, value))
             {
                 UpdateValidationSummary();
+                RaisePropertyChanged(nameof(ActiveFilterCount));
             }
         }
     }
@@ -300,6 +341,9 @@ public sealed class DataBrowserRecord
     public double Price { get; init; }
 
     public int Size { get; init; }
+
+    /// <summary>Tracks row selection for bulk-export operations.</summary>
+    public bool IsSelected { get; set; }
 
     public SolidColorBrush DataTypeColor => DataType switch
     {

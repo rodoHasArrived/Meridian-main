@@ -10,6 +10,8 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
+using ISmQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using ISmService = Meridian.Contracts.SecurityMaster.ISecurityMasterService;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -25,6 +27,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ITradingParametersBackfillService _backfillService;
     private readonly ISecurityMasterImportService _importService;
+    private readonly ISecurityMasterRuntimeStatus _securityMasterRuntimeStatus;
+    private readonly ISmQueryService _queryService;
+    private readonly ISmService _service;
+    private readonly bool _hasPolygonApiKey;
     private CancellationTokenSource? _cts;
 
     // ── Public collections ──────────────────────────────────────────────────
@@ -284,12 +290,19 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ITradingParametersBackfillService backfillService,
-        ISecurityMasterImportService importService)
+        ISecurityMasterImportService importService,
+        ISecurityMasterRuntimeStatus securityMasterRuntimeStatus,
+        ISmQueryService queryService,
+        ISmService service)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
+        _securityMasterRuntimeStatus = securityMasterRuntimeStatus ?? throw new ArgumentNullException(nameof(securityMasterRuntimeStatus));
+        _queryService = queryService;
+        _service = service;
+        _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
         CreateNewCommand = new RelayCommand(OnCreateNew);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
@@ -309,7 +322,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -330,15 +343,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var detail = await ApiClientService.Instance
-                .GetAsync<SecurityDetailDto>($"/api/workstation/security-master/securities/{id}", CancellationToken.None)
+            var detail = await _queryService.GetByIdAsync(id, CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (detail is not null)
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -358,7 +370,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         if (SelectedSecurity is null)
             return;
 
-        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService)
+        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service)
         {
             SecurityName = SelectedSecurity.DisplayName,
             SecurityId = SelectedSecurity.SecurityId,
@@ -624,18 +636,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var actions = await ApiClientService.Instance
-                .GetAsync<CorporateActionDto[]>($"/api/workstation/security-master/securities/{id}/corporate-actions", ct)
+            var actions = await _queryService.GetCorporateActionsAsync(id, ct)
                 .ConfigureAwait(false);
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 CorporateActions.Clear();
-                if (actions is { Length: > 0 })
-                {
-                    foreach (var action in actions.OrderByDescending(a => a.ExDate))
-                        CorporateActions.Add(action);
-                }
+                foreach (var action in actions.OrderByDescending(a => a.ExDate))
+                    CorporateActions.Add(action);
             });
         }
         catch (OperationCanceledException) { }

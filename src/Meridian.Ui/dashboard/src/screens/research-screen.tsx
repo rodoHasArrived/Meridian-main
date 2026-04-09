@@ -12,9 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EntityDataTable } from "@/components/meridian/entity-data-table";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { RunStatusBadge } from "@/components/meridian/run-status-badge";
-import { approvePromotion, compareRuns, diffRuns, evaluatePromotion, getPromotionHistory, getRunAttribution, getRunFills, rejectPromotion } from "@/lib/api";
+import { EquityCurveChart } from "@/components/meridian/equity-curve-chart";
+import { approvePromotion, compareRuns, diffRuns, evaluatePromotion, getPromotionHistory, getRunAttribution, getRunEquityCurve, getRunFills, rejectPromotion } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { MetricsDiff, ParameterDiff, PositionDiffEntry, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunAttributionSummary, RunComparisonRow, RunDiff, RunFillSummary } from "@/types";
+import type { EquityCurveSummary, MetricsDiff, ParameterDiff, PositionDiffEntry, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, ResearchRunRecord, ResearchWorkspaceResponse, RunAttributionSummary, RunComparisonRow, RunDiff, RunFillSummary, SecurityCoverageReference, SecurityCoverageSummary } from "@/types";
 
 interface ResearchScreenProps {
   data: ResearchWorkspaceResponse | null;
@@ -75,12 +76,26 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
   const [showHistory, setShowHistory] = useState(false);
 
   // --- Run detail drill-in tabs ---
-  type RunDetailTab = "overview" | "attribution" | "fills";
+  type RunDetailTab = "overview" | "chart" | "attribution" | "fills";
   const [runDetailTab, setRunDetailTab] = useState<RunDetailTab>("overview");
   const [attribution, setAttribution] = useState<RunAttributionSummary | null>(null);
   const [attributionLoading, setAttributionLoading] = useState(false);
   const [fills, setFills] = useState<RunFillSummary | null>(null);
   const [fillsLoading, setFillsLoading] = useState(false);
+  const [equityCurve, setEquityCurve] = useState<EquityCurveSummary | null>(null);
+  const [equityCurveLoading, setEquityCurveLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedRun || runDetailTab !== "chart") return;
+    setEquityCurveLoading(true);
+    getRunEquityCurve(selectedRun.id)
+      .then(setEquityCurve)
+      .catch((err: unknown) => {
+        console.error("Failed to load equity curve", err);
+        setEquityCurve(null);
+      })
+      .finally(() => setEquityCurveLoading(false));
+  }, [selectedRun, runDetailTab]);
 
   useEffect(() => {
     if (!selectedRun || runDetailTab !== "attribution") return;
@@ -135,6 +150,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
       setRunDetailTab("overview");
       setAttribution(null);
       setFills(null);
+      setEquityCurve(null);
     }
   }
 
@@ -355,7 +371,7 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
 
               {/* Tab bar */}
               <div className="flex gap-1 rounded-lg border border-border/60 bg-secondary/30 p-1">
-                {(["overview", "attribution", "fills"] as const).map((tab) => (
+                {(["overview", "chart", "attribution", "fills"] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -372,6 +388,16 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                 ))}
               </div>
 
+              {runDetailTab === "chart" && (
+                <div className="space-y-4">
+                  {equityCurveLoading && <p className="text-sm text-muted-foreground">Loading equity curve…</p>}
+                  {!equityCurveLoading && !equityCurve && (
+                    <p className="text-sm text-muted-foreground">No equity curve data available for this run.</p>
+                  )}
+                  {equityCurve && <EquityCurveChart data={equityCurve} />}
+                </div>
+              )}
+
               {runDetailTab === "overview" && (
                 <>
                   <dl className="grid gap-4 sm:grid-cols-2">
@@ -387,6 +413,10 @@ export function ResearchScreen({ data }: ResearchScreenProps) {
                     <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Operator notes</div>
                     <p className="mt-3 text-sm leading-6 text-foreground">{selectedRun.notes}</p>
                   </div>
+
+                  {selectedRun.securityCoverage ? (
+                    <SecurityCoveragePanel coverage={selectedRun.securityCoverage} />
+                  ) : null}
 
                   {/* Promotion panel */}
                   <PromotionPanel
@@ -794,6 +824,88 @@ function RunDiffPanel({ diff }: RunDiffPanelProps) {
   );
 }
 
+function SecurityCoveragePanel({ coverage }: { coverage: SecurityCoverageSummary }) {
+  const unresolvedCount = coverage.portfolioMissing + coverage.ledgerMissing;
+  const partialCount = coverage.portfolioPartial + coverage.ledgerPartial;
+
+  return (
+    <div className="rounded-xl border border-border/80 bg-secondary/30 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Security Master coverage</div>
+          <p className="mt-3 text-sm leading-6 text-foreground">{coverage.summary}</p>
+        </div>
+        <span className={cn("rounded-full px-2.5 py-1 text-xs font-mono uppercase", coverageBadgeTone(coverage.tone))}>
+          {coverage.hasIssues ? "Review" : "Linked"}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <CoverageStat label="Resolved" value={String(coverage.portfolioResolved + coverage.ledgerResolved)} />
+        <CoverageStat label="Partial" value={String(partialCount)} />
+        <CoverageStat label="Unresolved" value={String(unresolvedCount)} />
+      </div>
+
+      {coverage.resolvedReferences.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Authoritative links</div>
+          {coverage.resolvedReferences.slice(0, 3).map((reference) => (
+            <SecurityReferenceRow key={`${reference.source}-${reference.symbol}-${reference.securityId ?? "none"}`} reference={reference} />
+          ))}
+        </div>
+      )}
+
+      {coverage.reviewReferences.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Needs review</div>
+          {coverage.reviewReferences.slice(0, 3).map((reference) => (
+            <SecurityReferenceRow key={`${reference.source}-${reference.symbol}-${reference.coverageStatus}`} reference={reference} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoverageStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background/50 p-3">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      <div className="mt-2 font-mono text-sm text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function SecurityReferenceRow({ reference }: { reference: SecurityCoverageReference }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background/50 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-foreground">{reference.displayName}</span>
+            <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-mono uppercase", coverageBadgeTone(reference.coverageStatus === "Resolved" ? "success" : "warning"))}>
+              {reference.coverageStatus}
+            </span>
+          </div>
+          <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <span>{reference.source}</span>
+            <span className="font-mono">{reference.symbol}</span>
+            {reference.assetClass ? <span>{reference.assetClass}</span> : null}
+            {reference.subType ? <span>{reference.subType}</span> : null}
+            {reference.currency ? <span>{reference.currency}</span> : null}
+          </div>
+          {reference.coverageReason ? <p className="mt-2 text-xs text-muted-foreground">{reference.coverageReason}</p> : null}
+        </div>
+        <Button asChild size="sm" variant="outline">
+          <a href={reference.securityDetailUrl ?? buildSecurityMasterHref(reference.symbol)}>
+            {reference.securityId ? "Open security" : "Search symbol"}
+          </a>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function PositionDiffTable({ entries }: { entries: PositionDiffEntry[] }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border/70">
@@ -844,6 +956,26 @@ function MetricsDiffCard({ label, value, isPositive }: { label: string; value: s
 function formatPnlDelta(value: number): string {
   const sign = value >= 0 ? "+" : "";
   return `${sign}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function coverageBadgeTone(tone: "default" | "success" | "warning" | "danger") {
+  if (tone === "success") {
+    return "bg-success/15 text-success";
+  }
+
+  if (tone === "warning") {
+    return "bg-warning/15 text-warning";
+  }
+
+  if (tone === "danger") {
+    return "bg-destructive/15 text-destructive";
+  }
+
+  return "bg-secondary text-muted-foreground";
+}
+
+function buildSecurityMasterHref(symbol: string) {
+  return `/governance/security-master?query=${encodeURIComponent(symbol)}`;
 }
 
 interface PromotionPanelProps {

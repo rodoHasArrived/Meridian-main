@@ -210,7 +210,10 @@ internal static class SecurityMasterMapping
 
         return assetClass switch
         {
-            "Equity" => SecurityKind.NewEquity(new EquityTerms(ToOption(GetOptionalString(json, "shareClass")))),
+            "Equity" => SecurityKind.NewEquity(new EquityTerms(
+                ToOption(GetOptionalString(json, "shareClass")),
+                ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")),
+                ToEquityClassificationOption(json))),
             "Option" => SecurityKind.NewOption(new OptionTerms(
                 SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingId")),
                 GetRequiredString(json, "putCall"),
@@ -486,4 +489,136 @@ internal static class SecurityMasterMapping
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String && DateTimeOffset.TryParse(value.GetString(), out var date)
             ? date
             : throw new InvalidOperationException($"Missing required timestamp '{propertyName}'.");
+
+    private static IEnumerable<string> GetOptionalStringArray(JsonElement json, string propertyName)
+    {
+        if (json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in value.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.String)
+                    yield return item.GetString()!;
+            }
+        }
+    }
+
+    private static FSharpOption<Meridian.Contracts.Domain.Enums.InstrumentType> ToInstrumentTypeOption(int? raw)
+        => raw.HasValue
+            ? FSharpOption<Meridian.Contracts.Domain.Enums.InstrumentType>.Some((Meridian.Contracts.Domain.Enums.InstrumentType)raw.Value)
+            : FSharpOption<Meridian.Contracts.Domain.Enums.InstrumentType>.None;
+
+    private static FSharpOption<BondSubclass> ToBondSubclassOption(string? raw)
+        => raw switch
+        {
+            "Corporate"     => FSharpOption<BondSubclass>.Some(BondSubclass.Corporate),
+            "Government"    => FSharpOption<BondSubclass>.Some(BondSubclass.Government),
+            "Municipal"     => FSharpOption<BondSubclass>.Some(BondSubclass.Municipal),
+            "Convertible"   => FSharpOption<BondSubclass>.Some(BondSubclass.Convertible),
+            "HighYield"     => FSharpOption<BondSubclass>.Some(BondSubclass.HighYield),
+            "AssetBacked"   => FSharpOption<BondSubclass>.Some(BondSubclass.AssetBacked),
+            "MortgageBacked"=> FSharpOption<BondSubclass>.Some(BondSubclass.MortgageBacked),
+            not null        => FSharpOption<BondSubclass>.Some(BondSubclass.NewOtherBond(raw)),
+            null            => FSharpOption<BondSubclass>.None
+        };
+
+    private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
+        => raw switch
+        {
+            "FullVoting"    => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.FullVoting),
+            "LimitedVoting" => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.LimitedVoting),
+            "NonVoting"     => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NonVoting),
+            "DualClass"     => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.DualClass),
+            "SuperVoting"   => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.SuperVoting),
+            not null        => FSharpOption<VotingRightsCat>.Some(VotingRightsCat.NewOtherVotingRights(raw)),
+            null            => FSharpOption<VotingRightsCat>.None
+        };
+
+    private static DividendType ToDividendType(string raw)
+        => raw switch
+        {
+            "Fixed" => DividendType.Fixed,
+            "Floating" => DividendType.Floating,
+            "Cumulative" => DividendType.Cumulative,
+            _ => throw new InvalidOperationException($"Unsupported dividend type '{raw}'.")
+        };
+
+    private static FSharpOption<ParticipationTerms> ToParticipationTermsOption(JsonElement? json)
+        => json.HasValue
+            ? FSharpOption<ParticipationTerms>.Some(new ParticipationTerms(
+                GetOptionalBoolean(json.Value, "participatesInCommonDividends") ?? false,
+                ToOption(GetOptionalDecimal(json.Value, "additionalDividendThreshold"))))
+            : FSharpOption<ParticipationTerms>.None;
+
+    private static LiquidationPreference ToLiquidationPreference(JsonElement json)
+        => GetRequiredString(json, "kind") switch
+        {
+            "Pari" => LiquidationPreference.Pari,
+            "Senior" => LiquidationPreference.NewSenior(GetRequiredDecimal(json, "multiple")),
+            "Subordinated" => LiquidationPreference.Subordinated,
+            var raw => throw new InvalidOperationException($"Unsupported liquidation preference '{raw}'.")
+        };
+
+    private static PreferredTerms ToPreferredTerms(JsonElement json)
+        => new(
+            ToOption(GetOptionalDecimal(json, "dividendRate")),
+            ToDividendType(GetRequiredString(json, "dividendType")),
+            ToOption(GetOptionalDecimal(json, "redemptionPrice")),
+            ToOption(GetOptionalDateOnly(json, "redemptionDate")),
+            ToOption(GetOptionalDateOnly(json, "callableDate")),
+            ToParticipationTermsOption(GetOptionalObject(json, "participationTerms")),
+            ToLiquidationPreference(GetRequiredObject(json, "liquidationPreference")));
+
+    private static ConvertibleTerms ToConvertibleTerms(JsonElement json)
+        => new(
+            SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingSecurityId")),
+            GetRequiredDecimal(json, "conversionRatio"),
+            ToOption(GetOptionalDecimal(json, "conversionPrice")),
+            ToOption(GetOptionalDateOnly(json, "conversionStartDate")),
+            ToOption(GetOptionalDateOnly(json, "conversionEndDate")));
+
+    private static FSharpOption<EquityClassification> ToEquityClassificationOption(JsonElement json)
+    {
+        var raw = GetOptionalString(json, "classification");
+        return raw switch
+        {
+            "Common" => FSharpOption<EquityClassification>.Some(EquityClassification.Common),
+            "Preferred" => FSharpOption<EquityClassification>.Some(
+                EquityClassification.NewPreferred(ToPreferredTerms(GetRequiredObject(json, "preferredTerms")))),
+            "Convertible" => FSharpOption<EquityClassification>.Some(
+                EquityClassification.NewConvertible(ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
+            "ConvertiblePreferred" => FSharpOption<EquityClassification>.Some(
+                EquityClassification.NewConvertiblePreferred(
+                    ToPreferredTerms(GetRequiredObject(json, "preferredTerms")),
+                    ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
+            "Other" => FSharpOption<EquityClassification>.Some(
+                EquityClassification.NewOther(GetRequiredString(json, "otherClassification"))),
+            null => FSharpOption<EquityClassification>.None,
+            _ => throw new InvalidOperationException($"Unsupported equity classification '{raw}'.")
+        };
+    }
+
+    public static JsonElement BuildConvertibleEquityTermsPatch(SecurityProjectionRecord current, AmendConvertibleEquityTermsRequest request)
+    {
+        if (!string.Equals(current.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Security '{current.SecurityId}' is not an equity and cannot accept convertible term amendments.");
+
+        var assetSpecificNode = JsonNode.Parse(current.AssetSpecificTerms.GetRawText()) as JsonObject
+            ?? throw new InvalidOperationException("Current asset-specific terms payload is not a JSON object.");
+        var classification = assetSpecificNode["classification"]?.GetValue<string>();
+
+        if (classification is not ("Convertible" or "ConvertiblePreferred"))
+            throw new InvalidOperationException($"Security '{current.SecurityId}' does not currently have convertible-equity terms.");
+
+        var convertibleTermsNode = new JsonObject
+        {
+            ["underlyingSecurityId"] = request.UnderlyingSecurityId,
+            ["conversionRatio"] = JsonValue.Create(request.ConversionRatio),
+            ["conversionPrice"] = JsonValue.Create(request.ConversionPrice),
+            ["conversionStartDate"] = JsonValue.Create(request.ConversionStartDate),
+            ["conversionEndDate"] = JsonValue.Create(request.ConversionEndDate)
+        };
+
+        assetSpecificNode["convertibleTerms"] = convertibleTermsNode;
+        return JsonSerializer.SerializeToElement(assetSpecificNode);
+    }
 }

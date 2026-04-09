@@ -1,3 +1,4 @@
+using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 
 namespace Meridian.Execution.Interfaces;
@@ -22,11 +23,38 @@ public interface IAccountPortfolio
     /// <summary>Available cash balance not tied up in open orders.</summary>
     decimal Cash { get; }
 
-    /// <summary>Margin balance (positive = margin used; 0 for cash-only accounts).</summary>
+    /// <summary>Margin balance — total amount borrowed from the broker for long positions (0 for cash accounts).</summary>
     decimal MarginBalance { get; }
 
-    /// <summary>Open positions keyed by ticker symbol (upper-case).</summary>
-    IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    /// <summary>
+    /// Total collateral held by the broker against short positions.
+    /// Zero for cash accounts and accounts with no open shorts.
+    /// </summary>
+    decimal ShortMarginCollateral => 0m;
+
+    /// <summary>
+    /// Margin regime for this account. Defaults to <see cref="MarginAccountType.Cash"/> for
+    /// backward-compatible callers that do not implement the property explicitly.
+    /// </summary>
+    MarginAccountType MarginType => MarginAccountType.Cash;
+
+    /// <summary>
+    /// Available buying power.
+    /// <list type="bullet">
+    ///   <item><see cref="MarginAccountType.Cash"/>: equals <see cref="Cash"/>.</item>
+    ///   <item><see cref="MarginAccountType.RegT"/>: up to 2× <see cref="Cash"/> (50 % initial margin).</item>
+    ///   <item><see cref="MarginAccountType.PortfolioMargin"/>: model-specific; defaults to <see cref="Cash"/>.</item>
+    /// </list>
+    /// </summary>
+    decimal BuyingPower => Cash;
+
+    /// <summary>
+    /// Open positions keyed by ticker symbol (upper-case), typed against the cross-pillar
+    /// <see cref="IPosition"/> interface.
+    /// Callers that require the concrete <see cref="ExecutionPosition"/> type (e.g. serialisation
+    /// boundaries) should cast individual values: <c>account.Positions.Values.Cast&lt;ExecutionPosition&gt;()</c>.
+    /// </summary>
+    IReadOnlyDictionary<string, IPosition> Positions { get; }
 
     /// <summary>Aggregate unrealised P&amp;L across all open positions.</summary>
     decimal UnrealisedPnl { get; }
@@ -55,7 +83,7 @@ public interface IAccountPortfolio
 /// <param name="DisplayName">Human-readable account name.</param>
 /// <param name="Kind">Brokerage or Bank.</param>
 /// <param name="Cash">Available cash.</param>
-/// <param name="MarginBalance">Margin used (0 for cash accounts).</param>
+/// <param name="MarginBalance">Total amount borrowed from the broker for long positions (0 for cash accounts).</param>
 /// <param name="LongMarketValue">Sum of long position market values.</param>
 /// <param name="ShortMarketValue">Sum of short position market values (absolute).</param>
 /// <param name="GrossExposure">LongMarketValue + ShortMarketValue.</param>
@@ -64,6 +92,16 @@ public interface IAccountPortfolio
 /// <param name="RealisedPnl">Cumulative realised P&amp;L.</param>
 /// <param name="Positions">All open positions.</param>
 /// <param name="AsOf">UTC timestamp of the snapshot.</param>
+/// <param name="MarginType">Margin regime. Defaults to <see cref="MarginAccountType.Cash"/>.</param>
+/// <param name="BuyingPower">
+///   Available buying power. For Reg T accounts this is up to 2× available cash equity;
+///   for cash accounts it equals <paramref name="Cash"/>. Defaults to 0 when not supplied
+///   (legacy construction paths).
+/// </param>
+/// <param name="ShortMarginCollateral">
+///   Total collateral held by the broker against short positions. 0 for cash accounts
+///   and accounts with no open shorts.
+/// </param>
 public sealed record ExecutionAccountDetailSnapshot(
     string AccountId,
     string DisplayName,
@@ -77,4 +115,7 @@ public sealed record ExecutionAccountDetailSnapshot(
     decimal UnrealisedPnl,
     decimal RealisedPnl,
     IReadOnlyList<ExecutionPosition> Positions,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    MarginAccountType MarginType = MarginAccountType.Cash,
+    decimal BuyingPower = 0m,
+    decimal ShortMarginCollateral = 0m);

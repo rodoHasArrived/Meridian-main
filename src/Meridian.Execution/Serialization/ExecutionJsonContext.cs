@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Execution.Interfaces;
+using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -34,6 +35,7 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(AccountKind))]
 // Operator control and audit trail types
 [JsonSerializable(typeof(ExecutionControlSnapshot))]
+[JsonSerializable(typeof(MarginAccountType))]
 [JsonSerializable(typeof(ExecutionAuditEntry))]
 [JsonSerializable(typeof(List<ExecutionAuditEntry>))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
