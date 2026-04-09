@@ -77,9 +77,80 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.String
             ? prop.GetString() : null;
 
+    private static bool? ReadBool(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) &&
+            (prop.ValueKind == System.Text.Json.JsonValueKind.True || prop.ValueKind == System.Text.Json.JsonValueKind.False)
+            ? prop.GetBoolean() : null;
+
+    private static DateOnly? ReadDateOnly(System.Text.Json.JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var prop) || prop.ValueKind != System.Text.Json.JsonValueKind.String)
+            return null;
+        return DateOnly.TryParseExact(prop.GetString(), "yyyy-MM-dd", out var date) ? date : null;
+    }
+
     public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
         => _eventStore.LoadCorporateActionsAsync(securityId, ct);
 
-    public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
-        => Task.FromResult<PreferredEquityTermsDto?>(null);
+    public async Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+    {
+        var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        if (projection is null || !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (!projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var pt) ||
+            pt.ValueKind == System.Text.Json.JsonValueKind.Null ||
+            pt.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            return null;
+
+        return new PreferredEquityTermsDto(
+            SecurityId: securityId,
+            Classification: ReadString(pt, "classification"),
+            DividendRate: ReadDecimal(pt, "dividendRate"),
+            DividendType: ReadString(pt, "dividendType"),
+            IsCumulative: ReadBool(pt, "isCumulative"),
+            RedemptionPrice: ReadDecimal(pt, "redemptionPrice"),
+            RedemptionDate: ReadDateOnly(pt, "redemptionDate"),
+            CallableDate: ReadDateOnly(pt, "callableDate"),
+            ParticipatesInCommonDividends: ReadBool(pt, "participatesInCommonDividends"),
+            AdditionalDividendThreshold: ReadDecimal(pt, "additionalDividendThreshold"),
+            LiquidationPreferenceKind: ReadString(pt, "liquidationPreferenceKind"),
+            LiquidationPreferenceMultiple: ReadDecimal(pt, "liquidationPreferenceMultiple"),
+            Version: projection.Version);
+    }
+
+    public async Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+    {
+        var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        if (projection is null || !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (!projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertibleTermsEl) ||
+            convertibleTermsEl.ValueKind == System.Text.Json.JsonValueKind.Null ||
+            convertibleTermsEl.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            return null;
+
+        Guid? underlyingId = null;
+        if (convertibleTermsEl.TryGetProperty("underlyingSecurityId", out var uidProp) &&
+            uidProp.ValueKind == System.Text.Json.JsonValueKind.String &&
+            Guid.TryParse(uidProp.GetString(), out var parsedGuid))
+        {
+            underlyingId = parsedGuid;
+        }
+
+        var assetSpecific = projection.AssetSpecificTerms;
+        string? classification = null;
+        if (assetSpecific.TryGetProperty("preferredTerms", out var ptForClass))
+            classification = ReadString(ptForClass, "classification");
+
+        return new ConvertibleEquityTermsDto(
+            SecurityId: securityId,
+            Classification: classification,
+            UnderlyingSecurityId: underlyingId,
+            ConversionRatio: ReadDecimal(convertibleTermsEl, "conversionRatio"),
+            ConversionPrice: ReadDecimal(convertibleTermsEl, "conversionPrice"),
+            ConversionStartDate: ReadDateOnly(convertibleTermsEl, "conversionStartDate"),
+            ConversionEndDate: ReadDateOnly(convertibleTermsEl, "conversionEndDate"),
+            Version: projection.Version);
+    }
 }

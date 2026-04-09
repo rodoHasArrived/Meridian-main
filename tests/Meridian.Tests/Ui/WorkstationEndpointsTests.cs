@@ -1649,5 +1649,7 @@ public sealed class WorkstationEndpointsTests
 
         public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<PreferredEquityTermsDto?>(null);
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }

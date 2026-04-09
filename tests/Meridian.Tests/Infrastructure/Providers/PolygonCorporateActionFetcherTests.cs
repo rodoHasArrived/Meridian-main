@@ -66,6 +66,7 @@ public sealed class PolygonCorporateActionFetcherTests : IDisposable
         public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default) => Task.FromResult<TradingParametersDto?>(null);
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
         public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<PreferredEquityTermsDto?>(null);
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 
     private sealed class StubSecurityMasterEventStore : ISecurityMasterEventStore

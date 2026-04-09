@@ -195,15 +195,25 @@ public static class UiEndpoints
     /// </summary>
     public static WebApplication MapUiEndpoints(this WebApplication app)
     {
-        var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var jsonOptionsIndented = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
+        var jsonOptions = CreateEndpointJsonOptions();
+        var jsonOptionsIndented = CreateEndpointJsonOptions(writeIndented: true);
 
         return app.MapUiEndpoints(jsonOptions, jsonOptionsIndented);
     }
+
+    /// <summary>
+    /// Creates the standard <see cref="JsonSerializerOptions"/> used by UI API endpoints.
+    /// Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the
+    /// type-info chain without reflection falling back to a null resolver.
+    /// </summary>
+    /// <param name="writeIndented">When <c>true</c> the output is pretty-printed.</param>
+    public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =>
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = writeIndented,
+            TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()
+        };
 
     /// <summary>
     /// Maps all UI API endpoints with custom JSON serializer options.

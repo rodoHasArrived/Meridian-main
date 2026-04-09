@@ -223,5 +223,7 @@ public sealed class PaperTradingGatewayTests
             => throw new NotImplementedException();
         public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<PreferredEquityTermsDto?>(null);
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }

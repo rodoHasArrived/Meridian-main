@@ -777,6 +777,12 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         Status = DataSourceStatus.Unavailable;
     }
 
+    /// <summary>
+    /// Test entry point: injects a raw WebSocket JSON payload directly into the processing pipeline,
+    /// bypassing the live WebSocket connection. Used by <c>NyseMessagePipelineTests</c>.
+    /// </summary>
+    public void ProcessTestMessage(string json) => ProcessWebSocketMessage(json);
+
     private void ProcessWebSocketMessage(string message)
     {
         try
